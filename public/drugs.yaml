@@ -1,0 +1,2830 @@
+drugs:
+
+- id: rocuronium
+  russian_name: Рокурония бромид, Рокуроний
+  latin_name: Sol. Rocuronii bromidi 10 mg/ml - 5 ml
+  group: Миорелаксанты
+  mechanism:
+  - Недеполяризующий нервно-мышечный блокатор (промежуточного действия).
+  - Блокирует нервно-мышечную передачу путем конкурентного ингибирования никотиновых ацетилхолиновых рецепторов на моторной конечной пластине.
+  - Используется в качестве паралитического в индукции быстрой последовательности.
+  indications:
+  - RSI (быстрая последовательная индукция)
+  - необходимость нейрон-мышечного блока в общей анестезии
+  dosages:
+    type: calculator
+    variants:
+    - variant_name: быстрая последовательная индукция
+      method: болюсно
+      groups:
+      - group_name: взрослые
+        doses: [ '0.9', '1.0', '1.1', '1.2' ]
+        default_dose: '1.2'
+        unit: мг/кг
+      - group_name: ослабленные пациенты
+        doses: [ '0.6' ]
+        default_dose: '0.6'
+        unit: мг/кг
+    - variant_name: мышечный блок в общей анестезии
+      method: болюсно
+      groups:
+      - group_name: взрослые
+        doses: [ '0.15', '0.2' ]
+        default_dose: '0.15'
+        unit: мг/кг
+      - group_name: ослабленные пациенты
+        doses: [ '0.075', '0.08', '0.09', '0.1' ]
+        default_dose: '0.075'
+        unit: мг/кг
+    - variant_name: мышечный блок в общей анестезии
+      method: инфузор
+      groups:
+      - group_name: взрослые
+        doses: [ '0.3', '0.4', '0.5', '0.6' ]
+        default_dose: '0.3'
+        unit: мг/кг/час
+      - group_name: ослабленные пациенты
+        doses: [ '0.3', '0.4' ]
+        default_dose: '0.3'
+        unit: мг/кг/час
+      pharmacokinetics:
+        onset: 45-60 секунд
+        duration: 20-35 минут
+        half_life: 73 минуты
+        metabolism: печёночный
+        elimination: печень (75-90%), почки
+  antidote:
+    name: Сугаммадекс, Дестенил, Брайан
+    latin_name: Sugammadexi
+    description: Дозирование варьирует в зависимости от желаемых эффектов отмены
+    dosages:
+    - dose: '2 мг/кг'
+      indication: отмена неглубокой нервно-мышечной блокады
+    - dose: '4 мг/кг'
+      indication: отмена более глубокой блокады
+    - dose: '16 мг/кг'
+      indication: немедленный возврат после введения однократной дозы 1,2 мг/кг рокурония
+  side_effects:
+  - Тахикардия
+  - Гипотония
+  - Бронхоспазм
+  - Сыпь
+
+- id: filtrum
+  russian_name: Лигнин гидролизный, Фильтрум
+  latin_name: Tab. Filtrumi 400 mg, Tab. Lignini hydrolisati 400 mg
+  group: Антидоты, Сорбенты
+  group_type: group_antidote
+  mechanism:
+    - Адсорбирует в ЖКТ микроорганизмы, продукты их жизнедеятельности, экзогенные и эндогенные токсины, аллергены, ксенобиотики, тяжелые металлы, радиоактивные изотопы, аммиак, двухвалентные катионы
+    - Энтеросорбент на основе природного полимера растительного происхождения лигнина
+    - Связывает аммиак, двухвалентные катионы и способствует их выведению через ЖКТ
+  indications:
+  - Отравления тяжелыми металлами, радиоактивными изотопами, другими ксенобиотиками
+  - Детоксицирующие средства, включая антидоты
+  dosages:
+    type: table
+    table_data:
+    - age: До 1 года
+      dose: 200 мг
+    - age: 1-3 года
+      dose: 200-400 мг
+    - age: 4-7 лет
+      dose: 400 мг
+    - age: 7-12 лет
+      dose: 400-800 мг
+    - age: Дети (отравления)
+      dose: 3-4 г/сут
+    - age: Взрослые
+      dose: 400-1200 мг
+    - age: Взрослые (отравления)
+      dose: 5-7 г/сут
+  pharmacokinetics:
+    onset: вариативно
+    elimination: ЖКТ
+  contraindications: 
+   - индивидуальная непереносимость
+   - эрозивно-язвенные поражения слизистой оболочки ЖКТ, кровотечения в ЖКТ, анацидный гастрит
+  side_effects:
+    - диспептические явления
+    - констипация
+    - аллергические реакции
+
+- id: norepinephrine
+  russian_name: Норэпинефрин, Норадреналин
+  latin_name: Sol. Norepinephrini 2 mg/ml - 8 ml
+  group: Симпатомиметики
+  dosages:
+    type: calculator_link
+    calculator: CalcNorepinephrine
+
+- id: epinephrine
+  russian_name: Адреналин, Эпинефрин
+  latin_name: Sol. Adrenalini 1 mg/ml - 1 ml
+  group: Симпатомиметики
+  dosages:
+    type: calculator_link
+    calculator: CalcEpinephrine
+
+- id: nitroglycerin
+  russian_name: Изосорбида динитрат
+  latin_name: Sol. Isosorbidi dinitri 1 mg/ml - 1 ml
+  group: Нитраты
+  dosages:
+    type: calculator_link
+    calculator: CalcNitro
+
+- id: propofol
+  russian_name: Пропофол
+  latin_name: Sol. Propofol 10 mg/ml - 20 ml
+  group: Анестетик
+  dosages:
+    type: calculator_link
+    calculator: CalcPropofol
+
+- id: dopamine
+  russian_name: Допамин
+  latin_name: Sol. Dopamini 40 mg/ml - 5 ml
+  group: Симпатомиметик
+  dosages:
+    type: calculator_link
+    calculator: CalcDopamine
+
+- id: dobutamine
+  russian_name: Добутамин
+  latin_name: Dobutamine 250 mg
+  group: Симпатомиметик
+  dosages:
+    type: calculator_link
+    calculator: CalcDobutamine
+
+- id: droperidol
+  russian_name: Дроперидол
+  latin_name: Sol. Droperidoli 2.5 mg/ml - 2 ml
+  group: Антипсихотик
+  mechanism:
+  - Антагонист дофаминовых D2-рецепторов → депрессия ЦНС на субкортикальном уровне, в среднем мозге и ретикулярной формации ствола мозга → антагонизм действия глутаминовой кислоты в экстрапирамидной системе, ингибирует рецепторы катехоламинов и обратный захват нейромедиаторов → сильное центральное антидофаминергическое действие и слабое центральное антихолинергическое
+  - Производит ганглионарную блокаду, снижает аффективные реакции, обеспечивает альфа-адренергическую блокаду → периферическая вазодилатация и снижает эффект эпинефрина → транквилизация, седативный эффект и антиэметическое действие
+  indications:
+  - Психоз
+  - Тошнота/рвота
+  dosages:
+    type: simple_calculator
+    description: В/м, 2.5-5 мг
+    doses: [ '0.05' ]
+    default_dose: '0.05'
+    unit: мг/кг
+    mxn_dose: 4
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 10-15 минут
+    duration: 2-4 часа
+    half_life: 2-4 часа
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Удлинённый интервал QT (QTc >440 мс у мужчин, >450 мс у женщин)
+  - Депрессия ЦНС
+  side_effects:
+  - Сонливость
+  - Экстрапирамидные симптомы
+  - Удлинение интервала QT
+
+- id: propranolol
+  russian_name: Пропранолол
+  latin_name: Propranolol 10 mg
+  group: Бета-блокатор
+  mechanism:
+  - Неселективный β-блокатор
+  - Снижает ЧСС и АД
+  indications:
+  - Тахикардия
+  - Гипертония
+  dosages:
+    type: simple_calculator
+    description: Перорально, 10-40 мг
+    doses: [ '0.3' ]
+    default_dose: '0.3'
+    unit: мг/кг
+    min_dose: 10
+    min_dose_unit: мг
+  pharmacokinetics:
+    onset: 1 час
+    duration: 6-12 часов
+    half_life: 3-6 часов
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Бронхиальная астма
+  - Брадикардия
+  side_effects:
+  - Брадикардия
+  - Усталость
+  - Бронхоспазм
+
+- id: atropine
+  russian_name: Атропин
+  latin_name: Sol. Atropini 1 mg/ml - 1 ml
+  group: Антидоты, м-Холинолитик
+  group_type: group_antidote
+  mechanism:
+  - Блокирует м-холинорецепторы
+  - Расслабляет гладкую мускулатуру бронхов, ЖКТ, желче- и мочевыводящей систем — спазмолитический эффект
+  indications:
+  - Отравление фосфанограническими соединениями, вызывающие блокаду холинорецепторов, торможение медиаторной функции ацетилхолина (дихлофос, карбофос, др. инсектициды, яды нервно-паралитического действия - зарин, ви-газы и др.)
+  - Отравление лекарственными препаратам, другими веществами, токсическое действие которых сопровождается брадикардией
+  - RSI
+  - брадикардия
+  dosages:
+    type: simple_calculator
+    description: 
+    - в/в введение, для детей минимальная безопасная доза 0,1 мг
+    - Внутривенно в виде 0,1% р-ра (при интенсивной атропинизации), внутримышечно (при поддерживающей) до достижения легкой переатропинизации (ширина зрачков не менее 5 мм, учащение пульса до 90-100 в минуту
+    - При отравлении лекарственными препаратами и другими веществами, вызывающими брадикардию, доза атропина не должна превышать 1-2 мг одномоментно
+    doses: [ '0.01', '0.02' ]
+    default_dose: '0.01'
+    unit: мг/кг
+    min_dose: 0.1
+    min_dose_unit: мг
+    max_dose: 1
+    max_dose_unit: мг
+    max_dose_antidote: до проявления атропинизации
+  pharmacokinetics:
+    onset: 2-4 минуты
+    duration: 20-35 минут
+    half_life: 73 минуты
+    metabolism: почечный
+    elimination: почки (50% без изменений)
+  contraindications:
+  - При АВ-блокаде дистального типа (с широкими комплексами QRS) атропин малоэффективен и не рекомендуется
+  - Холинолитический (антихолинэргический) синдром
+  side_effects:
+  - Холинолитический (антихолинэргический) синдром (Проявление - дезориентация, спутанность сознания, галлюцинации, сухость во рту, нечеткость зрения, констипация, задержка мочи, покраснение и сухость кожи, тахикардия, гипертермия и учащенное сердцебиение
+  - Тахикардия
+  - Гипотония
+  - Бронхоспазм
+  - Сыпь
+
+- id: activated_charcoal
+  russian_name: Активированный уголь
+  latin_name: Tab. Carbonis activati 250 mg
+  group: Антидоты, Сорбенты
+  group_type: group_antidote
+  mechanism:
+  - Связывает токсины в ЖКТ, предотвращая их всасывание
+  - Используется для дезинтоксикации при отравлениях
+  indications:
+  - Кишечная деконтаминация при интоксикации
+  - Приём токсичных веществ внутрь
+  - Неспецифическая сорбция токсичных веществ (за исключением этанола, метанола, цианидов, которые практически не сорбируются
+  dosages:
+    type: simple_calculator
+    description: 
+      - В конце зондового промывания желудка 50-60 г (0,5-1,0 г на кг массы тела)
+      - При развитии коматозного состояния во избежание осложнений вводится через желудочный зонд после предварительной интубации трахеи (применяется в виде водной взвеси или пасты)
+    doses: [ '50' ]
+    default_dose: '50'
+    unit: мг/кг
+    max_dose: 5000
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: Немедленно
+    duration: 4-6 часов
+    half_life: Не применимо
+    metabolism: Не метаболизируется
+    elimination: Через ЖКТ
+  contraindications:
+  - Не выявлены
+  - Относительно при отравлении кислотами/щелочами/углеводородами
+  side_effects:
+  - Рвота
+  - Запор
+  - Черный стул
+
+- id: aluminum_hydroxide
+  russian_name: Активированный уголь + алюминия оксид, Энтерумин
+  latin_name: Tab. Carbonis activati + Aluminii oxydi 5g
+  group: Сорбенты
+  mechanism:
+  - Нейтрализует соляную кислоту в желудке
+  - Образует защитную пленку на слизистой
+  indications:
+  - Изжога, диспепсия
+  - Отравления (как адъювант)
+  dosages:
+    type: simple_calculator
+    description: Перорально
+    doses: [ '300', '400', '500' ]
+    default_dose: '300'
+    unit: мг/кг
+    max_dose: 5000
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 15-30 минут
+    duration: 1-2 часа
+    half_life: Не применимо
+    metabolism: Не метаболизируется
+    elimination: Через ЖКТ
+  contraindications:
+  - Почечная недостаточность
+  - Гипофосфатемия
+  side_effects:
+  - Запор
+  - Гипофосфатемия
+  - Потеря аппетита
+
+- id: aminocaproic_acid
+  russian_name: Аминокапроновая кислота
+  latin_name: Sol. Acidi aminocapronici 10 mg/ml - 5 ml
+  group: Гемостатики
+  mechanism:
+  - Ингибирует фибринолиз, предотвращая растворение тромбов
+  - Снижает кровотечение
+  indications:
+  - Геморрагические осложнения после операций
+  - Гиперфибринолиз
+  dosages:
+    type: simple_calculator
+    description: в/в
+    doses: [ '75' , '100' ]
+    default_dose: '75'
+    unit: мг/кг
+    max_dose: 1000
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 15 минут
+    duration: 3-4 часа
+    half_life: 2 часа
+    metabolism: Минимальный
+    elimination: Почки
+  contraindications:
+  - Гиперкоагуляция
+  - Тромбоз
+  side_effects:
+  - Тромбоз
+  - Гипотония
+  - Диарея
+
+- id: aminophylline
+  russian_name: Аминофиллин, Эуфиллин
+  latin_name: Sol. Aminophylline 24 mg/ml - 10 ml
+  group: Метилксантины
+  mechanism:
+  - Ингибирует фосфодиэстеразу, повышая цАМФ, что усиливает симпатическую стимуляцию миокарда → увеличивает ЧСС без зависимости от холинергических путей (например, при денервации сердца после трансплантации или аденозин-индуцированной брадикардии)
+  - Влияние на бронхиолы (блокирует аденозиновые рецепторы и повышает уровень циклического АМФ (цАМФ) в клетках, что приводит к расслаблению гладкой мускулатуры бронхов)
+  indications:
+  - Бронхоспазм при астме
+  - ХОБЛ
+  - брадикардия
+  dosages:
+    type: simple_calculator
+    description: В/в, 5-6 мг/кг за 20-30 мин
+    doses: [ '4', '5' ]
+    default_dose: '4'
+    unit: мг/кг
+    max_dose: 240
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 15 минут
+    duration: 4-6 часов
+    half_life: 8 часов
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Аритмии
+  - ГЭРБ
+  side_effects:
+  - Тахикардия
+  - Тремор
+  - Тошнота
+
+- id: amiodarone
+  russian_name: Амиодарон
+  latin_name: Sol. Amiodaroni 50 mg/ml - 3 ml
+  group: Антиаритмики
+  mechanism:
+  - Удлиняет потенциал действия, блокируя K-каналы
+  - Блокирует Na и Ca каналы
+  indications:
+  - Фибрилляция желудочков
+  - Суправентрикулярная тахикардия
+  dosages:
+    type: calculator_link
+    calculator: CalcAmiodarone
+
+- id: ascorbic_acid
+  russian_name: Аскорбиновая кислота
+  latin_name: Sol. Acidi ascorbinici 50 mg/ml - 2 ml
+  group: Антидоты, Витамины
+  group_type: group_antidote
+  mechanism:
+  - Антиоксидант
+  - Участвует в синтезе коллагена
+  indications:
+  - Отравления метгемоглобинообразователями (анилином, нитробензолом, перманганатом калия, нитратами, нитритами и др.)
+  - Облегчение восстановления метгемоглобина в гемоглобин
+  dosages:
+    type: simple_calculator
+    description: оганичений по возрасту нет. При отравлениях - Внутривенно по 10-20 мл 5% раствора повторно (до 60-100 мл/сут)
+    doses: [ '5', '6', '7' ]
+    default_dose: '5'
+    unit: мг/кг
+    max_dose_antidote: до 60-100 мл/сут
+  pharmacokinetics:
+    onset: 15 минут
+    duration: 2-3 часа
+    half_life: 30 минут
+    metabolism: Минимальный
+    elimination: Почки
+  contraindications:
+  - Повышенная чувствительность к препарату
+  - Оксалатные камни
+  - Талассемия
+  side_effects:
+  - Диарея
+  - Тошнота
+  - Камни в почках
+
+- id: acetylsalicylic_acid
+  russian_name: Ацетилсалициловая кислота, Аспирин, АСК
+  latin_name: Tab. Acidi acetylsalicylici 500 mg
+  group: Антиагреганты
+  mechanism:
+  - Необратимый неселективный ингибитор ЦОГ
+  - Ингибирует ЦОГ-1 в тромбоцитах, блокирует синтез тромбоксана А2, таким образом ингибирует агрегацию тромбоцитов на весь срок жизни тромбоцита в виду его безъядерности (около 7-10 дней)
+  - Ингибирует ЦОГ-2 в тканях снижает синтез простагландинов, что приводит к антипиретическому, анальгитическому и противовоспалительному действиям
+  indications:
+  - Инфаркт миокарда (первичная профилактика)
+  - Боль, лихорадка
+  dosages:
+    type: simple_calculator
+    description: Старше 16 лет
+    doses: [ '20, 30' ]
+    default_dose: '20'
+    unit: мг/кг
+    max_dose: 500
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 60 минут (антитромбоцитарный), 30 минут (НПВС-эффект)
+    duration: 4-6 часов
+    half_life: 15 минут (активный метаболит 2-3 ч)
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Язва желудка
+  - Астма (аспириновая)
+  side_effects:
+  - Кровотечение
+  - Диспепсия
+  - Аллергия
+
+- id: acetylcysteine
+  russian_name: Ацетилцистеин
+  latin_name: Sol. Acetylcysteini 100 mg/ml - 3 ml
+  group: Антидоты
+  group_type: group_antidote
+  mechanism:
+  - Восстанавливает глутатион, детоксифицируя ацетаминофен
+  - Разжижает мокроту
+  indications:
+  - Отравления парацетамолом (при приеме одномоментно в количестве более 7,5 г для взрослого), галогенизированными углеводородами (тетрахлорметан, метила бромид и др.), нитрилами (ацетонитрил, акрилонитрил), паракватом
+  dosages:
+    type: simple_calculator
+    description: При отравлениях - Внутривенно 150 мг/кг в виде 10% или 20% раствора в 200 мл 5% раствора декстрозы в течение 15 минут
+    doses: [ '150' ]
+    default_dose: '150'
+    unit: мг/кг
+  pharmacokinetics:
+    onset: 30 минут
+    duration: 4 часа
+    half_life: 5.6 часов
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - При в/в введении может появиться неприятное ощущение по ходу вены, эритематозная или уртикарная сыль, тошнота, рвота, диарея, головная боль, звон, шум в ушах. Следует ввести антигистаминные препараты
+  - При быстром введении могут развиться анафилактоидная реакция - бронхоспазм, в особенности у лиц, страдающих бронхиальной астмой, артериальная гипотензия при повышенной чувствительности к ацетилцистеину. В таких случаях следует вводить антигистаминные препараты, кортикостероиды, адреналин
+  - Если при приеме внутрь развивается рвота, одновременно назначают противорвотные препараты
+  side_effects:
+  - Анафилаксия
+  - Тошнота
+  - Рвота
+
+- id: diazepam
+  russian_name: Диазепам, Реланиум, Сибазон
+  latin_name: Sol. Sibazoni 5 mg/ml - 2 ml
+  group: Бензодиазепины
+  dosages:
+    type: calculator_link
+    calculator: CalcDiazepam
+
+- id: budesonide
+  russian_name: Будесонид
+  latin_name: Sol. Budesonidi 0,5 mg/ml - 2 ml (небула)
+  group: Глюкокортикостероид ингаляционный
+  mechanism:
+  - Ингибирует воспаление, связываясь с ГКС-рецепторами
+  - Уменьшает отек бронхов
+  indications:
+  - Бронхиальная астма
+  - ХОБЛ
+  dosages:
+    type: description_only
+    description:
+      - Ингаляционно, 1-2 мг
+      - СТАРШЕ 18 лет
+  pharmacokinetics:
+    onset: 10-30 минут после начала ингаляции
+    duration: 24 часа
+    half_life: 2-3 часа
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Активный ТБ
+  - Неактивная инфекция
+  side_effects:
+  - Оральный кандидоз
+  - Хрипота
+  - Кашель
+
+- id: valproic_acid
+  russian_name: Вальпроевая кислота, Конвулекс
+  latin_name: Sol. Acidi valproici 100 mg/ml - 5 ml
+  group: Антиконвульсанты
+  mechanism:
+  - Усиливает ингибиторную нейротрансмиссию путём повышения уровня ГАМК в мозге, ингибируя её деградацию и усиливая синтез
+  - Блокирует натриевые и кальциевые каналы, усиливает калиевые), подавляя чрезмерную нейрональную активность и предотвращая судороги
+  - Дополнительно влияет на гистондеацетилазы (HDAC), что может объяснять её эффекты мигрени
+  indications:
+  - Эпилепсия
+  - off-label - мигрень, лечение тревожных, аффективных и психотических расстройств
+  dosages:
+    type: simple_calculator
+    description: 
+    doses: [ '15' ]
+    default_dose: '15'
+    unit: мг/кг
+    max_dose: 1000
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 1 час
+    duration: 12-24 часа
+    half_life: 9-16 часов
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Гепатотоксичность
+  - Порфирия
+  side_effects:
+  - Тремор
+  - Гепатотоксичность
+  - Тромбоцитопения
+
+- id: verapamil
+  russian_name: Верапамил, Изоптин
+  latin_name: Sol. Verapamili 2,5 mg/ml - 2 ml
+  group: Антиаритмики
+  mechanism:
+  - Блокирует L-тип Ca-каналов
+  - Снижает ЧСС, расширяет сосуды
+  indications:
+  - Суправентрикулярная тахикардия
+  - Гипертония
+  dosages:
+    type: simple_calculator
+    description: ограничений нет
+    doses: [ '0.1' ]
+    default_dose: '0.1'
+    unit: мг/кг
+    max_dose: 5
+    max_dose_unit: 5 мг
+  pharmacokinetics:
+    onset: 2-3 минуты
+    duration: 10-20 минут
+    half_life: 3-7 часов
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - AV блокада
+  - Сердечная недостаточность
+  side_effects:
+  - Гипотония
+  - Брадикардия
+  - Запор
+  
+- id: galantamine
+  russian_name: Галантамин
+  latin_name: Sol. Galantamini 2,5 mg/ml - 1 ml
+  group: Антидоты, Ингибитор холинэстеразы
+  group_type: group_antidote
+  mechanism:
+  - Ингибирует АХЭ, повышая ацетилхолин
+  indications:
+  - Центральный холинолитический (антихолинэргический синдром) вследствие отравления средствами, блокирующими холинэргические рецепторы (атропин, настойка белладонны, противопаркинсонические препараты (циклодол, паркопан), антигистаминные препараты (димедрол), некоторые растения (дурман, белена) и другие препараты с сопутствующим центральным холинолитическим эффектом (трициклические антидепрессанты, клозапин)
+  - Отравление веществом типа BZ
+  - Деменция при болезни Альцгеймера
+  - Миастения (офф-лейбл)
+  dosages:
+    type: description_only
+    description:
+      - Внутривенно или внутримышечно 1-2 мл 0,25% раствора
+      - Действие препарата специфично, поэтому нивалин может использоваться с дифференциально-диагностической целью в случае психоза неясной этиологии, сопровождающегося симптомами, аналогичными холинолитическим
+      - Для детей старше 1 года
+      - С 1 года - 0.2 - 1 мг
+      - старше 5 лет - 5 мг
+  pharmacokinetics:
+    onset: 1 час
+    duration: 7 часов
+    half_life: 7 часов
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Бронхиальная астма
+  - Отравления ФОС и др. антихолинэстеразными веществами
+  - Нарушение ритма и проводимости сердца
+  side_effects:
+  - Тошнота
+  - Диарея
+  - Брадикардия
+
+- id: haloperidol
+  russian_name: Галоперидол
+  latin_name: Sol. Haloperidoli 5 mg/ml - 1 ml
+  group: Антипсихотик
+  mechanism:
+  - Блокирует D2-рецепторы
+  - Антипсихотическое действие
+  indications:
+  - Делирий
+  - Психоз
+  dosages:
+    type: simple_calculator
+    description: старше 3 лет
+    doses: [ '0.025', '0.05', '0.075']
+    default_dose: '0,025'
+    unit: мг/кг
+    max_dose: 5
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 10-30 минут
+    duration: 12-24 часа
+    half_life: 14-26 часов
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+    - Паркинсонизм
+    - Удлинённый интервал QT
+  side_effects:
+  - Экстрапирамидные симптомы
+  - Удлинение QT 
+  - Седативный эффект
+  
+- id: heparin
+  russian_name: Гепарин натрия
+  latin_name: Sol. Heparini 5000 ME/ml - 1ml
+  group: Антикоагулянты
+  mechanism:
+  - Усиливает антитромбин III, ингибируя тромбин
+  - Предотвращает тромбоз
+  indications:
+  - Тромбоз вен
+  - Инфаркт миокарда
+  dosages:
+    type: simple_calculator
+    description: п/к, возможно в/в введение
+    doses: [ '75' ]
+    default_dose: '75'
+    unit: ME/кг
+    min_dose: 5000
+    min_dose_unit: ME
+  pharmacokinetics:
+    onset: Немедленно
+    duration: 4-6 часов
+    half_life: 1-2 часа
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Кровотечение
+  - Тромбоцитопения
+  side_effects:
+  - Кровотечение
+  - Гепарин-индуцированная тромбоцитопения
+  - Остеопороз
+
+- id: enoxaparin
+  russian_name: Эноксапарин натрия, Эниксум, Клексан
+  latin_name: Sol. Enoxaparini natrii 4000 ME - 0,4 ml (Sol. Enixum 0,4 ml)
+  group: Антикоагулянты
+  mechanism:
+  - Ингибирует фактор Xa
+  - Антикоагулянт
+  indications:
+  - Профилактика ТГВ
+  - Нестабильная стенокардия
+  dosages:
+    type: simple_calculator
+    description: рекомендовано п/к введение
+    doses: [ '1' ]
+    default_dose: '1'
+    unit: мг/кг
+    min_dose: 30
+    min_dose_unit: мг
+  pharmacokinetics:
+    onset: 3-5 часов
+    duration: 12-24 часа
+    half_life: 4-5 часов
+    metabolism: Минимальный
+    elimination: Почки
+  contraindications:
+  - Активное кровотечение
+  - Тромбоцитопения
+  - Возраст до 18 лет
+  side_effects:
+  - Кровотечение
+  - Гематомы
+  - Тромбоцитопения
+
+- id: hetastarch
+  russian_name: ГЭК 6%
+  latin_name: Sol. Hydroxyaethylkrachmali 6% - 250 ml
+  group: Плазмозаменители
+  mechanism:
+  - Увеличивает объем плазмы
+  - Улучшает микроциркуляцию
+  indications:
+  - Гиповолемия
+  - Шок
+  dosages:
+    type: simple_calculator
+    description: В/в, 500-1000 мл
+    doses: [ '10', '15' ]
+    default_dose: '10'
+    unit: мл/кг
+    max_dose: 500
+    max_dose_unit: мл
+  pharmacokinetics:
+    onset: Немедленно
+    duration: 24 часа
+    half_life: 12-25 часов
+    metabolism: Разбавление
+    elimination: Почки
+  contraindications:
+  - Почечная недостаточность
+  - Коагулопатия
+  side_effects:
+  - Кровотечение
+  - Анафилаксия
+  - Острая почечная недостаточность
+
+- id: dexamethasone
+  russian_name: Дексаметазон
+  latin_name: Sol. Dexamethasoni 4 mg/ml - 1 ml
+  group: Глюкокортикостероиды
+  mechanism:
+  - Ингибирует воспаление
+  - Иммуносупрессор
+  indications:
+  - Шок
+  - Аллергия
+  - Отек мозга
+  dosages:
+    type: simple_calculator_with_ml
+    description: в/в или в/м
+    mg_dosages:
+      doses: [ '0.2', '0.4', '0.6', '0.8', '1', '1.2' ]
+      default_dose: '0.2'
+      unit: мг/кг
+    ml_dosages:
+      doses: [ '0.05', '0.1', '0.15', '0.2', '0.25', '0.3']
+      default_dose: '0.05'
+      unit: мл/кг
+    max_dose: 4
+    max_dose_unit: мл
+  pharmacokinetics:
+    onset: 1 час
+    duration: 36-72 часа
+    half_life: 36-54 часа
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Системные грибковые инфекции
+  side_effects:
+  - Гипергликемия
+  - Гипертония
+  - Остеопороз
+
+- id: dextran
+  russian_name: Декстран
+  latin_name: Dextran
+  group: Плазмозаменитель
+  mechanism:
+  - Увеличивает объем плазмы
+  - Улучшает реологию крови
+  indications:
+  - Шок
+  - Гиповолемия
+  dosages:
+    type: simple_calculator
+    description: В/в, 500-1000 мл
+    doses: [ '10', '20' ]
+    default_dose: '10'
+    unit: мл/кг
+    max_dose: 500
+    max_dose_unit: мл
+  pharmacokinetics:
+    onset: Немедленно
+    duration: 12-24 часа
+    half_life: 24 часа
+    metabolism: Нет
+    elimination: Почки
+  contraindications:
+  - Почечная недостаточность
+  - Тромбоцитопения
+  side_effects:
+  - Анафилаксия
+  - Кровотечение
+  - Острая почечная недостаточность
+
+- id: dextrose
+  russian_name: Декстроза
+  latin_name: Sol. Glucosae 5% - 250 ml, 10% - 500 ml, 400 mg/ml - 10 ml
+  group: Глюкоза
+  group_type: group_antidote
+  mechanism:
+  - Участие в метаболических процессах - после поступления в ткани (например, при внутривенном введении) декстроза фосфорилируется до глюкозо-6-фосфата, который включается в гликолиз, цикл Кребса и другие пути обмена веществ, обеспечивая производство АТФ и субстратное пополнение энергозатрат
+  - Гипертонические растворы (10–40%) повышают осмотическое давление крови, способствуя мобилизации жидкости из тканей в сосудистое русло и поддержанию объёма циркулирующей плазмы
+  - В комбинациях с инсулином стимулирует захват калия клетками
+  indications:
+  - Отравление сахаропонижающими препаратами, синильной кислотой, цианидами (образование нетоксичного циангидрина при соединении с синильной кислотой и цианидами глюкозы и некоторых продуктов ее окисления)
+  - Метгемоглобинемия (способствует восстановлению метгемоглобина в гемоглобин)
+  - Гипогликемия
+  dosages:
+    type: simple_calculator
+    description: при отравлениях - 5%, 10%, 20% растворы - до 400 мл внутривенно капельно или 40% раствор до 100 мл внутривенно струйно
+    doses: [ '1', '2', '3', '4', '5' ]
+    default_dose: '2'
+    unit: мл/кг
+    max_dose: 500
+    max_dose_unit: мл
+    max_dose_antidote: 5%, 10%, 20% растворы - до 400 мл внутривенно капельно или 40% раствор до 100 мл внутривенно струйно
+  pharmacokinetics:
+    onset: Немедленно
+    duration: Зависит от дозы
+    half_life: Не применимо
+    metabolism: Гликолиз
+    elimination: Почки
+  contraindications:
+  - Гипергликемия
+  side_effects:
+  - Гипергликемия
+  - Гиперосмолярность
+
+- id: dmps
+  russian_name: Димеркаптопропансульфонат натрия, Унитиол
+  latin_name: Sol. Unithiol 50 mg/ml - 5 ml
+  group: Антидоты
+  group_type: group_antidote
+  mechanism:
+  - Хелатирует тяжелые металлы
+  - Выводит через мочу
+  indications:
+  - Отравление соединениями тяжёлых металлов (за исключением свинца - Pb), мышьяка, сурьмы, отравляющим веществом люизит
+  - В качестве средства патогенетической терапии при отравлении веществами кардиотоксического действия (первичный кардиотоксический эффект)
+  dosages:
+    type: description_only
+    description:
+      - 5-10 мл 5% водного раствора внутримышечно или внутривенно капельно в растворах глюкозы (5%, 10%)
+      - При пероральном отравлении 20-30 мл 5% раствора в начале и в конце зондового промывания желудка
+  pharmacokinetics:
+    onset: 30 минут
+    duration: 6-8 часов
+    half_life: 20 часов
+    metabolism: Нет
+    elimination: Почки
+  contraindications:
+  - Аллергия к препарату
+  side_effects:
+  - Тошнота
+  - Металлический вкус
+  - Гипотония
+
+- id: diphenhydramine
+  russian_name: Дифенгидрамин, Димедрол
+  latin_name: Sol. Diphenhydramini 10 mg/ml - 1 ml, Sol. Dimedroli 10 mg/ml - 1 ml
+  group: Антигистаминные средтва
+  mechanism:
+  - Блокирует H1-рецепторы
+  - Антиаллергическое, седативное
+  indications:
+  - Аллергия
+  - Анафилаксия
+  - Бессонница
+  dosages:
+    type: description_only
+    description:
+      - 7 - 12 месяцев - 0,3-0,5 мл (3 - 5 мг)
+      - 1 - 3 года - 0,5 - 1,0 мл (5 - 10 мг); 
+      - с 4 лет не более 1 мл (10 мг)
+  pharmacokinetics:
+    onset: 15-30 минут
+    duration: 4-6 часов
+    half_life: 4-8 часов
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Глаукома
+  - Гиперплазия простаты
+  side_effects:
+  - Сонливость
+  - Сухость во рту
+  - Тахикардия
+
+- id: drotaverine
+  russian_name: Дротаверин
+  latin_name: Sol. Drotaverini 20 mg/ml - 2 ml
+  group: Спазмолитики
+  mechanism:
+  - Ингибирует фосфодиэстеразу, повышая цАМФ
+  - Расслабляет гладкую мускулатуру
+  indications:
+  - Спазмы ЖКТ
+  - Билиарная колика
+  dosages:
+    type: simple_calculator
+    description: предпочтительно в/м введение
+    doses: [ '1' ]
+    default_dose: '1'
+    unit: мг/кг
+    max_dose: 40
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 10-15 минут
+    duration: 4-6 часов
+    half_life: 4 часа
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - детский возраст до 18 лет (ТОЛЬКО СТАРШЕ 18 ЛЕТ)
+  - AV-блокада
+  - Гипотония
+  side_effects:
+  - Головокружение
+  - Тахикардия
+  - Сухость во рту
+
+- id: isosorbide_dinitrate
+  russian_name: Изосорбида динитрат, Изокет
+  latin_name: Sol. Isosorbidi dinitri 1/2 doze
+  group: Нитрат
+  mechanism:
+  - Высвобождает NO, расслабляя гладкую мускулатуру сосудов
+  - Венодилататор
+  indications:
+  - Стенокардия
+  - Гипертония
+  dosages:
+    type: description_only
+    description:
+      - распылить 2 дозы сублингвально
+  pharmacokinetics:
+    onset: 2-5 минут
+    duration: 30-60 минут
+    half_life: 1-4 часа
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Возраст до 18 лет
+  - Гипотония
+  - Глаукома
+  side_effects:
+  - Головная боль
+  - Гипотония
+  - Тахикардия
+
+- id: cytoflavin
+  russian_name: Инозин + никотинамид + рибофлавин + янтарная кислота, Цитофлавин
+  latin_name: Sol. Cytoflavin 100 mg/ml - 10 ml
+  group: Метаболические средства
+  mechanism:
+  - Улучшает клеточный метаболизм
+  - Антиоксидант
+  indications:
+  - Цереброваскулярная недостаточность
+  - Гипоксия
+  dosages:
+    type: description_only
+    description:
+      - в/в медленное введение
+  pharmacokinetics:
+    onset: 30 минут
+    duration: 6 часов
+    half_life: Варьирует
+    metabolism: Клеточный
+    elimination: Метаболизм
+  contraindications:
+  - Возраст до 18 лет
+  - Гиперчувствительность
+  side_effects:
+  - Тошнота
+  - Аллергия
+
+- id: ipratropium
+  russian_name: Ипратропия бромид + фенотерол, Беродуал
+  latin_name: Sol. Berodual
+  group: Бронходилататоры
+  mechanism:
+  - Блокирует м-холинорецепторы
+  - Расслабляет бронхи
+  indications:
+  - ХОБЛ
+  - Бронхоспазм
+  dosages:
+    type: description_only
+    description:
+      - до 6 лет - 1 капля/кг веса не более 10 капель
+      - старше 6 лет - до 20 капель
+  pharmacokinetics:
+    onset: 15 минут
+    duration: 3-5 часов
+    half_life: 2 часа
+    metabolism: Минимальный
+    elimination: Почки
+  contraindications:
+  - Глаукома
+  - Гипертрофия простаты
+  side_effects:
+  - Сухость во рту
+  - Кашель
+  - Головная боль
+
+- id: panangin
+  russian_name: Калия и магния аспарагинат, КМА
+  latin_name: Sol. Kalii asparagini et Magnii asparagini 250 ml
+  group: Электролиты
+  mechanism:
+  - Восполняет K и Mg
+  - Улучшает сердечный ритм
+  indications:
+  - Аритмии
+  - Гипокалиемия
+  dosages:
+    type: description_only
+    description:
+      - внутривенно капельно
+  pharmacokinetics:
+    onset: Немедленно
+    duration: Зависит от дефицита
+    half_life: Не применимо
+    metabolism: Нет
+    elimination: Почки
+  contraindications:
+  - Гиперкалиемия
+  - Почечная недостаточность
+  - Возраст до 18 лет
+  side_effects:
+  - Гиперкалиемия
+  - Тошнота
+
+- id: calcium_gluconate
+  russian_name: Кальция глюконат
+  latin_name: Sol. Calcii gluconati 100 mg/ml - 10 ml
+  group: Электролиты
+  mechanism:
+  - Стабилизирует мембраны
+  - Антидот для Mg
+  indications:
+  - Гипокальциемия
+  - Передозировка Mg
+  - Передозировка Дротаверином
+  dosages:
+    type: description_only
+    description:
+      - до 14 лет не более 5 мл в/в медленно
+      - с 14 лет - 10 мл в/в медленно
+  pharmacokinetics:
+    onset: 5 минут
+    duration: 30 минут
+    half_life: 5 часов
+    metabolism: Нет
+    elimination: Почки
+  contraindications:
+  - Гиперкальциемия
+  - Камни в почках
+  side_effects:
+  - Брадикардия
+  - Гиперкальциемия
+
+- id: captopril
+  russian_name: Каптоприл, Капотен
+  latin_name: Tab. Captoprili 25 mg
+  group: Гипотензивные средства
+  mechanism:
+  - Ингибирует АПФ, снижая ангиотензин II
+  - Вазодилататор
+  indications:
+  - Гипертонический криз
+  - Гипертония
+  pharmacokinetics:
+    onset: 15 минут
+    duration: 6-8 часов
+    half_life: 2 часа
+    metabolism: Минимальный
+    elimination: Почки
+  contraindications:
+  - Беременность
+  - Стеноз почечной артерии
+  side_effects:
+  - Кашель
+  - Гипотония
+  - Ангиоотек
+
+- id: ketamine
+  russian_name: Кетамин
+  latin_name: Sol. Ketamini 50 mg/ml - 2 ml
+  group: Диссоциативный анестетик
+  mechanism:
+    - Неконкурентный антагонист NMDA-рецепторов, блокируя их и вызывая диссоциативную анестезию, при которой пациент ощущает отстранённость от тела
+    - Взаимодействует с опиоидными рецепторами (частичным агонистом мю-рецепторов), моноаминергическими и мускариновыми рецепторами, блокируя каналы Ca2+ и HCN1-рецепторы
+    - Стимулирует сердечно-сосудистую и дыхательную системы, сохраняя рефлексы глотки и гортани
+  indications:
+    - RSI
+    - Боль
+  dosages:
+    type: simple_calculator
+    description: В/в, 1-2 мг/кг
+    doses: [ '1', '2' ]
+    default_dose: '1'
+    unit: мг/кг
+    max_dose: 100
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 30 секунд
+    duration: 5-10 минут
+    half_life: 2-3 часа
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+    - Гипертония
+    - Психоз
+  side_effects:
+    - Галлюцинации
+    - Гипертония
+    - Слюнотечение
+
+- id: ketorolac
+  russian_name: Кеторолак
+  latin_name: Sol. Ketoroli 30 mg/ml - 1 ml
+  group: НПВС
+  mechanism:
+  - Ингибирует ЦОГ, снижая простагландины
+  - Анальгетик
+  indications:
+  - Боль любой этиологии средней интенсивности
+  pharmacokinetics:
+    onset: 30 минут
+    duration: 4-6 часов
+    half_life: 5 часов
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Возраст до 16 лет
+  - Язва
+  - Почечная недостаточность
+  side_effects:
+  - Кровотечение
+  - Диспепсия
+  - Гепатотоксичность
+
+- id: clonidine
+  russian_name: Клонидин
+  latin_name: Sol. Clonidini 0,1 mg/ml - 1 ml
+  group: Гипотензивные средства
+  mechanism:
+  - Стимулирует центральные альфа-2 рецепторы
+  - Снижает симпатическую активность
+  indications:
+  - Гипертонический криз
+  pharmacokinetics:
+    onset: 30-60 минут
+    duration: 6-8 часов
+    half_life: 12-16 часов
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Возраст до 18 лет
+  - Брадикардия
+  - AV-блокада
+  side_effects:
+  - Сухость во рту
+  - Сонливость
+  - Гипотония
+
+- id: clopidogrel
+  russian_name: Клопидогрел
+  latin_name: Tab. Clopidogreli 75 mg
+  group: Антиагреганты
+  mechanism:
+  - Ингибирует P2Y12 рецепторы
+  - Предотвращает агрегацию тромбоцитов
+  indications:
+  - Профилактика тромбоза после стентирования
+  pharmacokinetics:
+    onset: 2 часа
+    duration: 5-7 дней
+    half_life: 6 часов
+    metabolism: Печень (CYP2C19)
+    elimination: Почки
+  contraindications:
+  - Возраст до 18 лет
+  - Кровотечение
+  side_effects:
+  - Кровотечение
+  - Диспепсия
+  - Диарея
+
+- id: lidocaine
+  russian_name: Лидокаин
+  latin_name: Sol. Lidocaini 20 mg/ml - 2 ml
+  group: Антиаритмики, местный анестетик
+  mechanism:
+  - Блокирует Na-каналы
+  - Подавляет аритмии
+  indications:
+  - Желудочковые аритмии
+  - Локальная анестезия
+  dosages:
+    type: simple_calculator
+    description: В/в, 1-1.5 мг/кг болюсно
+    doses: [ '1', '1.5' ]
+    default_dose: '1'
+    unit: мг/кг
+    max_dose: 40
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 45 секунд
+    duration: 10-20 минут
+    half_life: 1.5-2 часа
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - AV блокада
+  - Синдром Адамса-Стокса
+  side_effects:
+  - Токсичность ЦНС (судороги)
+  - Брадикардия
+
+- id: magnesium_sulfate
+  russian_name: Магния сульфат
+  latin_name: Sol Magnesii sulfas 250 mg/ml - 10 ml
+  group: Электролиты
+  mechanism:
+  - Блокирует Ca-каналы
+  - Расслабляет мышцы
+  indications:
+  - Эклампсия
+  - Тахиаритмии
+  dosages:
+    type: simple_calculator
+    description: в/в введение, медленно
+    doses: [ '50' ]
+    default_dose: '50'
+    unit: мг/кг
+    max_dose: 2400
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 1 час
+    duration: 24 часа
+    half_life: 4 часа
+    metabolism: Нет
+    elimination: Почки
+  contraindications:
+  - Миастения
+  - AV блокада
+  side_effects:
+  - Гипотензия
+  - Дыхательная депрессия
+  - Потеря рефлексов
+
+- id: meglumini
+  russian_name: Меглюмина натрия сукцинат, Реамберин
+  latin_name: Sol. Meglumini natrii succinatis 1,5% - 500 ml
+  group: Антиоксиданты
+  mechanism:
+  - Мембраностабилизирующее
+  - Антигипоксическое
+  indications:
+  - Церебральная ишемия
+  - Отравления
+  dosages:
+    type: simple_calculator
+    description: в/в капельно
+    doses: [ '10' ]
+    default_dose: '10'
+    unit: мл/кг
+    max_dose: 500
+    max_dose_unit: мл
+  pharmacokinetics:
+    onset: 30 минут
+    duration: 6 часов
+    half_life: 2-3 часа
+    metabolism: Нет
+    elimination: Почки
+  contraindications:
+  - Гиперчувствительность
+  side_effects:
+  - Тошнота
+  - Сухость во рту
+
+- id: analgin
+  russian_name: Метамизол натрия, Анальгин
+  latin_name: Sol. Metamizoli natrii 500 mg/ml - 2 ml
+  group: НПВС
+  mechanism:
+  - Ингибирует ЦОГ в ЦНС
+  - Анальгетик, спазмолитик
+  indications:
+  - Боль
+  - Лихорадка
+  dosages:
+    type: simple_calculator_with_ml
+    description: в/в или в/м
+    mg_dosages:
+      doses: [ '10']
+      default_dose: '10'
+      unit: мг/кг
+    ml_dosages:
+      doses: [ '0.02']
+      default_dose: '0.02'
+      unit: мл/кг
+    max_dose: 2
+    max_dose_unit: мл
+  pharmacokinetics:
+    onset: 20-30 минут
+    duration: 4-6 часов
+    half_life: 2-3 часа
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Агранулоцитоз в анамнезе
+  side_effects:
+  - Агранулоцитоз
+  - Аллергия
+  - Тошнота
+
+- id: spasmalini
+  russian_name: Метамизол натрия + питофенон + фенпивериния бромид, Спазмалин, Спазматен
+  latin_name: Sol. Metamizoli natrii+ Pitofenoni+ Fenpiverini bromidi 5 ml
+  group: Спазмалитики
+  mechanism:
+  - Метамизол натрия - неопиоидный анальгетик, ингибитор синтеза простагландинов, обладающий аналгезирующим, жаропонижающим и слабым противовоспалительным эффектом
+  - Питофенон - миотропный спазмолитик, расслабляет гладкую мускулатуру внутренних органов за счёт прямого влияния на клетки мышц
+  - Фенпивериния бромид - М-холиноблокатор, снижает тонус гладких мышц, обладает антихолинергическим эффектом, усиливая спазмолитическое действие
+  - Комбинация обеспечивает синергетический эффект - аналгезию, спазмолиз и снижение воспаления
+  indications:
+  - болевой синдром спастического харакетера
+  dosages:
+    type: description_only
+    description:
+      - Только с 3 месяцев. При необходимости можно повторно ввести разовую дозу.
+      - С 3-11 мес - 0,1 мл
+      - 1 - 4 года - 0,2 мл 
+      - 8 - 11 лет - 0,4 мл
+      - 12 - 14 лет - 0,8 мл
+  pharmacokinetics:
+    onset: 20-30 минут
+    duration: 4-6 часов
+    half_life: 2-3 часа
+    metabolism: Печень (CYP-450)
+    elimination: Почки
+  contraindications:
+   - Гиперчувствительность
+  side_effects:
+  - Гипотония
+  - Тошнота
+
+- id: metoclopramide
+  russian_name: Метоклопрамид, Церукал
+  latin_name: Sol. Metoclopramidi 5 mg/ml - 2 ml
+  group: Антиэметики
+  mechanism:
+  - блокирует D2-рецепторы в хеморецепторной триггерной зоне мозга, подавляя рвотный центр, и усиливает высвобождение ацетилхолина в ЖКТ за счёт антагонизма D2 и агонизма 5-HT4-рецепторов, что повышает тонус и моторику желудка и кишечника (увеличивает перистальтику, расслабляет пилорический сфинктер)
+  indications:
+  - Тошнота/рвота
+  - Гастропарез
+  dosages:
+    type: simple_calculator_with_ml
+    description: 
+      - максимальная доза до 12 лет - 1 мл
+      - максимальная доза с 12 лет - 2 мл
+    mg_dosages:
+      doses: [ '0.1']
+      default_dose: '0.1'
+      unit: мг/кг
+    ml_dosages:
+      doses: [ '0.02']
+      default_dose: '0.02'
+      unit: мл/кг
+    max_dose: 2
+    max_dose_unit: мл
+  pharmacokinetics:
+    onset: 1-3 минуты
+    duration: 1-2 часа
+    half_life: 4-6 часов
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Эпилепсия
+  - Феохромоцитома
+  side_effects:
+  - Экстрапирамидные симптомы
+  - Сонливость
+  - Тахикардия
+
+- id: metoprolol
+  russian_name: Метопролол
+  latin_name: Sol. Metoprololi 1 mg/ml - 5 ml
+  group: Антиаритмики
+  mechanism:
+  - Блокирует β1-рецепторы
+  - Снижает ЧСС и АД
+  indications:
+  - Суправентрикулярная тахикардия
+  - Гипертония
+  dosages:
+    type: description_only
+    description:
+      - в/в введение под контролем ЭКГ
+  pharmacokinetics:
+    onset: 5 минут
+    duration: 5-8 часов
+    half_life: 3-7 часов
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Брадикардия
+  - Бронхиальная астма
+  side_effects:
+  - Брадикардия
+  - Гипотония
+  - Усталость
+
+- id: midazolam
+  russian_name: Мидазолам
+  latin_name: Sol. Midazolami 5 mg/ml - 1 ml
+  group: Бензодиазепины
+  mechanism:
+  - Усиливает ГАМК
+  - Седативное, анксиолитик
+  indications:
+  - Седация
+  - Судороги
+  dosages:
+    type: simple_calculator
+    description: В/в, 0.02-0.1 мг/кг
+    doses: [ '0.3', '0.4', '0.5' ]
+    default_dose: '0.3'
+    unit: мг/кг
+    max_dose: 5
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 1-5 минут
+    duration: 1-6 часов
+    half_life: 1-4 часа
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Гипотония тяжелая
+  - Закрытоугольная глаукома
+  side_effects:
+  - Дыхательная депрессия
+  - Гипотония
+  - Амнезия
+
+- id: moxonidine
+  russian_name: Моксонидин
+  latin_name: Sol. Moxonidini 0,4 mg
+  group: Гипотензивные средства
+  mechanism:
+  - Агонист имидазолиновых рецепторов
+  - Снижает АД
+  indications:
+  - Гипертония
+  dosages:
+    type: description_only
+    description:
+      - стартовая терапия с 0,2 мг внутрь 
+      - макимальная суточная доза 0,6 мг
+  pharmacokinetics:
+    onset: 1 час
+    duration: 24 часа
+    half_life: 2-3 часа
+    metabolism: Минимальный
+    elimination: Почки
+  contraindications:
+  - Возраст до 18 лет
+  - Брадикардия
+  - Сердечная недостаточность
+  side_effects:
+  - Сухость во рту
+  - Сонливость
+  - Головная боль
+
+- id: morphine
+  russian_name: Морфин
+  latin_name: Sol. Morphini 10 mg/ml - 1 ml
+  group: Опиоидные анальгетики
+  mechanism:
+  - Агонист μ-опиоидных рецепторов
+  - Анальгетик, седативное
+  indications:
+  - Инфаркт миокарда
+  dosages:
+    type: simple_calculator_with_ml
+    description: в/в или в/м
+    mg_dosages:
+      doses: [ '0.1, 0.2' ]
+      default_dose: '0.1'
+      unit: мг/кг
+    ml_dosages:
+      doses: [ '0.01', '0.02']
+      default_dose: '0.01'
+      unit: мл/кг
+    max_dose: 1
+    max_dose_unit: мл
+  pharmacokinetics:
+    onset: 5 минут
+    duration: 3-4 часа
+    half_life: 2-3 часа
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Дыхательная депрессия
+  - Черепно-мозговая травма
+  side_effects:
+  - Дыхательная депрессия
+  - Тошнота
+  - Сонливость
+
+- id: naloxone
+  russian_name: Налоксон
+  latin_name: Sol. Naloxoni 0,4 mg/ml - 1 ml
+  group: Антидоты
+  group_type: group_antidote
+  mechanism:
+  - Конкурентно блокирует опиоидные рецепторы
+  - Реверс опиоидной депрессии
+  indications:
+  - Отравление наркотиками группы опия, опиоидами, в т.ч. синтетическими, антидиарейным средством (имодиум), 
+  dosages:
+    type: simple_calculator
+    description: в/в болюсно. Внутривенно 1-2 мл (0,4-0,8 мг) раствора при необходимости (нестойкий эффект восстановления дыхания) повторно с промежутками 10-15 минут. Детям (начальная доза) - 0,005-0,01 мг/кг. Следует избегать введения больших доз наркозависимым пациентам из-за возможности развития абстиненции
+    doses: [ '0.005', '0.01' ]
+    default_dose: '0.01'
+    unit: мг/кг
+    max_dose: 0.4
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 1-2 минуты
+    duration: 30-81 минута
+    half_life: 30-81 минута
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Выраженная гипоксия, сопровождающаяся нарушением дыхания, аспирацией, наркотическая абстиненция
+  side_effects:
+  - Введение налоксона на фоне гипоксической энцефалопатии может привести к ухудшению состояния (судороги, отёк головного мозга) с последующим отёком легких некардиогенного происхождения
+  - Синдром отмены
+  - Тахикардия
+  - Гипертония
+
+- id: sodium_bicarbonate
+  russian_name: Натрия гидрокарбонат
+  latin_name: Sol. Natrii hydrocarbonatis 5% - 200 ml
+  group: Антидоты
+  group_type: group_antidote
+  mechanism:
+  - Нейтрализует кислоту, повышая pH
+  - Коррекция ацидоза
+  indications:
+  - Метаболический ацидоз при отравлении метанолом, этиленгликолем, уксусной кислотой
+  - При отравлении трициклическими антидепрессантами, блокаторами кальциевых каналов
+  dosages:
+    type: description_only
+    description:
+      - Внутривенно капельно 200-300 мл 4% раствора
+  pharmacokinetics:
+    onset: Немедленно
+    duration: 10 минут
+    half_life: 10 минут
+    metabolism: Нет
+    elimination: Почки/легкие
+  contraindications:
+  - Не установлены
+  side_effects:
+  - Гипернатриемия
+  - Гипокалиемия
+  - Переполнение жидкостью
+
+- id: sodium_thiosulfate
+  russian_name: Натрия тиосульфат
+  latin_name: Sol. Natrii thiosulfatis 300 mg/ml - 10 ml
+  group: Антидоты
+  group_type: group_antidote
+  mechanism:
+  - Донор серы для роданазы, детоксифицирует цианиды
+  - Образование соединений (тиоцианатов) с цианид-ионами
+  - Образование соединений с тяжелыми металлами и мышьяком за счет тропности последних к атомам серы
+  indications:
+  - Отравления синильной кислотой, цианидами, соединениями тяжелых металлов, мышьяка и сурьмы
+  dosages:
+    type: description_only
+    description:
+      - Внутривенно капельно 10-20 мл 30% раствора в 5 или 10% растворе декстрозы
+  pharmacokinetics:
+    onset: 5 минут
+    duration: 3 часа
+    half_life: 20 минут
+    metabolism: Нет
+    elimination: Почки
+  contraindications:
+  - Нет данных за 
+  side_effects:
+  - Тошнота
+  - Гипотония
+
+- id: sodium_chloride
+  russian_name: Натрия хлорид
+  latin_name: Sol. Natrii Cloridi 0,9% - 250 ml
+  group: Раствор для инфузий
+  mechanism:
+  - Восполняет объем
+  - Электролит
+  indications:
+  - Гиповолемия
+  - Дегидратация
+  dosages:
+    type: simple_calculator
+    description: в/в введение
+    doses: [ '20', '20' ]
+    default_dose: '10'
+    unit: мл/кг
+    max_dose: 250
+    max_dose_unit: мл
+  pharmacokinetics:
+    onset: Немедленно
+    duration: Зависит от объема
+    half_life: Не применимо
+    metabolism: Нет
+    elimination: Почки
+  contraindications:
+  - Гиперхлоремия
+  - Сердечная недостаточность
+  side_effects:
+  - Гиперхлоремический ацидоз
+  - Переполнение
+
+- id: nifedipine
+  russian_name: Нифедипин
+  latin_name: Tab. Nifedipini 10 mg
+  group: Гипотензивные
+  mechanism:
+  - Блокирует L-тип Ca-каналов
+  - Вазодилататор
+  indications:
+  - Гипертонический криз
+  pharmacokinetics:
+    onset: 20 минут
+    duration: 4-6 часов
+    half_life: 2-5 часов
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Возраст до 18 лет (относительно)
+  - Стеноз аорты
+  - Сердечная недостаточность
+  side_effects:
+  - Гипотония
+  - Тахикардия
+  - Отек лодыжек
+
+- id: oxytocin
+  russian_name: Окситоцин
+  latin_name: Sol. Oxytocini 5 ME/ml - 1 ml
+  group: Гормон
+  mechanism:
+  - Стимулирует сокращения матки
+  - Усиливает лактацию
+  indications:
+  - Послеродовое кровотечение
+  - Индукция родов
+  pharmacokinetics:
+    onset: 1 минута
+    duration: 1 час
+    half_life: 3-5 минут
+    metabolism: Печень/почки
+    elimination: Почки
+  contraindications:
+  - Возраст до 18 лет (относительно)
+  - Гипертония
+  - Фетальный дистресс
+  side_effects:
+  - Гиперстимуляция матки
+  - Гипотония
+  - Тахикардия
+
+- id: paracetamol
+  russian_name: Парацетамол, Ацетаминофен
+  latin_name: Tab. Paracetamoli 500 mg
+  group: НПВС
+  mechanism:
+  - Ингибирует циклооксигеназу (ЦОГ) преимущественно в ЦНС, снижая синтез простагландинов, ответственных за боль и лихорадку
+  - Дополнительные механизмы включают активацию серотониновых путей (5-HT3-рецепторы) и влияние на эндоканнабиноидную систему
+  - Активны вероятно только его метаболиты
+  indications:
+  - Боль
+  - Лихорадка
+  dosages:
+    type: simple_calculator
+    description: Старше 1 месяца
+    doses: [ '15' ]
+    default_dose: '15'
+    unit: мг/кг
+    max: 500
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 30 минут (max. 30-60 мин при per os приёме)
+    duration: 4-6 часов
+    half_life: 2-3 часа
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Гепатотоксичность
+  side_effects:
+  - Гепатотоксичность (передозировка)
+  - Кожная сыпь
+
+- id: vecuronium
+  russian_name: Пипекурония бромид
+  latin_name: Sol. Pipecuronii bromidi 4 mg
+  group: Миорелаксанты
+  mechanism:
+  - Конкурентный блокатор N-рецепторов
+  - Расслабляет скелетные мышцы
+  indications:
+  - Интубация
+  - Хирургия
+  dosages:
+    type: simple_calculator
+    description: В/в, 0.08-0.1 мг/кг
+    doses: [ '0.08' ]
+    default_dose: '0.08'
+    unit: мг/кг
+    min_dose: 4
+    min_dose_unit: мг
+  pharmacokinetics:
+    onset: 2-3 минуты
+    duration: 25-40 минут
+    half_life: 1 час
+    metabolism: Минимальный
+    elimination: Печень/почки
+  contraindications:
+  - Миастения
+  side_effects:
+  - Гипотермия
+  - Гипотония
+
+- id: pyridoxine
+  russian_name: Пиридоксин
+  latin_name: Sol. Pyridoxini 50 mg/ml - 1 ml
+  group: Антидоты, Витамины
+  group_type: group_antidote
+  mechanism:
+  - Кофермент в метаболизме аминокислот
+  - Антидот для изониазида
+  indications:
+  - Отравление противотуберкулезными препаратами группы изониазида (тубазид, фтивазид, изониазид и др.), сероуглеродом, гидразином, дитиокарбаматами
+  dosages:
+    type: description_only
+    description:
+      - Внутривенно или внутримышечно 5-10 мл 5% раствора
+      - В тяжёлых случаях 25 мг/кг (¼ дозы внутривенно и ¾ внутримышечно) 
+      - 0,1 мл/год жизни (для детей при применении вне отравления)
+  pharmacokinetics:
+    onset: 15 минут
+    duration: 8 часов
+    half_life: 15-20 дней
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Аллергия к препарату
+  side_effects:
+  - Нейропатия (высокие дозы)
+
+- id: platyphylline
+  russian_name: Платифиллин
+  latin_name: Sol. Platyphyllini 2 mg/ml - 1 ml
+  group: Спазмолитики
+  mechanism:
+  - Блокирует м-холинорецепторы и оказывает прямое релаксирующее влияние на гладкие мышцы
+  - Расширяет сосуды, понижает тонус гладкой мускулатуры желчных протоков и желчного пузыря, бронхов, вызывает мидриаз
+  indications:
+  - спазмолитик
+  dosages:
+    type: calculator_link_onpage
+    calculator: CalcPlatyphylline
+  contraindications:
+  - Глаукома
+  - Почечаня и/или печёночная недостаточность
+  - Миастения
+  pharmacokinetics:
+    onset: 7-10 минут
+    duration: до 6 часов
+    half_life: 2-4 часа
+    metabolism: печёночный
+    elimination: печень, почки
+  side_effects:
+  - Тахикардия
+  - Гипотония
+  - Бронхоспазм
+  - Сыпь
+
+- id: prednisolone
+  russian_name: Преднизолон
+  latin_name: Sol. Prednisoloni 30 mg/ml - 1 ml
+  group: Глюкокортикостероиды
+  mechanism:
+  - Ингибирует воспаление
+  - Иммуносупрессор
+  indications:
+  - Шок
+  - Аллергия
+  dosages:
+    type: simple_calculator_with_ml
+    description: внутривенно или внутримышечно
+    mg_dosages:
+      doses: [ '1', '2', '3']
+      default_dose: '1'
+      unit: мг/кг
+    ml_dosages:
+      doses: [ '0.03','0.05','0.1' ]
+      default_dose: '0.03'
+      unit: мл/кг
+    max_dose: 3
+    max_dose_unit: мл
+  pharmacokinetics:
+    onset: 1 час
+    duration: 12-36 часов
+    half_life: 2-4 часа
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Системные инфекции
+  side_effects:
+  - Гипергликемия
+  - Гипертония
+
+- id: procaine
+  russian_name: Прокаин
+  latin_name: Sol. Procaine 5 mg/ml - 5 ml
+  group: Местный анестетик
+  mechanism:
+  - Блокирует Na-каналы
+  - Локальная анестезия
+  indications:
+  - Инфильтрационная анестезия
+  dosages:
+    type: simple_calculator
+    description: Инфильтрационно, 1% раствор
+    doses: [ '7' ]
+    default_dose: '7'
+    unit: мг/кг
+    min_dose: 300
+    min_dose_unit: мг
+  pharmacokinetics:
+    onset: 2-5 минут
+    duration: 30-60 минут
+    half_life: 1 минута
+    metabolism: Плазма (псевдохолинэстераза)
+    elimination: Почки
+  contraindications:
+  - Аллергия
+  - Блокада сердца
+  side_effects:
+  - Токсичность ЦНС
+  - Метгемоглобинемия
+
+- id: procainamide
+  russian_name: Прокаинамид, Новокаинамид
+  latin_name: Sol. Procainamide 100 mg/ml - 5 ml
+  group: Антиаритмики
+  mechanism:
+  - Блокирует Na-каналы
+  - Удлиняет реполяризацию
+  indications:
+  - Желудочковые аритмии
+  dosages:
+    type: simple_calculator
+    description: внутривенно медленно под контролем АД
+    doses: [ '10 мг/кг' ]
+    default_dose: '10'
+    unit: мг/кг
+    max_dose: 1000
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 1 минута
+    duration: 3-6 часов
+    half_life: 3 часа
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - AV блокада
+  - СЛЭ
+  side_effects:
+  - ЛУП
+  - Аритмии
+  - Гипотония
+
+- id: salbutamol
+  russian_name: Сальбутамол
+  latin_name: Sol. Salbutamol 1 mg/ml - 2.5 ml
+  group: β2-агонист
+  mechanism:
+  - Активирует β2-рецепторы
+  - Бронходилататор
+  indications:
+  - Бронхоспазм
+  - Астма
+  dosages:
+    type: simple_calculator
+    description: Ингаляционно, 2.5 мг
+    doses: [ '0.04' ]
+    default_dose: '0.04'
+    unit: мг/кг
+    min_dose: 2.5
+    min_dose_unit: мг
+  pharmacokinetics:
+    onset: 5 минут
+    duration: 4-6 часов
+    half_life: 3-6 часов
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Тахиаритмия
+  side_effects:
+  - Тахикардия
+  - Тремор
+  - Гипокалиемия
+- id: streptomycin
+  russian_name: Стрептомицин
+  latin_name: Streptomycin 1 g
+  group: Аминогликозид
+  mechanism:
+  - Ингибирует синтез белка
+  - Бактерицидный
+  indications:
+  - Туберкулез
+  - Чума
+  dosages:
+    type: simple_calculator
+    description: В/м, 15 мг/кг/сут
+    doses: [ '15' ]
+    default_dose: '15'
+    unit: мг/кг
+    min_dose: 1
+    min_dose_unit: г
+  pharmacokinetics:
+    onset: 1-2 часа
+    duration: 8-12 часов
+    half_life: 2-3 часа
+    metabolism: Нет
+    elimination: Почки
+  contraindications:
+  - Ото- и нефротоксичность
+  side_effects:
+  - Ототоксичность
+  - Нефротоксичность
+  - Невромышечная блокада
+- id: succinylcholine
+  russian_name: Суксаметония хлорид
+  latin_name: Sol. Succinylcholine chloride 20 mg/ml - 5 ml
+  group: Деполаризующий миорелаксант
+  mechanism:
+  - Агонист никотиновых рецепторов
+  - Деполяризация, паралич
+  indications:
+  - RSI
+  dosages:
+    type: simple_calculator
+    description: В/в, 1-1.5 мг/кг
+    doses: [ '1', '1.5' ]
+    default_dose: '1'
+    unit: мг/кг
+    min_dose: 1
+    min_dose_unit: мг/кг
+  pharmacokinetics:
+    onset: 30-60 секунд
+    duration: 5-10 минут
+    half_life: 2 минуты
+    metabolism: Псевдохолинэстераза
+    elimination: Нет
+  contraindications:
+  - Гиперкалиемия
+  - Миастения
+  side_effects:
+  - Гиперкалиемия
+  - Миалгия
+  - Брадикардия
+
+- id: sulfacetamide
+  russian_name: Сульфацетамид
+  latin_name: Sulfacetamide 20% - 1.3 ml
+  group: Сульфаниламид
+  mechanism:
+  - Ингибирует синтез фолиевой кислоты
+  - Бактериостатический
+  indications:
+  - Конъюнктивит
+  dosages:
+    type: simple_calculator
+    description: Местно, 1-2 капли 4-6 раз/сут
+    doses: [ '1' ]
+    default_dose: '1'
+    unit: мл
+    min_dose: 1.3
+    min_dose_unit: мл
+  pharmacokinetics:
+    onset: 30 минут
+    duration: 6-8 часов
+    half_life: Неизвестно
+    metabolism: Нет
+    elimination: Слезы
+  contraindications:
+  - Аллергия на сульфаниламиды
+  side_effects:
+  - Жжение
+  - Аллергия
+
+- id: tenecteplase
+  russian_name: Тенектеплаза
+  latin_name: Tenecteplase
+  group: Фибринолитик
+  mechanism:
+  - Активирует плазминоген в плазмин
+  - Лизирует тромбы
+  indications:
+  - Инфаркт миокарда
+  dosages:
+    type: simple_calculator
+    description: В/в болюсно, 30-50 мг
+    doses: [ '0.5' ]
+    default_dose: '0.5'
+    unit: мг/кг
+    min_dose: 30
+    min_dose_unit: мг
+  pharmacokinetics:
+    onset: Немедленно
+    duration: 5-10 минут
+    half_life: 20 минут
+    metabolism: Печень
+    elimination: Печень
+  contraindications:
+  - Кровотечение
+  - Недавний инсульт
+  side_effects:
+  - Кровотечение
+  - Инсульт
+
+- id: thiamine
+  russian_name: Тиамин, Витамин B1
+  latin_name: Sol. Thiamini 50 mg/ml - 1 ml
+  group: Витамины
+  mechanism:
+  - Кофермент в метаболизме углеводов
+  - Антидот для алкоголя
+  indications:
+  - Дефицит B1
+  - Wernicke энцефалопатия
+  dosages:
+    type: simple_calculator
+    description: В/в, 100 мг
+    doses: [ '2' ]
+    default_dose: '2'
+    unit: мг/кг
+    min_dose: 100
+    min_dose_unit: мг
+  pharmacokinetics:
+    onset: Немедленно
+    duration: 24 часа
+    half_life: 9.5 дней
+    metabolism: Нет
+    elimination: Почки
+  contraindications:
+  - Нет
+  side_effects:
+  - Редко аллергия
+
+- id: thiopental
+  russian_name: Тиопентал натрия
+  latin_name: Thiopental sodium 1000 mg
+  group: Барбитурат
+  mechanism:
+  - Усиливает ГАМК
+  - Гипнотик
+  indications:
+  - Индукция анестезии
+  dosages:
+    type: simple_calculator
+    description: В/в, 3-5 мг/кг
+    doses: [ '3', '5' ]
+    default_dose: '3'
+    unit: мг/кг
+    min_dose: 3
+    min_dose_unit: мг/кг
+  pharmacokinetics:
+    onset: 10-30 секунд
+    duration: 5-10 минут
+    half_life: 11 часов
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Порфирия
+  - Шок
+  side_effects:
+  - Гипотония
+  - Дыхательная депрессия
+
+- id: tramadol
+  russian_name: Трамадол
+  latin_name: Sol. Tramadoli 50 mg/ml - 2 ml
+  group: Опиоидный анальгетик
+  mechanism:
+  - Агонист μ-рецепторов + ингибитор обратного захвата серотонина/норадреналина
+  indications:
+  - боль средней интенсивности
+  dosages:
+    type: simple_calculator
+    description: в/м, в/в, дети - с 1 года
+    doses: [ '1', '2' ]
+    default_dose: '1'
+    unit: мг/кг
+    max_dose: 100
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 30 минут
+    duration: 4-6 часов
+    half_life: 6 часов
+    metabolism: Печень (CYP2D6)
+    elimination: Почки
+  contraindications:
+  - Дети младше 1 года
+  - СССУ
+  - Серотониновый синдром
+  side_effects:
+  - Тошнота
+  - Сонливость
+  - Серотониновый синдром
+
+- id: tranexamic_acid
+  russian_name: Транексамовая кислота
+  latin_name: Sol. Acidi tranexamici 50 mg/ml - 5 ml
+  group: Гемостатики
+  mechanism:
+  - Ингибирует плазмин
+  - Снижает кровотечение
+  indications:
+  - Желудочно-кишечные кровотечения
+  - Аномальные маточные кровотечения
+  - Апоплексия яичника
+  dosages:
+    type: simple_calculator
+    description: в/в капельно медленно в течение 10 минут (при быстром введение опасность гипотонии), максимальная доза 750 мг или 1000 мг (в зависимости от состояния)
+    doses: [ '10' ]
+    default_dose: '10'
+    unit: мг/кг
+    max_dose: 1000
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 5 минут
+    duration: 3 часа
+    half_life: 2 часа
+    metabolism: Нет
+    elimination: Почки
+  contraindications:
+  - Тромбоз
+  side_effects:
+  - Тромбоз
+  - Гипотония/коллапс при болюсном введении
+  - Тошнота
+
+- id: urapidil
+  russian_name: Урапидил
+  latin_name: Sol. Urapidili 5mg/ml - 5 ml
+  group: Альфа-1 блокатор
+  mechanism:
+  - Блокирует альфа-1 рецепторы
+  - Снижает периферическое сопротивление
+  indications:
+  - Гипертонический криз
+  dosages:
+    type: description_only
+    description:
+      - вводить внутривенно медленно под контролем АД, ЭКГ, разделив на 2 дозы по 12.5 мг в разведении Sol. Natrii Chloridi 0,9% - 10 ml
+  pharmacokinetics:
+    onset: 5 минут
+    duration: 4-6 часов
+    half_life: 2-3 часа
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Карцинома
+  side_effects:
+  - Гипотония
+  - Головная боль
+- id: phenylephrine
+  russian_name: Фенилэфрин
+  latin_name: Sol. Phenylephrini 10 mg/ml - 1ml
+  group: Симпатомиметики
+  mechanism:
+  - Стимулирует альфа-1 рецепторы → периферическая вазоконстрикия, рефлекторная брадикадия
+  indications:
+  - Гипотония
+  - Введение ЛС, сопровождающихся снижением АД
+  dosages:
+    type: simple_calculator
+    description: 
+      - медленное в/в введение 0,5-5 mg
+      - или 10 мг/час через инфузор до достижения желаемого уровня АД
+      - для поддержания АД во время введения других ЛС - остаточное количество Фенилэфрина в канюле иглы/катетра
+    doses: [ '0.002' ]
+    default_dose: '0.002'
+    unit: мг/кг
+    max_dose: 10
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 5-10 минут
+    duration: 15-20 минут
+    half_life: 2-3 часа
+    metabolism: MAO
+    elimination: Почки
+  contraindications:
+  - Феохромоцитома
+  side_effects:
+  - Рефлекторная брадикадия
+  - Аритмии
+  - Цефалгия
+  - Ишемия миокарда
+
+- id: fentanyl
+  russian_name: Фентанил
+  latin_name: Sol. Phentanyli 50 mcg/ml - 1 ml
+  group: Опиоидные анальгетики
+  mechanism:
+  - Селективный агонист μ-опиоидных рецепторов в ЦНС → подавление передачи болевых импульсов, изменение восприятия боли и повышение болевого порога. Влияет на δ- и κ-рецепторы в меньшей степени, вызывая эйфорию, седативный эффект и угнетение дыхательного центра. Обеспечивает аналгезию без значительного снижения мышечного тонуса
+  - Обладает высокой липофильностью → быстро проникает через ГЭБ → быстрое начало действия (но повышает риск передозировки в виду накопления в жировых тканях)
+  - Сильный анестетик (100 мкг Фентанила ≈ 10 мг Морфина)
+  indications:
+  - Выраженный болевой синдром
+  - Компонент анестезии (премедикация, индукция, ТВВА)
+  dosages:
+    type: simple_calculator_with_ml
+    description: внутривенно или внутримышечно
+    mg_dosages:
+      doses: [ '1, 2, 3, 4' ]
+      default_dose: '2'
+      unit: мкг/кг
+    ml_dosages:
+      doses: [ '0.02','0.04','0.06', '0.08' ]
+      default_dose: '0.04'
+      unit: мл/кг
+    max_dose: 2
+    max_dose_unit: мл
+  pharmacokinetics:
+    onset: 1-2 минуты (в/в), 7-8 минут (в/м), 12-24 часа (трансдермально)
+    duration: 30-60 минут
+    half_life: 2-4 часа
+    metabolism: Печень (CYP3A4, с образованием норфентанила)
+    elimination: Почки
+  contraindications:
+  - Дыхательная депрессия
+  side_effects:
+  - Дыхательная депрессия
+  - Тошнота
+  - Сонливость
+
+- id: flumazenil
+  russian_name: Флумазенил, Анексат
+  latin_name: Sol. Flumazenili 0,1 mg/ml - 5 ml
+  group: Антидоты
+  group_type: group_antidote
+  mechanism:
+  - Конкурентно ингибирует связывание бензодиазепинов с бензодиазепиновыми рецепторами в комплексе ГАМК А, блокируя их аллостерическое усиление эффекта ГАМК и тем самым нейтрализуя седативные, анксиолитические, миорелаксирующие и амнестические эффекты
+  indications:
+  - Отравления препаратами бензодиазепинового ряда
+  - Может использоваться с целью дифференциальной диагностики комы
+  dosages:
+    type: description_only
+    description:
+      - Внутривенно по 0,5-1,0 мг
+      - При комбинированном отравлении бензодиазепинами и другими психотропными препаратами,
+  pharmacokinetics:
+    onset: 1 минута
+    duration: 1 час
+    half_life: 0.7-1.3 часа
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Эпилепсия (относительно)
+  side_effects:
+  - При быстром введении могут развиться признаки передозировки (беспокойство, возбуждение, тахикардия), у лиц, страдающих зависимостью к бензодиазепиновым препаратам, может развиться синдром абстиненции
+  - При эпилепсии устранение тормозящего действия бензодиазепинов может привести к возникновению судорог
+
+- id: furosemide
+  russian_name: Фуросемид
+  latin_name: Sol. Furosemide 10 mg/ml - 2 ml
+  group: Диуретики
+  mechanism:
+  - Ингибирует Na-K-2Cl котранспорт
+  - Диуретик
+  indications:
+  - Отек
+  - Острая сердечная недостаточность
+  dosages:
+    type: simple_calculator
+    description: В/в, 20-40 мг болюсно
+    doses: [ '0.5' ]
+    default_dose: '0.5'
+    unit: мг/кг
+    min_dose: 20
+    min_dose_unit: мг
+  pharmacokinetics:
+    onset: 5 минут
+    duration: 2 часа
+    half_life: 30-60 минут
+    metabolism: Минимальный
+    elimination: Почки
+  contraindications:
+  - Гиповолемия
+  - Анурия
+  side_effects:
+  - Гипокалиемия
+  - Гипотония
+  - Ототоксичность
+- id: chloramphenicol
+  russian_name: Хлорамфеникол
+  latin_name: Chloramphenicol 1 g
+  group: Антибиотик
+  mechanism:
+  - Ингибирует пептидилтрансферазу
+  - Бактериостатический
+  indications:
+  - Менингит
+  - Туляремия
+  dosages:
+    type: simple_calculator
+    description: В/в, 50-100 мг/кг/сут
+    doses: [ '1' ]
+    default_dose: '1'
+    unit: мг/кг/сут
+    min_dose: 50
+    min_dose_unit: мг/кг
+  pharmacokinetics:
+    onset: 1-2 часа
+    duration: 6-8 часов
+    half_life: 1.6-3.3 часа
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Серый синдром новорожденных
+  side_effects:
+  - Апластическая анемия
+  - Серый синдром
+
+- id: chlorhexidine
+  russian_name: Хлоргексидин
+  latin_name: Sol. Chlorhexidini 0.05% - 100 ml
+  group: Антисептик
+  mechanism:
+  - Повреждает бактериальную мембрану
+  - Бактерицидный
+  indications:
+  - Дезинфекция кожи
+  - Антисептик
+  pharmacokinetics:
+    onset: Немедленно
+    duration: 6 часов
+    half_life: Не применимо
+    metabolism: Нет
+    elimination: Нет
+  contraindications:
+  - Аллергия
+  side_effects:
+  - Кожная раздражительность
+- id: chloropyramine
+
+  russian_name: Хлоропирамин, Супрастин
+  latin_name: Sol. Chloropyramini 20 mg/ml - 1 ml
+  group: Антигистаминные средства
+  mechanism:
+  - Конкурентный антагонист H1-гистаминовых рецепторов, блокируя эффекты гистамина, такие как вазодилатация, повышение проницаемости сосудов и отёк тканей
+  - обладает слабым холинолитическим и седативным эффектом из-за проникновения через ГЭБ
+  indications:
+  - Аллергия
+  - Анафилаксия
+  dosages:
+    type: description_only
+    description:
+      - 0,1 мл на год жизни
+  pharmacokinetics:
+    onset: 15-30 минут
+    duration: 3-6 часов
+    half_life: 12-24 часа
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Глаукома
+  side_effects:
+  - Сонливость
+  - Сухость во рту
+
+- id: chlorpromazine
+  russian_name: Хлорпромазин
+  latin_name: Sol. Chlorpromazini 25 mg/ml - 1 ml
+  group: Антипсихотик
+  mechanism:
+  - Блокирует D2-рецепторы
+  - Антиэметик
+  indications:
+  - Психоз
+  - Тошнота
+  dosages:
+    type: simple_calculator
+    description: В/м, 25-50 мг
+    doses: [ '0.25', '0.5', '1' ]
+    default_dose: '0.25'
+    unit: мг/кг
+    max_dose: 25
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 10-15 минут
+    duration: 4-6 часов
+    half_life: 30 часов
+    metabolism: Печень
+    elimination: Почки
+  contraindications:
+  - Кома
+  - Удлинённый интервал QT
+  side_effects:
+  - Экстрапирамидные симптомы
+  - Сонливость
+  - Удлинение QT
+
+- id: ceftriaxone
+  russian_name: Цефтриаксон
+  latin_name: Ceftriaxoni 1 g
+  group: Антибиотики
+  mechanism:
+  - Ингибирует синтез клеточной стенки
+  - Бактерицидный
+  indications:
+  - Менингит
+  - Сепсис
+  dosages:
+    type: simple_calculator
+    description: в/в в разведении Sol. Natrii Chloridi 0,9% - 10 ml
+    doses: [ '50' ]
+    default_dose: '50'
+    unit: мг/кг
+    max_dose: 2000
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 30 минут
+    duration: 24 часа
+    half_life: 6-9 часов
+    metabolism: Минимальный
+    elimination: Почки/желчь
+  contraindications:
+  - Аллергия на бета-лактамы
+  side_effects:
+  - Диарея
+  - Аллергия
+
+- id: enalaprilat
+  russian_name: Эналаприлат, Энап
+  latin_name: Sol. Enalaprilat 1.25 mg/ml - 1 ml
+  group: Гипотензивные средства
+  mechanism:
+  - Ингибирует АПФ
+  - Снижает АД
+  indications:
+  - Гипертонический криз (в/в)
+  dosages:
+    type: simple_calculator
+    description: В/в, 1.25 мг болюсно
+    doses: [ '0.02' ]
+    default_dose: '0.02'
+    unit: мг/кг
+    min_dose: 1.25
+    min_dose_unit: мг
+  pharmacokinetics:
+    onset: 15 минут
+    duration: 6 часов
+    half_life: 11 часов
+    metabolism: Нет
+    elimination: Почки
+  contraindications:
+  - Беременность
+  - Стеноз почечной артерии
+  side_effects:
+  - Гипотония
+  - Кашель
+
+- id: esmolol
+  russian_name: Эсмолол
+  latin_name: Sol. Esmololi 10 mg/ml - 10 ml
+  group: Бета-блокатор
+  mechanism:
+  - Селективный β1-блокатор
+  - Короткий T1/2
+  indications:
+  - Суправентрикулярная тахикардия
+  - Интраоперационная гипертензия
+  dosages:
+    type: simple_calculator
+    description: старше 18 лет
+    doses: [ '0.5' ]
+    default_dose: '0.5'
+    unit: мг/кг/мин
+    min_dose: 0.5
+    min_dose_unit: мг/кг
+  pharmacokinetics:
+    onset: 1 минута
+    duration: 10-20 минут
+    half_life: 9 минут
+    metabolism: Эстеразы крови
+    elimination: Почки
+  contraindications:
+  - Брадикардия
+  - Бронхоспазм
+  side_effects:
+  - Гипотония
+  - Брадикардия
+
+- id: etamsylate
+  russian_name: Этамзилат
+  latin_name: Sol. Etamsylati 125 mg/ml - 2 ml
+  group: Гемостатики
+  mechanism:
+  - Увеличивает адгезию тромбоцитов
+  - Стабилизирует капилляры
+  indications:
+  - Кровотечения
+  dosages:
+    type: simple_calculator_with_ml
+    description: внутривенно или внутримышечно
+    mg_dosages:
+      doses: [ '12.5' ]
+      default_dose: '12.5'
+      unit: мг/кг
+    ml_dosages:
+      doses: [ '0.1']
+      default_dose: '0.1'
+      unit: мл/кг
+    max_dose: 4
+    max_dose_unit: мл
+  pharmacokinetics:
+    onset: 10 минут
+    duration: 8 часов
+    half_life: 1.9 часа
+    metabolism: Минимальный
+    elimination: Почки
+  contraindications:
+  - Тромбоз
+  side_effects:
+  - Тошнота
+  - Головная боль
+
+- id: mexidol
+  russian_name: Этилметилгидроксипиридинасукцинат
+  latin_name: Sol. Mexidoli 50 mg/ml - 5 ml
+  group: Антиоксидант
+  mechanism:
+  - Мембраностабилизирующее
+  - Антигипоксическое
+  indications:
+  - Церебральная ишемия
+  dosages:
+    type: simple_calculator
+    description: В/м, 50-300 мг 3 раза/сут
+    doses: [ '1' ]
+    default_dose: '1'
+    unit: мг/кг
+    min_dose: 50
+    min_dose_unit: мг
+  pharmacokinetics:
+    onset: 30 минут
+    duration: 4-6 часов
+    half_life: Неизвестно
+    metabolism: Нет
+    elimination: Почки
+  contraindications:
+  - Беременность
+  side_effects:
+  - Тошнота
+  - Сухость во рту
+
+- id: liquid_paraffin
+  russian_name: Парафин жидкий
+  latin_name: Sol. Paraffini liquidi (Olei Vaselini)
+  group: Антидоты
+  group_type: group_antidote
+  mechanism:
+  - предотвращает абсорбцию воды в толстой кишке, создаёт гидрофобную плёнку 
+  indications:
+  - Отравление (пероральное) жирорастворимыми ядами (галогенизированными - хлорированными углеводородами - тетрахлорметан, и нефтепродуктами (бенин, кар), нертью
+  dosages:
+    type: description_only
+    description:
+      - Внутрь в качестве слабительного средства (после промывания желудка) 30-50 г
+  pharmacokinetics:
+    onset: 6-8 часов
+    duration: 1 день
+    half_life: Не применимо
+    metabolism: Нет
+    elimination: ЖКТ
+  contraindications:
+  - Не выявлены
+  side_effects:
+  - Диарея
+  - Липидная пневмония
+
+- id: trifosadenine
+  russian_name: Трифосаденин, АТФ
+  latin_name: Sol. Triphosadenini 10 mg/ml - 1 ml
+  group: Антиаритмики
+  mechanism:
+  - Аналог АТФ
+  - Стабилизирует мембраны
+  indications:
+  - АВУРТ, АВРТ
+  dosages:
+    type: simple_calculator
+    description: внутривенно болюсно без разведения
+    doses: [ '0.1', '0.2' ]
+    default_dose: '0.2'
+    unit: мл/кг
+    max_dose: 20
+    max_dose_unit: мг
+  pharmacokinetics:
+    onset: 2-5 минут
+    duration: 30 минут
+    half_life: Неизвестно
+    elimination: Почки
+  contraindications:
+  - Кардиогенный шок
+  side_effects:
+  - Гипотония
+  - Брадикардия
+
+- id: terlipressini
+  russian_name: Терлипрессин, Реместип
+  latin_name: Sol. Terlipressini 0.1 mg/ml - 10 ml
+  group: Вазоактивные вещества
+  mechanism:
+  - селективный агонист V1-рецепторов вазопрессина (в 2 раза более селективен, чем к V2-рецепторам), вызывая вазоконстрикцию преимущественно в сосудах брюшной полости (спланхническая циркуляция)
+  indications:
+  - желудочно-кишечные кровотечения
+  dosages:
+    type: description_only
+    description:
+      - в/в болюсно или инфузионно
+      - 1 мг каждые 6 часов (max. 4 мг/сут)
+  pharmacokinetics:
+    onset: быстрое, max. 1-2 часа
+    duration: 4-6 часов
+    half_life: 50-80 минут, у метаболита (лизин-прессин) 6 часов
+    metabolism: тканевой (энзиматический гидролиз до лизин-вазопрессина)
+    elimination: Почки
+  contraindications:
+  - Гипоксия
+  - Активная ишемия коронарных, периферических или мезентериальных сосудов
+  - Беременность (опасность вазоконстрикции для плода)
+  - Тяжёлая сердечная недостаточность или неконтролируемая гипертензия
+  side_effects:
+  - боли в животе
+  - гипертензия
+  - брадикардия
+  - ишемия миокарда
+  - гипонатриемия
+  - некроз тканей при экстравазации
+
+- id: сarboxim
+  russian_name: Карбоксим
+  latin_name: Sol. Carboxim 50 mg/ml - 1 ml
+  group: Антидоты
+  group_type: group_antidote
+  mechanism:
+  - восстанавливает активность ацетилхолинэстеразы (АХЭ), ингибированной ФОС, путём реактивации фермента, то есть образует комплекс с ингибированным АХЭ, удаляя фосфорильную группу и восстанавливая способность фермента гидролизовать ацетилхолин
+  indications:
+  - Отравление фосфорорганическими соединениями (ФОС) - хлорофос, карбофос, метафос, фосфакол, пирофос, армин, хлофосфол
+  - Отравление веществами типа зарин, зоман, газы VX
+  dosages:
+    type: description_only
+    description:
+      - Внутримышечно применяется в одной лечебной дозе 1 мл 15% раствора - 150 мг/мл
+      - Применение показано только в первые сутки течения отравления
+  pharmacokinetics:
+    onset: 5-15 минут после в/м введния
+    duration: 2-4 часа
+    half_life: около 1 часа
+    metabolism: печёночный
+    elimination: почки
+  contraindications:
+    - Недостаточно данных о противопоказаниях
+  side_effects:
+    - При наличии симптомов отравления противопоказаний для применения нет. В рекомендованной дозе не вызывает побочных явлений
+  
+- id: oxygen
+  russian_name: Кислород, газ сжатый
+  latin_name: Oxygenium
+  group: Антидоты
+  group_type: group_antidote
+  mechanism:
+    - Увеличивает парциальное давление O2 в альвеолах, что облегчает его диффузию в кровь, где он связывается с гемоглобином (формируя оксигемоглобин) и транспортируется к тканям
+    - В клетках участвует в окислительном фосфорилировании, способствуя синтезу АТФ
+  indications:
+    - Отравление монооксидом углерода (угарный газ). Способствует ускорению распада карбоксигемоглобина и выведению окиси углерода из организма
+    - При отравлении метгемоглобинобразователями, сероуглеродом, сероводородом способствует большему насыщению крови кислородом
+  dosages:
+    type: description_only
+    description:
+      - Ингаляция в виде 100%, а затем 40-60% смеси с воздухом в количестве 4-5 л/мин через интубационную трубку или маску в течение нескольких часов непрерывно
+      - В стационаре - гипербарическая оксигенация (1 ати) в течение 45-60 минут, при необходиости - повторно через 12 часов
+  pharmacokinetics:
+    onset: быстрое через лёгкие (диффузия в кровь)
+    duration: связывается с гемоглобином (97%), растворяется в плазме (3%)
+    metabolism: не метаболизируется, используется в тканях для окисления
+    elimination: в виде CO2 и H2O
+  contraindications:
+    - гиперкапния (повышенный CO2 в крови), гиповентиляция
+    - относитные - ХОБЛ с гиперкапинией
+  side_effects:
+    - При наличии симптомов отравления противопоказаний для применения нет
+  
+- id: acizol
+  russian_name: Цинка бисвинилимидазоладиацетат, Ацизол
+  latin_name: Sol. Zinci bisvinylimidazoli diacetatis 60 mg/ml - 1 ml
+  group: Антидоты
+  group_type: group_antidote
+  mechanism:
+    - Препятствует образованию карбоксигемоглобина за счёт влияния на кооперативное взаимодействие субъединиц гемоглобина, снижая относительную аффинность гемоглобина к CO и улучшая кислородсвязывающие и газотранспортные свойства крови (снижение константы Хилла)
+  indications:
+    - Отравление моноокисью углерода (угарный газ), поражение дыхательных путей продуктами горения
+  dosages:
+    type: description_only
+    description:
+      - Внутримышечно 1 мл 6% раствора сразу после эвакуации пострадавшего из очага заражения окисью углерода, продуктами горения
+  pharmacokinetics:
+    onset: 20-30 минут
+    duration: 4-5 часов
+    half_life: 1-1,5 часа
+    metabolism: печёночный
+    elimination: печень
+  contraindications:
+    - Недостаточно данных о противопоказаниях
+  side_effects:
+    - При наличии симптомов отравления противопоказаний для применения нет
+
+- id: propafenone
+  russian_name: Пропафенон, Пропанорм
+  latin_name: Sol. Propaphenoni 3,5 mg - 10 ml
+  group: Антиаритмики
+  mechanism:
+    - Блокирует натриевые каналы кардиомиоцитов (фаза 0 потенциала действия), что приводит к снижению их возбудимости → снижает автоматизм миокарда, снижает проведение импульса → удлиняет рефрактерный период 
+    - Обладает слабым бета-адреноблокирующим действием, но становится выраженным в высоких дозах (брадикардия, гипотония) 
+  indications:
+  - НЖТ (фибрилляция предсердий, трепетание предсердий)
+  dosages:
+    type: simple_calculator_with_ml
+    description: внутривенно капельно или через инфузор в течение 10 минут и более
+    mg_dosages:
+      doses: [ '1.5', '2' ]
+      default_dose: '1.5'
+      unit: мг/кг
+    ml_dosages:
+      doses: [ '0.4', '0.6' ]
+      default_dose: '0.4'
+      unit: мл/кг
+    max_dose: 50
+    max_dose_unit: мл
+  pharmacokinetics:
+    onset: до 1 часа
+    duration: до 8 часов
+    half_life: 2-10 часов
+    metabolism: Печёночный с образованием активных метаболитов
+    elimination: Почки
+  contraindications:
+    - Кардиогенный шок
+    - Синдром Бругада, астма/тяжёлая ХОБЛ, тяжёлая гипотензия, электролитные нарушения
+    - Комбинации с препаратами, удлиняющими QT-интервал (например, амиодарон, хинидин)
+  side_effects:
+    - Гипотония
+    - Брадикардия

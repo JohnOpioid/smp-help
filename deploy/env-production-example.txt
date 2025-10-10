@@ -1,0 +1,37 @@
+# Production Environment Variables for SMP Help
+# Скопируйте этот файл в .env.production на сервере
+
+# Основные настройки
+NODE_ENV=production
+NUXT_PUBLIC_API_BASE_URL=https://helpsmp.ru/api
+NUXT_PUBLIC_APP_URL=https://helpsmp.ru
+PORT=3000
+
+# База данных MongoDB
+MONGODB_URI=mongodb://localhost:27017/smp-help
+
+# JWT Secret (ОБЯЗАТЕЛЬНО ЗАМЕНИТЕ НА СВОЙ СЕКРЕТНЫЙ КЛЮЧ!)
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production-12345
+
+# AI Configuration (GigaChat)
+GIGACHAT_API_KEY=your-gigachat-api-key-here
+GIGACHAT_API_URL=https://gigachat.devices.sberbank.ru/api/v1
+
+# Email Configuration (если используете отправку email)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+
+# Дополнительные настройки
+NUXT_PUBLIC_APP_NAME="SMP Help"
+NUXT_PUBLIC_APP_DESCRIPTION="Система помощи медицинским работникам"
+
+# Настройки безопасности
+SESSION_SECRET=your-session-secret-key-here
+CORS_ORIGIN=https://helpsmp.ru
+
+# Логирование
+LOG_LEVEL=info
+LOG_FILE=/var/log/smp-help/app.log
+
