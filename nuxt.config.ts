@@ -3,15 +3,16 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   devServer: { port: 3000, host: 'localhost' },
-  modules: ['@nuxt/ui', '@nuxthub/core'],
-  hub: {
-    ai: true
-  },
+  modules: ['@nuxt/ui'],
   nitro: {
     preset: 'node-server',
-    experimental: {
-      wasm: true
-    }
+    publicAssets: [
+      {
+        baseURL: '/_nuxt',
+        dir: '/var/www/helpsmp.ru/_nuxt',
+        maxAge: 31536000
+      }
+    ]
   },
   app: {
     head: {
