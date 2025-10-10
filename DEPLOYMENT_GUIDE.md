@@ -273,15 +273,15 @@ mongosh
 use admin
 db.createUser({
   user: "admin",
-  pwd: "your-secure-password",
+  pwd: "help-smp",
   roles: ["userAdminAnyDatabase", "dbAdminAnyDatabase", "readWriteAnyDatabase"]
 })
 
 # Создание пользователя для приложения
 use smp-help
 db.createUser({
-  user: "smp-help-user",
-  pwd: "your-app-password",
+  user: "help-smp-user",
+  pwd: "help-smp",
   roles: ["readWrite"]
 })
 
