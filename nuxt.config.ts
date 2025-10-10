@@ -7,6 +7,12 @@ export default defineNuxtConfig({
   hub: {
     ai: true
   },
+  nitro: {
+    preset: 'node-server',
+    experimental: {
+      wasm: true
+    }
+  },
   app: {
     head: {
       title: 'Справочник СМП',
