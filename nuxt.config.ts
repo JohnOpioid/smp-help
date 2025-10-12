@@ -50,13 +50,14 @@ export default defineNuxtConfig({
   pwa: {
     registerType: 'autoUpdate',
     workbox: {
-      navigateFallback: '/offline',
-      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+      navigateFallback: null, // Отключаем fallback, используем runtime caching
+      globPatterns: ['**/*.{js,css,png,svg,ico}'],
       globIgnores: [
         '**/adults/**',
         '**/pediatrics/**',
         '**/onmp/**',
-        '**/*.html'
+        '**/*.html',
+        '**/manifest.webmanifest'
       ],
       cleanupOutdatedCaches: true,
       skipWaiting: true,
@@ -73,6 +74,28 @@ export default defineNuxtConfig({
               maxAgeSeconds: 60 * 60 * 24 // 1 день
             },
             networkTimeoutSeconds: 10
+          }
+        },
+        {
+          urlPattern: /^\/offline$/i,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'offline-page',
+            expiration: {
+              maxEntries: 1,
+              maxAgeSeconds: 60 * 60 * 24 * 30 // 30 дней
+            }
+          }
+        },
+        {
+          urlPattern: /^\/manifest\.webmanifest$/i,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'manifest-cache',
+            expiration: {
+              maxEntries: 1,
+              maxAgeSeconds: 60 * 60 * 24 * 30 // 30 дней
+            }
           }
         },
         {
