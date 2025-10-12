@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-5xl mx-auto px-0 md:px-4 md:py-8">
+  <div class="md:px-4 max-w-5xl mx-auto py-8">
 
     <!-- Список алгоритмов категории (как список категорий) -->
     <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 md:rounded-lg">

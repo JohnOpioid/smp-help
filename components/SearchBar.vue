@@ -1,5 +1,5 @@
 <template>
-  <div class="relative mx-auto w-full">
+  <div class="relative mx-auto w-full rounded">
     <!-- Темный фон при фокусе -->
     <div v-if="isFocused" class="fixed inset-0 bg-slate-700/50 z-30" @click="blurSearch"></div>
     

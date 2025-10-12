@@ -9,7 +9,7 @@
           <UButton color="primary" @click="openForm" class="cursor-pointer">Добавить</UButton>
         </div>
 
-        <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 md:rounded-lg overflow-hidden">
+        <div class="bg-white dark:bg-slate-800 border-y border-slate-100 dark:border-slate-600 md:border md:rounded-lg overflow-hidden">
           <UTable :data="rows" :columns="columns" :loading="pending" class="w-full" />
         </div>
 

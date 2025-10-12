@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-6">
-    <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 md:rounded-lg overflow-hidden">
+    <div class="bg-white dark:bg-slate-800 border-y border-slate-100 dark:border-slate-600 md:border md:rounded-lg overflow-hidden">
       <div class="p-4 border-b border-slate-100 dark:border-slate-700">
         <p class="text-sm text-slate-600 dark:text-slate-300">Настройки профиля</p>
       </div>
@@ -34,7 +34,7 @@
     </div>
 
     <!-- Смена пароля -->
-    <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 md:rounded-lg overflow-hidden">
+    <div class="bg-white dark:bg-slate-800 border-y border-slate-100 dark:border-slate-600 md:border md:rounded-lg overflow-hidden">
       <div class="p-4 border-b border-slate-100 dark:border-slate-700">
         <p class="text-sm text-slate-600 dark:text-slate-300">Смена пароля</p>
       </div>

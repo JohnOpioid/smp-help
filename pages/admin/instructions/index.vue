@@ -23,7 +23,7 @@
             </template>
           </UInput>
         </div>
-        <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 md:rounded-lg overflow-hidden">
+        <div class="bg-white dark:bg-slate-800 border-y border-slate-100 dark:border-slate-600 md:border md:rounded-lg overflow-hidden">
           <UTable :data="paginatedItems" :columns="columns" :loading="pendingList" sticky="header" class="w-full">
             <template #empty>
               <div class="p-6 text-sm text-slate-600 dark:text-slate-300">Нет данных. Добавьте инструкцию.</div>
