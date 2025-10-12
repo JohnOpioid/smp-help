@@ -290,6 +290,9 @@
     </template>
   </ClientOnly>
 
+  <!-- Модалка препаратов -->
+  <SDrugsModal v-model:open="drugsOpen" :query-name="drugsQuery" />
+
 </template>
 
 <style scoped>
@@ -363,6 +366,10 @@ const id = route.params.id as string
 // Определение мобильного устройства
 const isMobileDevice = ref(false)
 
+// Переменные для поиска препаратов
+const drugsOpen = ref(false)
+const drugsQuery = ref<string>('')
+
 const updateMobileStatus = () => {
   if (process.client) {
     isMobileDevice.value = window.innerWidth < 768
@@ -397,7 +404,12 @@ function isSuccess(resp: AlgorithmResponse | null | undefined): resp is { succes
 const algo = computed<AlgorithmItem | undefined>(() => isSuccess(data.value) ? data.value!.item : undefined)
 const rendered = computed(() => {
   const raw = (algo.value?.content || '') as string
-  try { return marked.parse(raw) as string } catch { return raw }
+  try { 
+    const html = marked.parse(raw) as string
+    return parseDrugsInContent(html)
+  } catch { 
+    return parseDrugsInContent(raw)
+  }
 })
 
 // Отображение кодов МКБ:
@@ -1172,6 +1184,8 @@ async function navigateOldAlgoLink(href: string, anchorText: string) {
 function enhanceContentLinks() {
   const root = contentRef.value
   if (!root) return
+  
+  // Обработка ссылок на алгоритмы
   const anchors = Array.from(root.querySelectorAll('a[href^="/algorithms/"]')) as HTMLAnchorElement[]
   for (const a of anchors) {
     a.addEventListener('click', (ev) => {
@@ -1180,6 +1194,56 @@ function enhanceContentLinks() {
       void navigateOldAlgoLink(a.getAttribute('href') || '', a.textContent || '')
     }, { passive: false })
   }
+  
+  // Обработка ссылок на препараты
+  const drugLinks = Array.from(root.querySelectorAll('a.algocclink[data-drug-name]')) as HTMLAnchorElement[]
+  for (const link of drugLinks) {
+    link.addEventListener('click', (ev) => {
+      ev.preventDefault()
+      ev.stopPropagation()
+      const drugName = link.getAttribute('data-drug-name')
+      if (drugName) {
+        drugsQuery.value = drugName
+        drugsOpen.value = true
+      }
+    }, { passive: false })
+  }
+}
+
+// Функция для парсинга препаратов в контенте
+function parseDrugsInContent(html: string): string {
+  if (!html) return html
+  
+  // Список известных препаратов для поиска
+  const knownDrugs = [
+    'Метамизол натрия', 'Кеторолак', 'Трамадол', 'Парацетамол', 'Морфин',
+    'Фентанил', 'Пропофол', 'Мидазолам', 'Дексаметазон', 'Преднизолон',
+    'Адреналин', 'Норадреналин', 'Допамин', 'Добутамин', 'Атропин',
+    'Лидокаин', 'Новокаин', 'Диазепам', 'Лоразепам', 'Клоназепам',
+    'Ондасетрон', 'Метоклопрамид', 'Церукал', 'Ранитидин', 'Омепразол',
+    'Гепарин', 'Варфарин', 'Аспирин', 'Клопидогрел', 'Тикагрелор',
+    'Нитроглицерин', 'Изосорбид', 'Моногидрат', 'Каптоприл', 'Эналаприл',
+    'Лозартан', 'Валсартан', 'Амлодипин', 'Нифедипин', 'Верапамил',
+    'Дигоксин', 'Амиодарон', 'Пропранолол', 'Метопролол', 'Бисопролол',
+    'Фуросемид', 'Спиронолактон', 'Гидрохлоротиазид', 'Индапамид',
+    'Цефтриаксон', 'Цефотаксим', 'Амоксициллин', 'Ампициллин', 'Ванкомицин',
+    'Гентамицин', 'Амикацин', 'Ципрофлоксацин', 'Левофлоксацин', 'Моксифлоксацин'
+  ]
+  
+  // Сортируем по длине (длинные названия первыми) для корректного поиска
+  const sortedDrugs = knownDrugs.sort((a, b) => b.length - a.length)
+  
+  let result = html
+  
+  // Заменяем названия препаратов на кликабельные ссылки
+  for (const drug of sortedDrugs) {
+    const regex = new RegExp(`\\b${drug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi')
+    result = result.replace(regex, (match) => {
+      return `<a href="#" class="algocclink cursor-pointer" data-drug-name="${drug}">${match}</a>`
+    })
+  }
+  
+  return result
 }
 
 // Реактивный поиск локальных статусов при изменении алгоритма
