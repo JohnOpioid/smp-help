@@ -3,9 +3,7 @@
     <main class="flex-1">
       <!-- Блок поиска отдельно -->
       <div class="max-w-5xl w-full mx-auto px-4 pt-8">
-        <div class="mb-6">
-          <SearchBar />
-        </div>
+        <SearchBar />
       </div>
 
       <!-- Основной контент -->

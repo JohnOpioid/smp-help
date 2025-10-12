@@ -2,9 +2,7 @@
   <div>
     <main class="flex-1">
       <div class="max-w-5xl mx-auto px-0 md:px-4 py-8">
-    <div class="mb-6">
-      <SearchBar />
-    </div>
+        <SearchBar />
 
     <div v-if="error" class="text-center py-8">
       <p class="text-red-600 dark:text-red-400">Ошибка загрузки данных</p>
