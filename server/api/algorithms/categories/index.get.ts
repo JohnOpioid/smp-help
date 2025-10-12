@@ -1,11 +1,14 @@
 import { defineEventHandler } from 'h3'
 import connectDB from '~/server/utils/mongodb'
 import AlgorithmCategory from '~/server/models/AlgorithmCategory'
-import '~/server/models/AlgorithmSection' // Импортируем для регистрации модели
+import AlgorithmSection from '~/server/models/AlgorithmSection'
 import Algorithm from '~/server/models/Algorithm'
 
 export default defineEventHandler(async () => {
   await connectDB()
+  
+  // Явно используем AlgorithmSection чтобы Nuxt bundler включил его
+  const _ensureAlgorithmSectionModel = AlgorithmSection
   
   // Старые сначала: по возрастанию createdAt
   const items = await AlgorithmCategory.find({})
