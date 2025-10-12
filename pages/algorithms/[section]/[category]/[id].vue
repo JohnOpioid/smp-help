@@ -376,9 +376,12 @@ const updateMobileStatus = () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   updateMobileStatus()
   window.addEventListener('resize', updateMobileStatus)
+  
+  // Загружаем список препаратов для выделения
+  await loadDrugsList()
 })
 
 onBeforeUnmount(() => {
@@ -1210,39 +1213,53 @@ function enhanceContentLinks() {
   }
 }
 
+// Переменная для кэширования списка препаратов
+const drugsList = ref<string[]>([])
+
+// Функция для загрузки списка препаратов из базы данных
+async function loadDrugsList() {
+  if (drugsList.value.length > 0) return // Уже загружено
+  
+  try {
+    const response: any = await $fetch('/api/drugs', { 
+      query: { page: 1, limit: 1000 } 
+    })
+    
+    if (response?.items && Array.isArray(response.items)) {
+      const drugNames: string[] = []
+      
+      // Собираем все возможные названия препаратов
+      for (const drug of response.items) {
+        // Основное название
+        if (drug.name) drugNames.push(drug.name)
+        
+        // Латинское название
+        if (drug.latinName) drugNames.push(drug.latinName)
+        
+        // Синонимы
+        if (drug.synonyms && Array.isArray(drug.synonyms)) {
+          drugNames.push(...drug.synonyms.filter(Boolean))
+        }
+      }
+      
+      // Удаляем дубликаты и сортируем по длине
+      drugsList.value = Array.from(new Set(drugNames))
+        .filter(name => name && name.length > 2) // Исключаем слишком короткие названия
+        .sort((a, b) => b.length - a.length) // Длинные названия первыми
+    }
+  } catch (error) {
+    console.warn('Не удалось загрузить список препаратов:', error)
+  }
+}
+
 // Функция для парсинга препаратов в контенте
 function parseDrugsInContent(html: string): string {
-  if (!html) return html
-  
-  // Список известных препаратов для поиска
-  const knownDrugs = [
-    'Метамизол натрия', 'Кеторолак', 'Трамадол', 'Парацетамол', 'Морфин',
-    'Фентанил', 'Пропофол', 'Мидазолам', 'Дексаметазон', 'Преднизолон',
-    'Адреналин', 'Эпинефрин', 'Норадреналин', 'Допамин', 'Добутамин', 'Атропин',
-    'Лидокаин', 'Новокаин', 'Диазепам', 'Лоразепам', 'Клоназепам',
-    'Ондасетрон', 'Метоклопрамид', 'Церукал', 'Ранитидин', 'Омепразол',
-    'Гепарин', 'Варфарин', 'Аспирин', 'Клопидогрел', 'Тикагрелор',
-    'Нитроглицерин', 'Изосорбид', 'Моногидрат', 'Каптоприл', 'Эналаприл',
-    'Лозартан', 'Валсартан', 'Амлодипин', 'Нифедипин', 'Верапамил',
-    'Дигоксин', 'Амиодарон', 'Пропранолол', 'Метопролол', 'Бисопролол',
-    'Фуросемид', 'Спиронолактон', 'Гидрохлоротиазид', 'Индапамид',
-    'Цефтриаксон', 'Цефотаксим', 'Амоксициллин', 'Ампициллин', 'Ванкомицин',
-    'Гентамицин', 'Амикацин', 'Ципрофлоксацин', 'Левофлоксацин', 'Моксифлоксацин',
-    'Суксаметоний', 'Рокуроний', 'Векуроний', 'Панкуроний', 'Неостигмин',
-    'Атропин', 'Гликопирролат', 'Фенилэфрин', 'Вазопрессин', 'Терлипрессин',
-    'Соматостатин', 'Октреотид', 'Глюкагон', 'Инсулин', 'Глюкоза',
-    'Кальций хлорид', 'Кальций глюконат', 'Магний сульфат', 'Калий хлорид',
-    'Натрий хлорид', 'Рингер', 'Гидроксиэтилкрахмал', 'Альбумин', 'Плазма',
-    'Эритроцитарная масса', 'Тромбоцитарная масса', 'Криопреципитат'
-  ]
-  
-  // Сортируем по длине (длинные названия первыми) для корректного поиска
-  const sortedDrugs = knownDrugs.sort((a, b) => b.length - a.length)
+  if (!html || drugsList.value.length === 0) return html
   
   let result = html
   
   // Заменяем названия препаратов на кликабельные ссылки
-  for (const drug of sortedDrugs) {
+  for (const drug of drugsList.value) {
     const regex = new RegExp(`\\b${drug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi')
     result = result.replace(regex, (match) => {
       return `<a href="#" class="algocclink cursor-pointer" data-drug-name="${drug}">${match}</a>`
@@ -1256,6 +1273,16 @@ function parseDrugsInContent(html: string): string {
 watch(() => algo.value?.mkbCodes, () => {
   if (algo.value?.mkbCodes) {
     searchLocalStatuses()
+  }
+}, { immediate: true })
+
+// Перепарсинг контента при загрузке списка препаратов
+watch(drugsList, () => {
+  if (drugsList.value.length > 0 && algo.value?.content) {
+    // Принудительно обновляем rendered computed
+    nextTick(() => {
+      styleTables()
+    })
   }
 }, { immediate: true })
 
