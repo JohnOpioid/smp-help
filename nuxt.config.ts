@@ -51,62 +51,10 @@ export default defineNuxtConfig({
     registerType: 'autoUpdate',
     workbox: {
       navigateFallback: '/offline',
-      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
-      runtimeCaching: [
-        {
-          urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-          handler: 'CacheFirst',
-          options: {
-            cacheName: 'google-fonts-cache',
-            expiration: {
-              maxEntries: 10,
-              maxAgeSeconds: 60 * 60 * 24 * 365 // 1 год
-            },
-            cacheKeyWillBeUsed: async ({ request }) => {
-              return `${request.url}?${Date.now()}`
-            }
-          }
-        },
-        {
-          urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-          handler: 'CacheFirst',
-          options: {
-            cacheName: 'gstatic-fonts-cache',
-            expiration: {
-              maxEntries: 10,
-              maxAgeSeconds: 60 * 60 * 24 * 365 // 1 год
-            }
-          }
-        },
-        {
-          urlPattern: /^\/api\/.*/i,
-          handler: 'NetworkFirst',
-          options: {
-            cacheName: 'api-cache',
-            expiration: {
-              maxEntries: 100,
-              maxAgeSeconds: 60 * 60 * 24 // 1 день
-            },
-            networkTimeoutSeconds: 10
-          }
-        },
-        {
-          urlPattern: /^\/.*/i,
-          handler: 'NetworkFirst',
-          options: {
-            cacheName: 'pages-cache',
-            expiration: {
-              maxEntries: 50,
-              maxAgeSeconds: 60 * 60 * 24 // 1 день
-            },
-            networkTimeoutSeconds: 5
-          }
-        }
-      ]
+      globPatterns: ['**/*.{js,css,html,png,svg,ico}']
     },
     client: {
-      installPrompt: true,
-      periodicSyncForUpdates: 20
+      installPrompt: true
     },
     devOptions: {
       enabled: true,
