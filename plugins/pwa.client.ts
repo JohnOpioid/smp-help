@@ -2,25 +2,9 @@ export default defineNuxtPlugin(() => {
   // Регистрация PWA
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      // Очищаем старые кеши перед регистрацией
-      if ('caches' in window) {
-        caches.keys().then((cacheNames) => {
-          cacheNames.forEach((cacheName) => {
-            if (cacheName.includes('workbox') || cacheName.includes('helpsmp')) {
-              caches.delete(cacheName)
-            }
-          })
-        })
-      }
-      
       navigator.serviceWorker.register('/sw.js')
         .then((registration) => {
           console.log('✅ Service Worker зарегистрирован:', registration.scope)
-          
-          // Принудительно активируем новый service worker
-          if (registration.waiting) {
-            registration.waiting.postMessage({ type: 'SKIP_WAITING' })
-          }
           
           // Проверка обновлений
           registration.addEventListener('updatefound', () => {
@@ -28,11 +12,9 @@ export default defineNuxtPlugin(() => {
             if (newWorker) {
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // Новое обновление доступно
+                  // Новое обновление доступно - отправляем сообщение компоненту
                   console.log('🔄 Доступно новое обновление')
-                  if (confirm('Доступно новое обновление приложения. Перезагрузить страницу?')) {
-                    window.location.reload()
-                  }
+                  window.dispatchEvent(new CustomEvent('pwa-update-available'))
                 }
               })
             }

@@ -54,10 +54,37 @@ export default defineNuxtConfig({
       globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
       cleanupOutdatedCaches: true,
       skipWaiting: true,
-      clientsClaim: true
+      clientsClaim: true,
+      runtimeCaching: [
+        {
+          urlPattern: /^\/api\/.*/i,
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'api-cache',
+            expiration: {
+              maxEntries: 100,
+              maxAgeSeconds: 60 * 60 * 24 // 1 день
+            },
+            networkTimeoutSeconds: 10
+          }
+        },
+        {
+          urlPattern: /^\/.*/i,
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'pages-cache',
+            expiration: {
+              maxEntries: 200,
+              maxAgeSeconds: 60 * 60 * 24 * 7 // 7 дней
+            },
+            networkTimeoutSeconds: 5
+          }
+        }
+      ]
     },
     client: {
-      installPrompt: true
+      installPrompt: true,
+      periodicSyncForUpdates: 20
     },
     devOptions: {
       enabled: true,
