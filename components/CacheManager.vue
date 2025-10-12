@@ -47,11 +47,6 @@ const isCaching = ref(false)
 const isCached = ref(false)
 const updateAvailable = ref(false)
 
-// Отладочная информация
-watch([isCaching, isCached, updateAvailable], ([caching, cached, update]) => {
-  console.log('🔄 Состояния:', { isCaching: caching, isCached: cached, updateAvailable: update })
-  console.log('🔘 Показать кнопку сохранения:', !caching && !cached && !update)
-})
 
 // Список страниц для кеширования
 const pagesToCache = [
@@ -116,8 +111,6 @@ async function precacheSite() {
     // Сохраняем статус кеширования в localStorage
     localStorage.setItem('site-cached', 'true')
     
-    console.log('✅ Приложение сохранено, isCached:', isCached.value)
-    
   } catch (error) {
     console.error('Ошибка кеширования:', error)
   } finally {
@@ -148,7 +141,6 @@ onMounted(() => {
   
   if (cached === 'true') {
     isCached.value = true
-    console.log('📱 Статус сохранения загружен из localStorage, isCached:', isCached.value)
   }
   
   // Слушаем события обновления PWA

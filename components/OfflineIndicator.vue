@@ -10,11 +10,31 @@
 <script setup lang="ts">
 const isOnline = ref(true)
 
-onMounted(() => {
+// Функция проверки реального подключения к интернету
+async function checkOnlineStatus() {
+  try {
+    // Пробуем загрузить небольшой ресурс
+    const response = await fetch('/favicon.ico', { 
+      method: 'HEAD',
+      cache: 'no-cache',
+      mode: 'no-cors'
+    })
+    isOnline.value = true
+  } catch (error) {
+    // Если не удалось загрузить, проверяем navigator.onLine
+    isOnline.value = navigator.onLine
+  }
+}
+
+onMounted(async () => {
+  // Сначала проверяем navigator.onLine
   isOnline.value = navigator.onLine
   
-  const updateOnlineStatus = () => {
-    isOnline.value = navigator.onLine
+  // Затем проверяем реальное подключение
+  await checkOnlineStatus()
+  
+  const updateOnlineStatus = async () => {
+    await checkOnlineStatus()
   }
 
   window.addEventListener('online', updateOnlineStatus)
