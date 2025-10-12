@@ -1,13 +1,10 @@
 import { defineEventHandler } from 'h3'
 import connectDB from '~/server/utils/mongodb'
 import Substation from '~/server/models/Substation'
-import Region from '~/server/models/Region'
+import '~/server/models/Region' // Импортируем для регистрации модели
 
 export default defineEventHandler(async () => {
   await connectDB()
-  
-  // Регистрируем модель Region для populate
-  Region
   
   const items = await Substation.find({})
     .populate('region', 'name phones manager district')
