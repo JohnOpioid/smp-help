@@ -5,11 +5,11 @@
       v-if="!isCaching && !isCached && !updateAvailable"
       @click="precacheSite"
       color="blue"
-      size="sm"
+      size="xl"
       class="shadow-lg"
       :loading="isCaching"
     >
-      <Icon name="heroicons:device-phone-mobile" class="w-4 h-4 mr-2" />
+      <Icon name="heroicons:device-phone-mobile" class="w-5 h-5 mr-2" />
       Сохранить приложение
     </UButton>
 
@@ -34,10 +34,10 @@
       v-if="updateAvailable"
       @click="updateApp"
       color="orange"
-      size="sm"
+      size="xl"
       class="shadow-lg animate-pulse"
     >
-      <Icon name="heroicons:arrow-path" class="w-4 h-4 mr-2" />
+      <Icon name="heroicons:arrow-path" class="w-5 h-5 mr-2" />
       Обновить приложение
     </UButton>
   </div>
