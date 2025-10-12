@@ -692,21 +692,15 @@ const openLocalStatusModal = () => {
 
 // Функция для расширения диапазонов кодов МКБ
 const expandMkbRange = (code: string): string[] => {
-  console.log('🔍 Расширяем диапазон:', code)
-  
   // Проверяем, является ли код диапазоном
   if (!code.includes('–') && !code.includes('-')) {
-    console.log('📝 Обычный код (не диапазон):', code)
     return [code]
   }
   
   const separator = code.includes('–') ? '–' : '-'
   const [start, end] = code.split(separator).map(s => s.trim())
   
-  console.log('📊 Разделили диапазон:', { start, end, separator })
-  
   if (!start || !end) {
-    console.log('❌ Не удалось разделить диапазон')
     return [code]
   }
   
@@ -724,29 +718,21 @@ const expandMkbRange = (code: string): string[] => {
     endMatch = [end, startLetter, end, undefined] as RegExpMatchArray
   }
   
-  console.log('🔍 Регулярные выражения:', { startMatch, endMatch })
-  
   if (!startMatch || !endMatch) {
-    console.log('❌ Не удалось распарсить коды')
     return [code]
   }
   
   const [, startLetter, startNum, startSub] = startMatch
   const [, endLetter, endNum, endSub] = endMatch
   
-  console.log('📋 Извлеченные части:', { startLetter, startNum, startSub, endLetter, endNum, endSub })
-  
   // Проверяем, что буквы совпадают
   if (startLetter !== endLetter) {
-    console.log('❌ Буквы не совпадают')
     return [code]
   }
   
   const expandedCodes: string[] = []
   const startNumber = parseInt(startNum)
   const endNumber = parseInt(endNum)
-  
-  console.log('🔢 Числовые значения:', { startNumber, endNumber })
   
   for (let num = startNumber; num <= endNumber; num++) {
     const numStr = num.toString().padStart(2, '0')
@@ -756,15 +742,12 @@ const expandMkbRange = (code: string): string[] => {
       const startSubNum = startSub ? parseInt(startSub) : 0
       const endSubNum = endSub ? parseInt(endSub) : 9
       
-      console.log(`📝 Одинаковый номер ${numStr}: подкоды от ${startSubNum} до ${endSubNum}`)
-      
       for (let sub = startSubNum; sub <= endSubNum; sub++) {
         expandedCodes.push(`${startLetter}${numStr}.${sub}`)
       }
     } else if (num === startNumber) {
       // Первый номер - добавляем все подкоды от startSub до 9
       const startSubNum = startSub ? parseInt(startSub) : 0
-      console.log(`📝 Первый номер ${numStr}: подкоды от ${startSubNum} до 9`)
       
       for (let sub = startSubNum; sub <= 9; sub++) {
         expandedCodes.push(`${startLetter}${numStr}.${sub}`)
@@ -772,22 +755,18 @@ const expandMkbRange = (code: string): string[] => {
     } else if (num === endNumber) {
       // Последний номер - добавляем все подкоды от 0 до endSub
       const endSubNum = endSub ? parseInt(endSub) : 9
-      console.log(`📝 Последний номер ${numStr}: подкоды от 0 до ${endSubNum}`)
       
       for (let sub = 0; sub <= endSubNum; sub++) {
         expandedCodes.push(`${startLetter}${numStr}.${sub}`)
       }
     } else {
       // Средние номера - добавляем все подкоды от 0 до 9
-      console.log(`📝 Средний номер ${numStr}: подкоды от 0 до 9`)
-      
       for (let sub = 0; sub <= 9; sub++) {
         expandedCodes.push(`${startLetter}${numStr}.${sub}`)
       }
     }
   }
   
-  console.log('✅ Расширенные коды:', expandedCodes)
   return expandedCodes
 }
 
@@ -807,8 +786,6 @@ const searchLocalStatuses = async () => {
       expandedCodes.push(...expandMkbRange(code))
     }
     
-    console.log('Исходные коды:', algo.value.mkbCodes)
-    console.log('Расширенные коды:', expandedCodes)
     
     const response: any = await $fetch('/api/local-statuses/search-by-mkb', {
       method: 'POST',
@@ -913,7 +890,6 @@ function applyMobileTwoColumnView(wrapper: HTMLElement, table: HTMLTableElement)
   const colgroup = table.querySelector('colgroup') as HTMLElement | null
   const cols = colgroup ? Array.from(colgroup.querySelectorAll('col')) as HTMLElement[] : []
 
-  console.log(`Применяем мобильный вид для ${rows.length} строк, target: ${mobileTarget}`)
 
   // Создаем индикаторы точек в шапке таблицы
   if (isMobile()) {
@@ -1227,12 +1203,9 @@ async function loadDrugsList() {
   if (drugsList.value.length > 0) return // Уже загружено
   
   try {
-    console.log('🔍 Загружаем список препаратов...')
-    const response: any = await $fetch('/api/drugs', { 
-      query: { page: 1, limit: 1000 } 
-    })
-    
-    console.log('📊 Ответ API препаратов:', response)
+  const response: any = await $fetch('/api/drugs', { 
+    query: { page: 1, limit: 1000 } 
+  })
     
     if (response?.items && Array.isArray(response.items)) {
       const drugNames: string[] = []
@@ -1261,25 +1234,6 @@ async function loadDrugsList() {
         .filter(name => name && name.length > 2) // Исключаем слишком короткие названия
         .sort((a, b) => b.length - a.length) // Длинные названия первыми
       
-      console.log('✅ Загружено препаратов:', drugsList.value.length)
-      console.log('📋 Первые 10 препаратов:', drugsList.value.slice(0, 10))
-      
-      // Ищем препараты, которые могут быть в алгоритме анестезиологии
-      const anesthesiaDrugs = drugsList.value.filter(drug => 
-        drug.toLowerCase().includes('эпинефрин') || 
-        drug.toLowerCase().includes('адреналин') ||
-        drug.toLowerCase().includes('морфин') ||
-        drug.toLowerCase().includes('фентанил') ||
-        drug.toLowerCase().includes('пропофол')
-      )
-      console.log('💉 Препараты для анестезиологии:', anesthesiaDrugs)
-      
-      // Показываем общую статистику по источникам названий
-      console.log('📊 Статистика источников названий:')
-      console.log('  - Основные названия:', response.items.filter(d => d.name).length)
-      console.log('  - Латинские названия:', response.items.filter(d => d.latinName).length)
-      console.log('  - Синонимы:', response.items.reduce((sum, d) => sum + (d.synonyms?.length || 0), 0))
-      console.log('  - Аналоги:', response.items.reduce((sum, d) => sum + (d.analogs?.length || 0), 0))
     } else {
       console.warn('❌ Некорректный ответ API препаратов')
     }
@@ -1294,62 +1248,19 @@ function parseDrugsInContent(html: string): string {
   
   // Если список препаратов еще не загружен, возвращаем исходный HTML
   if (!drugsList.value || drugsList.value.length === 0) {
-    console.log('⚠️ Список препаратов пуст, пропускаем парсинг')
     return html
   }
   
-  console.log('🔍 Парсим контент с', drugsList.value.length, 'препаратами')
-  console.log('📄 Длина HTML контента:', html.length)
-  console.log('📄 Первые 500 символов контента:', html.substring(0, 500))
-  
   let result = html
-  let replacementsCount = 0
-  
-  // Проверяем наличие конкретных препаратов в контенте
-  const testDrugs = ['Эпинефрин', 'Адреналин', 'Морфин', 'Фентанил', 'Пропофол']
-  for (const testDrug of testDrugs) {
-    if (html.toLowerCase().includes(testDrug.toLowerCase())) {
-      console.log(`🔍 Найден тестовый препарат "${testDrug}" в контенте`)
-      
-      // Проверяем точное совпадение с регулярным выражением (без границ слов для кириллицы)
-      const regex = new RegExp(`${testDrug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'gi')
-      const matches = html.match(regex)
-      console.log(`🔍 Регулярное выражение для "${testDrug}":`, regex)
-      console.log(`🔍 Найденные совпадения:`, matches)
-      
-      // Проверяем все варианты написания
-      const allVariants = drugsList.value.filter(drug => 
-        drug.toLowerCase().includes(testDrug.toLowerCase())
-      )
-      console.log(`🔍 Все варианты "${testDrug}" в списке:`, allVariants)
-    }
-  }
   
   // Заменяем названия препаратов на кликабельные ссылки (без границ слов для кириллицы)
   for (const drug of drugsList.value) {
     const regex = new RegExp(`${drug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'gi')
-    const beforeReplace = result
-    
-    // Проверяем совпадения для первых 10 препаратов
-    if (drugsList.value.indexOf(drug) < 10) {
-      const matches = html.match(regex)
-      if (matches) {
-        console.log(`🔍 Препарат "${drug}" найден в контенте:`, matches)
-      }
-    }
-    
     result = result.replace(regex, (match) => {
-      replacementsCount++
       return `<a href="#" class="algocclink cursor-pointer" data-drug-name="${drug}">${match}</a>`
     })
-    
-    // Логируем замены для отладки
-    if (result !== beforeReplace) {
-      console.log(`✅ Найден препарат "${drug}" в контенте`)
-    }
   }
   
-  console.log(`📊 Всего замен: ${replacementsCount}`)
   return result
 }
 
@@ -1362,9 +1273,7 @@ watch(() => algo.value?.mkbCodes, () => {
 
 // Перепарсинг контента при загрузке списка препаратов
 watch(drugsList, () => {
-  console.log('🔄 Watcher drugsList сработал, длина:', drugsList.value.length)
   if (drugsList.value.length > 0 && algo.value?.content) {
-    console.log('✅ Перепарсинг контента...')
     // Принудительно обновляем rendered computed
     forceUpdate.value++
     nextTick(() => {

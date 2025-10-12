@@ -2,6 +2,9 @@
   <UApp>
     <NuxtRouteAnnouncer />
     
+    <!-- Индикатор офлайн режима -->
+    <OfflineIndicator />
+    
     <!-- Скелетон шапки (только при принудительном обновлении) -->
     <div v-if="isInitialLoading" class="fixed inset-0 bg-white dark:bg-slate-900 z-50 flex flex-col">
       <!-- Хедер скелетон -->
