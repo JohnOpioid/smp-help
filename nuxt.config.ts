@@ -52,9 +52,16 @@ export default defineNuxtConfig({
     workbox: {
       navigateFallback: '/offline',
       globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+      globIgnores: [
+        '**/adults/**',
+        '**/pediatrics/**',
+        '**/onmp/**',
+        '**/*.html'
+      ],
       cleanupOutdatedCaches: true,
       skipWaiting: true,
       clientsClaim: true,
+      maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
       runtimeCaching: [
         {
           urlPattern: /^\/api\/.*/i,
