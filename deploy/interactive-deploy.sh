@@ -644,6 +644,12 @@ EOF
 copy_files() {
     log "📁 Копируем собранные файлы в рабочую директорию..."
     
+    # Сохраняем конфигурацию PM2 если существует
+    if [ -f "$WORK_DIR/ecosystem.config.cjs" ]; then
+        log "Сохраняем конфигурацию PM2..."
+        cp "$WORK_DIR/ecosystem.config.cjs" "/tmp/ecosystem.config.cjs.backup"
+    fi
+    
     # Очищаем рабочую директорию
     log "Очищаем $WORK_DIR..."
     rm -rf $WORK_DIR/*
@@ -670,6 +676,15 @@ copy_files() {
     if [ -d "$PROJECT_DIR/.output/public" ]; then
         cp -r $PROJECT_DIR/.output/public/* $WORK_DIR/ 2>/dev/null || true
         log "✅ Статические файлы скопированы"
+    fi
+    
+    # Восстанавливаем конфигурацию PM2 если была сохранена
+    # (для режимов update это важно, чтобы не потерять настройки)
+    if [ -f "/tmp/ecosystem.config.cjs.backup" ]; then
+        cp "/tmp/ecosystem.config.cjs.backup" "$WORK_DIR/ecosystem.config.cjs"
+        log "✅ Конфигурация PM2 восстановлена"
+        # Удаляем backup после восстановления
+        rm -f "/tmp/ecosystem.config.cjs.backup"
     fi
     
     # Устанавливаем права
@@ -710,9 +725,16 @@ setup_pm2() {
         return 1
     fi
     
-    # Создаем конфигурацию PM2 для ES модулей
-    # Используем шаблон с плейсхолдерами для безопасной подстановки
-    cat > $WORK_DIR/ecosystem.config.cjs << 'EOFCONFIG'
+    # Проверяем, существует ли уже конфигурация PM2
+    if [ -f "$WORK_DIR/ecosystem.config.cjs" ]; then
+        log "✅ Конфигурация PM2 уже существует, используем её"
+        log "Если нужно пересоздать конфигурацию, удалите файл вручную"
+    else
+        log "Создаём новую конфигурацию PM2..."
+        
+        # Создаем конфигурацию PM2 для ES модулей
+        # Используем шаблон с плейсхолдерами для безопасной подстановки
+        cat > $WORK_DIR/ecosystem.config.cjs << 'EOFCONFIG'
 module.exports = {
   apps: [{
     name: 'PROJECT_NAME_PLACEHOLDER',
@@ -768,12 +790,15 @@ EOFCONFIG
     sed -i "s|SMTP_PASS_PLACEHOLDER|$SMTP_PASS|g" $WORK_DIR/ecosystem.config.cjs
     sed -i "s|YAMAPS_API_KEY_PLACEHOLDER|$YAMAPS_API_KEY|g" $WORK_DIR/ecosystem.config.cjs
     sed -i "s|LOG_DIR_PLACEHOLDER|$LOG_DIR|g" $WORK_DIR/ecosystem.config.cjs
-    
-    # Устанавливаем права на конфигурацию
-    if [ "$PROJECT_USER" != "root" ]; then
-        chown $PROJECT_USER:$PROJECT_USER $WORK_DIR/ecosystem.config.cjs
+        
+        # Устанавливаем права на конфигурацию
+        if [ "$PROJECT_USER" != "root" ]; then
+            chown $PROJECT_USER:$PROJECT_USER $WORK_DIR/ecosystem.config.cjs
+        fi
+        chmod 644 $WORK_DIR/ecosystem.config.cjs
+        
+        log "✅ Конфигурация PM2 создана"
     fi
-    chmod 644 $WORK_DIR/ecosystem.config.cjs
     
     # Запускаем PM2
     cd $WORK_DIR
