@@ -133,6 +133,12 @@ async function precacheSite() {
     // Сохраняем статус кеширования в localStorage
     localStorage.setItem('site-cached', 'true')
     
+    // Сохраняем офлайн токен для работы в офлайн режиме
+    const token = useCookie('token').value
+    if (token) {
+      localStorage.setItem('offline-auth-token', token)
+    }
+    
     // Скрываем сообщение об успехе через 3 секунды
     setTimeout(() => {
       showSuccessMessage.value = false

@@ -89,7 +89,8 @@ useHead({
 // Функция повтора подключения
 function retryConnection() {
   if (navigator.onLine) {
-    // Если интернет появился, переходим на главную
+    // Если интернет появился, очищаем офлайн токен и переходим на главную
+    localStorage.removeItem('offline-auth-token')
     navigateTo('/')
   } else {
     // Если интернета нет, перезагружаем страницу
@@ -100,6 +101,8 @@ function retryConnection() {
 // Слушаем события изменения статуса сети
 onMounted(() => {
   const handleOnline = () => {
+    // Очищаем офлайн токен при восстановлении соединения
+    localStorage.removeItem('offline-auth-token')
     navigateTo('/')
   }
   
