@@ -408,7 +408,13 @@ function isSuccess(resp: AlgorithmResponse | null | undefined): resp is { succes
   return !!resp && (resp as any).success === true && 'item' in (resp as any)
 }
 const algo = computed<AlgorithmItem | undefined>(() => isSuccess(data.value) ? data.value!.item : undefined)
+// Принудительное обновление для перепарсинга при загрузке препаратов
+const forceUpdate = ref(0)
+
 const rendered = computed(() => {
+  // Используем forceUpdate для принудительного пересчета
+  forceUpdate.value
+  
   const raw = (algo.value?.content || '') as string
   try { 
     const html = marked.parse(raw) as string
@@ -1221,9 +1227,12 @@ async function loadDrugsList() {
   if (drugsList.value.length > 0) return // Уже загружено
   
   try {
+    console.log('🔍 Загружаем список препаратов...')
     const response: any = await $fetch('/api/drugs', { 
       query: { page: 1, limit: 1000 } 
     })
+    
+    console.log('📊 Ответ API препаратов:', response)
     
     if (response?.items && Array.isArray(response.items)) {
       const drugNames: string[] = []
@@ -1246,9 +1255,14 @@ async function loadDrugsList() {
       drugsList.value = Array.from(new Set(drugNames))
         .filter(name => name && name.length > 2) // Исключаем слишком короткие названия
         .sort((a, b) => b.length - a.length) // Длинные названия первыми
+      
+      console.log('✅ Загружено препаратов:', drugsList.value.length)
+      console.log('📋 Первые 10 препаратов:', drugsList.value.slice(0, 10))
+    } else {
+      console.warn('❌ Некорректный ответ API препаратов')
     }
   } catch (error) {
-    console.warn('Не удалось загрузить список препаратов:', error)
+    console.warn('❌ Не удалось загрузить список препаратов:', error)
   }
 }
 
@@ -1258,19 +1272,30 @@ function parseDrugsInContent(html: string): string {
   
   // Если список препаратов еще не загружен, возвращаем исходный HTML
   if (!drugsList.value || drugsList.value.length === 0) {
+    console.log('⚠️ Список препаратов пуст, пропускаем парсинг')
     return html
   }
   
+  console.log('🔍 Парсим контент с', drugsList.value.length, 'препаратами')
   let result = html
+  let replacementsCount = 0
   
   // Заменяем названия препаратов на кликабельные ссылки
   for (const drug of drugsList.value) {
     const regex = new RegExp(`\\b${drug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi')
+    const beforeReplace = result
     result = result.replace(regex, (match) => {
+      replacementsCount++
       return `<a href="#" class="algocclink cursor-pointer" data-drug-name="${drug}">${match}</a>`
     })
+    
+    // Логируем замены для отладки
+    if (result !== beforeReplace) {
+      console.log(`✅ Найден препарат "${drug}" в контенте`)
+    }
   }
   
+  console.log(`📊 Всего замен: ${replacementsCount}`)
   return result
 }
 
@@ -1283,8 +1308,11 @@ watch(() => algo.value?.mkbCodes, () => {
 
 // Перепарсинг контента при загрузке списка препаратов
 watch(drugsList, () => {
+  console.log('🔄 Watcher drugsList сработал, длина:', drugsList.value.length)
   if (drugsList.value.length > 0 && algo.value?.content) {
+    console.log('✅ Перепарсинг контента...')
     // Принудительно обновляем rendered computed
+    forceUpdate.value++
     nextTick(() => {
       styleTables()
     })
