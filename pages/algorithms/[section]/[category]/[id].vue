@@ -370,6 +370,9 @@ const isMobileDevice = ref(false)
 const drugsOpen = ref(false)
 const drugsQuery = ref<string>('')
 
+// Переменная для кэширования списка препаратов
+const drugsList = ref<string[]>([])
+
 const updateMobileStatus = () => {
   if (process.client) {
     isMobileDevice.value = window.innerWidth < 768
@@ -1213,9 +1216,6 @@ function enhanceContentLinks() {
   }
 }
 
-// Переменная для кэширования списка препаратов
-const drugsList = ref<string[]>([])
-
 // Функция для загрузки списка препаратов из базы данных
 async function loadDrugsList() {
   if (drugsList.value.length > 0) return // Уже загружено
@@ -1254,7 +1254,12 @@ async function loadDrugsList() {
 
 // Функция для парсинга препаратов в контенте
 function parseDrugsInContent(html: string): string {
-  if (!html || drugsList.value.length === 0) return html
+  if (!html) return html
+  
+  // Если список препаратов еще не загружен, возвращаем исходный HTML
+  if (!drugsList.value || drugsList.value.length === 0) {
+    return html
+  }
   
   let result = html
   
