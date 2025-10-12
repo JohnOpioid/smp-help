@@ -3,7 +3,7 @@
     <ul class="grid grid-cols-5 text-[10px] text-slate-500 dark:text-slate-300">
       <!-- Основные пункты -->
       <li v-for="item in primaryItems" :key="item.to">
-        <NuxtLink :to="item.to" class="flex flex-col items-center justify-center py-1.5 cursor-pointer"
+        <NuxtLink :to="item.to" class="flex flex-col items-center justify-center py-3 cursor-pointer"
           :class="{ 'text-indigo-600 dark:text-indigo-400': isActive(item.to) }">
           <UIcon :name="item.icon" class="w-5 h-5" 
             :class="isActive(item.to) ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500'" />
@@ -14,7 +14,7 @@
       
       <!-- Выпадающий блок -->
       <li class="relative" ref="moreRef">
-        <button @click.stop="moreOpen = !moreOpen" class="flex flex-col items-center justify-center py-1.5 cursor-pointer w-full"
+        <button @click.stop="moreOpen = !moreOpen" class="flex flex-col items-center justify-center py-3 cursor-pointer w-full"
           :class="{ 'text-indigo-600 dark:text-indigo-400': moreActive }">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
             :class="moreActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500'">
