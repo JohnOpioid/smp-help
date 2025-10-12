@@ -657,13 +657,19 @@ copy_files() {
     # Копируем собранные файлы из репозитория в рабочую директорию
     log "Копируем из $PROJECT_DIR/.output в $WORK_DIR..."
     
-    # Копируем ВСЁ из .output (включая все поддиректории)
-    if [ -d "$PROJECT_DIR/.output" ]; then
-        cp -r $PROJECT_DIR/.output/* $WORK_DIR/ 2>/dev/null || true
-        log "✅ Все файлы из .output скопированы"
+    # Nuxt 3 создаёт структуру .output/server/ и .output/public/
+    # Копируем server в корень, public тоже в корень
+    if [ -d "$PROJECT_DIR/.output/server" ]; then
+        cp -r $PROJECT_DIR/.output/server/* $WORK_DIR/
+        log "✅ Серверные файлы скопированы"
     else
-        error "Директория .output не найдена"
+        error "Директория .output/server не найдена"
         exit 1
+    fi
+    
+    if [ -d "$PROJECT_DIR/.output/public" ]; then
+        cp -r $PROJECT_DIR/.output/public/* $WORK_DIR/ 2>/dev/null || true
+        log "✅ Статические файлы скопированы"
     fi
     
     # Устанавливаем права
@@ -1024,8 +1030,16 @@ echo "🔨 Собираем проект..."
 npm run build
 
 echo "📁 Копируем файлы в рабочую директорию..."
+# Сохраняем конфигурацию PM2
+cp \$WORK_DIR/ecosystem.config.cjs /tmp/eco.backup 2>/dev/null || true
+
 rm -rf \$WORK_DIR/*
-cp -r .output/* \$WORK_DIR/
+cp -r .output/server/* \$WORK_DIR/
+cp -r .output/public/* \$WORK_DIR/ 2>/dev/null || true
+
+# Восстанавливаем конфигурацию
+cp /tmp/eco.backup \$WORK_DIR/ecosystem.config.cjs 2>/dev/null || true
+
 chmod -R 755 \$WORK_DIR
 
 echo "🚀 Перезапускаем приложение..."
@@ -1293,10 +1307,11 @@ main() {
             log "Собираем проект..."
             npm run build
             
-            # Копируем файлы
+            # Копируем файлы (правильная структура Nuxt 3)
             log "Копируем файлы..."
             rm -rf $WORK_DIR/*
-            cp -r .output/* $WORK_DIR/
+            cp -r .output/server/* $WORK_DIR/
+            cp -r .output/public/* $WORK_DIR/ 2>/dev/null || true
             
             # Восстанавливаем конфигурацию PM2
             if [ -f "/tmp/ecosystem.config.cjs.backup" ]; then

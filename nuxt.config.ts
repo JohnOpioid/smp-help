@@ -5,14 +5,7 @@ export default defineNuxtConfig({
   devServer: { port: 3000, host: 'localhost' },
   modules: ['@nuxt/ui'],
   nitro: {
-    preset: 'node-server',
-    publicAssets: [
-      {
-        baseURL: '/_nuxt',
-        dir: '/var/www/helpsmp.ru/_nuxt',
-        maxAge: 31536000
-      }
-    ]
+    preset: 'node-server'
   },
   app: {
     head: {
