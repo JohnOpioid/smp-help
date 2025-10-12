@@ -1,0 +1,475 @@
+[{
+  "_id": {
+    "$oid": "68e4faad8ca3ea666f1002e5"
+  },
+  "name": "Анестезиология и реаниматология",
+  "createdAt": {
+    "$date": "2025-10-07T11:34:05.090Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-09T16:29:05.963Z"
+  },
+  "__v": 0,
+  "url": "anesthesiology",
+  "sections": [
+    {
+      "$oid": "68e7e174e4dff2c63511df9b"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa3"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "68e4fb568ca3ea666f100446"
+  },
+  "name": "Терапия",
+  "createdAt": {
+    "$date": "2025-10-07T11:36:54.297Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-09T16:29:05.983Z"
+  },
+  "__v": 0,
+  "url": "therapy",
+  "sections": [
+    {
+      "$oid": "68e7e174e4dff2c63511df9b"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa9"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "68e4fb618ca3ea666f100456"
+  },
+  "name": "Кардиология",
+  "createdAt": {
+    "$date": "2025-10-07T11:37:05.058Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-09T16:29:05.991Z"
+  },
+  "__v": 0,
+  "url": "cardiology",
+  "sections": [
+    {
+      "$oid": "68e7e174e4dff2c63511df9b"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa3"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa9"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfac"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "68e4fb6d8ca3ea666f100463"
+  },
+  "name": "Неврология",
+  "createdAt": {
+    "$date": "2025-10-07T11:37:17.369Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-09T16:29:05.998Z"
+  },
+  "__v": 0,
+  "url": "neurology",
+  "sections": [
+    {
+      "$oid": "68e7e174e4dff2c63511df9b"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa3"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa9"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfac"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "68e4fb788ca3ea666f100466"
+  },
+  "name": "Инфекционные заболевания",
+  "createdAt": {
+    "$date": "2025-10-07T11:37:28.119Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-09T16:29:06.004Z"
+  },
+  "__v": 0,
+  "url": "infectious",
+  "sections": [
+    {
+      "$oid": "68e7e174e4dff2c63511df9b"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa3"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa9"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfac"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "68e4fb808ca3ea666f100469"
+  },
+  "name": "Травматология",
+  "createdAt": {
+    "$date": "2025-10-07T11:37:36.026Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-09T16:29:06.010Z"
+  },
+  "__v": 0,
+  "url": "traumatology",
+  "sections": [
+    {
+      "$oid": "68e7e174e4dff2c63511df9b"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa3"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa9"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfac"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "68e4fb878ca3ea666f10046c"
+  },
+  "name": "Хирургия",
+  "createdAt": {
+    "$date": "2025-10-07T11:37:43.473Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-09T16:29:06.014Z"
+  },
+  "__v": 0,
+  "url": "surgery",
+  "sections": [
+    {
+      "$oid": "68e7e174e4dff2c63511df9b"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa3"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa9"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfac"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "68e4fb8d8ca3ea666f10046f"
+  },
+  "name": "Урология",
+  "createdAt": {
+    "$date": "2025-10-07T11:37:49.944Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-09T16:29:06.019Z"
+  },
+  "__v": 0,
+  "url": "urology",
+  "sections": [
+    {
+      "$oid": "68e7e174e4dff2c63511df9b"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa3"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa9"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfac"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "68e4fb9b8ca3ea666f100472"
+  },
+  "name": "Акушерство и гинекология",
+  "createdAt": {
+    "$date": "2025-10-07T11:38:03.799Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-09T16:29:06.027Z"
+  },
+  "__v": 0,
+  "url": "obstetrics-gynecology",
+  "sections": [
+    {
+      "$oid": "68e7e174e4dff2c63511df9b"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa9"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "68e4fba68ca3ea666f100475"
+  },
+  "name": "Офтальмология",
+  "createdAt": {
+    "$date": "2025-10-07T11:38:14.205Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-09T16:29:06.032Z"
+  },
+  "__v": 0,
+  "url": "ophthalmology",
+  "sections": [
+    {
+      "$oid": "68e7e174e4dff2c63511df9b"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa3"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa9"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfac"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "68e4fbb18ca3ea666f100478"
+  },
+  "name": "Оториноларингология",
+  "createdAt": {
+    "$date": "2025-10-07T11:38:25.494Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-09T16:29:06.036Z"
+  },
+  "__v": 0,
+  "url": "otorhinolaryngology",
+  "sections": [
+    {
+      "$oid": "68e7e174e4dff2c63511df9b"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa3"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa9"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfac"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "68e4fbb78ca3ea666f10047b"
+  },
+  "name": "Стоматология",
+  "createdAt": {
+    "$date": "2025-10-07T11:38:31.566Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-09T16:29:06.040Z"
+  },
+  "__v": 0,
+  "url": "stomatology",
+  "sections": [
+    {
+      "$oid": "68e7e174e4dff2c63511df9b"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa3"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa9"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfac"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "68e4fbbe8ca3ea666f10047e"
+  },
+  "name": "Токсикология",
+  "createdAt": {
+    "$date": "2025-10-07T11:38:38.307Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-09T16:29:06.045Z"
+  },
+  "__v": 0,
+  "url": "toxicology",
+  "sections": [
+    {
+      "$oid": "68e7e174e4dff2c63511df9b"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa3"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa9"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfac"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "68e4fbdc8ca3ea666f100481"
+  },
+  "name": "Психиатрия и наркология (для бригад НЕ психиатрического профиля)",
+  "createdAt": {
+    "$date": "2025-10-07T11:39:08.584Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-09T16:29:06.048Z"
+  },
+  "__v": 0,
+  "url": "psychiatry-no",
+  "sections": [
+    {
+      "$oid": "68e7e174e4dff2c63511df9b"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa3"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "68e4fbed8ca3ea666f100484"
+  },
+  "name": "Психиатрия и наркология (для психиатрических бригад)",
+  "createdAt": {
+    "$date": "2025-10-07T11:39:25.840Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-09T16:29:06.051Z"
+  },
+  "__v": 0,
+  "url": "psychiatry",
+  "sections": [
+    {
+      "$oid": "68e7e174e4dff2c63511df9b"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfa3"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "68e5a537c691b1683842ed2e"
+  },
+  "sections": [
+    {
+      "$oid": "68e7e174e4dff2c63511dfa3"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfac"
+    }
+  ],
+  "name": "Неонатология",
+  "url": "neonatology",
+  "createdAt": {
+    "$date": "2025-10-07T23:41:43.382Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-09T16:29:06.054Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e5a598c691b1683842ed47"
+  },
+  "sections": [
+    {
+      "$oid": "68e7e174e4dff2c63511dfa3"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfac"
+    }
+  ],
+  "name": "Гинекология",
+  "url": "gynecology",
+  "createdAt": {
+    "$date": "2025-10-07T23:43:20.282Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-09T16:29:06.058Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e5a615c691b1683842ed5a"
+  },
+  "sections": [
+    {
+      "$oid": "68e7e174e4dff2c63511dfa9"
+    }
+  ],
+  "name": "Психиатрия и наркология",
+  "url": "psychiatry-onmp",
+  "createdAt": {
+    "$date": "2025-10-07T23:45:25.713Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-09T16:29:06.060Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e5a64cc691b1683842ed61"
+  },
+  "sections": [
+    {
+      "$oid": "68e7e174e4dff2c63511dfa3"
+    },
+    {
+      "$oid": "68e7e174e4dff2c63511dfac"
+    }
+  ],
+  "name": "Общая педиатрия",
+  "url": "pediatrics",
+  "createdAt": {
+    "$date": "2025-10-07T23:46:20.130Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-09T16:29:06.064Z"
+  },
+  "__v": 0
+}]

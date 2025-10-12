@@ -1,0 +1,110 @@
+[{
+  "_id": {
+    "$oid": "68e4e1265de89760b706c4f3"
+  },
+  "userId": "68db70d5818ff7c44994dc24",
+  "title": "Сутки двое",
+  "days": [
+    {
+      "templateId": "68e4238cf6779675d8b00de3"
+    },
+    {
+      "free": true
+    },
+    {
+      "free": true
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  "createdAt": {
+    "$date": "2025-10-07T09:45:10.158Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-07T09:45:10.158Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e4e2165de89760b706c642"
+  },
+  "userId": "68db70d5818ff7c44994dc24",
+  "title": "День через два",
+  "days": [
+    {
+      "templateId": "68e431c26aa2c01176984398"
+    },
+    {
+      "free": true
+    },
+    {
+      "free": true
+    },
+    {
+      "templateId": "68e431c26aa2c01176984398"
+    },
+    {
+      "free": true
+    },
+    {
+      "free": true
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  "createdAt": {
+    "$date": "2025-10-07T09:49:10.711Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-07T09:49:10.711Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e4ede6cbd7cda2351f65e9"
+  },
+  "userId": "68db70d5818ff7c44994dc24",
+  "title": "Отпуск",
+  "days": [
+    {
+      "templateId": "68e4a7915381027b8712cc52"
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  "createdAt": {
+    "$date": "2025-10-07T10:39:34.224Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-07T10:39:34.224Z"
+  },
+  "__v": 0
+}]

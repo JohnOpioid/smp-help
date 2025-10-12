@@ -1,0 +1,154 @@
+[{
+  "_id": {
+    "$oid": "68e2e0b7c7f285bbfbea532f"
+  },
+  "name": "Терапия",
+  "url": "terapiya",
+  "createdAt": {
+    "$date": "2025-10-05T21:18:47.729Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T21:18:47.729Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e2e0b7c7f285bbfbea5335"
+  },
+  "name": "Неврология",
+  "url": "nevrologiya",
+  "createdAt": {
+    "$date": "2025-10-05T21:18:47.748Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T21:18:47.748Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e2e0b7c7f285bbfbea5353"
+  },
+  "name": "Инфекционные заболевания",
+  "url": "infekcionnye-zabolevaniya",
+  "createdAt": {
+    "$date": "2025-10-05T21:18:47.781Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T21:18:47.781Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e2e0b7c7f285bbfbea536e"
+  },
+  "name": "Травматология",
+  "url": "travmatologiya",
+  "createdAt": {
+    "$date": "2025-10-05T21:18:47.806Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T21:18:47.806Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e2e0b8c7f285bbfbea54da"
+  },
+  "name": "Хирургия",
+  "url": "hirurgiya",
+  "createdAt": {
+    "$date": "2025-10-05T21:18:48.090Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T21:18:48.090Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e2e0b8c7f285bbfbea54ec"
+  },
+  "name": "Урология",
+  "url": "urologiya",
+  "createdAt": {
+    "$date": "2025-10-05T21:18:48.102Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T21:18:48.102Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e2e0b8c7f285bbfbea551c"
+  },
+  "name": "Акушерство и гинекология",
+  "url": "akusherstvo-i-ginekologiya",
+  "createdAt": {
+    "$date": "2025-10-05T21:18:48.135Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T21:18:48.135Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e2e0b8c7f285bbfbea554f"
+  },
+  "name": "Оториноларингология",
+  "url": "otorinolaringologiya",
+  "createdAt": {
+    "$date": "2025-10-05T21:18:48.168Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T21:18:48.168Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e2e0b8c7f285bbfbea5555"
+  },
+  "name": "Стоматология",
+  "url": "stomatologiya",
+  "createdAt": {
+    "$date": "2025-10-05T21:18:48.172Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T21:18:48.172Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e2e0b8c7f285bbfbea5567"
+  },
+  "name": "СМЭ",
+  "url": "sme",
+  "createdAt": {
+    "$date": "2025-10-05T21:18:48.185Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T21:18:48.185Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e2e0b8c7f285bbfbea557f"
+  },
+  "name": "Манипуляции",
+  "url": "manipulyacii",
+  "createdAt": {
+    "$date": "2025-10-05T21:18:48.207Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T21:18:48.207Z"
+  },
+  "__v": 0
+}]

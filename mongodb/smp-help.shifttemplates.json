@@ -1,0 +1,68 @@
+[{
+  "_id": {
+    "$oid": "68e4238cf6779675d8b00de3"
+  },
+  "userId": "68db70d5818ff7c44994dc24",
+  "title": "Сутки",
+  "startTime": "08:00",
+  "endTime": "08:00",
+  "color": "#F6CA3B",
+  "createdAt": {
+    "$date": "2025-10-06T20:16:12.108Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-06T21:16:56.554Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e431c26aa2c01176984398"
+  },
+  "userId": "68db70d5818ff7c44994dc24",
+  "title": "День",
+  "startTime": "08:00",
+  "endTime": "20:00",
+  "color": "#3B82F6",
+  "createdAt": {
+    "$date": "2025-10-06T21:16:50.034Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-06T21:16:50.034Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e431d66aa2c0117698439d"
+  },
+  "userId": "68db70d5818ff7c44994dc24",
+  "title": "Ночь",
+  "startTime": "20:00",
+  "endTime": "08:00",
+  "color": "#F6733B",
+  "createdAt": {
+    "$date": "2025-10-06T21:17:10.356Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-06T21:17:20.311Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e4a7915381027b8712cc52"
+  },
+  "userId": "68db70d5818ff7c44994dc24",
+  "title": "Отпуск",
+  "startTime": "08:00",
+  "endTime": "08:00",
+  "color": "#65DD30",
+  "createdAt": {
+    "$date": "2025-10-07T05:39:29.946Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-07T05:39:29.946Z"
+  },
+  "__v": 0
+}]

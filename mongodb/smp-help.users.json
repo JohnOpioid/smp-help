@@ -1,0 +1,37 @@
+[{
+  "_id": {
+    "$oid": "68db70d5818ff7c44994dc24"
+  },
+  "email": "evgeniy.odin@gmail.com",
+  "password": "$2b$10$Sh5siW1EkhUJKvKr51ih2eqtib5mzFhKIIQFuefNYVVl/B3LeG.lK",
+  "firstName": "Евгений",
+  "lastName": "Одинцов",
+  "role": "admin",
+  "createdAt": {
+    "$date": "2025-09-30T05:55:33.996Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-06T15:40:21.702Z"
+  },
+  "__v": 12,
+  "city": "Москва",
+  "substation": "32",
+  "bookmarks": []
+},
+{
+  "_id": {
+    "$oid": "68db7219818ff7c44994dc28"
+  },
+  "email": "test@example.com",
+  "password": "$2b$10$Dd.OzMDjWM8MHhD/37m5U.gGjsbi6EPZsfxKs2TfSUrsCc.MIGFG6",
+  "firstName": "Тест",
+  "lastName": "Пользователь",
+  "role": "user",
+  "createdAt": {
+    "$date": "2025-09-30T06:00:57.259Z"
+  },
+  "updatedAt": {
+    "$date": "2025-09-30T06:00:57.259Z"
+  },
+  "__v": 0
+}]

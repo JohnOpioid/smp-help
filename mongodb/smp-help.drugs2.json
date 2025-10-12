@@ -1,0 +1,3366 @@
+[{
+  "_id": {
+    "$oid": "68dd8d11305c679a17b28450"
+  },
+  "name": "Активированный уголь + алюминия оксид",
+  "latinName": "Tab. Carbonis activati + Aluminii oxydi",
+  "synonyms": [
+    "Энтерумин"
+  ],
+  "forms": {
+    "doseValue": 5000,
+    "doseUnit": "мг"
+  },
+  "pediatricDose": [
+    "300",
+    "400",
+    "500"
+  ],
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-01T20:20:33.362Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-01T21:02:34.810Z"
+  },
+  "__v": 0,
+  "pediatricDoseUnit": "мг/кг"
+},
+{
+  "_id": {
+    "$oid": "68dd97752b3d6be0059ac9fb"
+  },
+  "name": "Активированный уголь",
+  "latinName": "Tab. Carbonis activati",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 250,
+    "doseUnit": "мг"
+  },
+  "pediatricDose": [
+    "50"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-01T21:04:53.077Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-01T21:05:05.936Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68dd98222b3d6be0059aca3d"
+  },
+  "name": "Аминометилбензойная кислота",
+  "latinName": "Sol. Acidi aminomethylbenzoici",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 10,
+    "doseUnit": "мг/мл",
+    "volumeMl": 5
+  },
+  "pediatricDose": [
+    "50",
+    "100"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "Старше 14 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-01T21:07:46.794Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-01T21:10:13.345Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68dd9a862b3d6be0059acb94"
+  },
+  "name": "Аминофиллин",
+  "latinName": "Sol. Euphyllini",
+  "synonyms": [
+    "Эуфиллин"
+  ],
+  "forms": {
+    "doseValue": 24,
+    "doseUnit": "мг/мл",
+    "volumeMl": 10
+  },
+  "pediatricDose": [
+    "4",
+    "5"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-01T21:17:59.003Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-01T22:40:56.486Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68dd9b572b3d6be0059acc11"
+  },
+  "name": "Амиодарон",
+  "latinName": "Sol. Amiodaroni",
+  "synonyms": [
+    "Кордарон"
+  ],
+  "forms": {
+    "doseValue": 50,
+    "doseUnit": "мг/мл",
+    "volumeMl": 3
+  },
+  "pediatricDose": [
+    "5"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-01T21:21:27.397Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-01T21:22:48.417Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68dd9cd02b3d6be0059acce8"
+  },
+  "name": "Аскорбиновая кислота",
+  "latinName": "Sol. Acidi ascorbinici",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 50,
+    "doseUnit": "мг/мл",
+    "volumeMl": 2
+  },
+  "pediatricDose": [
+    "5",
+    "6",
+    "7"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "Максимальная суточная дозировка детям 50 мг",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-01T21:27:44.308Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-01T21:27:44.308Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68dd9d6f2b3d6be0059acd28"
+  },
+  "name": "Атропин",
+  "latinName": "Sol. Atropini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 1,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "0.01",
+    "0.02"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-01T21:30:23.029Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-01T21:35:36.199Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68dd9fb52b3d6be0059acddf"
+  },
+  "name": "Ацетилсалициловая кислота",
+  "latinName": "Tab. Acidi acetylsalicylici",
+  "synonyms": [
+    "Аспирин"
+  ],
+  "forms": {
+    "doseValue": 500,
+    "doseUnit": "мг"
+  },
+  "pediatricDose": [
+    "20",
+    "30"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "Старше 16 лет.",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-01T21:40:05.645Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-01T21:40:05.645Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68dda02e2b3d6be0059acde2"
+  },
+  "name": "Ацетилцистеин",
+  "latinName": "Sol. Acetylcysteini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 100,
+    "doseUnit": "мг/мл",
+    "volumeMl": 3
+  },
+  "pediatricDose": [
+    "150"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "70 - 140 мг/кг **внутрь**. \n**При внутривенном введении препарат вводится за 15-30 минут.**",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-01T21:42:06.185Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-01T21:42:06.185Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68dda8da8e4b24450d7cfc07"
+  },
+  "name": "Бромдигидрохлорфенилбензодиазепин (таб.)",
+  "latinName": "Tab. Bromdigidrochlorphenylbezodiazepini",
+  "synonyms": [
+    "Феназепам"
+  ],
+  "forms": {
+    "doseValue": 1,
+    "doseUnit": "мг"
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-01T22:19:06.618Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-01T22:21:48.613Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68dda9558e4b24450d7cfc0c"
+  },
+  "name": "Бромгидрохлорфенилбензодиазепин (амп.)",
+  "latinName": "Бромгидрохлорфенилбензодиазепин",
+  "synonyms": [
+    "Феназепам"
+  ],
+  "forms": {
+    "doseValue": 1,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-01T22:21:09.386Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-01T22:21:09.386Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68ddaa598e4b24450d7cfeb2"
+  },
+  "name": "Будесонид",
+  "latinName": "Sol. Budesonidi",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 0.5,
+    "doseUnit": "мг/мл",
+    "volumeMl": 2
+  },
+  "pediatricDose": [
+    "1",
+    "2"
+  ],
+  "pediatricDoseUnit": "мг",
+  "ageRestrictions": "старше 6 месяцев",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-01T22:25:29.775Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-01T22:35:05.419Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68ddab068e4b24450d7cffea"
+  },
+  "name": "Вальпроевая кислота",
+  "latinName": "Sol. Acidi valproici",
+  "synonyms": [
+    "Конвулекс"
+  ],
+  "forms": {
+    "doseValue": 100,
+    "doseUnit": "мг/мл",
+    "volumeMl": 5
+  },
+  "pediatricDose": [
+    "15",
+    "20",
+    "30",
+    "50"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "старше 6 месяцев",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "С 6 мес. до 10 лет - 15-50 мг/кг; старше 10 лет - 15 мг/кг",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-01T22:28:22.016Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-01T22:28:22.016Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68ddab5d8e4b24450d7cffed"
+  },
+  "name": "Верапамил",
+  "latinName": "Sol. Verapamili",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 2.5,
+    "doseUnit": "мг/мл",
+    "volumeMl": 2
+  },
+  "pediatricDose": [
+    "0,1"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "У детей максимальная доза 10 мг",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-01T22:29:49.367Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-01T22:29:49.367Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68ddabcd8e4b24450d7d01cb"
+  },
+  "name": "Вода для инъекций",
+  "latinName": "Aqua pro injectionibus",
+  "synonyms": [],
+  "forms": {
+    "doseUnit": "",
+    "volumeMl": 5
+  },
+  "pediatricDose": [
+    "10",
+    "20"
+  ],
+  "pediatricDoseUnit": "мл",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-01T22:31:41.654Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-01T22:33:33.112Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68de3b9e5bbc1848f45d6308"
+  },
+  "name": "Галантамин",
+  "latinName": "Sol. Galantamini",
+  "synonyms": [
+    "Нивалин"
+  ],
+  "forms": {
+    "doseValue": 2.5,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "0,2",
+    "1",
+    "5"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "старше 1 года",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "с 1 года - 0,2 - 1 мг; старше 5 лет - 1 - 5 мг",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-02T08:45:19.003Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-02T08:45:19.003Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68de4bc8d3b9efb571f5cbf9"
+  },
+  "name": "Эуфиллин",
+  "latinName": "Aminophylline",
+  "synonyms": [
+    "Аминофиллин",
+    "Теофиллин"
+  ],
+  "forms": {
+    "doseValue": 24,
+    "doseUnit": "мг/мл",
+    "volumeMl": 10
+  },
+  "pediatricDose": [
+    "5-6",
+    "10-15"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "с 3 месяцев",
+  "indications": [
+    "Бронхиальная астма",
+    "ХОБЛ",
+    "Апноэ недоношенных"
+  ],
+  "contraindications": [
+    "Гиперчувствительность",
+    "Тяжелая артериальная гипотензия",
+    "Острый инфаркт миокарда"
+  ],
+  "adverse": [
+    "Тошнота",
+    "Рвота",
+    "Тахикардия",
+    "Возбуждение",
+    "Судороги при передозировке"
+  ],
+  "interactions": [
+    "Усиливает действие диуретиков",
+    "Снижает эффективность литиевых препаратов"
+  ],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-02T09:54:16.454Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T07:52:20.489Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68df813f509709ccc5897ce9"
+  },
+  "name": "Галоперидол",
+  "latinName": "Sol. Haloperidoli",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 5,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "0,025",
+    "0,075"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "старше 3 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T07:54:39.036Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T07:54:39.036Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68df8210509709ccc5897d8a"
+  },
+  "name": "Гепарин натрия",
+  "latinName": "Sol. Heparini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 5000,
+    "doseUnit": "МЕ/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "75"
+  ],
+  "pediatricDoseUnit": "ЕД/кг",
+  "ageRestrictions": "ограничений нет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T07:58:08.778Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T07:58:08.778Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68df8278509709ccc5897d8d"
+  },
+  "name": "Эноксапарин натрия",
+  "latinName": "Sol. Enoxaparini natrii",
+  "synonyms": [
+    "Эниксум"
+  ],
+  "forms": {
+    "doseValue": 10000,
+    "doseUnit": "МЕ/мл",
+    "volumeMl": 0.4
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T07:59:52.286Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T07:59:52.286Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68df8312509709ccc5897e21"
+  },
+  "name": "ГЭК 6%",
+  "latinName": "Sol. Hydroxyaethylkrachmali 6%",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 60,
+    "doseUnit": "мг/мл",
+    "volumeMl": 250
+  },
+  "pediatricDose": [
+    "10",
+    "15"
+  ],
+  "pediatricDoseUnit": "мл/кг",
+  "ageRestrictions": "",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T08:02:26.905Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T09:09:52.345Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68df838b509709ccc5897ec4"
+  },
+  "name": "Дексаметазон",
+  "latinName": "Sol. Dexamethasoni",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 4,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "0,2",
+    "1,2"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T08:04:27.846Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T08:04:27.846Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68df912e509709ccc5897f0d"
+  },
+  "name": "Декстроза 5%",
+  "latinName": "Sol. Glucosae",
+  "synonyms": [
+    "Глюкоза"
+  ],
+  "forms": {
+    "doseValue": 50,
+    "doseUnit": "мг/мл",
+    "volumeMl": 250
+  },
+  "pediatricDose": [
+    "2",
+    "10",
+    "15",
+    "20"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "До 1 года - 2 мл/кг в/венно струйно \nОт 1 года до 6 лет - 2 мл/кг в/венно струйно\nСтарше 6 лет - 2 мл/кг в/венно струйно",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T09:02:38.165Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T09:04:24.741Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68df9193509709ccc5897f10"
+  },
+  "name": "Декстроза 10%",
+  "latinName": "Sol. Glucosae",
+  "synonyms": [
+    "Глюкоза"
+  ],
+  "forms": {
+    "doseValue": 100,
+    "doseUnit": "мг/мл",
+    "volumeMl": 500
+  },
+  "pediatricDose": [
+    "2",
+    "10",
+    "15",
+    "20"
+  ],
+  "pediatricDoseUnit": "мл/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "До 1 года - 2 мл/кг в/венно струйно \nОт 1 года до 6 лет - 2 мл/кг в/венно струйно\nСтарше 6 лет - 2 мл/кг в/венно струйно",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T09:04:19.578Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T09:04:19.578Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68df931d509709ccc5897f6f"
+  },
+  "name": "Декстроза 40%",
+  "latinName": "Sol. Glucosae",
+  "synonyms": [
+    "Глюкоза"
+  ],
+  "forms": {
+    "doseValue": 400,
+    "doseUnit": "мг/мл",
+    "volumeMl": 10
+  },
+  "pediatricDose": [
+    "2",
+    "10",
+    "15",
+    "20"
+  ],
+  "pediatricDoseUnit": "мл/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "До 1 года - 2 мл/кг в/венно струйно \nОт 1 года до 6 лет - 2 мл/кг в/венно струйно\nСтарше 6 лет - 2 мл/кг в/венно струйно",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T09:10:53.563Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T09:11:01.481Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68df938f509709ccc5897f74"
+  },
+  "name": "Сибазон",
+  "latinName": "Sol. Sibazoni",
+  "synonyms": [
+    "Диазепам",
+    "Реланиум"
+  ],
+  "forms": {
+    "doseValue": 5,
+    "doseUnit": "мг/мл",
+    "volumeMl": 2
+  },
+  "pediatricDose": [
+    "0,2",
+    "0,5"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "Особенности применения\n\nПрименяется у детей с 1 месяца жизни\nДля разведения используется раствор Натрия хлорида 0,9%\n\nИсходная доза вводимого диазепама: 0,15–0,2 мг/кг (0,03–0,04 мл/кг) внутривенно медленно в течение 5 минут\n\nПри отсутствии эффекта продолжается внутривенное введение до достижения максимальной разовой дозы, которая составляет:\nдля детей до 5 лет – 5 мг (1 мл)\nдля детей старше 5 лет – 10 мг (2 мл)\n\nПовторное введение медленно свыше максимальной разовой дозы возможно не ранее, чем через 2 часа",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T09:12:47.276Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T09:14:51.406Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68df94fd509709ccc5898029"
+  },
+  "name": "Унитиол",
+  "latinName": "Sol. Unithiol",
+  "synonyms": [
+    "Димеркаптопропансульфонат"
+  ],
+  "forms": {
+    "doseValue": 50,
+    "doseUnit": "мг/мл",
+    "volumeMl": 5
+  },
+  "pediatricDose": [
+    "0,1"
+  ],
+  "pediatricDoseUnit": "мл/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T09:18:53.758Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T09:18:53.758Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68df9587509709ccc589802c"
+  },
+  "name": "Димедрол",
+  "latinName": "Sol. Diphenhydramini",
+  "synonyms": [
+    "Дифенгидрамин"
+  ],
+  "forms": {
+    "doseValue": 10,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "3",
+    "5",
+    "10"
+  ],
+  "pediatricDoseUnit": "мг",
+  "ageRestrictions": "старше 7 месяцев",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "7 - 12 мес. - 0,3-0,5 мл (3-5 мг); \n1 - 3 года - 0,5 -1,0 мл (5-10 мг); \nс 4 лет не более 10 мг",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T09:21:11.911Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T09:21:11.911Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68dfaf68509709ccc5898125"
+  },
+  "name": "Добутамин",
+  "latinName": "Sol. Dobutamini",
+  "synonyms": [
+    "Sol. Dobutamini"
+  ],
+  "forms": {
+    "doseValue": 250,
+    "doseUnit": "мг"
+  },
+  "pediatricDose": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "10",
+    "15",
+    "20"
+  ],
+  "pediatricDoseUnit": "мкг/кг/мин",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T11:11:36.695Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T11:46:09.844Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68dfb008509709ccc5898180"
+  },
+  "name": "Допамин",
+  "latinName": "Sol. Dopamini",
+  "synonyms": [
+    "Sol. Dopamini"
+  ],
+  "forms": {
+    "doseValue": 40,
+    "doseUnit": "мг/мл",
+    "volumeMl": 5
+  },
+  "pediatricDose": [
+    "5",
+    "10",
+    "15",
+    "25"
+  ],
+  "pediatricDoseUnit": "мкг/кг/мин",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T11:14:16.427Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T11:46:21.206Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68dfb062509709ccc5898183"
+  },
+  "name": "Дроперидол",
+  "latinName": "Sol. Droperidoli",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 2.5,
+    "doseUnit": "мг/мл",
+    "volumeMl": 2
+  },
+  "pediatricDose": [
+    "0.1"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "старше 3 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T11:15:46.837Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T11:15:46.837Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68dfb3c8509709ccc58981cc"
+  },
+  "name": "Дротаверин",
+  "latinName": "Sol. Drotaverini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 20,
+    "doseUnit": "мг",
+    "volumeMl": 2
+  },
+  "pediatricDose": [
+    "0.1",
+    "0.2"
+  ],
+  "pediatricDoseUnit": "мл/год",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "До 6 лет 0,1 - 0,2 мл/год жизни \nСтарше 6-12 лет - 1-2 мл \n**NB. Старше 18 лет**",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T11:30:16.877Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T11:30:16.877Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68dfb3fd509709ccc5898227"
+  },
+  "name": "Изосорбида динитрат",
+  "latinName": "Sol. Isosorbidi dinitri",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 1,
+    "doseUnit": "мг/мл",
+    "volumeMl": 10
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T11:31:09.228Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T11:31:09.228Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68dfb7da509709ccc589822e"
+  },
+  "name": "Изокет (спрей)",
+  "latinName": "Sol. Isosorbidi dinitri",
+  "synonyms": [
+    "Изосорбида динитрат спрей"
+  ],
+  "forms": {
+    "doseValue": 1.25,
+    "doseUnit": "мг",
+    "volumeMl": 15
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T11:47:38.618Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T11:47:38.618Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68dfb80e509709ccc5898231"
+  },
+  "name": "Цитофлавин",
+  "latinName": "Sol. Cytoflavin",
+  "synonyms": [
+    "Инозин + никотинамид + рибофлавин + янтарная кислота"
+  ],
+  "forms": {
+    "doseValue": 100,
+    "doseUnit": "мг/мл",
+    "volumeMl": 10
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T11:48:30.170Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T11:48:30.170Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68dfb897509709ccc5898234"
+  },
+  "name": "Беродуал",
+  "latinName": "Sol. Berodual",
+  "synonyms": [
+    "Ипратропия бромид + фенотерол"
+  ],
+  "forms": {
+    "volumeMl": 20
+  },
+  "pediatricDose": [
+    "1 капля/кг"
+  ],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "ограничений нет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "до 6 лет - 1 капля/кг веса не более 10 кап \nстарше 6 лет - до 20 кап.",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T11:50:47.434Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T11:50:47.434Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68dffcb8509709ccc5898237"
+  },
+  "name": "Калия и магния аспарагинат",
+  "latinName": "Sol. Kalii asparagini et Magnii asparagini",
+  "synonyms": [
+    "КМА"
+  ],
+  "forms": {
+    "volumeMl": 250
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T16:41:28.269Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T16:41:28.269Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68dffcf1509709ccc589823a"
+  },
+  "name": "Калия хлорид + натрия ацетат + натрия хлорид",
+  "latinName": "Sol. Acesol",
+  "synonyms": [
+    "Ацесоль"
+  ],
+  "forms": {
+    "volumeMl": 400
+  },
+  "pediatricDose": [
+    "15",
+    "20"
+  ],
+  "pediatricDoseUnit": "мл/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "20 - 30 кап. в минуту",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T16:42:25.747Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T16:42:25.747Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68dffd26509709ccc589823d"
+  },
+  "name": "Калия хлорид + кальция хлорид + натрия хлорид",
+  "latinName": "Sol. Ringer",
+  "synonyms": [
+    "Раствор Рингера"
+  ],
+  "forms": {
+    "volumeMl": 500
+  },
+  "pediatricDose": [
+    "20",
+    "30"
+  ],
+  "pediatricDoseUnit": "мл/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-03T16:43:18.651Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-03T16:43:18.651Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e0be4929b028b843a3bd74"
+  },
+  "name": "Кальция глюконат",
+  "latinName": "Sol. Calcii gluconati",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 100,
+    "doseUnit": "мг/мл",
+    "volumeMl": 10
+  },
+  "pediatricDose": [
+    "0.2"
+  ],
+  "pediatricDoseUnit": "мл/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "Максимальная доза до 14 лет не более 5 мл\nС 14 лет - 10 мл в/венно \n\n**вводить только 1% раствор, медленно**",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T06:27:21.992Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T06:27:21.992Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e0bf8129b028b843a3bd77"
+  },
+  "name": "Каптоприл",
+  "latinName": "Tab. Captoprili",
+  "synonyms": [
+    "Капотен"
+  ],
+  "forms": {
+    "doseValue": 25,
+    "doseUnit": "мг"
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T06:32:33.592Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T06:32:33.592Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e0bfc829b028b843a3bd7a"
+  },
+  "name": "Карбоксим",
+  "latinName": "Sol. Carboxim",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 50,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "0.1"
+  ],
+  "pediatricDoseUnit": "мл/год",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T06:33:44.800Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T06:33:44.800Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e0bfed29b028b843a3bd7d"
+  },
+  "name": "Кетамин",
+  "latinName": "Sol. Ketamini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 50,
+    "doseUnit": "мг/мл",
+    "volumeMl": 2
+  },
+  "pediatricDose": [
+    "1",
+    "2"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T06:34:21.689Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T06:34:21.689Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e0c02129b028b843a3bd80"
+  },
+  "name": "Кеторол",
+  "latinName": "Sol. Ketoroli",
+  "synonyms": [
+    "Кеторолак"
+  ],
+  "forms": {
+    "doseValue": 30,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "30"
+  ],
+  "pediatricDoseUnit": "мг",
+  "ageRestrictions": "старше 16 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T06:35:13.633Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T06:35:13.633Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e0c04129b028b843a3bd83"
+  },
+  "name": "Клонидин",
+  "latinName": "Sol. Clonidini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 0.1,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "старше 18 лет",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T06:35:45.566Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T06:35:45.566Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e0c06a29b028b843a3bd86"
+  },
+  "name": "Клопидогрел",
+  "latinName": "Tab. Clopidogreli",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 75,
+    "doseUnit": "мг"
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T06:36:26.809Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T06:36:26.809Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e0c27929b028b843a3bd89"
+  },
+  "name": "Лидокаин",
+  "latinName": "Sol. Lidocaini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 20,
+    "doseUnit": "мг/мл",
+    "volumeMl": 2
+  },
+  "pediatricDose": [
+    "1"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "Парентерально вводить только 1% раствор",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T06:45:13.577Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T06:45:13.577Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e0c2cc29b028b843a3bde4"
+  },
+  "name": "Лидокаин (спрей)",
+  "latinName": "Spray Lidocaini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 10,
+    "doseUnit": "%",
+    "volumeMl": 50
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "1 - 2 дозы для местного применения",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T06:46:36.806Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T06:46:36.806Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e109f129b028b843a3c41f"
+  },
+  "name": "Магния сульфат",
+  "latinName": "Sol Magnesii sulfas",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 250,
+    "doseUnit": "мг/мл",
+    "volumeMl": 10
+  },
+  "pediatricDose": [
+    "50"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "3 мл в разведении натрия хлорида 0,9% - 250 мл в/венно капельно 2 кап/кг в мин. - строго 30 мин",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T11:50:09.490Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T11:50:09.490Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e111c129b028b843a3c47a"
+  },
+  "name": "Меглюмина натрия сукцинат",
+  "latinName": "Sol. Meglumini natrii succinatis",
+  "synonyms": [
+    "Реамберин"
+  ],
+  "forms": {
+    "doseValue": 1.5,
+    "doseUnit": "%",
+    "volumeMl": 500
+  },
+  "pediatricDose": [
+    "10"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T12:23:29.096Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T12:23:29.096Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e1124a29b028b843a3c4d5"
+  },
+  "name": "Метамизол натрия + питофенон + фенпивериния бромид",
+  "latinName": "Sol. Metamizoli natrii+ Pitofenoni+ Fenpiverini bromidi",
+  "synonyms": [
+    "Спазмалин",
+    "Спазматен"
+  ],
+  "forms": {
+    "volumeMl": 5
+  },
+  "pediatricDose": [
+    "0,1",
+    "0,2",
+    "0,4",
+    "0,8"
+  ],
+  "pediatricDoseUnit": "мл",
+  "ageRestrictions": "старше 3 месяцев",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "3-11 мес. - 0,1 мл\n1 - 4 года -0,2 мл\n8 - 11 лет - 0,4 мл\n12 - 14 лет - 0,8 мл\n\nПри необходимости можно повторно ввести разовую дозу.",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T12:25:46.448Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T12:25:46.448Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e1128a29b028b843a3c4d8"
+  },
+  "name": "Метамизол натрия",
+  "latinName": "Sol. Metamizoli natrii",
+  "synonyms": [
+    "Анальгин"
+  ],
+  "forms": {
+    "doseValue": 500,
+    "doseUnit": "мг/мл",
+    "volumeMl": 2
+  },
+  "pediatricDose": [
+    "10"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T12:26:50.306Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T12:26:50.306Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e112d729b028b843a3c4db"
+  },
+  "name": "Метоклопрамид",
+  "latinName": "Sol. Metoclopramidi",
+  "synonyms": [
+    "Церукал"
+  ],
+  "forms": {
+    "doseValue": 5,
+    "doseUnit": "мг/мл",
+    "volumeMl": 2
+  },
+  "pediatricDose": [
+    "0,1"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "старше 2 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "0,1 мг/кг (0,02 мл/кг)\n \n**максимальная доза 1 мл до 12 лет; с 12 лет - 2 мл**",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T12:28:07.171Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T12:28:07.171Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e113e929b028b843a3c536"
+  },
+  "name": "Метопролол",
+  "latinName": "Sol. Metoprololi",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 1,
+    "doseUnit": "мг/мл",
+    "volumeMl": 5
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T12:32:41.148Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T12:32:41.148Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e1141729b028b843a3c539"
+  },
+  "name": "Мидазолам",
+  "latinName": "Sol. Midazolami",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 5,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "0,3",
+    "0,5"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T12:33:27.030Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T12:33:27.030Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e1146529b028b843a3c53c"
+  },
+  "name": "Моксонидин",
+  "latinName": "Tab. Moxonidini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 0.4,
+    "doseUnit": "мг"
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T12:34:45.201Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T12:34:45.201Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e1149129b028b843a3c53f"
+  },
+  "name": "Морфин",
+  "latinName": "Sol. Morphini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 10,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "0.1",
+    "0.2"
+  ],
+  "pediatricDoseUnit": "мл/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T12:35:29.011Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T12:35:29.011Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e114c129b028b843a3c542"
+  },
+  "name": "Налоксон",
+  "latinName": "Sol. Naloxoni",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 0.4,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "0.01",
+    "0.02"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T12:36:17.454Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T12:36:17.454Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e114f929b028b843a3c545"
+  },
+  "name": "Натрия гидрокарбонат",
+  "latinName": "Sol. Natrii hydrocarbonatis",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 5,
+    "doseUnit": "%",
+    "volumeMl": 200
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T12:37:13.819Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T12:38:20.699Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e1158329b028b843a3c5fa"
+  },
+  "name": "Натрия тиосульфат",
+  "latinName": "Sol. Natrii thiosulfatis",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 300,
+    "doseUnit": "мг/мл",
+    "volumeMl": 10
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T12:39:31.037Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T12:39:31.037Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e115ad29b028b843a3c5fd"
+  },
+  "name": "Натрия хлорид",
+  "latinName": "Sol. Natrii Cloridi",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 0.9,
+    "doseUnit": "%",
+    "volumeMl": 250
+  },
+  "pediatricDose": [
+    "10",
+    "15",
+    "20"
+  ],
+  "pediatricDoseUnit": "мл/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T12:40:13.487Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T12:40:13.487Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e1161229b028b843a3c600"
+  },
+  "name": "Нитроглицерин",
+  "latinName": "Sol. Nitroglycerini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 1,
+    "doseUnit": "мг/мл",
+    "volumeMl": 10
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T12:41:54.926Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T12:41:54.926Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e1163c29b028b843a3c603"
+  },
+  "name": "Нифедипин",
+  "latinName": "Tab. Nifedipini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 10,
+    "doseUnit": "мг"
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T12:42:36.232Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T12:42:36.232Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e1171029b028b843a3c694"
+  },
+  "name": "Норэпинефрин",
+  "latinName": "Sol. Norepinephrini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 2,
+    "doseUnit": "мг/мл",
+    "volumeMl": 8
+  },
+  "pediatricDose": [
+    "0,05",
+    "0,1",
+    "0,2",
+    "0,3",
+    "0,5",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5"
+  ],
+  "pediatricDoseUnit": "мкг/кг/мин",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T12:46:08.805Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T12:46:51.291Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e1176429b028b843a3c702"
+  },
+  "name": "Окситоцин",
+  "latinName": "Sol. Oxytocini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 5,
+    "doseUnit": "МЕ/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T12:47:32.407Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T12:47:32.407Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e17f08a39cd964da9c642d"
+  },
+  "name": "Парафин жидкий",
+  "latinName": "Sol. Paraffini liquidi",
+  "synonyms": [],
+  "pediatricDose": [
+    "1"
+  ],
+  "pediatricDoseUnit": "мл/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:09:44.309Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:09:44.309Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e17f2ca39cd964da9c6430"
+  },
+  "name": "Парацетамол",
+  "latinName": "Tab. Paracetamoli",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 500,
+    "doseUnit": "мг"
+  },
+  "pediatricDose": [
+    "15"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "старше 1 месяца",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:10:20.450Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:10:20.450Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e17f5aa39cd964da9c6433"
+  },
+  "name": "Пипекурония бромид",
+  "latinName": "Sol. Pipecuronii bromidi",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 4,
+    "doseUnit": "мг"
+  },
+  "pediatricDose": [
+    "0,04",
+    "0,05",
+    "0,06"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "старше 3 месяцев",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "С 3-х мес. - 0,04 мг/кг, 1-14 лет - 0,05-0,06 мг/кг",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:11:06.636Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:11:06.636Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e17f81a39cd964da9c6436"
+  },
+  "name": "Пиридоксин",
+  "latinName": "Sol. Pyridoxini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 50,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "0,1"
+  ],
+  "pediatricDoseUnit": "мл/год",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:11:45.402Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:11:45.402Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e17fd2a39cd964da9c6439"
+  },
+  "name": "Платифиллин",
+  "latinName": "Sol. Platyphyllini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 2,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "0,035",
+    "0,03",
+    "0,025",
+    "0,02"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "До 1 года - 0,035 мг/кг (0,0175 мл/кг)\n1-5 лет - 0,03 мг/кг (0,015 мл/кг)\n6-10 лет - 0,025 мг/кг (0,0125 мл/кг)\n11-14 лет - 0,02 мг/кг (0,01 мл/кг)",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:13:06.737Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:13:06.737Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e17ff3a39cd964da9c643c"
+  },
+  "name": "Преднизолон",
+  "latinName": "Sol. Prednisoloni",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 30,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "3",
+    "4",
+    "5"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:13:39.443Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:13:39.443Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e1801ca39cd964da9c643f"
+  },
+  "name": "Прокаин",
+  "latinName": "Sol. Procaini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 5,
+    "doseUnit": "мг/мл",
+    "volumeMl": 5
+  },
+  "pediatricDose": [
+    "10",
+    "15",
+    "20"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "старше 12 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:14:20.959Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:14:20.959Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e1803aa39cd964da9c6442"
+  },
+  "name": "Прокаинамид",
+  "latinName": "Sol. Procainamidi",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 100,
+    "doseUnit": "мг/мл",
+    "volumeMl": 5
+  },
+  "pediatricDose": [
+    "10"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:14:50.550Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:14:50.550Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e18068a39cd964da9c6445"
+  },
+  "name": "Пропофол",
+  "latinName": "Sol. Propofoli",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 10,
+    "doseUnit": "мг/мл",
+    "volumeMl": 20
+  },
+  "pediatricDose": [
+    "2",
+    "3",
+    "4"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "старше 1 месяца",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:15:36.122Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:15:36.122Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e18087a39cd964da9c6448"
+  },
+  "name": "Пропранолол",
+  "latinName": "Tab. Propranololi",
+  "synonyms": [
+    "Анаприлин"
+  ],
+  "forms": {
+    "doseValue": 10,
+    "doseUnit": "мг"
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:16:07.377Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:16:07.377Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e180bba39cd964da9c644b"
+  },
+  "name": "Сальбутамол",
+  "latinName": "",
+  "synonyms": [
+    "Sol. Salbutamoli"
+  ],
+  "forms": {
+    "doseValue": 1,
+    "doseUnit": "мг/мл",
+    "volumeMl": 2.5
+  },
+  "pediatricDose": [
+    "2.5"
+  ],
+  "pediatricDoseUnit": "мг",
+  "ageRestrictions": "старше 2 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:16:59.447Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:16:59.447Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e1822da39cd964da9c644e"
+  },
+  "name": "Стрептомицин",
+  "latinName": "Streptomycini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 1,
+    "doseUnit": "г"
+  },
+  "pediatricDose": [
+    "20"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:23:09.492Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:23:09.492Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e1824aa39cd964da9c6451"
+  },
+  "name": "Суксаметония хлорид",
+  "latinName": "Sol. Suxamethonii chloridi",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 20,
+    "doseUnit": "мг/мл",
+    "volumeMl": 5
+  },
+  "pediatricDose": [
+    "2"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "старше 1 года",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:23:38.098Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:23:38.098Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e1827ca39cd964da9c6454"
+  },
+  "name": "Сульфацетамид",
+  "latinName": "",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 20,
+    "doseUnit": "%",
+    "volumeMl": 1.3
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:24:28.143Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:24:28.143Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e182a6a39cd964da9c6457"
+  },
+  "name": "Тиамин",
+  "latinName": "Sol. Thiamini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 50,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "0,1"
+  ],
+  "pediatricDoseUnit": "мл/год",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:25:10.994Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:25:10.994Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e182cfa39cd964da9c645a"
+  },
+  "name": "Тиопентал натрия",
+  "latinName": "Sol. Thiopentali Natrii",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 1000,
+    "doseUnit": "мг"
+  },
+  "pediatricDose": [
+    "1",
+    "2"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:25:51.622Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:25:51.622Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e182f0a39cd964da9c645d"
+  },
+  "name": "Трамадол",
+  "latinName": "Sol. Tramadoli",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 50,
+    "doseUnit": "мг/мл",
+    "volumeMl": 2
+  },
+  "pediatricDose": [
+    "1",
+    "2"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "старше 1 года",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:26:24.466Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:26:24.466Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e18316a39cd964da9c6460"
+  },
+  "name": "Транексамовая кислота",
+  "latinName": "Sol. Acidi tranexamici",
+  "synonyms": [
+    "Транексам"
+  ],
+  "forms": {
+    "doseValue": 50,
+    "doseUnit": "мг/мл",
+    "volumeMl": 5
+  },
+  "pediatricDose": [
+    "10"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "старше 2 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:27:02.727Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:27:02.727Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e18350a39cd964da9c6463"
+  },
+  "name": "Трифосаденин",
+  "latinName": "Sol. Triphosadenini",
+  "synonyms": [
+    "АТФ"
+  ],
+  "forms": {
+    "doseValue": 10,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "0,1",
+    "0,2"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "Максимальная доза у детей 1 мл",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:28:00.425Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:28:00.425Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e18370a39cd964da9c6466"
+  },
+  "name": "Урапидил",
+  "latinName": "Sol. Urapidili",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 5,
+    "doseUnit": "мг/мл",
+    "volumeMl": 5
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:28:32.392Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:28:32.392Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e18397a39cd964da9c6469"
+  },
+  "name": "Фенилэфрин",
+  "latinName": "Sol. Phenylephrini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 10,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "0,1"
+  ],
+  "pediatricDoseUnit": "мл",
+  "ageRestrictions": "",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:29:11.148Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:29:11.148Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e183c7a39cd964da9c646c"
+  },
+  "name": "Фентанил",
+  "latinName": "Sol. Phentanyli",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 50,
+    "doseUnit": "мкг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "1",
+    "2",
+    "3",
+    "4"
+  ],
+  "pediatricDoseUnit": "мкг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:29:59.605Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:29:59.605Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e18406a39cd964da9c646f"
+  },
+  "name": "Фильтрум",
+  "latinName": "Tab. Filtrum",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 400,
+    "doseUnit": "мг"
+  },
+  "pediatricDose": [
+    "200",
+    "400",
+    "800",
+    "1200"
+  ],
+  "pediatricDoseUnit": "мг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "до 1 года - 200 мг;\n1-3 года - 200 - 400 мг;\n4 - 7 лет - 400 мг;\n7 - 12 лет - 400 - 800 мг;\nвзрослые - 400 - 1200 мг",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:31:02.185Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:31:02.185Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e18440a39cd964da9c6472"
+  },
+  "name": "Флумазенил",
+  "latinName": "Sol. Flumazenili",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 0.1,
+    "doseUnit": "мг/мл",
+    "volumeMl": 5
+  },
+  "pediatricDose": [
+    "0.01"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "старше 1 года",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:32:00.063Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:32:00.063Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e18478a39cd964da9c6475"
+  },
+  "name": "Фуросемид",
+  "latinName": "Sol. Furosemidi",
+  "synonyms": [
+    "Лазикс"
+  ],
+  "forms": {
+    "doseValue": 10,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "1",
+    "2"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:32:56.729Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:32:56.729Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e184a4a39cd964da9c6478"
+  },
+  "name": "Хлорамфеникол",
+  "latinName": "Susp./Tab. Chloramphenicoli",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 1,
+    "doseUnit": "г"
+  },
+  "pediatricDose": [
+    "50"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "старше 6 месяцев",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:33:40.398Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:33:40.398Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e184d2a39cd964da9c647b"
+  },
+  "name": "Хлоргексидин",
+  "latinName": "Sol. Chlorhexidini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 0.05,
+    "doseUnit": "%",
+    "volumeMl": 100
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 7 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "Применение местное",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:34:26.356Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:34:26.356Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e18509a39cd964da9c647e"
+  },
+  "name": "Хлоропирамин",
+  "latinName": "Sol. Chloropyramini",
+  "synonyms": [
+    "Супрастин"
+  ],
+  "forms": {
+    "doseValue": 20,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "0,1"
+  ],
+  "pediatricDoseUnit": "мл/год",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "Максимальная детская доза 1 мл",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:35:21.551Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:35:21.551Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e18534a39cd964da9c6481"
+  },
+  "name": "Хлорпромазин",
+  "latinName": "Sol. Chlorpromazini",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 25,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "0,25",
+    "0,5",
+    "1"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "старше 6 месяцев",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:36:04.308Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:36:04.308Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e18567a39cd964da9c6484"
+  },
+  "name": "Цефтриаксон",
+  "latinName": "Ceftriaxoni",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 1,
+    "doseUnit": "г"
+  },
+  "pediatricDose": [
+    "50"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "Максимальная детская доза 2 г",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:36:55.274Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:36:55.274Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e1858ea39cd964da9c6487"
+  },
+  "name": "Цинка бисвинилимидазоладиацетат",
+  "latinName": "Sol. Zinci bisvinylimidazoli diacetatis",
+  "synonyms": [
+    "Ацизол"
+  ],
+  "forms": {
+    "doseValue": 60,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "0,1"
+  ],
+  "pediatricDoseUnit": "мл/год",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:37:34.485Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:37:34.485Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e185b3a39cd964da9c648a"
+  },
+  "name": "Энап",
+  "latinName": "Sol. Enapi",
+  "synonyms": [
+    "Эналаприлат"
+  ],
+  "forms": {
+    "doseValue": 1.25,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:38:11.261Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:38:11.261Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e185fda39cd964da9c648d"
+  },
+  "name": "Адреналин",
+  "latinName": "Sol. Adrenalini",
+  "synonyms": [
+    "Эпинефрин"
+  ],
+  "forms": {
+    "doseValue": 1,
+    "doseUnit": "мг/мл",
+    "volumeMl": 1
+  },
+  "pediatricDose": [
+    "0,01"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "**в/венно (но не более 1 мг для разового введения)** \n0,1 мг/кг эндотрахеально",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:39:25.946Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:39:25.946Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e1861ca39cd964da9c6490"
+  },
+  "name": "Эсмолол",
+  "latinName": "Sol. Esmololi",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 10,
+    "doseUnit": "мг/мл",
+    "volumeMl": 10
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:39:56.982Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:39:56.982Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e1864da39cd964da9c6493"
+  },
+  "name": "Этамзилат",
+  "latinName": "Sol. Etamsylati",
+  "synonyms": [],
+  "forms": {
+    "doseValue": 125,
+    "doseUnit": "мг/мл",
+    "volumeMl": 2
+  },
+  "pediatricDose": [
+    "12,5"
+  ],
+  "pediatricDoseUnit": "мг/кг",
+  "ageRestrictions": "без ограничений",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "максимальная детская доза 500 мг",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:40:45.020Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:40:45.020Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e18685a39cd964da9c6496"
+  },
+  "name": "Мексидол",
+  "latinName": "Sol. Mexidol",
+  "synonyms": [
+    "Этилметилгидроксипиридинасукцинат"
+  ],
+  "forms": {
+    "doseValue": 50,
+    "doseUnit": "мг/мл",
+    "volumeMl": 5
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:41:41.701Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:41:41.701Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68e186b4a39cd964da9c6499"
+  },
+  "name": "Терлипрессин",
+  "latinName": "Sol. Terlipressini",
+  "synonyms": [
+    "Реместип"
+  ],
+  "forms": {
+    "doseValue": 100,
+    "doseUnit": "мкг",
+    "volumeMl": 10
+  },
+  "pediatricDose": [],
+  "pediatricDoseUnit": "",
+  "ageRestrictions": "старше 18 лет",
+  "indications": [],
+  "contraindications": [],
+  "adverse": [],
+  "interactions": [],
+  "antidotes": [],
+  "description": "",
+  "doses": [],
+  "createdAt": {
+    "$date": "2025-10-04T20:42:28.773Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-04T20:42:28.773Z"
+  },
+  "__v": 0
+}]

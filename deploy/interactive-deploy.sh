@@ -96,7 +96,8 @@ generate_password() {
 
 # Функция для генерации JWT секрета
 generate_jwt_secret() {
-    openssl rand -base64 64 | tr -d "=+/"
+    # Используем hex вместо base64 чтобы избежать проблем с многострочными значениями
+    openssl rand -hex 32
 }
 
 # Заголовок
@@ -136,9 +137,9 @@ echo
 info "=== СБОР ИНФОРМАЦИИ О ПРОЕКТЕ ==="
 
 read_input "Введите название проекта" PROJECT_NAME "false" "smp-help"
-read_input "Введите имя пользователя для проекта" PROJECT_USER "false" "smp-help"
+read_input "Введите имя пользователя для проекта" PROJECT_USER "false" "root"
 read_input "Введите домен вашего сайта (например: helpsmp.ru)" DOMAIN "false" "helpsmp.ru"
-read_input "Введите рабочую директорию" WORK_DIR "false" "/var/www/$DOMAIN"
+read_input "Введите рабочую директорию" WORK_DIR "false" "/home/smp-help/smp-help"
 
 # Информация о домене
 echo
@@ -169,13 +170,20 @@ fi
 # Настройки базы данных
 echo
 info "=== НАСТРОЙКА MONGODB ==="
+info "MongoDB должен быть уже установлен на сервере"
+echo
 
 read_input "Введите название базы данных" MONGO_DB "false" "$PROJECT_NAME"
 read_input "Введите имя пользователя MongoDB" MONGO_USER "false" "help-smp-user"
+read_input "Введите пароль MongoDB пользователя" MONGO_PASS "true" ""
 
-# Генерируем пароль для MongoDB
-MONGO_PASS=$(generate_password 16)
-log "Сгенерирован пароль для MongoDB: $MONGO_PASS"
+if [ -z "$MONGO_PASS" ]; then
+    # Генерируем пароль если не указан
+    MONGO_PASS=$(generate_password 16)
+    log "Сгенерирован пароль для MongoDB: $MONGO_PASS"
+else
+    log "Используется указанный пароль MongoDB"
+fi
 
 # Настройки безопасности
 echo
@@ -274,16 +282,35 @@ install_dependencies() {
     log "✅ Node.js установлен: $NEW_NODE"
     log "✅ npm установлен: $NEW_NPM"
     
-    # Устанавливаем MongoDB
-    log "📦 Устанавливаем MongoDB..."
-    curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | gpg --dearmor -o /usr/share/keyrings/mongodb-server-7.0.gpg
-    echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-7.0.list
-    apt update
-    apt install -y mongodb-org
+    # Проверяем, что MongoDB установлен
+    log "📦 Проверяем MongoDB..."
     
-    # Запускаем и включаем автозапуск MongoDB
-    systemctl start mongod
-    systemctl enable mongod
+    if ! command -v mongosh >/dev/null 2>&1; then
+        error "MongoDB не установлен!"
+        error "Установите MongoDB перед запуском этого скрипта:"
+        error "  curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | gpg --dearmor -o /usr/share/keyrings/mongodb-server-8.0.gpg"
+        error "  echo 'deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse' | tee /etc/apt/sources.list.d/mongodb-org-8.0.list"
+        error "  apt update && apt install -y mongodb-org"
+        exit 1
+    fi
+    
+    log "✅ MongoDB уже установлен"
+    
+    # Проверяем, что MongoDB запущен
+    if ! systemctl is-active --quiet mongod; then
+        log "⚙️  Запускаем MongoDB..."
+        systemctl start mongod
+        systemctl enable mongod
+        sleep 3
+    fi
+    
+    if systemctl is-active --quiet mongod; then
+        log "✅ MongoDB работает"
+    else
+        error "❌ Не удалось запустить MongoDB"
+        error "Проверьте логи: tail -f /var/log/mongodb/mongod.log"
+        exit 1
+    fi
     
     # Устанавливаем Nginx
     log "📦 Устанавливаем Nginx..."
@@ -300,86 +327,75 @@ install_dependencies() {
     log "✅ Системные зависимости установлены"
 }
 
-# Функция создания пользователя и директорий
-setup_user_and_directories() {
-    log "👤 Настраиваем пользователя и директории..."
-    
-    # Создаем пользователя если не существует
-    if ! id "$PROJECT_USER" &>/dev/null; then
-        useradd -m -s /bin/bash $PROJECT_USER
-        usermod -aG sudo $PROJECT_USER
-        
-        # Устанавливаем пароль если указан
-        if [ -n "$USER_PASSWORD" ]; then
-            echo "$PROJECT_USER:$USER_PASSWORD" | chpasswd
-        fi
-        
-        log "✅ Пользователь $PROJECT_USER создан"
-    else
-        log "ℹ️ Пользователь $PROJECT_USER уже существует"
-    fi
+# Функция создания директорий
+setup_directories() {
+    log "📁 Настраиваем директории..."
     
     # Создаем директории
     mkdir -p $WORK_DIR
     mkdir -p $LOG_DIR
-    chown -R $PROJECT_USER:$PROJECT_USER $WORK_DIR
-    chown -R $PROJECT_USER:$PROJECT_USER $LOG_DIR
+    
+    # Если пользователь не root, устанавливаем права
+    if [ "$PROJECT_USER" != "root" ]; then
+        chown -R $PROJECT_USER:$PROJECT_USER $WORK_DIR
+        chown -R $PROJECT_USER:$PROJECT_USER $LOG_DIR
+    fi
     
     log "✅ Директории созданы"
 }
 
-# Функция настройки MongoDB
-setup_mongodb() {
-    log "🗄️ Настраиваем MongoDB..."
+# Функция проверки MongoDB
+check_mongodb() {
+    log "🗄️ Проверяем подключение к MongoDB..."
     
-    # Ждем запуска MongoDB
-    sleep 5
+    # Проверяем, что MongoDB доступен
+    if ! systemctl is-active --quiet mongod; then
+        error "MongoDB не запущен"
+        exit 1
+    fi
     
-    # Создаем пользователя для базы данных
-    mongosh --eval "
-        use $MONGO_DB;
-        try {
-            db.createUser({
-                user: '$MONGO_USER',
-                pwd: '$MONGO_PASS',
-                roles: ['readWrite']
-            });
-            print('✅ Пользователь MongoDB создан');
-        } catch (e) {
-            if (e.code === 51003) {
-                print('ℹ️ Пользователь MongoDB уже существует');
-            } else {
-                print('❌ Ошибка создания пользователя MongoDB:', e.message);
-            }
-        }
-    "
+    # Проверяем подключение с указанными учётными данными
+    log "Проверяем подключение к MongoDB с указанными учётными данными..."
     
-    log "✅ MongoDB настроена"
+    if mongosh "mongodb://$MONGO_USER:$MONGO_PASS@localhost:27017/$MONGO_DB" --quiet --eval "db.version()" > /dev/null 2>&1; then
+        log "✅ Подключение к MongoDB успешно!"
+        log "✅ Пользователь $MONGO_USER имеет доступ к базе $MONGO_DB"
+    else
+        warn "⚠️  Не удалось подключиться к MongoDB с указанными учётными данными"
+        warn "⚠️  Возможно, пользователь не существует или пароль неверный"
+        warn "⚠️  Приложение попытается подключиться с этими данными"
+        warn "⚠️  Если подключение не удастся, используйте скрипт create-mongodb-user.sh"
+    fi
 }
 
 # Функция клонирования и сборки проекта
 clone_and_build() {
     log "📥 Клонируем и собираем проект..."
     
-    # Переключаемся на пользователя проекта
-    sudo -u $PROJECT_USER bash -c "
-        # Переходим в домашнюю директорию
-        cd /home/$PROJECT_USER
+    # Определяем директорию для клонирования
+    if [ "$PROJECT_USER" = "root" ]; then
+        CLONE_DIR="/root"
+    else
+        CLONE_DIR="/home/$PROJECT_USER"
+    fi
+    
+    # Переходим в директорию для клонирования
+    cd $CLONE_DIR
+    
+    # Клонируем репозиторий
+    if [ -d "$GITHUB_REPO" ]; then
+        log "📁 Репозиторий уже существует, обновляем..."
+        cd $GITHUB_REPO
+        git pull origin main
+    else
+        log "📥 Клонируем репозиторий..."
+        git clone $GITHUB_URL
+        cd $GITHUB_REPO
+    fi
         
-        # Клонируем репозиторий
-        if [ -d '$GITHUB_REPO' ]; then
-            echo '📁 Репозиторий уже существует, обновляем...'
-            cd $GITHUB_REPO
-            git pull origin main
-        else
-            echo '📥 Клонируем репозиторий...'
-            git clone $GITHUB_URL
-            cd $GITHUB_REPO
-        fi
-        
-        # Создаем файл окружения
-        echo '⚙️ Создаем конфигурацию окружения...'
-        cat > .env.production << 'EOF'
+    # Создаем файл окружения
+    log "⚙️ Создаем конфигурацию окружения..."
+    cat > .env.production << EOF
 # Production Environment Variables
 NODE_ENV=production
 NUXT_PUBLIC_API_BASE_URL=https://$DOMAIN/api
@@ -407,25 +423,24 @@ SMTP_PASS=$SMTP_PASS
 # Yandex Maps
 YAMAPS_API_KEY=$YAMAPS_API_KEY
 EOF
-        
-        # Устанавливаем зависимости
-        echo '📦 Устанавливаем зависимости...'
-        npm install
-        
-        # Проверяем версию Node.js
-        NODE_VERSION=\$(node --version)
-        echo \"📋 Версия Node.js: \$NODE_VERSION\"
-        
-        # Собираем проект
-        echo '🔨 Собираем проект...'
-        if npm run build; then
-            echo '✅ Проект собран успешно'
-        else
-            echo '❌ Ошибка сборки проекта'
-            echo '📋 Проверьте логи выше для диагностики'
-            exit 1
-        fi
-    "
+    
+    # Устанавливаем зависимости
+    log "📦 Устанавливаем зависимости..."
+    npm install
+    
+    # Проверяем версию Node.js
+    NODE_VERSION=$(node --version)
+    log "📋 Версия Node.js: $NODE_VERSION"
+    
+    # Собираем проект
+    log "🔨 Собираем проект..."
+    if npm run build; then
+        log "✅ Проект собран успешно"
+    else
+        error "❌ Ошибка сборки проекта"
+        error "📋 Проверьте логи выше для диагностики"
+        exit 1
+    fi
 }
 
 # Функция копирования файлов
@@ -435,12 +450,21 @@ copy_files() {
     # Очищаем рабочую директорию
     rm -rf $WORK_DIR/*
     
+    # Определяем путь к репозиторию
+    if [ "$PROJECT_USER" = "root" ]; then
+        REPO_PATH="/root/$GITHUB_REPO"
+    else
+        REPO_PATH="/home/$PROJECT_USER/$GITHUB_REPO"
+    fi
+    
     # Копируем собранные файлы
-    cp -r /home/$PROJECT_USER/$GITHUB_REPO/.output/public/* $WORK_DIR/
-    cp -r /home/$PROJECT_USER/$GITHUB_REPO/.output/server/* $WORK_DIR/
+    cp -r $REPO_PATH/.output/public/* $WORK_DIR/
+    cp -r $REPO_PATH/.output/server/* $WORK_DIR/
     
     # Устанавливаем права
-    chown -R $PROJECT_USER:$PROJECT_USER $WORK_DIR
+    if [ "$PROJECT_USER" != "root" ]; then
+        chown -R $PROJECT_USER:$PROJECT_USER $WORK_DIR
+    fi
     chmod -R 755 $WORK_DIR
     
     log "✅ Файлы скопированы"
@@ -469,41 +493,37 @@ setup_pm2() {
     fi
     
     # Создаем конфигурацию PM2 для ES модулей
-    sudo -u $PROJECT_USER bash -c "
-        cd $WORK_DIR
-        
-        # Создаем конфигурацию PM2 для ES модулей
-        cat > ecosystem.config.mjs << 'EOF'
-export default {
+    # Используем шаблон с плейсхолдерами для безопасной подстановки
+    cat > $WORK_DIR/ecosystem.config.cjs << 'EOFCONFIG'
+module.exports = {
   apps: [{
-    name: '$PROJECT_NAME',
+    name: 'PROJECT_NAME_PLACEHOLDER',
     script: './index.mjs',
-    cwd: '$WORK_DIR',
+    cwd: 'WORK_DIR_PLACEHOLDER',
     instances: 1,
     exec_mode: 'fork',
     interpreter: 'node',
-    interpreter_args: '--experimental-modules',
     env: {
       NODE_ENV: 'production',
       PORT: 3000,
-      NUXT_PUBLIC_API_BASE_URL: 'https://$DOMAIN/api',
-      NUXT_PUBLIC_APP_URL: 'https://$DOMAIN',
-      MONGODB_URI: 'mongodb://$MONGO_USER:$MONGO_PASS@localhost:27017/$MONGO_DB',
-      JWT_SECRET: '$JWT_SECRET',
+      NUXT_PUBLIC_API_BASE_URL: 'NUXT_PUBLIC_API_BASE_URL_PLACEHOLDER',
+      NUXT_PUBLIC_APP_URL: 'NUXT_PUBLIC_APP_URL_PLACEHOLDER',
+      MONGODB_URI: 'MONGODB_URI_PLACEHOLDER',
+      JWT_SECRET: 'JWT_SECRET_PLACEHOLDER',
       ADMIN_SETUP_TOKEN: 'your-admin-token-here',
-      GIGACHAT_API_KEY: '$GIGACHAT_API_KEY',
-      GIGACHAT_CLIENT_ID: '$GIGACHAT_CLIENT_ID',
-      GIGACHAT_SCOPE: '$GIGACHAT_SCOPE',
+      GIGACHAT_API_KEY: 'GIGACHAT_API_KEY_PLACEHOLDER',
+      GIGACHAT_CLIENT_ID: 'GIGACHAT_CLIENT_ID_PLACEHOLDER',
+      GIGACHAT_SCOPE: 'GIGACHAT_SCOPE_PLACEHOLDER',
       GIGACHAT_API_URL: 'https://gigachat.devices.sberbank.ru/api/v1',
-      SMTP_HOST: '$SMTP_HOST',
-      SMTP_PORT: '$SMTP_PORT',
-      SMTP_USER: '$SMTP_USER',
-      SMTP_PASS: '$SMTP_PASS',
-      YAMAPS_API_KEY: '$YAMAPS_API_KEY'
+      SMTP_HOST: 'SMTP_HOST_PLACEHOLDER',
+      SMTP_PORT: 'SMTP_PORT_PLACEHOLDER',
+      SMTP_USER: 'SMTP_USER_PLACEHOLDER',
+      SMTP_PASS: 'SMTP_PASS_PLACEHOLDER',
+      YAMAPS_API_KEY: 'YAMAPS_API_KEY_PLACEHOLDER'
     },
-    log_file: '$LOG_DIR/smp-help.log',
-    out_file: '$LOG_DIR/smp-help-out.log',
-    error_file: '$LOG_DIR/smp-help-error.log',
+    log_file: 'LOG_DIR_PLACEHOLDER/smp-help.log',
+    out_file: 'LOG_DIR_PLACEHOLDER/smp-help-out.log',
+    error_file: 'LOG_DIR_PLACEHOLDER/smp-help-error.log',
     log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
     merge_logs: true,
     max_memory_restart: '1G',
@@ -512,40 +532,64 @@ export default {
     min_uptime: '10s'
   }]
 }
-EOF
-        
-        # Останавливаем старые процессы
-        pm2 stop $PROJECT_NAME 2>/dev/null || true
-        pm2 delete $PROJECT_NAME 2>/dev/null || true
-        
-        # Запускаем приложение
-        pm2 start ecosystem.config.mjs
-        
-        # Ждем немного
-        sleep 3
-        
-        # Проверяем статус
-        pm2 status
-        
-        # Сохраняем конфигурацию
-        pm2 save
-        pm2 startup
-    "
+EOFCONFIG
+    
+    # Заменяем плейсхолдеры на реальные значения
+    sed -i "s|PROJECT_NAME_PLACEHOLDER|$PROJECT_NAME|g" $WORK_DIR/ecosystem.config.cjs
+    sed -i "s|WORK_DIR_PLACEHOLDER|$WORK_DIR|g" $WORK_DIR/ecosystem.config.cjs
+    sed -i "s|NUXT_PUBLIC_API_BASE_URL_PLACEHOLDER|https://$DOMAIN/api|g" $WORK_DIR/ecosystem.config.cjs
+    sed -i "s|NUXT_PUBLIC_APP_URL_PLACEHOLDER|https://$DOMAIN|g" $WORK_DIR/ecosystem.config.cjs
+    sed -i "s|MONGODB_URI_PLACEHOLDER|mongodb://$MONGO_USER:$MONGO_PASS@localhost:27017/$MONGO_DB|g" $WORK_DIR/ecosystem.config.cjs
+    sed -i "s|JWT_SECRET_PLACEHOLDER|$JWT_SECRET|g" $WORK_DIR/ecosystem.config.cjs
+    sed -i "s|GIGACHAT_API_KEY_PLACEHOLDER|$GIGACHAT_API_KEY|g" $WORK_DIR/ecosystem.config.cjs
+    sed -i "s|GIGACHAT_CLIENT_ID_PLACEHOLDER|$GIGACHAT_CLIENT_ID|g" $WORK_DIR/ecosystem.config.cjs
+    sed -i "s|GIGACHAT_SCOPE_PLACEHOLDER|$GIGACHAT_SCOPE|g" $WORK_DIR/ecosystem.config.cjs
+    sed -i "s|SMTP_HOST_PLACEHOLDER|$SMTP_HOST|g" $WORK_DIR/ecosystem.config.cjs
+    sed -i "s|SMTP_PORT_PLACEHOLDER|$SMTP_PORT|g" $WORK_DIR/ecosystem.config.cjs
+    sed -i "s|SMTP_USER_PLACEHOLDER|$SMTP_USER|g" $WORK_DIR/ecosystem.config.cjs
+    sed -i "s|SMTP_PASS_PLACEHOLDER|$SMTP_PASS|g" $WORK_DIR/ecosystem.config.cjs
+    sed -i "s|YAMAPS_API_KEY_PLACEHOLDER|$YAMAPS_API_KEY|g" $WORK_DIR/ecosystem.config.cjs
+    sed -i "s|LOG_DIR_PLACEHOLDER|$LOG_DIR|g" $WORK_DIR/ecosystem.config.cjs
+    
+    # Устанавливаем права на конфигурацию
+    if [ "$PROJECT_USER" != "root" ]; then
+        chown $PROJECT_USER:$PROJECT_USER $WORK_DIR/ecosystem.config.cjs
+    fi
+    chmod 644 $WORK_DIR/ecosystem.config.cjs
+    
+    # Запускаем PM2
+    cd $WORK_DIR
+    
+    # Останавливаем старые процессы
+    pm2 stop $PROJECT_NAME 2>/dev/null || true
+    pm2 delete $PROJECT_NAME 2>/dev/null || true
+    
+    # Запускаем приложение
+    pm2 start ecosystem.config.cjs
+    
+    # Ждем немного
+    sleep 3
+    
+    # Проверяем статус
+    pm2 status
+    
+    # Сохраняем конфигурацию
+    pm2 save
+    pm2 startup
     
     # Проверяем, что PM2 запустился
-    if sudo -u $PROJECT_USER pm2 status | grep -q "$PROJECT_NAME.*online"; then
+    if pm2 status | grep -q "$PROJECT_NAME.*online"; then
         log "✅ PM2 настроен и приложение запущено"
     else
         warn "⚠️ PM2 настроен, но приложение может не работать"
-        log "📋 Проверьте логи: su - $PROJECT_USER && pm2 logs $PROJECT_NAME"
+        log "📋 Проверьте логи: pm2 logs $PROJECT_NAME"
         
         # Пробуем создать CommonJS версию как fallback
         log "🔧 Создаем CommonJS версию как fallback..."
-        sudo -u $PROJECT_USER bash -c "
-            cd $WORK_DIR
-            
-            # Создаем CommonJS версию
-            cat > index.js << 'EOF'
+        cd $WORK_DIR
+        
+        # Создаем CommonJS версию
+        cat > index.js << 'EOF'
 const { createServer } = require('http');
 const { readFileSync, existsSync } = require('fs');
 const { join, extname } = require('path');
@@ -591,9 +635,9 @@ server.listen(PORT, () => {
   console.log(\`SMP Help Server running on port \${PORT}\`);
 });
 EOF
-            
-            # Создаем конфигурацию PM2 для CommonJS
-            cat > ecosystem.config.js << 'EOF'
+        
+        # Создаем конфигурацию PM2 для CommonJS
+        cat > ecosystem.config.js << EOF
 module.exports = {
   apps: [{
     name: '$PROJECT_NAME',
@@ -631,25 +675,24 @@ module.exports = {
   }]
 };
 EOF
-            
-            # Останавливаем старые процессы
-            pm2 stop $PROJECT_NAME 2>/dev/null || true
-            pm2 delete $PROJECT_NAME 2>/dev/null || true
-            
-            # Запускаем приложение
-            pm2 start ecosystem.config.js
-            
-            # Ждем немного
-            sleep 3
-            
-            # Проверяем статус
-            pm2 status
-            
-            # Сохраняем конфигурацию
-            pm2 save
-        "
         
-        if sudo -u $PROJECT_USER pm2 status | grep -q "$PROJECT_NAME.*online"; then
+        # Останавливаем старые процессы
+        pm2 stop $PROJECT_NAME 2>/dev/null || true
+        pm2 delete $PROJECT_NAME 2>/dev/null || true
+        
+        # Запускаем приложение
+        pm2 start ecosystem.config.js
+        
+        # Ждем немного
+        sleep 3
+        
+        # Проверяем статус
+        pm2 status
+        
+        # Сохраняем конфигурацию
+        pm2 save
+        
+        if pm2 status | grep -q "$PROJECT_NAME.*online"; then
             log "✅ PM2 настроен с CommonJS версией"
         else
             error "❌ PM2 не удалось настроить"
@@ -724,88 +767,98 @@ setup_firewall() {
 create_management_scripts() {
     log "📝 Создаем скрипты управления..."
     
+    # Определяем директорию для скриптов
+    if [ "$PROJECT_USER" = "root" ]; then
+        SCRIPTS_DIR="/root"
+    else
+        SCRIPTS_DIR="/home/$PROJECT_USER"
+    fi
+    
     # Скрипт обновления
-    sudo -u $PROJECT_USER bash -c "
-        cat > update-app.sh << 'EOF'
+    cat > $SCRIPTS_DIR/update-app.sh << 'EOF'
 #!/bin/bash
 
 set -e
 
-echo \"🔄 Обновляем $PROJECT_NAME...\"
+echo "🔄 Обновляем $PROJECT_NAME..."
 
 cd $PROJECT_DIR
 
-echo \"📥 Получаем изменения из GitHub...\"
+echo "📥 Получаем изменения из GitHub..."
 git pull origin main
 
-echo \"📦 Устанавливаем зависимости...\"
+echo "📦 Устанавливаем зависимости..."
 npm install
 
-echo \"🔨 Собираем проект...\"
+echo "🔨 Собираем проект..."
 npm run build
 
-echo \"📁 Копируем файлы...\"
+echo "📁 Копируем файлы..."
 sudo cp -r .output/public/* $WORK_DIR/
 sudo cp -r .output/server/* $WORK_DIR/
 sudo chown -R $PROJECT_USER:$PROJECT_USER $WORK_DIR
 
-echo \"🚀 Перезапускаем приложение...\"
+echo "🚀 Перезапускаем приложение..."
 pm2 restart $PROJECT_NAME
 
-echo \"✅ Обновление завершено!\"
+echo "✅ Обновление завершено!"
 pm2 status
 EOF
-        
-        chmod +x update-app.sh
-    "
+    
+    # Устанавливаем права на скрипт
+    if [ "$PROJECT_USER" != "root" ]; then
+        chown $PROJECT_USER:$PROJECT_USER $SCRIPTS_DIR/update-app.sh
+    fi
+    chmod +x $SCRIPTS_DIR/update-app.sh
     
     # Скрипт запуска
-    sudo -u $PROJECT_USER bash -c "
-        cat > start-app.sh << 'EOF'
+    cat > $SCRIPTS_DIR/start-app.sh << 'EOF'
 #!/bin/bash
 
-echo \"🚀 Запускаем $PROJECT_NAME...\"
+echo "🚀 Запускаем $PROJECT_NAME..."
 
 pm2 stop $PROJECT_NAME 2>/dev/null || true
 pm2 delete $PROJECT_NAME 2>/dev/null || true
 
 # Пробуем запустить ES модули
-if [ -f \"$WORK_DIR/index.mjs\" ]; then
-    echo \"📦 Запускаем ES модули...\"
-    pm2 start ecosystem.config.mjs
+if [ -f "$WORK_DIR/index.mjs" ]; then
+    echo "📦 Запускаем ES модули..."
+    pm2 start ecosystem.config.cjs
 else
-    echo \"📦 Запускаем CommonJS...\"
-    pm2 start ecosystem.config.js
+    echo "📦 Запускаем CommonJS..."
+    pm2 start ecosystem.config.cjs
 fi
 
-echo \"✅ Приложение запущено!\"
-echo \"Проверьте статус: pm2 status\"
+echo "✅ Приложение запущено!"
+echo "Проверьте статус: pm2 status"
 EOF
-        
-        chmod +x start-app.sh
-    "
+    
+    # Устанавливаем права на скрипт
+    if [ "$PROJECT_USER" != "root" ]; then
+        chown $PROJECT_USER:$PROJECT_USER $SCRIPTS_DIR/start-app.sh
+    fi
+    chmod +x $SCRIPTS_DIR/start-app.sh
     
     # Скрипт исправления PM2
-    sudo -u $PROJECT_USER bash -c "
-        cat > fix-pm2.sh << 'EOF'
+    cat > $SCRIPTS_DIR/fix-pm2.sh << 'EOF'
 #!/bin/bash
 
-echo \"🔧 Исправляем проблемы с PM2...\"
+echo "🔧 Исправляем проблемы с PM2..."
 
 cd $WORK_DIR
 
 # Проверяем, есть ли index.mjs
-if [ -f \"index.mjs\" ]; then
-    echo \"✅ Найден index.mjs\"
+if [ -f "index.mjs" ]; then
+    echo "✅ Найден index.mjs"
     
     # Проверяем права
     chmod +x index.mjs
     
     # Проверяем синтаксис
     if node --check index.mjs; then
-        echo \"✅ Синтаксис index.mjs корректен\"
+        echo "✅ Синтаксис index.mjs корректен"
     else
-        echo \"❌ Синтаксис index.mjs некорректен\"
+        echo "❌ Синтаксис index.mjs некорректен"
         exit 1
     fi
     
@@ -814,7 +867,7 @@ if [ -f \"index.mjs\" ]; then
     pm2 delete $PROJECT_NAME 2>/dev/null || true
     
     # Запускаем ES модули
-    pm2 start ecosystem.config.mjs
+    pm2 start ecosystem.config.cjs
     
     # Ждем
     sleep 3
@@ -823,15 +876,18 @@ if [ -f \"index.mjs\" ]; then
     pm2 status
     
 else
-    echo \"❌ index.mjs не найден\"
+    echo "❌ index.mjs не найден"
     exit 1
 fi
 
-echo \"✅ PM2 исправлен!\"
+echo "✅ PM2 исправлен!"
 EOF
-        
-        chmod +x fix-pm2.sh
-    "
+    
+    # Устанавливаем права на скрипт
+    if [ "$PROJECT_USER" != "root" ]; then
+        chown $PROJECT_USER:$PROJECT_USER $SCRIPTS_DIR/fix-pm2.sh
+    fi
+    chmod +x $SCRIPTS_DIR/fix-pm2.sh
     
     log "✅ Скрипты управления созданы"
 }
@@ -885,17 +941,17 @@ check_status() {
     
     # Проверяем PM2
     log "🔍 Проверяем PM2..."
-    PM2_STATUS=$(sudo -u $PROJECT_USER pm2 status 2>/dev/null)
+    PM2_STATUS=$(pm2 status 2>/dev/null)
     if echo "$PM2_STATUS" | grep -q "$PROJECT_NAME.*online"; then
         log "✅ PM2 приложение работает"
     elif echo "$PM2_STATUS" | grep -q "$PROJECT_NAME.*stopped"; then
         error "❌ PM2 приложение остановлено"
         log "📋 Логи PM2:"
-        sudo -u $PROJECT_USER pm2 logs $PROJECT_NAME --lines 10
+        pm2 logs $PROJECT_NAME --lines 10
     elif echo "$PM2_STATUS" | grep -q "$PROJECT_NAME.*errored"; then
         error "❌ PM2 приложение с ошибкой"
         log "📋 Логи PM2:"
-        sudo -u $PROJECT_USER pm2 logs $PROJECT_NAME --lines 10
+        pm2 logs $PROJECT_NAME --lines 10
     else
         error "❌ PM2 приложение не найдено"
         log "📋 Статус PM2:"
@@ -960,8 +1016,8 @@ main() {
         "fresh")
             log "🚀 Начинаем чистую установку..."
             install_dependencies
-            setup_user_and_directories
-            setup_mongodb
+            setup_directories
+            check_mongodb
             clone_and_build
             copy_files
             setup_pm2
@@ -973,7 +1029,7 @@ main() {
             ;;
         "update")
             log "🔄 Начинаем обновление..."
-            setup_user_and_directories
+            setup_directories
             clone_and_build
             copy_files
             setup_pm2
@@ -984,20 +1040,18 @@ main() {
         "reinstall")
             log "🗑️ Начинаем переустановку..."
             # Останавливаем сервисы
-            sudo -u $PROJECT_USER pm2 stop $PROJECT_NAME 2>/dev/null || true
-            sudo -u $PROJECT_USER pm2 delete $PROJECT_NAME 2>/dev/null || true
+            pm2 stop $PROJECT_NAME 2>/dev/null || true
+            pm2 delete $PROJECT_NAME 2>/dev/null || true
             systemctl stop nginx 2>/dev/null || true
-            systemctl stop mongod 2>/dev/null || true
             
             # Удаляем файлы
             rm -rf $WORK_DIR
-            rm -rf $PROJECT_DIR
             rm -rf $LOG_DIR
             
             # Переустанавливаем
             install_dependencies
-            setup_user_and_directories
-            setup_mongodb
+            setup_directories
+            check_mongodb
             clone_and_build
             copy_files
             setup_pm2
@@ -1022,12 +1076,12 @@ main() {
     log "✅ Firewall настроен"
     log ""
     log "🔧 Полезные команды:"
-    log "  - Статус: su - $PROJECT_USER && pm2 status"
-    log "  - Логи: su - $PROJECT_USER && pm2 logs $PROJECT_NAME"
-    log "  - Обновление: su - $PROJECT_USER && ./update-app.sh"
-    log "  - Перезапуск: su - $PROJECT_USER && pm2 restart $PROJECT_NAME"
-    log "  - Исправление PM2: su - $PROJECT_USER && ./fix-pm2.sh"
-    log "  - Запуск: su - $PROJECT_USER && ./start-app.sh"
+    log "  - Статус: pm2 status"
+    log "  - Логи: pm2 logs $PROJECT_NAME"
+    log "  - Обновление: ./update-app.sh"
+    log "  - Перезапуск: pm2 restart $PROJECT_NAME"
+    log "  - Исправление PM2: ./fix-pm2.sh"
+    log "  - Запуск: ./start-app.sh"
     log ""
     log "🌐 Проверьте сайт: http://$DOMAIN"
     log ""

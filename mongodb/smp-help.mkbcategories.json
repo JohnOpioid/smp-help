@@ -1,0 +1,330 @@
+[{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2a93"
+  },
+  "name": "Некоторые инфекционные и паразитарные болезни",
+  "url": "nekotorye-infekcionnye-i-parazitarnye-bolezni",
+  "class": "cl1",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.957Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.957Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2a94"
+  },
+  "name": "Новообразования",
+  "url": "novoobrazovaniya",
+  "class": "cl2",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.958Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.958Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2a95"
+  },
+  "name": "Болезни крови, кроветворных органов и отдельные нарушения, вовлекающие иммунный механизм",
+  "url": "bolezni-krovi-krovetvornyh-organov-i-otdelnye-narusheniya-vovlekayuschie-immunnyy-mehanizm",
+  "class": "cl3",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.958Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.958Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2a96"
+  },
+  "name": "Болезни эндокринной системы, расстройства питания и нарушения обмена веществ",
+  "url": "bolezni-endokrinnoy-sistemy-rasstroystva-pitaniya-i-narusheniya-obmena-veschestv",
+  "class": "cl4",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.958Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.958Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2a97"
+  },
+  "name": "Психические расстройства и расстройства поведения",
+  "url": "psihicheskie-rasstroystva-i-rasstroystva-povedeniya",
+  "class": "cl5",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.958Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.958Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2a98"
+  },
+  "name": "Болезни нервной системы",
+  "url": "bolezni-nervnoy-sistemy",
+  "class": "cl6",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.958Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.958Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2a99"
+  },
+  "name": "Болезни глаза и его придаточного аппарата",
+  "url": "bolezni-glaza-i-ego-pridatochnogo-apparata",
+  "class": "cl7",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.958Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.958Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2a9a"
+  },
+  "name": "Болезни уха и сосцевидного отростка",
+  "url": "bolezni-uha-i-soscevidnogo-otrostka",
+  "class": "cl8",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.958Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.958Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2a9b"
+  },
+  "name": "Болезни системы кровообращения",
+  "url": "bolezni-sistemy-krovoobrascheniya",
+  "class": "cl9",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.958Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.958Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2a9c"
+  },
+  "name": "Болезни органов дыхания",
+  "url": "bolezni-organov-dyhaniya",
+  "class": "cl10",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2a9d"
+  },
+  "name": "Болезни органов пищеварения",
+  "url": "bolezni-organov-pischevareniya",
+  "class": "cl11",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2a9e"
+  },
+  "name": "Болезни кожи и подкожной клетчатки",
+  "url": "bolezni-kozhi-i-podkozhnoy-kletchatki",
+  "class": "cl12",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2a9f"
+  },
+  "name": "Болезни костно-мышечной системы и соединительной ткани",
+  "url": "bolezni-kostno-myshechnoy-sistemy-i-soedinitelnoy-tkani",
+  "class": "cl13",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2aa0"
+  },
+  "name": "Болезни мочеполовой системы",
+  "url": "bolezni-mochepolovoy-sistemy",
+  "class": "cl14",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2aa1"
+  },
+  "name": "Беременность, роды и послеродовой период",
+  "url": "beremennost-rody-i-poslerodovoy-period",
+  "class": "cl15",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2aa2"
+  },
+  "name": "Отдельные состояния, возникающие в перинатальном периоде",
+  "url": "otdelnye-sostoyaniya-voznikayuschie-v-perinatalnom-periode",
+  "class": "cl16",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2aa3"
+  },
+  "name": "Врожденные аномалии [пороки развития], деформации и хромосомные",
+  "url": "vrozhdennye-anomalii-poroki-razvitiya-deformacii-i-hromosomnye",
+  "class": "cl17",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2aa4"
+  },
+  "name": "Симптомы, признаки и отклонения от нормы, выявленные при клинических и лабораторных исследованиях, не классифицированные в других рубриках",
+  "url": "simptomy-priznaki-i-otkloneniya-ot-normy-vyyavlennye-pri-klinicheskih-i-laboratornyh-issledovaniyah-ne-klassificirovannye-v-drugih-rubrikah",
+  "class": "cl18",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2aa5"
+  },
+  "name": "Травмы, отравления и некоторые другие последствия воздействия внешних причин",
+  "url": "travmy-otravleniya-i-nekotorye-drugie-posledstviya-vozdeystviya-vneshnih-prichin",
+  "class": "cl19",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2aa6"
+  },
+  "name": "Факторы, влияющие на состояние здоровья и обращения в учреждения",
+  "url": "faktory-vliyayuschie-na-sostoyanie-zdorovya-i-obrascheniya-v-uchrezhdeniya",
+  "class": "cl21",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2aa7"
+  },
+  "name": "Безрезультатные вызовы",
+  "url": "bezrezultatnye-vyzovy",
+  "class": "cl22",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e28eddf76a2f59d1ff2aa8"
+  },
+  "name": "Коды для особых целей",
+  "url": "kody-dlya-osobyh-celey",
+  "class": "cl23",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-05T15:29:33.959Z"
+  }
+}]

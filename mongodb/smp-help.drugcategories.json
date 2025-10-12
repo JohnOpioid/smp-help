@@ -1,0 +1,784 @@
+[{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73fe2"
+  },
+  "url": "miorelaksanty",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.235Z"
+  },
+  "name": "Миорелаксанты",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.089Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73fe3"
+  },
+  "url": "antidoty",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.251Z"
+  },
+  "name": "Антидоты",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.104Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73fe4"
+  },
+  "url": "sorbenty",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.257Z"
+  },
+  "name": "Сорбенты",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.108Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73fe5"
+  },
+  "url": "simpatomimetiki",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.259Z"
+  },
+  "name": "Симпатомиметики",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.111Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73fe6"
+  },
+  "url": "nitraty",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.261Z"
+  },
+  "name": "Нитраты",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.114Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73fe7"
+  },
+  "url": "anestetik",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.264Z"
+  },
+  "name": "Анестетик",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.117Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73fe8"
+  },
+  "url": "simpatomimetik",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.267Z"
+  },
+  "name": "Симпатомиметик",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.118Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73fe9"
+  },
+  "url": "antipsihotik",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.271Z"
+  },
+  "name": "Антипсихотик",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.121Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73fea"
+  },
+  "url": "beta-blokator",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.275Z"
+  },
+  "name": "Бета-блокатор",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.123Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73feb"
+  },
+  "url": "m-holinolitik",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.280Z"
+  },
+  "name": "м-Холинолитик",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.126Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73fec"
+  },
+  "url": "gemostatiki",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.284Z"
+  },
+  "name": "Гемостатики",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.128Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73fed"
+  },
+  "url": "metilksantiny",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.286Z"
+  },
+  "name": "Метилксантины",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.130Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73fee"
+  },
+  "url": "antiaritmiki",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.288Z"
+  },
+  "name": "Антиаритмики",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.132Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73fef"
+  },
+  "url": "vitaminy",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.290Z"
+  },
+  "name": "Витамины",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.134Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73ff0"
+  },
+  "url": "antiagreganty",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.292Z"
+  },
+  "name": "Антиагреганты",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.136Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73ff1"
+  },
+  "url": "benzodiazepiny",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.294Z"
+  },
+  "name": "Бензодиазепины",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.137Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73ff2"
+  },
+  "url": "glyukokortikosteroid-ingalyacionnyy",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.296Z"
+  },
+  "name": "Глюкокортикостероид ингаляционный",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.139Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73ff3"
+  },
+  "url": "antikonvulsanty",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.297Z"
+  },
+  "name": "Антиконвульсанты",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.140Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73ff4"
+  },
+  "url": "ingibitor-holinesterazy",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.299Z"
+  },
+  "name": "Ингибитор холинэстеразы",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.142Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73ff5"
+  },
+  "url": "antikoagulyanty",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.301Z"
+  },
+  "name": "Антикоагулянты",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.144Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73ff6"
+  },
+  "url": "plazmozameniteli",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.303Z"
+  },
+  "name": "Плазмозаменители",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.145Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73ff7"
+  },
+  "url": "glyukokortikosteroidy",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.305Z"
+  },
+  "name": "Глюкокортикостероиды",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.147Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73ff8"
+  },
+  "url": "plazmozamenitel",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.306Z"
+  },
+  "name": "Плазмозаменитель",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.148Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73ff9"
+  },
+  "url": "glyukoza",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.308Z"
+  },
+  "name": "Глюкоза",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.150Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73ffa"
+  },
+  "url": "antigistaminnye-sredtva",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.309Z"
+  },
+  "name": "Антигистаминные средтва",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.152Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73ffb"
+  },
+  "url": "spazmolitiki",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.311Z"
+  },
+  "name": "Спазмолитики",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.153Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73ffc"
+  },
+  "url": "nitrat",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.313Z"
+  },
+  "name": "Нитрат",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.155Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73ffd"
+  },
+  "url": "metabolicheskie-sredstva",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.316Z"
+  },
+  "name": "Метаболические средства",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.156Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73ffe"
+  },
+  "url": "bronhodilatatory",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.318Z"
+  },
+  "name": "Бронходилататоры",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.158Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca73fff"
+  },
+  "url": "elektrolity",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.320Z"
+  },
+  "name": "Электролиты",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.159Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca74000"
+  },
+  "url": "gipotenzivnye-sredstva",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.322Z"
+  },
+  "name": "Гипотензивные средства",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.161Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca74001"
+  },
+  "url": "dissociativnyy-anestetik",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.324Z"
+  },
+  "name": "Диссоциативный анестетик",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.162Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca74002"
+  },
+  "url": "npvs",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.327Z"
+  },
+  "name": "НПВС",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.164Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca74003"
+  },
+  "url": "mestnyy-anestetik",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.330Z"
+  },
+  "name": "Местный анестетик",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.178Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca74004"
+  },
+  "url": "antioksidanty",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.332Z"
+  },
+  "name": "Антиоксиданты",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.167Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca74005"
+  },
+  "url": "spazmalitiki",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.335Z"
+  },
+  "name": "Спазмалитики",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.168Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca74006"
+  },
+  "url": "antiemetiki",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.337Z"
+  },
+  "name": "Антиэметики",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.170Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca74007"
+  },
+  "url": "opioidnye-analgetiki",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.338Z"
+  },
+  "name": "Опиоидные анальгетики",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.172Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca74008"
+  },
+  "url": "rastvor-dlya-infuziy",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.340Z"
+  },
+  "name": "Раствор для инфузий",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.173Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca74009"
+  },
+  "url": "gipotenzivnye",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.341Z"
+  },
+  "name": "Гипотензивные",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.174Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca7400a"
+  },
+  "url": "gormon",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.342Z"
+  },
+  "name": "Гормон",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.176Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca7400b"
+  },
+  "url": "2-agonist",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.346Z"
+  },
+  "name": "β2-агонист",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.179Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca7400c"
+  },
+  "url": "aminoglikozid",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.348Z"
+  },
+  "name": "Аминогликозид",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.180Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca7400d"
+  },
+  "url": "depolarizuyuschiy-miorelaksant",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.351Z"
+  },
+  "name": "Деполаризующий миорелаксант",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.182Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca7400e"
+  },
+  "url": "sulfanilamid",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.353Z"
+  },
+  "name": "Сульфаниламид",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.183Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca7400f"
+  },
+  "url": "fibrinolitik",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.355Z"
+  },
+  "name": "Фибринолитик",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.185Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca74010"
+  },
+  "url": "barbiturat",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.356Z"
+  },
+  "name": "Барбитурат",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.187Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca74011"
+  },
+  "url": "opioidnyy-analgetik",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.358Z"
+  },
+  "name": "Опиоидный анальгетик",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.190Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca74012"
+  },
+  "url": "alfa-1-blokator",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.360Z"
+  },
+  "name": "Альфа-1 блокатор",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.192Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca74013"
+  },
+  "url": "diuretiki",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.362Z"
+  },
+  "name": "Диуретики",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.194Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca74014"
+  },
+  "url": "antibiotik",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.363Z"
+  },
+  "name": "Антибиотик",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.195Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca74015"
+  },
+  "url": "antiseptik",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.364Z"
+  },
+  "name": "Антисептик",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.197Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca74016"
+  },
+  "url": "antigistaminnye-sredstva",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.366Z"
+  },
+  "name": "Антигистаминные средства",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.198Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca74017"
+  },
+  "url": "antibiotiki",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.367Z"
+  },
+  "name": "Антибиотики",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.200Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca74018"
+  },
+  "url": "antioksidant",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.368Z"
+  },
+  "name": "Антиоксидант",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.202Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e2978fbbab4b071ca74019"
+  },
+  "url": "vazoaktivnye-veschestva",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-10-05T16:06:39.369Z"
+  },
+  "name": "Вазоактивные вещества",
+  "updatedAt": {
+    "$date": "2025-10-05T19:14:07.204Z"
+  }
+}]
