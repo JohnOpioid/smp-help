@@ -7,7 +7,6 @@
 
     <!-- Основной контент -->
     <div class="max-w-5xl mx-auto px-0 md:px-4 py-8">
-      <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-6">Калькуляторы</h2>
 
       <div v-for="section in sections" :key="section.title" class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 md:rounded-lg mb-6 last:mb-0">
         <div class="p-4 border-b border-slate-100 dark:border-slate-700">

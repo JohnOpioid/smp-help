@@ -3,7 +3,7 @@
     <!-- Блок поиска с шапкой калькулятора -->
     <div class="max-w-5xl w-full mx-auto px-4 pt-8">
       <SearchBar />
-      <div class="flex items-center justify-between gap-4 mb-0">
+      <div class="flex items-center justify-between gap-2 mb-2 mt-6">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Шкала LAMS</h1>
         <UButton color="neutral" variant="soft" @click="resetAll">Сбросить</UButton>
       </div>
@@ -17,7 +17,7 @@
 
       <div class="grid grid-cols-1 gap-6">
         <!-- Оценка лицевой мускулатуры -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Оценка лицевой мускулатуры</div>
           </div>
@@ -42,7 +42,7 @@
         </div>
 
         <!-- Оценка двигательных нарушений -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Оценка двигательных нарушений</div>
           </div>
@@ -67,7 +67,7 @@
         </div>
 
         <!-- Оценка мышечной силы -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Оценка мышечной силы</div>
           </div>
@@ -92,7 +92,7 @@
         </div>
 
         <!-- Результат -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Результат</div>
           </div>

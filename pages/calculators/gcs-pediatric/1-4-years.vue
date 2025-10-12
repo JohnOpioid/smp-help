@@ -3,20 +3,16 @@
     <!-- Блок поиска с шапкой калькулятора -->
     <div class="max-w-5xl w-full mx-auto px-4 pt-8">
       <SearchBar />
-      <div class="flex items-center justify-between gap-4 mb-0">
+      <div class="flex items-center justify-between gap-2 mb-2 mt-6">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Детская шкала комы Глазго</h1>
         <UButton color="neutral" variant="soft" @click="resetAll">Сбросить</UButton>
       </div>
       <p class="text-slate-600 dark:text-slate-300">
         Шкала комы Глазго для детей от 1 года до 4 лет. Используется для оценки степени нарушения сознания у детей раннего возраста.
       </p>
-    </div>
-
-    <!-- Основной контент -->
-    <div class="max-w-5xl mx-auto px-0 md:px-4 py-8 space-y-6">
-
+      
       <!-- Навигация между возрастными группами -->
-      <nav class="flex space-x-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 w-full justify-start items-start text-left">
+      <nav class="flex space-x-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 w-full justify-start items-start text-left mt-6">
         <NuxtLink 
           to="/calculators/gcs-pediatric" 
           class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors"
@@ -32,6 +28,11 @@
           1-4 года
         </NuxtLink>
       </nav>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="max-w-5xl mx-auto px-0 md:px-4 py-8 space-y-6">
+
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
         <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">

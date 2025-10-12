@@ -3,7 +3,7 @@
     <!-- Блок поиска с шапкой калькулятора -->
     <div class="max-w-5xl w-full mx-auto px-4 pt-8">
       <SearchBar />
-      <div class="flex items-center justify-between gap-4 mb-0">
+      <div class="flex items-center justify-between gap-2 mb-2 mt-6">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Шкала оценки вероятности ТЭЛА</h1>
         <UButton color="neutral" variant="soft" @click="resetAll">Сбросить</UButton>
       </div>
@@ -17,7 +17,7 @@
 
       <div class="grid grid-cols-1 gap-6">
         <!-- Предшествующие ТЭЛА или ТГВ -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Предшествующие ТЭЛА или ТГВ</div>
           </div>
@@ -42,7 +42,7 @@
         </div>
 
         <!-- ЧСС -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">ЧСС (в минуту)</div>
           </div>
@@ -67,7 +67,7 @@
         </div>
 
         <!-- Хирургические операции или переломы -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Хирургические операции или переломы в предшествующий 1 мес.</div>
           </div>
@@ -92,7 +92,7 @@
         </div>
 
         <!-- Кровохарканье -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Кровохарканье</div>
           </div>
@@ -117,7 +117,7 @@
         </div>
 
         <!-- Активное злокачественное новообразование -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Активное злокачественное новообразование</div>
           </div>
@@ -142,7 +142,7 @@
         </div>
 
         <!-- Односторонняя боль в нижней конечности -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Односторонняя боль в нижней конечности</div>
           </div>
@@ -167,7 +167,7 @@
         </div>
 
         <!-- Боль при пальпации глубоких вен -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Боль при пальпации глубоких вен нижних конечностей и односторонний отек</div>
           </div>
@@ -192,7 +192,7 @@
         </div>
 
         <!-- Возраст старше 65 лет -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Возраст старше 65 лет</div>
           </div>
@@ -217,7 +217,7 @@
         </div>
 
         <!-- Результат -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Результат</div>
           </div>

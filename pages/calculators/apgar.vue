@@ -10,13 +10,9 @@
       <p class="text-slate-600 dark:text-slate-300">
         Шкала Апгар для новорожденных – это стандартный медицинский метод, разработанный Вирджинией Апгар в 1952 году. Он используется для быстрой оценки состояния младенца в первые минуты жизни.
       </p>
-    </div>
-
-    <!-- Основной контент -->
-    <div class="max-w-5xl mx-auto px-0 md:px-4 py-8 space-y-6">
-
+      
       <!-- Навигация между временными точками -->
-      <nav class="flex space-x-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 w-full justify-start items-start text-left">
+      <nav class="flex space-x-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 w-full justify-start items-start text-left mt-6">
         <button 
           @click="currentMinute = 1"
           class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors"
@@ -31,7 +27,19 @@
         >
           5-я минута
         </button>
+        <button 
+          @click="currentMinute = 10"
+          class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors"
+          :class="currentMinute === 10 ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'"
+        >
+          10-я минута
+        </button>
       </nav>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="max-w-5xl mx-auto px-0 md:px-4 py-8 space-y-6">
+
 
       <div class="grid grid-cols-1 gap-2">
         <!-- Окраска кожного покрова -->
