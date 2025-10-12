@@ -1,37 +1,31 @@
 <template>
   <div class="fixed bottom-4 left-4 z-50 space-y-2">
-    <!-- Кнопка предварительного кеширования -->
+    <!-- Кнопка сохранения приложения -->
     <UButton
-      v-if="!isCaching && !isCached"
+      v-if="!isCaching && !isCached && !updateAvailable"
       @click="precacheSite"
       color="blue"
       size="sm"
       class="shadow-lg"
       :loading="isCaching"
     >
-      <Icon name="heroicons:cloud-arrow-down" class="w-4 h-4 mr-2" />
-      Кешировать сайт
+      <Icon name="heroicons:device-phone-mobile" class="w-4 h-4 mr-2" />
+      Сохранить приложение
     </UButton>
 
-    <!-- Индикатор кеширования -->
+    <!-- Индикатор сохранения -->
     <div v-if="isCaching" class="bg-blue-500 text-white px-3 py-2 rounded-lg shadow-lg text-sm">
       <div class="flex items-center gap-2">
         <Icon name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
-        <span>Кеширование: {{ cachedPages }}/{{ totalPages }} страниц</span>
-      </div>
-      <div class="w-full bg-blue-300 rounded-full h-2 mt-2">
-        <div 
-          class="bg-white h-2 rounded-full transition-all duration-300" 
-          :style="{ width: `${(cachedPages / totalPages) * 100}%` }"
-        ></div>
+        <span>Сохранение приложения...</span>
       </div>
     </div>
 
-    <!-- Индикатор успешного кеширования -->
-    <div v-if="isCached && !isCaching" class="bg-green-500 text-white px-3 py-2 rounded-lg shadow-lg text-sm">
+    <!-- Индикатор успешного сохранения -->
+    <div v-if="isCached && !isCaching && !updateAvailable" class="bg-green-500 text-white px-3 py-2 rounded-lg shadow-lg text-sm">
       <div class="flex items-center gap-2">
         <Icon name="heroicons:check-circle" class="w-4 h-4" />
-        <span>Сайт кеширован ({{ cachedPages }} страниц)</span>
+        <span>Приложение сохранено</span>
       </div>
     </div>
 
@@ -52,8 +46,6 @@
 <script setup lang="ts">
 const isCaching = ref(false)
 const isCached = ref(false)
-const cachedPages = ref(0)
-const totalPages = ref(0)
 const updateAvailable = ref(false)
 
 // Список страниц для кеширования
@@ -97,8 +89,6 @@ async function precacheSite() {
   if (isCaching.value) return
   
   isCaching.value = true
-  cachedPages.value = 0
-  totalPages.value = pagesToCache.length
   
   try {
     for (const page of pagesToCache) {
@@ -108,8 +98,6 @@ async function precacheSite() {
           method: 'GET',
           cache: 'force-cache'
         })
-        
-        cachedPages.value++
         
         // Небольшая задержка между запросами
         await new Promise(resolve => setTimeout(resolve, 100))
@@ -122,7 +110,6 @@ async function precacheSite() {
     
     // Сохраняем статус кеширования в localStorage
     localStorage.setItem('site-cached', 'true')
-    localStorage.setItem('cached-pages', cachedPages.value.toString())
     
   } catch (error) {
     console.error('Ошибка кеширования:', error)
@@ -140,6 +127,9 @@ async function updateApp() {
     }
   }
   
+  // Сбрасываем флаг обновления
+  updateAvailable.value = false
+  
   // Перезагружаем страницу
   window.location.reload()
 }
@@ -148,11 +138,9 @@ async function updateApp() {
 onMounted(() => {
   // Проверяем, был ли сайт уже кеширован
   const cached = localStorage.getItem('site-cached')
-  const pages = localStorage.getItem('cached-pages')
   
-  if (cached === 'true' && pages) {
+  if (cached === 'true') {
     isCached.value = true
-    cachedPages.value = parseInt(pages)
   }
   
   // Слушаем события обновления PWA
