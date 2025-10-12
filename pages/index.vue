@@ -17,11 +17,14 @@
         <div class="mb-8 sm:mb-12">
           <SearchBar :is-home-page="true" />
         </div>
+      </div>
 
-        <!-- Разделы -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+      <!-- Разделы -->
+      <div class="px-0 md:px-4">
+        <div class="max-w-5xl mx-auto">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0 sm:gap-2">
           <!-- Алгоритмы -->
-          <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+          <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border-y border-slate-100 dark:border-slate-600 md:border md:rounded-lg">
             <div class="p-4 h-full flex flex-col">
               <div class="flex items-center mb-4 sm:mb-6">
                 <div class="flex-shrink-0">
@@ -50,7 +53,7 @@
           </div>
 
           <!-- Кодификатор -->
-          <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+          <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border-y border-slate-100 dark:border-slate-600 md:border md:rounded-lg">
             <div class="p-4 h-full flex flex-col">
               <div class="flex items-center mb-4 sm:mb-6">
                 <div class="flex-shrink-0">
@@ -79,7 +82,7 @@
           </div>
 
           <!-- Калькуляторы -->
-          <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+          <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border-y border-slate-100 dark:border-slate-600 md:border md:rounded-lg">
             <div class="p-4 h-full flex flex-col">
               <div class="flex items-center mb-4 sm:mb-6">
                 <div class="flex-shrink-0">
@@ -104,7 +107,7 @@
           </div>
 
           <!-- Лекарства -->
-          <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+          <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border-y border-slate-100 dark:border-slate-600 md:border md:rounded-lg">
             <div class="p-4 h-full flex flex-col">
               <div class="flex items-center mb-4 sm:mb-6">
                 <div class="flex-shrink-0">
@@ -133,7 +136,7 @@
           </div>
 
           <!-- Локальные статусы -->
-          <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+          <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border-y border-slate-100 dark:border-slate-600 md:border md:rounded-lg">
             <div class="p-4 h-full flex flex-col">
               <div class="flex items-center mb-4 sm:mb-6">
                 <div class="flex-shrink-0">
@@ -162,7 +165,7 @@
           </div>
 
           <!-- Подстанции -->
-          <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+          <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border-y border-slate-100 dark:border-slate-600 md:border md:rounded-lg">
             <div class="p-4 h-full flex flex-col">
               <div class="flex items-center mb-4 sm:mb-6">
                 <div class="flex-shrink-0">
@@ -189,6 +192,7 @@
                 Открыть
               </NuxtLink>
             </div>
+          </div>
           </div>
         </div>
       </div>
