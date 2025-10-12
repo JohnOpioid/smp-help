@@ -1,27 +1,27 @@
 <template>
   <nav class="sticky bottom-0 inset-x-0 z-40 md:hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur border-t border-slate-100 dark:border-slate-700">
-    <ul class="grid grid-cols-5 text-xs text-slate-500 dark:text-slate-300">
+    <ul class="grid grid-cols-5 text-[10px] text-slate-500 dark:text-slate-300">
       <!-- Основные пункты -->
       <li v-for="item in primaryItems" :key="item.to">
-        <NuxtLink :to="item.to" class="flex flex-col items-center justify-center py-2 cursor-pointer"
+        <NuxtLink :to="item.to" class="flex flex-col items-center justify-center py-1.5 cursor-pointer"
           :class="{ 'text-indigo-600 dark:text-indigo-400': isActive(item.to) }">
-          <UIcon :name="item.icon" class="w-6 h-6" 
+          <UIcon :name="item.icon" class="w-5 h-5" 
             :class="isActive(item.to) ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500'" />
-          <span class="text-xs mt-1" 
+          <span class="text-[10px] mt-0.5 leading-tight" 
             :class="isActive(item.to) ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-300'">{{ item.label }}</span>
         </NuxtLink>
       </li>
       
       <!-- Выпадающий блок -->
       <li class="relative" ref="moreRef">
-        <button @click.stop="moreOpen = !moreOpen" class="flex flex-col items-center justify-center py-2 cursor-pointer w-full"
+        <button @click.stop="moreOpen = !moreOpen" class="flex flex-col items-center justify-center py-1.5 cursor-pointer w-full"
           :class="{ 'text-indigo-600 dark:text-indigo-400': moreActive }">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
             :class="moreActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500'">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
           </svg>
-          <span class="text-xs mt-1" 
-            :class="moreActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-300'">Еще</span>
+          <span class="text-[10px] mt-0.5 leading-tight" 
+            :class="moreActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-300'">Ещё</span>
         </button>
         
         <!-- Выпадающее меню -->
