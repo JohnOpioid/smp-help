@@ -27,13 +27,6 @@
         >
           5-я минута
         </button>
-        <button 
-          @click="currentMinute = 10"
-          class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors"
-          :class="currentMinute === 10 ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'"
-        >
-          10-я минута
-        </button>
       </nav>
     </div>
 
