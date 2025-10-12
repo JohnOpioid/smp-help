@@ -25,41 +25,43 @@
     </button>
     
     <!-- Навигация по кешированным страницам -->
-    <div class="space-y-3">
-      <h3 class="text-slate-900 dark:text-slate-100">
-        Некоторые функции могут быть недоступны без подключения к интернету
-      </h3>
-      <div class="grid grid-cols-2 gap-2">
-        <button
-          @click="navigateToPage('/')"
-          class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200 text-sm flex flex-col items-center"
-        >
-          <Icon name="heroicons:home" class="w-4 h-4 mb-1" />
-          Главная
-        </button>
-        <button
-          @click="navigateToPage('/algorithms')"
-          class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200 text-sm flex flex-col items-center"
-        >
-          <Icon name="heroicons:document-text" class="w-4 h-4 mb-1" />
-          Алгоритмы
-        </button>
-        <button
-          @click="navigateToPage('/calculators')"
-          class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200 text-sm flex flex-col items-center"
-        >
-          <Icon name="heroicons:calculator" class="w-4 h-4 mb-1" />
-          Калькуляторы
-        </button>
-        <button
-          @click="navigateToPage('/drugs')"
-          class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200 text-sm flex flex-col items-center"
-        >
-          <Icon name="heroicons:beaker" class="w-4 h-4 mb-1" />
-          Препараты
-        </button>
+    <ClientOnly>
+      <div class="space-y-3">
+        <h3 class="text-slate-900 dark:text-slate-100">
+          Некоторые функции могут быть недоступны без подключения к интернету
+        </h3>
+        <div class="grid grid-cols-2 gap-2">
+          <button
+            @click="navigateToPage('/codifier')"
+            class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200 text-sm flex flex-col items-center"
+          >
+            <Icon name="i-lucide-box" class="w-4 h-4 mb-1" />
+            Кодификатор
+          </button>
+          <button
+            @click="navigateToPage('/algorithms')"
+            class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200 text-sm flex flex-col items-center"
+          >
+            <Icon name="i-lucide-list-tree" class="w-4 h-4 mb-1" />
+            Алгоритмы
+          </button>
+          <button
+            @click="navigateToPage('/calculators')"
+            class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200 text-sm flex flex-col items-center"
+          >
+            <Icon name="i-lucide-calculator" class="w-4 h-4 mb-1" />
+            Калькуляторы
+          </button>
+          <button
+            @click="navigateToPage('/drugs')"
+            class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200 text-sm flex flex-col items-center"
+          >
+            <Icon name="i-lucide-pill" class="w-4 h-4 mb-1" />
+            Препараты
+          </button>
+        </div>
       </div>
-    </div>
+    </ClientOnly>
   </div>
 </template>
 
