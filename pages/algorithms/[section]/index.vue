@@ -56,7 +56,7 @@ definePageMeta({
 const route = useRoute()
 const slug = route.params.section as string
 const activeSection = ref<'Взрослые' | 'Детские' | 'ОНМП'>(
-  slug === 'adults' ? 'Взрослые' : slug === 'pediatrics' ? 'Детские' : slug === 'onmp-children' ? 'Детские' : 'ОНМП'
+  slug === 'adults' ? 'Взрослые' : slug === 'pediatrics' ? 'Детские' : slug === 'onmp' ? 'ОНМП' : 'Детские'
 )
 
 function sectionToSlug(s: string) {
