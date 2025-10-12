@@ -13,7 +13,8 @@
     </ClientOnly>
     
     <!-- Скелетон шапки (только при принудительном обновлении) -->
-    <div v-if="isInitialLoading" class="fixed inset-0 bg-white dark:bg-slate-900 z-50 flex flex-col">
+    <ClientOnly>
+      <div v-if="isInitialLoading" class="fixed inset-0 bg-white dark:bg-slate-900 z-50 flex flex-col">
       <!-- Хедер скелетон -->
       <div class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-4">
         <div class="flex items-center justify-between">
@@ -55,6 +56,7 @@
         </div>
       </div>
     </div>
+    </ClientOnly>
     
     <NuxtLayout>
       <NuxtPage />

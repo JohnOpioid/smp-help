@@ -26,6 +26,9 @@ async function checkOnlineStatus() {
   }
 }
 
+// Обработчики событий
+let updateOnlineStatus: (() => Promise<void>) | null = null
+
 onMounted(async () => {
   // Сначала проверяем navigator.onLine
   isOnline.value = navigator.onLine
@@ -33,16 +36,18 @@ onMounted(async () => {
   // Затем проверяем реальное подключение
   await checkOnlineStatus()
   
-  const updateOnlineStatus = async () => {
+  updateOnlineStatus = async () => {
     await checkOnlineStatus()
   }
 
   window.addEventListener('online', updateOnlineStatus)
   window.addEventListener('offline', updateOnlineStatus)
-  
-  onUnmounted(() => {
+})
+
+onUnmounted(() => {
+  if (updateOnlineStatus) {
     window.removeEventListener('online', updateOnlineStatus)
     window.removeEventListener('offline', updateOnlineStatus)
-  })
+  }
 })
 </script>
