@@ -1258,6 +1258,16 @@ async function loadDrugsList() {
       
       console.log('✅ Загружено препаратов:', drugsList.value.length)
       console.log('📋 Первые 10 препаратов:', drugsList.value.slice(0, 10))
+      
+      // Ищем препараты, которые могут быть в алгоритме анестезиологии
+      const anesthesiaDrugs = drugsList.value.filter(drug => 
+        drug.toLowerCase().includes('эпинефрин') || 
+        drug.toLowerCase().includes('адреналин') ||
+        drug.toLowerCase().includes('морфин') ||
+        drug.toLowerCase().includes('фентанил') ||
+        drug.toLowerCase().includes('пропофол')
+      )
+      console.log('💉 Препараты для анестезиологии:', anesthesiaDrugs)
     } else {
       console.warn('❌ Некорректный ответ API препаратов')
     }
@@ -1277,8 +1287,19 @@ function parseDrugsInContent(html: string): string {
   }
   
   console.log('🔍 Парсим контент с', drugsList.value.length, 'препаратами')
+  console.log('📄 Длина HTML контента:', html.length)
+  console.log('📄 Первые 500 символов контента:', html.substring(0, 500))
+  
   let result = html
   let replacementsCount = 0
+  
+  // Проверяем наличие конкретных препаратов в контенте
+  const testDrugs = ['Эпинефрин', 'Адреналин', 'Морфин', 'Фентанил', 'Пропофол']
+  for (const testDrug of testDrugs) {
+    if (html.toLowerCase().includes(testDrug.toLowerCase())) {
+      console.log(`🔍 Найден тестовый препарат "${testDrug}" в контенте`)
+    }
+  }
   
   // Заменяем названия препаратов на кликабельные ссылки
   for (const drug of drugsList.value) {
