@@ -139,7 +139,6 @@ info "=== СБОР ИНФОРМАЦИИ О ПРОЕКТЕ ==="
 read_input "Введите название проекта" PROJECT_NAME "false" "smp-help"
 read_input "Введите имя пользователя для проекта" PROJECT_USER "false" "root"
 read_input "Введите домен вашего сайта (например: helpsmp.ru)" DOMAIN "false" "helpsmp.ru"
-read_input "Введите рабочую директорию" WORK_DIR "false" "/home/smp-help/smp-help"
 
 # Информация о домене
 echo
@@ -170,9 +169,23 @@ fi
 # Настройки базы данных
 echo
 info "=== НАСТРОЙКА MONGODB ==="
-info "MongoDB должен быть уже установлен на сервере"
 echo
 
+# Спрашиваем, нужно ли устанавливать MongoDB
+question "Установить MongoDB 8.0 на сервере? (y/N)"
+echo "  - Выберите 'y' если MongoDB не установлен"
+echo "  - Выберите 'N' если MongoDB уже установлен"
+read -p "> " install_mongo_choice
+
+if [[ $install_mongo_choice =~ ^[Yy]$ ]]; then
+    INSTALL_MONGODB="yes"
+    log "MongoDB будет установлен автоматически"
+else
+    INSTALL_MONGODB="no"
+    log "MongoDB должен быть уже установлен на сервере"
+fi
+
+echo
 read_input "Введите название базы данных" MONGO_DB "false" "$PROJECT_NAME"
 read_input "Введите имя пользователя MongoDB" MONGO_USER "false" "help-smp-user"
 read_input "Введите пароль MongoDB пользователя" MONGO_PASS "true" ""
@@ -244,10 +257,18 @@ if [[ ! $confirm =~ ^[Yy]$ ]]; then
 fi
 
 # Устанавливаем пути
-PROJECT_DIR="/home/$PROJECT_USER/$GITHUB_REPO"
-LOG_DIR="/var/log/$PROJECT_NAME"
+CLONE_DIR="/home/smp-help"                    # Директория для клонирования репозитория
+PROJECT_DIR="$CLONE_DIR/$GITHUB_REPO"         # Полный путь к репозиторию
+WORK_DIR="/var/www/html/$DOMAIN"              # Рабочая директория для собранного проекта
+LOG_DIR="/var/log/$PROJECT_NAME"              # Директория для логов
 
 log "Начинаем установку с выбранными настройками..."
+
+# Выводим пути
+info "Пути проекта:"
+info "  - Клонирование репозитория: $PROJECT_DIR"
+info "  - Рабочая директория (собранный проект): $WORK_DIR"
+info "  - Логи: $LOG_DIR"
 
 # Функция установки зависимостей
 install_dependencies() {
@@ -282,34 +303,68 @@ install_dependencies() {
     log "✅ Node.js установлен: $NEW_NODE"
     log "✅ npm установлен: $NEW_NPM"
     
-    # Проверяем, что MongoDB установлен
-    log "📦 Проверяем MongoDB..."
-    
-    if ! command -v mongosh >/dev/null 2>&1; then
-        error "MongoDB не установлен!"
-        error "Установите MongoDB перед запуском этого скрипта:"
-        error "  curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | gpg --dearmor -o /usr/share/keyrings/mongodb-server-8.0.gpg"
-        error "  echo 'deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse' | tee /etc/apt/sources.list.d/mongodb-org-8.0.list"
-        error "  apt update && apt install -y mongodb-org"
-        exit 1
-    fi
-    
-    log "✅ MongoDB уже установлен"
-    
-    # Проверяем, что MongoDB запущен
-    if ! systemctl is-active --quiet mongod; then
-        log "⚙️  Запускаем MongoDB..."
+    # Устанавливаем или проверяем MongoDB
+    if [ "$INSTALL_MONGODB" = "yes" ]; then
+        log "📦 Устанавливаем MongoDB 8.0..."
+        
+        # Установка зависимостей
+        apt install -y wget curl gnupg software-properties-common
+        
+        # Импорт GPG ключа MongoDB
+        wget -qO - https://www.mongodb.org/static/pgp/server-8.0.asc | apt-key add -
+        
+        # Определяем версию Ubuntu
+        UBUNTU_CODENAME=$(lsb_release -cs)
+        log "Версия Ubuntu: $UBUNTU_CODENAME"
+        
+        # Добавление репозитория MongoDB
+        echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu ${UBUNTU_CODENAME}/mongodb-org/8.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-8.0.list
+        
+        # Обновление и установка
+        apt update
+        apt install -y mongodb-org
+        
+        # Запуск MongoDB
         systemctl start mongod
         systemctl enable mongod
-        sleep 3
-    fi
-    
-    if systemctl is-active --quiet mongod; then
-        log "✅ MongoDB работает"
+        
+        # Ждём запуска
+        log "Ожидаем запуска MongoDB..."
+        sleep 5
+        
+        if systemctl is-active --quiet mongod; then
+            log "✅ MongoDB 8.0 установлен и запущен"
+        else
+            error "❌ Не удалось запустить MongoDB"
+            error "Проверьте логи: sudo journalctl -u mongod -n 50"
+            exit 1
+        fi
     else
-        error "❌ Не удалось запустить MongoDB"
-        error "Проверьте логи: tail -f /var/log/mongodb/mongod.log"
-        exit 1
+        log "📦 Проверяем MongoDB..."
+        
+        if ! command -v mongosh >/dev/null 2>&1; then
+            error "MongoDB не установлен!"
+            error "Запустите скрипт заново и выберите установку MongoDB"
+            exit 1
+        fi
+        
+        log "✅ MongoDB уже установлен"
+        
+        # Проверяем, что MongoDB запущен
+        if ! systemctl is-active --quiet mongod; then
+            log "⚙️  Запускаем MongoDB..."
+            systemctl start mongod
+            systemctl enable mongod
+            sleep 3
+        fi
+        
+        if systemctl is-active --quiet mongod; then
+            log "✅ MongoDB работает"
+        else
+            error "❌ Не удалось запустить MongoDB"
+            error "Проверьте логи: sudo journalctl -u mongod -n 50"
+            exit 1
+        fi
     fi
     
     # Устанавливаем Nginx
@@ -331,22 +386,31 @@ install_dependencies() {
 setup_directories() {
     log "📁 Настраиваем директории..."
     
-    # Создаем директории
+    # Создаем директорию для клонирования
+    mkdir -p $CLONE_DIR
+    
+    # Создаем рабочую директорию для собранного проекта
     mkdir -p $WORK_DIR
+    
+    # Создаем директорию для логов
     mkdir -p $LOG_DIR
     
-    # Если пользователь не root, устанавливаем права
+    # Устанавливаем права
     if [ "$PROJECT_USER" != "root" ]; then
+        chown -R $PROJECT_USER:$PROJECT_USER $CLONE_DIR
         chown -R $PROJECT_USER:$PROJECT_USER $WORK_DIR
         chown -R $PROJECT_USER:$PROJECT_USER $LOG_DIR
     fi
     
-    log "✅ Директории созданы"
+    log "✅ Директории созданы:"
+    log "  - $CLONE_DIR (для репозитория)"
+    log "  - $WORK_DIR (для собранного проекта)"
+    log "  - $LOG_DIR (для логов)"
 }
 
-# Функция проверки MongoDB
-check_mongodb() {
-    log "🗄️ Проверяем подключение к MongoDB..."
+# Функция настройки MongoDB
+setup_mongodb() {
+    log "🗄️ Настраиваем MongoDB..."
     
     # Проверяем, что MongoDB доступен
     if ! systemctl is-active --quiet mongod; then
@@ -354,8 +418,46 @@ check_mongodb() {
         exit 1
     fi
     
+    # Если MongoDB только что установлен, нужно создать пользователя
+    if [ "$INSTALL_MONGODB" = "yes" ]; then
+        log "Создаём пользователя MongoDB..."
+        
+        # Создаём пользователя через последовательные команды mongosh
+        mongosh --quiet << MONGOEOF
+use admin
+db.createUser({
+  user: "$MONGO_USER",
+  pwd: "$MONGO_PASS",
+  roles: [
+    { role: "readWrite", db: "$MONGO_DB" },
+    { role: "dbAdmin", db: "$MONGO_DB" }
+  ]
+})
+exit
+MONGOEOF
+        
+        if [ $? -eq 0 ]; then
+            log "✅ Пользователь $MONGO_USER создан успешно"
+        else
+            warn "⚠️  Не удалось создать пользователя (возможно уже существует)"
+        fi
+        
+        # Включаем аутентификацию в конфиге MongoDB
+        log "Настраиваем аутентификацию MongoDB..."
+        
+        if ! grep -q "^security:" /etc/mongod.conf; then
+            echo "" >> /etc/mongod.conf
+            echo "security:" >> /etc/mongod.conf
+            echo "  authorization: enabled" >> /etc/mongod.conf
+            
+            log "Перезапускаем MongoDB с аутентификацией..."
+            systemctl restart mongod
+            sleep 5
+        fi
+    fi
+    
     # Проверяем подключение с указанными учётными данными
-    log "Проверяем подключение к MongoDB с указанными учётными данными..."
+    log "Проверяем подключение к MongoDB..."
     
     if mongosh "mongodb://$MONGO_USER:$MONGO_PASS@localhost:27017/$MONGO_DB" --quiet --eval "db.version()" > /dev/null 2>&1; then
         log "✅ Подключение к MongoDB успешно!"
@@ -364,7 +466,14 @@ check_mongodb() {
         warn "⚠️  Не удалось подключиться к MongoDB с указанными учётными данными"
         warn "⚠️  Возможно, пользователь не существует или пароль неверный"
         warn "⚠️  Приложение попытается подключиться с этими данными"
-        warn "⚠️  Если подключение не удастся, используйте скрипт create-mongodb-user.sh"
+        
+        if [ "$INSTALL_MONGODB" = "no" ]; then
+            warn "⚠️  Если подключение не удастся, создайте пользователя вручную:"
+            warn "     mongosh"
+            warn "     use admin"
+            warn "     db.createUser({user: '$MONGO_USER', pwd: '$MONGO_PASS', roles: [{role: 'readWrite', db: '$MONGO_DB'}]})"
+            warn "     exit"
+        fi
     fi
 }
 
@@ -372,25 +481,29 @@ check_mongodb() {
 clone_and_build() {
     log "📥 Клонируем и собираем проект..."
     
-    # Определяем директорию для клонирования
-    if [ "$PROJECT_USER" = "root" ]; then
-        CLONE_DIR="/root"
-    else
-        CLONE_DIR="/home/$PROJECT_USER"
-    fi
-    
     # Переходим в директорию для клонирования
     cd $CLONE_DIR
     
-    # Клонируем репозиторий
-    if [ -d "$GITHUB_REPO" ]; then
-        log "📁 Репозиторий уже существует, обновляем..."
-        cd $GITHUB_REPO
-        git pull origin main
+    # Проверяем, существует ли директория и является ли она Git репозиторием
+    if [ -d "$PROJECT_DIR" ]; then
+        cd $PROJECT_DIR
+        
+        # Проверяем, является ли это Git репозиторием
+        if git rev-parse --git-dir > /dev/null 2>&1; then
+            log "📁 Репозиторий существует, обновляем..."
+            git pull origin main
+        else
+            log "⚠️  Директория существует, но не является Git репозиторием"
+            log "Удаляем и клонируем заново..."
+            cd $CLONE_DIR
+            rm -rf "$PROJECT_DIR"
+            git clone $GITHUB_URL $PROJECT_DIR
+            cd $PROJECT_DIR
+        fi
     else
         log "📥 Клонируем репозиторий..."
-        git clone $GITHUB_URL
-        cd $GITHUB_REPO
+        git clone $GITHUB_URL $PROJECT_DIR
+        cd $PROJECT_DIR
     fi
         
     # Создаем файл окружения
@@ -445,21 +558,30 @@ EOF
 
 # Функция копирования файлов
 copy_files() {
-    log "📁 Копируем файлы в рабочую директорию..."
+    log "📁 Копируем собранные файлы в рабочую директорию..."
     
     # Очищаем рабочую директорию
+    log "Очищаем $WORK_DIR..."
     rm -rf $WORK_DIR/*
     
-    # Определяем путь к репозиторию
-    if [ "$PROJECT_USER" = "root" ]; then
-        REPO_PATH="/root/$GITHUB_REPO"
-    else
-        REPO_PATH="/home/$PROJECT_USER/$GITHUB_REPO"
+    # Проверяем, что сборка существует
+    if [ ! -d "$PROJECT_DIR/.output" ]; then
+        error "Директория сборки не найдена: $PROJECT_DIR/.output"
+        exit 1
     fi
     
-    # Копируем собранные файлы
-    cp -r $REPO_PATH/.output/public/* $WORK_DIR/
-    cp -r $REPO_PATH/.output/server/* $WORK_DIR/
+    # Копируем собранные файлы из репозитория в рабочую директорию
+    log "Копируем из $PROJECT_DIR/.output в $WORK_DIR..."
+    
+    if [ -d "$PROJECT_DIR/.output/public" ]; then
+        cp -r $PROJECT_DIR/.output/public/* $WORK_DIR/ 2>/dev/null || true
+        log "✅ Статические файлы скопированы"
+    fi
+    
+    if [ -d "$PROJECT_DIR/.output/server" ]; then
+        cp -r $PROJECT_DIR/.output/server/* $WORK_DIR/ 2>/dev/null || true
+        log "✅ Серверные файлы скопированы"
+    fi
     
     # Устанавливаем права
     if [ "$PROJECT_USER" != "root" ]; then
@@ -467,7 +589,14 @@ copy_files() {
     fi
     chmod -R 755 $WORK_DIR
     
-    log "✅ Файлы скопированы"
+    # Проверяем, что index.mjs существует
+    if [ -f "$WORK_DIR/index.mjs" ]; then
+        log "✅ Файлы скопированы успешно"
+    else
+        error "❌ index.mjs не найден в $WORK_DIR"
+        error "Проверьте сборку проекта"
+        exit 1
+    fi
 }
 
 # Функция настройки PM2
@@ -705,11 +834,15 @@ setup_nginx() {
     log "🌐 Настраиваем Nginx..."
     
     # Создаем конфигурацию Nginx
-    cat > /etc/nginx/sites-available/$DOMAIN << 'EOF'
+    cat > /etc/nginx/sites-available/$DOMAIN << 'EOFNGINX'
 server {
     listen 80;
     server_name DOMAIN_PLACEHOLDER www.DOMAIN_PLACEHOLDER;
     
+    # Корневая директория для статических файлов
+    root WORK_DIR_PLACEHOLDER;
+    
+    # Проксирование динамических запросов на Node.js
     location / {
         proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
@@ -723,16 +856,25 @@ server {
         proxy_read_timeout 86400;
     }
     
+    # Статические файлы Nuxt (_nuxt/)
     location /_nuxt/ {
         alias WORK_DIR_PLACEHOLDER/_nuxt/;
         expires 1y;
         add_header Cache-Control "public, immutable";
+        access_log off;
+    }
+    
+    # Фавиконка и другие статические файлы
+    location ~* \.(ico|css|js|gif|jpeg|jpg|png|woff|woff2|ttf|svg|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        access_log off;
     }
     
     access_log /var/log/nginx/DOMAIN_PLACEHOLDER.access.log;
     error_log /var/log/nginx/DOMAIN_PLACEHOLDER.error.log;
 }
-EOF
+EOFNGINX
     
     # Заменяем плейсхолдеры
     sed -i "s/DOMAIN_PLACEHOLDER/$DOMAIN/g" /etc/nginx/sites-available/$DOMAIN
@@ -775,14 +917,19 @@ create_management_scripts() {
     fi
     
     # Скрипт обновления
-    cat > $SCRIPTS_DIR/update-app.sh << 'EOF'
+    cat > $SCRIPTS_DIR/update-app.sh << EOFUPDATE
 #!/bin/bash
 
 set -e
 
 echo "🔄 Обновляем $PROJECT_NAME..."
 
-cd $PROJECT_DIR
+# Переменные
+PROJECT_DIR="$PROJECT_DIR"
+WORK_DIR="$WORK_DIR"
+PROJECT_NAME="$PROJECT_NAME"
+
+cd \$PROJECT_DIR
 
 echo "📥 Получаем изменения из GitHub..."
 git pull origin main
@@ -793,17 +940,18 @@ npm install
 echo "🔨 Собираем проект..."
 npm run build
 
-echo "📁 Копируем файлы..."
-sudo cp -r .output/public/* $WORK_DIR/
-sudo cp -r .output/server/* $WORK_DIR/
-sudo chown -R $PROJECT_USER:$PROJECT_USER $WORK_DIR
+echo "📁 Копируем файлы в рабочую директорию..."
+rm -rf \$WORK_DIR/*
+cp -r .output/public/* \$WORK_DIR/ 2>/dev/null || true
+cp -r .output/server/* \$WORK_DIR/ 2>/dev/null || true
+chmod -R 755 \$WORK_DIR
 
 echo "🚀 Перезапускаем приложение..."
-pm2 restart $PROJECT_NAME
+pm2 restart \$PROJECT_NAME
 
 echo "✅ Обновление завершено!"
 pm2 status
-EOF
+EOFUPDATE
     
     # Устанавливаем права на скрипт
     if [ "$PROJECT_USER" != "root" ]; then
@@ -812,26 +960,31 @@ EOF
     chmod +x $SCRIPTS_DIR/update-app.sh
     
     # Скрипт запуска
-    cat > $SCRIPTS_DIR/start-app.sh << 'EOF'
+    cat > $SCRIPTS_DIR/start-app.sh << EOFSTART
 #!/bin/bash
 
-echo "🚀 Запускаем $PROJECT_NAME..."
+# Переменные
+WORK_DIR="$WORK_DIR"
+PROJECT_NAME="$PROJECT_NAME"
 
-pm2 stop $PROJECT_NAME 2>/dev/null || true
-pm2 delete $PROJECT_NAME 2>/dev/null || true
+echo "🚀 Запускаем \$PROJECT_NAME..."
 
-# Пробуем запустить ES модули
-if [ -f "$WORK_DIR/index.mjs" ]; then
-    echo "📦 Запускаем ES модули..."
+cd \$WORK_DIR
+
+pm2 stop \$PROJECT_NAME 2>/dev/null || true
+pm2 delete \$PROJECT_NAME 2>/dev/null || true
+
+# Запускаем приложение
+if [ -f "\$WORK_DIR/ecosystem.config.cjs" ]; then
     pm2 start ecosystem.config.cjs
 else
-    echo "📦 Запускаем CommonJS..."
-    pm2 start ecosystem.config.cjs
+    echo "❌ Конфигурация PM2 не найдена"
+    exit 1
 fi
 
 echo "✅ Приложение запущено!"
-echo "Проверьте статус: pm2 status"
-EOF
+pm2 status
+EOFSTART
     
     # Устанавливаем права на скрипт
     if [ "$PROJECT_USER" != "root" ]; then
@@ -1017,7 +1170,7 @@ main() {
             log "🚀 Начинаем чистую установку..."
             install_dependencies
             setup_directories
-            check_mongodb
+            setup_mongodb
             clone_and_build
             copy_files
             setup_pm2
@@ -1039,19 +1192,55 @@ main() {
             ;;
         "reinstall")
             log "🗑️ Начинаем переустановку..."
-            # Останавливаем сервисы
+            
+            warn "⚠️  ВНИМАНИЕ: Будут удалены следующие данные:"
+            warn "   - Рабочая директория: $WORK_DIR"
+            warn "   - Логи: $LOG_DIR"
+            warn "   - PM2 процесс: $PROJECT_NAME"
+            echo
+            question "Удалить также репозиторий $PROJECT_DIR? (y/N)"
+            read -p "> " delete_repo
+            
+            echo
+            info "✅ НЕ будут удалены:"
+            info "   - MongoDB и данные базы"
+            info "   - Nginx (только будет перезапущен)"
+            if [[ ! $delete_repo =~ ^[Yy]$ ]]; then
+                info "   - Репозиторий: $PROJECT_DIR"
+            fi
+            echo
+            read -p "Продолжить переустановку? (y/N): " reinstall_confirm
+            
+            if [[ ! $reinstall_confirm =~ ^[Yy]$ ]]; then
+                log "Переустановка отменена"
+                exit 0
+            fi
+            
+            # Останавливаем сервисы (НЕ останавливаем MongoDB!)
+            log "Останавливаем PM2..."
             pm2 stop $PROJECT_NAME 2>/dev/null || true
             pm2 delete $PROJECT_NAME 2>/dev/null || true
+            
+            log "Останавливаем Nginx..."
             systemctl stop nginx 2>/dev/null || true
             
-            # Удаляем файлы
+            # Удаляем файлы приложения
+            log "Удаляем рабочую директорию..."
             rm -rf $WORK_DIR
+            
+            log "Удаляем логи..."
             rm -rf $LOG_DIR
+            
+            # Удаляем репозиторий если пользователь подтвердил
+            if [[ $delete_repo =~ ^[Yy]$ ]]; then
+                log "Удаляем репозиторий..."
+                rm -rf $PROJECT_DIR
+            fi
             
             # Переустанавливаем
             install_dependencies
             setup_directories
-            check_mongodb
+            setup_mongodb
             clone_and_build
             copy_files
             setup_pm2
