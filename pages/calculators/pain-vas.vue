@@ -2,14 +2,14 @@
   <div class="flex-1">
     <!-- Блок поиска с шапкой калькулятора -->
     <div class="max-w-5xl w-full mx-auto px-4 pt-8">
+      <SearchBar />
       <div class="flex items-center justify-between gap-4 mb-0">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Шкала боли</h1>
         <UButton color="neutral" variant="soft" @click="resetAll">Сбросить</UButton>
       </div>
-      <p class="text-slate-600 dark:text-slate-300 mb-6">
+      <p class="text-slate-600 dark:text-slate-300">
         Визуально-аналоговая шкала боли (ВАШ) для оценки интенсивности боли по 11-балльной шкале от 0 (нет боли) до 10 (невыносимая боль).
       </p>
-      <SearchBar />
     </div>
 
     <!-- Основной контент -->

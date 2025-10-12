@@ -2,14 +2,14 @@
   <div class="flex-1">
     <!-- Блок поиска с шапкой калькулятора -->
     <div class="max-w-5xl w-full mx-auto px-4 pt-8">
-      <div class="flex items-center justify-between gap-2 mb-2">
+      <SearchBar />
+      <div class="flex items-center justify-between gap-2 mb-2 mt-6">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Шкала комы Глазго (GCS)</h1>
         <UButton color="neutral" variant="soft" @click="resetAll">Сбросить</UButton>
       </div>
-      <p class="text-slate-600 dark:text-slate-300 mb-6">
+      <p class="text-slate-600 dark:text-slate-300">
         Шкала комы Глазго (Glasgow Coma Scale, GCS) используется для оценки степени нарушения сознания у взрослых.
       </p>
-      <SearchBar />
     </div>
 
     <!-- Основной контент -->

@@ -8,7 +8,7 @@
           <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-700 dark:text-white mb-2 sm:mb-4">
             Найдите нужную информацию
           </h2>
-          <p class="text-base sm:text-lg lg:text-xl text-slate-600 dark:text-slate-300 mb-6 sm:mb-8">
+          <p class="text-base sm:text-lg lg:text-xl text-slate-600 dark:text-slate-300 sm:mb-8">
             Быстрый поиск по всем разделам справочника СМП
           </p>
         </div>

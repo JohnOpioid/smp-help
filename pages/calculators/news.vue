@@ -2,6 +2,7 @@
   <div class="flex-1">
     <!-- Блок поиска с шапкой калькулятора -->
     <div class="max-w-5xl w-full mx-auto px-4 pt-8">
+      <SearchBar />
       <div class="flex items-center justify-between gap-4 mb-0">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Шкала NEWS</h1>
         <UButton color="neutral" variant="soft" @click="resetAll">Сбросить</UButton>
@@ -9,7 +10,6 @@
       <p class="text-slate-600 dark:text-slate-300 mb-6">
         Калькулятор для расчета оценки тяжести состояния пациентов с COVID-19. Шкала NEWS 2 (National Early Warning Score) предложена в 2020 году для оценки тяжести течения COVID-19 Королевским колледжем врачей (Royal College of Physicians) - британским обществом профессиональных врачей медицины общего профиля и её узких направлений.
       </p>
-      <SearchBar />
     </div>
 
     <!-- Основной контент -->
