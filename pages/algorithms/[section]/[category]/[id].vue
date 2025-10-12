@@ -1251,17 +1251,80 @@ function parseDrugsInContent(html: string): string {
     return html
   }
   
-  let result = html
+  // Создаем временный DOM элемент для безопасного парсинга
+  const tempDiv = document.createElement('div')
+  tempDiv.innerHTML = html
   
-  // Заменяем названия препаратов на кликабельные ссылки (без границ слов для кириллицы)
-  for (const drug of drugsList.value) {
-    const regex = new RegExp(`${drug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'gi')
-    result = result.replace(regex, (match) => {
-      return `<a href="#" class="algocclink cursor-pointer" data-drug-name="${drug}">${match}</a>`
-    })
+  // Сортируем препараты по длине (длинные названия первыми)
+  const sortedDrugs = [...drugsList.value].sort((a, b) => b.length - a.length)
+  
+  // Функция для рекурсивного обхода DOM и замены текста
+  function replaceTextInNode(node: Node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      let text = node.textContent || ''
+      
+      for (const drug of sortedDrugs) {
+        // Используем простую замену без регулярных выражений
+        const drugLower = drug.toLowerCase()
+        const textLower = text.toLowerCase()
+        
+        let index = textLower.indexOf(drugLower)
+        while (index !== -1) {
+          // Проверяем границы слова (пробелы, знаки препинания)
+          const beforeChar = index > 0 ? text[index - 1] : ' '
+          const afterChar = index + drug.length < text.length ? text[index + drug.length] : ' '
+          
+          const isWordBoundary = /[\s\.,;:!?()[\]{}"'«»]/.test(beforeChar) && /[\s\.,;:!?()[\]{}"'«»]/.test(afterChar)
+          
+          if (isWordBoundary) {
+            const beforeText = text.substring(0, index)
+            const drugText = text.substring(index, index + drug.length)
+            const afterText = text.substring(index + drug.length)
+            
+            // Создаем ссылку
+            const link = document.createElement('a')
+            link.href = '#'
+            link.className = 'algocclink cursor-pointer'
+            link.setAttribute('data-drug-name', drug)
+            link.textContent = drugText
+            
+            // Заменяем текст на ссылку
+            const fragment = document.createDocumentFragment()
+            if (beforeText) {
+              fragment.appendChild(document.createTextNode(beforeText))
+            }
+            fragment.appendChild(link)
+            if (afterText) {
+              fragment.appendChild(document.createTextNode(afterText))
+            }
+            
+            // Заменяем узел
+            node.parentNode?.replaceChild(fragment, node)
+            return // Выходим из функции, так как узел заменен
+          }
+          
+          // Ищем следующее вхождение
+          index = textLower.indexOf(drugLower, index + 1)
+        }
+      }
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      // Не обрабатываем уже существующие ссылки
+      if (node.nodeName.toLowerCase() === 'a') {
+        return
+      }
+      
+      // Рекурсивно обрабатываем дочерние узлы
+      const children = Array.from(node.childNodes)
+      for (const child of children) {
+        replaceTextInNode(child)
+      }
+    }
   }
   
-  return result
+  // Обрабатываем все узлы
+  replaceTextInNode(tempDiv)
+  
+  return tempDiv.innerHTML
 }
 
 // Реактивный поиск локальных статусов при изменении алгоритма
