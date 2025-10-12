@@ -5,16 +5,22 @@
     <!-- Индикатор офлайн режима -->
     <ClientOnly>
       <OfflineIndicator />
+      <template #fallback>
+        <span></span>
+      </template>
     </ClientOnly>
     
     <!-- Менеджер кеша -->
     <ClientOnly>
       <CacheManager />
+      <template #fallback>
+        <span></span>
+      </template>
     </ClientOnly>
     
     <!-- Скелетон шапки (только при принудительном обновлении) -->
     <ClientOnly>
-      <div v-if="isInitialLoading" class="fixed inset-0 bg-white dark:bg-slate-900 z-50 flex flex-col">
+      <div v-if="isMounted && isInitialLoading" class="fixed inset-0 bg-white dark:bg-slate-900 z-50 flex flex-col">
       <!-- Хедер скелетон -->
       <div class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-4">
         <div class="flex items-center justify-between">
@@ -56,6 +62,9 @@
         </div>
       </div>
     </div>
+      <template #fallback>
+        <span></span>
+      </template>
     </ClientOnly>
     
     <NuxtLayout>
@@ -67,6 +76,7 @@
 <script setup lang="ts">
 // Состояние загрузки при принудительном обновлении (только шапка)
 const isInitialLoading = ref(true)
+const isMounted = ref(false)
 
 // Состояние загрузки контента при навигации
 const isContentLoading = ref(false)
@@ -77,6 +87,8 @@ provide('isContentLoading', isContentLoading)
 
 // Скрываем скелетон шапки после первоначальной загрузки
 onMounted(() => {
+  isMounted.value = true
+  
   nextTick(() => {
     setTimeout(() => {
       isInitialLoading.value = false

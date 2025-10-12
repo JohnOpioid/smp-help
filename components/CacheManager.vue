@@ -1,28 +1,33 @@
 <template>
-  <div class="fixed bottom-4 left-4 z-50 space-y-2">
-    <!-- Кнопка сохранения приложения -->
+  <div v-if="isMounted" class="fixed bottom-20 left-4 right-4 md:bottom-4 md:left-auto md:right-auto md:w-auto z-50 space-y-2">
+    <!-- Кнопка сохранения приложения (только на мобильных) -->
     <button
-      v-if="!isCaching && !isCached && !updateAvailable"
+      v-if="!isCaching && !isCached && !updateAvailable && !showSuccessMessage"
       @click="precacheSite"
       :disabled="isCaching"
-      class="w-full inline-flex justify-center items-center px-4 sm:px-6 py-3 border border-slate-200 dark:border-slate-500 text-base font-medium rounded-md text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
+      class="w-full md:hidden inline-flex justify-center items-center px-4 sm:px-6 py-3 border border-slate-200 dark:border-slate-500 text-base font-medium rounded-md text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer shadow-lg"
       role="button"
     >
       <Icon name="heroicons:device-phone-mobile" class="w-5 h-5 mr-2" />
-      <span v-if="isCaching">Сохранение...</span>
-      <span v-else>Сохранить приложение</span>
+      <span>Сохранить приложение</span>
     </button>
 
-    <!-- Индикатор сохранения -->
-    <div v-if="isCaching" class="bg-blue-500 text-white px-3 py-2 rounded-lg shadow-lg text-sm">
-      <div class="flex items-center gap-2">
+    <!-- Индикатор сохранения с прогрессом -->
+    <div v-if="isCaching" class="bg-blue-500 text-white px-3 py-2 rounded-lg shadow-lg text-sm w-full md:w-auto">
+      <div class="flex items-center gap-2 mb-2">
         <Icon name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
-        <span>Сохранение приложения...</span>
+        <span>Сохранение приложения... {{ cachedPages }}/{{ totalPages }}</span>
+      </div>
+      <div class="w-full bg-blue-400 rounded-full h-2">
+        <div 
+          class="bg-white h-2 rounded-full transition-all duration-300" 
+          :style="{ width: `${progressPercentage}%` }"
+        ></div>
       </div>
     </div>
 
     <!-- Индикатор успешного сохранения -->
-    <div v-if="isCached && !isCaching && !updateAvailable" class="bg-green-500 text-white px-3 py-2 rounded-lg shadow-lg text-sm">
+    <div v-if="showSuccessMessage" class="bg-green-500 text-white px-3 py-2 rounded-lg shadow-lg text-sm w-full md:w-auto">
       <div class="flex items-center gap-2">
         <Icon name="heroicons:check-circle" class="w-4 h-4" />
         <span>Приложение сохранено</span>
@@ -31,9 +36,9 @@
 
     <!-- Кнопка обновления -->
     <button
-      v-if="updateAvailable"
+      v-if="updateAvailable && !isCaching && !showSuccessMessage"
       @click="updateApp"
-      class="w-full inline-flex justify-center items-center px-4 sm:px-6 py-3 border border-orange-200 dark:border-orange-500 text-base font-medium rounded-md text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200 animate-pulse cursor-pointer"
+      class="w-full md:hidden inline-flex justify-center items-center px-4 sm:px-6 py-3 border border-orange-200 dark:border-orange-500 text-base font-medium rounded-md text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200 animate-pulse cursor-pointer shadow-lg"
       role="button"
     >
       <Icon name="heroicons:arrow-path" class="w-5 h-5 mr-2" />
@@ -46,7 +51,16 @@
 const isCaching = ref(false)
 const isCached = ref(false)
 const updateAvailable = ref(false)
+const isMounted = ref(false)
+const cachedPages = ref(0)
+const totalPages = ref(0)
+const showSuccessMessage = ref(false)
 
+// Вычисляемое свойство для процента прогресса
+const progressPercentage = computed(() => {
+  if (totalPages.value === 0) return 0
+  return Math.round((cachedPages.value / totalPages.value) * 100)
+})
 
 // Список страниц для кеширования
 const pagesToCache = [
@@ -89,9 +103,13 @@ async function precacheSite() {
   if (isCaching.value) return
   
   isCaching.value = true
+  cachedPages.value = 0
+  totalPages.value = pagesToCache.length
+  showSuccessMessage.value = false
   
   try {
-    for (const page of pagesToCache) {
+    for (let i = 0; i < pagesToCache.length; i++) {
+      const page = pagesToCache[i]
       try {
         // Кешируем страницу
         await fetch(page, { 
@@ -99,17 +117,26 @@ async function precacheSite() {
           cache: 'force-cache'
         })
         
+        cachedPages.value = i + 1
+        
         // Небольшая задержка между запросами
         await new Promise(resolve => setTimeout(resolve, 100))
       } catch (error) {
         console.warn(`Не удалось кешировать страницу ${page}:`, error)
+        cachedPages.value = i + 1
       }
     }
     
     isCached.value = true
+    showSuccessMessage.value = true
     
     // Сохраняем статус кеширования в localStorage
     localStorage.setItem('site-cached', 'true')
+    
+    // Скрываем сообщение об успехе через 3 секунды
+    setTimeout(() => {
+      showSuccessMessage.value = false
+    }, 3000)
     
   } catch (error) {
     console.error('Ошибка кеширования:', error)
@@ -136,6 +163,8 @@ async function updateApp() {
 
 // Проверка статуса кеширования при загрузке
 onMounted(() => {
+  isMounted.value = true
+  
   // Проверяем, был ли сайт уже кеширован
   const cached = localStorage.getItem('site-cached')
   
