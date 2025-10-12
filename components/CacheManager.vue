@@ -5,7 +5,7 @@
       v-if="!isCaching && !isCached && !updateAvailable"
       @click="precacheSite"
       :disabled="isCaching"
-      class="w-full inline-flex justify-center items-center px-4 sm:px-6 py-3 border border-slate-200 dark:border-slate-500 text-base font-medium rounded-md text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-75 disabled:cursor-not-allowed"
+      class="w-full inline-flex justify-center items-center px-4 sm:px-6 py-3 border border-slate-200 dark:border-slate-500 text-base font-medium rounded-md text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
       role="button"
     >
       <Icon name="heroicons:device-phone-mobile" class="w-5 h-5 mr-2" />
@@ -33,7 +33,7 @@
     <button
       v-if="updateAvailable"
       @click="updateApp"
-      class="w-full inline-flex justify-center items-center px-4 sm:px-6 py-3 border border-orange-200 dark:border-orange-500 text-base font-medium rounded-md text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200 animate-pulse"
+      class="w-full inline-flex justify-center items-center px-4 sm:px-6 py-3 border border-orange-200 dark:border-orange-500 text-base font-medium rounded-md text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200 animate-pulse cursor-pointer"
       role="button"
     >
       <Icon name="heroicons:arrow-path" class="w-5 h-5 mr-2" />
