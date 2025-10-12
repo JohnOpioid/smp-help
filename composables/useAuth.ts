@@ -60,7 +60,7 @@ export const useAuth = () => {
     } catch (error: any) {
       return { 
         success: false, 
-        message: error.data?.statusMessage || 'Ошибка при регистрации' 
+        message: error.data?.message || error.data?.statusMessage || 'Ошибка при регистрации' 
       }
     }
   }
@@ -68,19 +68,24 @@ export const useAuth = () => {
   // Авторизация
   const login = async (credentials: { email: string; password: string }) => {
     try {
+      console.log('Attempting login with:', { email: credentials.email, passwordLength: credentials.password.length })
+      
       const data = await $fetch('/api/auth/login', {
         method: 'POST',
         body: credentials
       })
+
+      console.log('Login response:', data)
 
       if (data.success) {
         saveAuth(data.token, data.user)
         return { success: true, message: data.message }
       }
     } catch (error: any) {
+      console.error('Login error:', error)
       return { 
         success: false, 
-        message: error.data?.statusMessage || 'Ошибка при авторизации' 
+        message: error.data?.message || error.data?.statusMessage || 'Ошибка при авторизации' 
       }
     }
   }
