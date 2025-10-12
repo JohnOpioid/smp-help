@@ -48,7 +48,7 @@ export default defineNuxtConfig({
     }
   },
   pwa: {
-    registerType: 'autoUpdate',
+    registerType: 'prompt',
     workbox: {
       navigateFallback: null, // Отключаем fallback, используем runtime caching
       globPatterns: ['**/*.{js,css,png,svg,ico}'],
@@ -60,8 +60,8 @@ export default defineNuxtConfig({
         '**/manifest.webmanifest'
       ],
       cleanupOutdatedCaches: true,
-      skipWaiting: true,
-      clientsClaim: true,
+      skipWaiting: false,
+      clientsClaim: false,
       maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
       runtimeCaching: [
         {

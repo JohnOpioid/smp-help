@@ -156,15 +156,22 @@ async function updateApp() {
   if ('serviceWorker' in navigator) {
     const registration = await navigator.serviceWorker.getRegistration()
     if (registration && registration.waiting) {
+      // Отправляем сообщение ожидающему service worker
       registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+      
+      // Ждем активации нового service worker
+      registration.waiting.addEventListener('statechange', (e) => {
+        const sw = e.target as ServiceWorker
+        if (sw.state === 'activated') {
+          // Сбрасываем флаг обновления
+          updateAvailable.value = false
+          
+          // Перезагружаем страницу для применения обновлений
+          window.location.reload()
+        }
+      })
     }
   }
-  
-  // Сбрасываем флаг обновления
-  updateAvailable.value = false
-  
-  // Перезагружаем страницу
-  window.location.reload()
 }
 
 // Проверка статуса кеширования при загрузке
@@ -182,5 +189,20 @@ onMounted(() => {
   window.addEventListener('pwa-update-available', () => {
     updateAvailable.value = true
   })
+  
+  // Проверяем наличие обновлений service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      // Service worker обновился, перезагружаем страницу
+      window.location.reload()
+    })
+    
+    // Проверяем наличие ожидающего service worker
+    navigator.serviceWorker.getRegistration().then((registration) => {
+      if (registration && registration.waiting) {
+        updateAvailable.value = true
+      }
+    })
+  }
 })
 </script>
