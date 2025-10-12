@@ -1,5 +1,11 @@
 <template>
   <div class="flex-1">
+    <!-- Блок поиска отдельно -->
+    <div class="max-w-5xl w-full mx-auto px-4 pt-8">
+      <SearchBar />
+    </div>
+
+    <!-- Основной контент -->
     <div class="max-w-5xl mx-auto px-0 md:px-4 py-8">
       <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-6">Калькуляторы</h2>
 

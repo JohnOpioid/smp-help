@@ -1,13 +1,19 @@
 <template>
   <div class="flex-1">
-    <div class="max-w-5xl mx-auto px-0 md:px-4 py-8 space-y-6">
+    <!-- Блок поиска с шапкой калькулятора -->
+    <div class="max-w-5xl w-full mx-auto px-4 pt-8">
       <div class="flex items-center justify-between gap-2 mb-2">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Шкала FOUR</h1>
         <UButton color="neutral" variant="soft" @click="resetAll">Сбросить</UButton>
       </div>
-      <p class="text-slate-600 dark:text-slate-300">
+      <p class="text-slate-600 dark:text-slate-300 mb-6">
         Шкала комы FOUR служит для градации глубины комы у интубированных больных, когда оценка речевой реакции по GCS невозможна.
       </p>
+      <SearchBar />
+    </div>
+
+    <!-- Основной контент -->
+    <div class="max-w-5xl mx-auto px-0 md:px-4 py-8 space-y-6">
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
         <!-- E: Глазные реакции -->

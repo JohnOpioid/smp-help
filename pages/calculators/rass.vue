@@ -1,13 +1,19 @@
 <template>
   <div class="flex-1">
-    <div class="max-w-5xl mx-auto px-0 md:px-4 py-8 space-y-6">
+    <!-- Блок поиска с шапкой калькулятора -->
+    <div class="max-w-5xl w-full mx-auto px-4 pt-8">
       <div class="flex items-center justify-between gap-2 mb-2">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Шкала RASS</h1>
         <UButton color="neutral" variant="soft" @click="resetAll">Сбросить</UButton>
       </div>
-      <p class="text-slate-600 dark:text-slate-300">
+      <p class="text-slate-600 dark:text-slate-300 mb-6">
         Шкала RASS (шкала возбуждения-седации Ричмонда, Richmond Agitation–Sedation Scale) используется в реанимации и ИТ для оценки возбуждения или глубины седации.
       </p>
+      <SearchBar />
+    </div>
+
+    <!-- Основной контент -->
+    <div class="max-w-5xl mx-auto px-0 md:px-4 py-8 space-y-6">
 
       <!-- Список значений RASS -->
       <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
