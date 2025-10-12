@@ -12,12 +12,15 @@
             height: `${sheetHeight}px`,
             maxHeight: '90vh'
           }"
-          @touchstart="onDragStart"
-          @touchmove="onDragMove"
-          @touchend="onDragEnd"
         >
           <!-- Заголовок с ручкой для перетаскивания -->
-          <div ref="headerRef" class="py-2 px-3 border-b border-slate-200 dark:border-slate-600 flex-shrink-0">
+          <div 
+            ref="headerRef" 
+            class="py-2 px-3 border-b border-slate-200 dark:border-slate-600 flex-shrink-0 cursor-grab active:cursor-grabbing"
+            @touchstart="onDragStart"
+            @touchmove="onDragMove"
+            @touchend="onDragEnd"
+          >
             <div class="flex items-center justify-center select-none">
               <div
                 class="w-10 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"
@@ -77,6 +80,13 @@ function close() {
 }
 
 function onDragStart(e: TouchEvent) {
+  // Проверяем, скроллится ли контент
+  const contentEl = contentRef.value
+  if (contentEl && contentEl.scrollTop > 0) {
+    // Если контент прокручен вниз, не начинаем drag
+    return
+  }
+  
   startY.value = e.touches[0].clientY
   dragOffset.value = 0
   isDragging.value = true
@@ -87,12 +97,23 @@ function onDragMove(e: TouchEvent) {
   
   const dy = e.touches[0].clientY - startY.value
   
-  // Предотвращаем скролл только если пользователь тянет вниз
-  if (dy > 0) {
-    e.preventDefault()
+  // Проверяем, скроллится ли контент
+  const contentEl = contentRef.value
+  if (contentEl && contentEl.scrollTop > 0) {
+    // Если контент прокручен, отменяем drag
+    isDragging.value = false
+    dragOffset.value = 0
+    return
   }
   
-  dragOffset.value = Math.max(0, dy)
+  // Разрешаем drag только если пользователь тянет вниз
+  if (dy > 0) {
+    e.preventDefault()
+    dragOffset.value = Math.max(0, dy)
+  } else {
+    // Если тянет вверх, не применяем offset
+    dragOffset.value = 0
+  }
 }
 
 function onDragEnd(e: TouchEvent) {
