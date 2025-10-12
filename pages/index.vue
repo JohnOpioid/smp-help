@@ -22,7 +22,7 @@
       <!-- Разделы -->
       <div class="px-0 md:px-4">
         <div class="max-w-5xl mx-auto">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0 sm:gap-2">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           <!-- Алгоритмы -->
           <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border-y border-slate-100 dark:border-slate-600 md:border md:rounded-lg">
             <div class="p-4 h-full flex flex-col">
