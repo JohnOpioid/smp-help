@@ -1,12 +1,16 @@
 <template>
   <div>
     <main class="flex-1">
-      <div class="max-w-5xl mx-auto px-0 md:px-4 py-8">
+      <!-- Блок поиска отдельно -->
+      <div class="max-w-5xl w-full mx-auto px-4 pt-8">
         <div class="mb-6">
           <SearchBar />
         </div>
+      </div>
 
-        <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 md:rounded-lg">
+      <!-- Основной контент -->
+      <div class="max-w-5xl mx-auto px-0 md:px-4 py-8">
+        <div class="bg-white dark:bg-slate-800 border-y border-slate-100 dark:border-slate-600 md:border md:rounded-lg">
           <div class="p-4 border-b border-slate-100 dark:border-slate-700">
             <p class="text-sm text-slate-600 dark:text-slate-300">Список категорий локальных статусов</p>
           </div>

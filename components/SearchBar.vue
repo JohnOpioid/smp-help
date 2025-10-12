@@ -1,5 +1,5 @@
 <template>
-  <div class="relative mx-auto w-full rounded">
+  <div class="relative mx-auto w-full">
     <!-- Темный фон при фокусе -->
     <div v-if="isFocused" class="fixed inset-0 bg-slate-700/50 z-30" @click="blurSearch"></div>
     
@@ -16,7 +16,7 @@
         placeholder="Введите запрос для поиска..." 
         :class="[
           'block w-full pl-10 pr-20 sm:pl-12 sm:pr-24 py-3 sm:py-4 text-base sm:text-base border border-slate-100 dark:border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:shadow-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 transition-all duration-200',
-          props.isHomePage ? 'rounded-lg' : 'md:rounded-lg'
+          props.isHomePage ? 'rounded-lg' : 'rounded-lg'
         ]"
         @input="onSearch"
         @keydown.enter="performSearch"

@@ -9,7 +9,7 @@
 
       <!-- Навигация по профилю (вне всех блоков) -->
        <div v-if="!isInitialLoading" class="px-4 max-w-5xl mx-auto pt-8 w-full">
-         <nav class="flex space-x-1 bg-slate-100 dark:bg-slate-800 md:rounded-lg p-1 w-full justify-start items-start text-left overflow-x-auto hide-scrollbar">
+         <nav class="flex space-x-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 w-full justify-start items-start text-left overflow-x-auto hide-scrollbar">
           <NuxtLink to="/profile" class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap"
             exact-active-class="bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
             inactive-class="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
