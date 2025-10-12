@@ -1310,6 +1310,18 @@ function parseDrugsInContent(html: string): string {
   for (const testDrug of testDrugs) {
     if (html.toLowerCase().includes(testDrug.toLowerCase())) {
       console.log(`🔍 Найден тестовый препарат "${testDrug}" в контенте`)
+      
+      // Проверяем точное совпадение с регулярным выражением
+      const regex = new RegExp(`\\b${testDrug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi')
+      const matches = html.match(regex)
+      console.log(`🔍 Регулярное выражение для "${testDrug}":`, regex)
+      console.log(`🔍 Найденные совпадения:`, matches)
+      
+      // Проверяем все варианты написания
+      const allVariants = drugsList.value.filter(drug => 
+        drug.toLowerCase().includes(testDrug.toLowerCase())
+      )
+      console.log(`🔍 Все варианты "${testDrug}" в списке:`, allVariants)
     }
   }
   
@@ -1317,6 +1329,15 @@ function parseDrugsInContent(html: string): string {
   for (const drug of drugsList.value) {
     const regex = new RegExp(`\\b${drug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi')
     const beforeReplace = result
+    
+    // Проверяем совпадения для первых 10 препаратов
+    if (drugsList.value.indexOf(drug) < 10) {
+      const matches = html.match(regex)
+      if (matches) {
+        console.log(`🔍 Препарат "${drug}" найден в контенте:`, matches)
+      }
+    }
+    
     result = result.replace(regex, (match) => {
       replacementsCount++
       return `<a href="#" class="algocclink cursor-pointer" data-drug-name="${drug}">${match}</a>`
