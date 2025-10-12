@@ -1,17 +1,17 @@
 <template>
   <div class="fixed bottom-4 left-4 z-50 space-y-2">
     <!-- Кнопка сохранения приложения -->
-    <UButton
+    <button
       v-if="!isCaching && !isCached && !updateAvailable"
       @click="precacheSite"
-      color="blue"
-      size="xl"
-      class="shadow-lg border-2 border-blue-300 dark:border-blue-600"
-      :loading="isCaching"
+      :disabled="isCaching"
+      class="w-full inline-flex justify-center items-center px-4 sm:px-6 py-3 border border-slate-200 dark:border-slate-500 text-base font-medium rounded-md text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-75 disabled:cursor-not-allowed"
+      role="button"
     >
       <Icon name="heroicons:device-phone-mobile" class="w-5 h-5 mr-2" />
-      Сохранить приложение
-    </UButton>
+      <span v-if="isCaching">Сохранение...</span>
+      <span v-else>Сохранить приложение</span>
+    </button>
 
     <!-- Индикатор сохранения -->
     <div v-if="isCaching" class="bg-blue-500 text-white px-3 py-2 rounded-lg shadow-lg text-sm">
@@ -30,16 +30,15 @@
     </div>
 
     <!-- Кнопка обновления -->
-    <UButton
+    <button
       v-if="updateAvailable"
       @click="updateApp"
-      color="orange"
-      size="xl"
-      class="shadow-lg animate-pulse border-2 border-orange-300 dark:border-orange-600"
+      class="w-full inline-flex justify-center items-center px-4 sm:px-6 py-3 border border-orange-200 dark:border-orange-500 text-base font-medium rounded-md text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200 animate-pulse"
+      role="button"
     >
       <Icon name="heroicons:arrow-path" class="w-5 h-5 mr-2" />
       Обновить приложение
-    </UButton>
+    </button>
   </div>
 </template>
 
