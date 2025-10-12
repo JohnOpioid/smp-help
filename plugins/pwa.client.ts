@@ -9,19 +9,30 @@ export default defineNuxtPlugin(() => {
             if (registration) {
               console.log('Service Worker найден:', registration)
               
+              // Принудительно проверяем обновления
+              registration.update()
+              
               // Проверяем наличие обновлений
               registration.addEventListener('updatefound', () => {
+                console.log('🔄 Обнаружено обновление service worker')
                 const newWorker = registration.installing
                 if (newWorker) {
                   newWorker.addEventListener('statechange', () => {
+                    console.log('📱 Состояние нового service worker:', newWorker.state)
                     if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                       // Новый service worker установлен и готов к активации
-                      console.log('Доступно обновление PWA')
+                      console.log('✅ Доступно обновление PWA')
                       window.dispatchEvent(new CustomEvent('pwa-update-available'))
                     }
                   })
                 }
               })
+              
+              // Проверяем наличие ожидающего service worker
+              if (registration.waiting) {
+                console.log('⏳ Обнаружен ожидающий service worker')
+                window.dispatchEvent(new CustomEvent('pwa-update-available'))
+              }
             } else {
               // Если service worker еще не зарегистрирован, проверяем через некоторое время
               setTimeout(checkServiceWorker, 1000)
@@ -34,6 +45,15 @@ export default defineNuxtPlugin(() => {
       
       // Начинаем проверку
       checkServiceWorker()
+      
+      // Периодически проверяем обновления (каждые 30 секунд)
+      setInterval(() => {
+        navigator.serviceWorker.getRegistration().then((registration) => {
+          if (registration) {
+            registration.update()
+          }
+        })
+      }, 30000)
     })
     
     // Обрабатываем сообщения от service worker

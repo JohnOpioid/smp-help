@@ -5,7 +5,7 @@
       v-if="!isCaching && !isCached && !updateAvailable && !showSuccessMessage"
       @click="precacheSite"
       :disabled="isCaching"
-      class="w-full md:hidden inline-flex justify-center items-center px-4 sm:px-6 py-3 border border-slate-200 dark:border-slate-500 text-base font-medium rounded-md text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer shadow-lg"
+      class="w-full md:hidden inline-flex justify-center items-center px-4 sm:px-6 py-3 border-2 border-blue-300 dark:border-blue-600 text-base font-medium rounded-md text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer shadow-lg"
       role="button"
     >
       <Icon name="heroicons:device-phone-mobile" class="w-5 h-5 mr-2" />
@@ -34,15 +34,15 @@
       </div>
     </div>
 
-    <!-- Кнопка обновления -->
+    <!-- Кнопка обновления приложения -->
     <button
       v-if="updateAvailable && !isCaching && !showSuccessMessage"
       @click="updateApp"
-      class="w-full md:hidden inline-flex justify-center items-center px-4 sm:px-6 py-3 border border-orange-200 dark:border-orange-500 text-base font-medium rounded-md text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200 animate-pulse cursor-pointer shadow-lg"
+      class="w-full md:hidden inline-flex justify-center items-center px-4 sm:px-6 py-3 border-2 border-orange-300 dark:border-orange-600 text-base font-medium rounded-md text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200 cursor-pointer shadow-lg"
       role="button"
     >
       <Icon name="heroicons:arrow-path" class="w-5 h-5 mr-2" />
-      Обновить приложение
+      <span>Обновить приложение</span>
     </button>
   </div>
 </template>
@@ -151,6 +151,27 @@ async function precacheSite() {
   }
 }
 
+// Функция принудительной проверки обновлений
+async function checkForUpdates() {
+  if ('serviceWorker' in navigator) {
+    console.log('🔍 Принудительная проверка обновлений...')
+    const registration = await navigator.serviceWorker.getRegistration()
+    if (registration) {
+      await registration.update()
+      
+      // Проверяем через небольшую задержку
+      setTimeout(() => {
+        if (registration.waiting) {
+          console.log('✅ Обнаружено обновление!')
+          updateAvailable.value = true
+        } else {
+          console.log('ℹ️ Обновлений не найдено')
+        }
+      }, 1000)
+    }
+  }
+}
+
 // Функция обновления приложения
 async function updateApp() {
   if ('serviceWorker' in navigator) {
@@ -200,9 +221,29 @@ onMounted(() => {
     // Проверяем наличие ожидающего service worker
     navigator.serviceWorker.getRegistration().then((registration) => {
       if (registration && registration.waiting) {
+        console.log('⏳ Обнаружен ожидающий service worker при загрузке')
         updateAvailable.value = true
       }
     })
+    
+    // Периодически проверяем обновления
+    const periodicCheck = () => {
+      navigator.serviceWorker.getRegistration().then((registration) => {
+        if (registration) {
+          registration.update()
+          if (registration.waiting) {
+            console.log('⏳ Обнаружен ожидающий service worker при проверке')
+            updateAvailable.value = true
+          }
+        }
+      })
+    }
+    
+    // Проверяем обновления каждые 10 секунд
+    setInterval(periodicCheck, 10000)
+    
+    // Проверяем обновления при фокусе на окне
+    window.addEventListener('focus', periodicCheck)
   }
 })
 </script>
