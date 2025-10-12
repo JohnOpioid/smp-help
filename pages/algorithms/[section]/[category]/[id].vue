@@ -1249,6 +1249,11 @@ async function loadDrugsList() {
         if (drug.synonyms && Array.isArray(drug.synonyms)) {
           drugNames.push(...drug.synonyms.filter(Boolean))
         }
+        
+        // Аналоги
+        if (drug.analogs && Array.isArray(drug.analogs)) {
+          drugNames.push(...drug.analogs.filter(Boolean))
+        }
       }
       
       // Удаляем дубликаты и сортируем по длине
@@ -1268,6 +1273,13 @@ async function loadDrugsList() {
         drug.toLowerCase().includes('пропофол')
       )
       console.log('💉 Препараты для анестезиологии:', anesthesiaDrugs)
+      
+      // Показываем общую статистику по источникам названий
+      console.log('📊 Статистика источников названий:')
+      console.log('  - Основные названия:', response.items.filter(d => d.name).length)
+      console.log('  - Латинские названия:', response.items.filter(d => d.latinName).length)
+      console.log('  - Синонимы:', response.items.reduce((sum, d) => sum + (d.synonyms?.length || 0), 0))
+      console.log('  - Аналоги:', response.items.reduce((sum, d) => sum + (d.analogs?.length || 0), 0))
     } else {
       console.warn('❌ Некорректный ответ API препаратов')
     }
