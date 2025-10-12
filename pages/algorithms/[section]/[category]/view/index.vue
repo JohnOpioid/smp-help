@@ -76,6 +76,7 @@ const mapSectionSlugToRu = (s?: string): 'Взрослые' | 'Детские' |
   if (s === 'adults') return 'Взрослые'
   if (s === 'pediatrics') return 'Детские'
   if (s === 'onmp') return 'ОНМП'
+  if (s === 'onmp-children') return 'Детские'
   return 'Взрослые'
 }
 const mappedSection = computed(() => mapSectionSlugToRu(sectionSlug.value))

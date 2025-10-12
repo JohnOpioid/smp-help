@@ -470,13 +470,13 @@ const displayMkbChips = computed(() => {
 
 // Если в query указан другой раздел, а текущий алгоритм из иного раздела —
 // найдём аналог по категории и названию и перенаправим на корректный id
-const mapSectionParamToRu = (s?: string): 'Взрослые' | 'Детские' | 'ОНМП' | 'ОНМП Дети' | undefined => {
+const mapSectionParamToRu = (s?: string): 'Взрослые' | 'Детские' | 'ОНМП' | undefined => {
   if (!s) return undefined
-  const m: Record<string, 'Взрослые'|'Детские'|'ОНМП'|'ОНМП Дети'> = {
+  const m: Record<string, 'Взрослые'|'Детские'|'ОНМП'> = {
     adults: 'Взрослые', Adults: 'Взрослые', 'Взрослые': 'Взрослые',
     pediatrics: 'Детские', Pediatrics: 'Детские', 'Детские': 'Детские',
     onmp: 'ОНМП', ONMP: 'ОНМП', 'ОНМП': 'ОНМП',
-    'onmp-children': 'ОНМП Дети', 'ОНМП Дети': 'ОНМП Дети'
+    'onmp-children': 'Детские', 'ОНМП Дети': 'Детские'
   }
   return m[s] || undefined
 }
@@ -486,7 +486,7 @@ const getSectionDisplayName = (section?: string): string => {
   if (!section) return ''
   
   // Если это уже читаемое название, возвращаем как есть
-  if (['Взрослые', 'Детские', 'ОНМП', 'ОНМП Дети'].includes(section)) {
+  if (['Взрослые', 'Детские', 'ОНМП'].includes(section)) {
     return section
   }
   
@@ -495,11 +495,11 @@ const getSectionDisplayName = (section?: string): string => {
     '68e7e174e4dff2c63511df9b': 'Взрослые',
     '68e7e174e4dff2c63511df9c': 'Детские', 
     '68e7e174e4dff2c63511df9d': 'ОНМП',
-    '68e7e174e4dff2c63511dfa3': 'ОНМП Дети',
+    '68e7e174e4dff2c63511dfa3': 'Детские',
     'adults': 'Взрослые',
     'pediatrics': 'Детские',
     'onmp': 'ОНМП',
-    'onmp-children': 'ОНМП Дети'
+    'onmp-children': 'Детские'
   }
   
   return sectionMap[section] || section
@@ -1122,11 +1122,11 @@ function setupMobileTwoColumn(table: HTMLTableElement) {
 function stripNumberPrefix(s: string): string {
   return s.replace(/^\d+\./, '')
 }
-function mapSectionSlug(slug: string): 'Взрослые'|'Детские'|'ОНМП'|'ОНМП Дети'|undefined {
+function mapSectionSlug(slug: string): 'Взрослые'|'Детские'|'ОНМП'|undefined {
   if (slug === 'adults') return 'Взрослые'
   if (slug === 'pediatrics') return 'Детские'
   if (slug === 'onmp') return 'ОНМП'
-  if (slug === 'onmp-children') return 'ОНМП Дети'
+  if (slug === 'onmp-children') return 'Детские'
   return undefined
 }
 async function navigateOldAlgoLink(href: string, anchorText: string) {

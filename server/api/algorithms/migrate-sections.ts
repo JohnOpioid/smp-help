@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
       { name: 'Взрослые', url: 'adults', description: 'Алгоритмы для взрослых пациентов' },
       { name: 'Детские', url: 'pediatrics', description: 'Алгоритмы для детских пациентов' },
       { name: 'ОНМП', url: 'onmp', description: 'Алгоритмы неотложной помощи' },
-      { name: 'ОНМП Дети', url: 'onmp-children', description: 'Алгоритмы детской неотложной помощи' }
+      { name: 'Детские', url: 'onmp-children', description: 'Алгоритмы детской неотложной помощи' }
     ]
 
     const createdSections = []

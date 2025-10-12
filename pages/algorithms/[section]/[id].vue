@@ -55,7 +55,7 @@ const { data: listData, pending: pendingAlgos } = await useFetch('/api/algorithm
       : section.value === 'pediatrics'
         ? 'Детские'
         : section.value === 'onmp-children'
-          ? 'ОНМП Дети'
+          ? 'Детские'
           : 'ОНМП',
     sortBy: 'createdAt', 
     sortOrder: 'asc' 
