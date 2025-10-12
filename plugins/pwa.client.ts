@@ -1,27 +1,40 @@
 export default defineNuxtPlugin(() => {
   if (process.client && 'serviceWorker' in navigator) {
-    // Регистрируем service worker
-    navigator.serviceWorker.register('/sw.js')
-      .then((registration) => {
-        console.log('Service Worker зарегистрирован:', registration)
-        
-        // Проверяем наличие обновлений
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing
-          if (newWorker) {
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                // Новый service worker установлен и готов к активации
-                // Отправляем событие о доступности обновления
-                window.dispatchEvent(new CustomEvent('pwa-update-available'))
-              }
-            })
-          }
-        })
-      })
-      .catch((error) => {
-        console.error('Ошибка регистрации Service Worker:', error)
-      })
+    // Ждем готовности DOM и Nuxt PWA
+    nextTick(() => {
+      // Проверяем наличие зарегистрированного service worker
+      const checkServiceWorker = () => {
+        navigator.serviceWorker.getRegistration()
+          .then((registration) => {
+            if (registration) {
+              console.log('Service Worker найден:', registration)
+              
+              // Проверяем наличие обновлений
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing
+                if (newWorker) {
+                  newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      // Новый service worker установлен и готов к активации
+                      console.log('Доступно обновление PWA')
+                      window.dispatchEvent(new CustomEvent('pwa-update-available'))
+                    }
+                  })
+                }
+              })
+            } else {
+              // Если service worker еще не зарегистрирован, проверяем через некоторое время
+              setTimeout(checkServiceWorker, 1000)
+            }
+          })
+          .catch((error) => {
+            console.warn('Ошибка проверки Service Worker:', error)
+          })
+      }
+      
+      // Начинаем проверку
+      checkServiceWorker()
+    })
     
     // Обрабатываем сообщения от service worker
     navigator.serviceWorker.addEventListener('message', (event) => {

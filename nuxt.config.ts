@@ -106,7 +106,7 @@ export default defineNuxtConfig({
       periodicSyncForUpdates: 20
     },
     devOptions: {
-      enabled: false, // Отключаем PWA в режиме разработки
+      enabled: true, // Включаем PWA в режиме разработки для тестирования
       suppressWarnings: true
     },
     manifest: {
