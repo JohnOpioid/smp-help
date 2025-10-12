@@ -119,20 +119,101 @@ echo -e "${NC}"
 echo
 question "Выберите режим работы:"
 echo "1) Чистая установка (новый сервер)"
-echo "2) Обновление существующего проекта"
-echo "3) Переустановка (удалить все и установить заново)"
-read -p "Введите номер (1-3): " mode
+echo "2) Обновление проекта (git pull + rebuild + restart)"
+echo "3) Полное обновление (с переустановкой зависимостей)"
+echo "4) Переустановка (удалить все и установить заново)"
+read -p "Введите номер (1-4): " mode
 
 case $mode in
     1) INSTALL_MODE="fresh" ;;
-    2) INSTALL_MODE="update" ;;
-    3) INSTALL_MODE="reinstall" ;;
+    2) INSTALL_MODE="quick-update" ;;
+    3) INSTALL_MODE="full-update" ;;
+    4) INSTALL_MODE="reinstall" ;;
     *) error "Неверный выбор"; exit 1 ;;
 esac
 
 log "Выбран режим: $INSTALL_MODE"
 
-# Сбор информации о проекте
+# Для режимов обновления пытаемся прочитать существующую конфигурацию
+if [[ "$INSTALL_MODE" == "quick-update" || "$INSTALL_MODE" == "full-update" ]]; then
+    log "Попытка прочитать существующую конфигурацию..."
+    
+    # Пути по умолчанию
+    DEFAULT_PROJECT_NAME="smp-help"
+    DEFAULT_DOMAIN="helpsmp.ru"
+    DEFAULT_WORK_DIR="/var/www/html/helpsmp.ru"
+    
+    # Пытаемся прочитать конфигурацию PM2
+    if [ -f "$DEFAULT_WORK_DIR/ecosystem.config.cjs" ]; then
+        log "✅ Найдена конфигурация PM2"
+        
+        # Читаем параметры из конфигурации
+        PROJECT_NAME=$(grep "name:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | sed "s/.*name: '\(.*\)'.*/\1/" | head -1)
+        WORK_DIR=$(grep "cwd:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | sed "s/.*cwd: '\(.*\)'.*/\1/" | head -1)
+        
+        # Читаем MONGODB_URI и парсим его
+        MONGODB_URI_LINE=$(grep "MONGODB_URI:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | head -1)
+        MONGO_USER=$(echo "$MONGODB_URI_LINE" | sed "s/.*mongodb:\/\/\([^:]*\):.*/\1/")
+        MONGO_PASS=$(echo "$MONGODB_URI_LINE" | sed "s/.*:\/\/[^:]*:\([^@]*\)@.*/\1/")
+        MONGO_DB=$(echo "$MONGODB_URI_LINE" | sed "s/.*@[^\/]*\/\([^?']*\).*/\1/")
+        
+        # Читаем JWT_SECRET
+        JWT_SECRET=$(grep "JWT_SECRET:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | sed "s/.*JWT_SECRET: '\(.*\)'.*/\1/" | head -1)
+        
+        # Читаем API ключи
+        GIGACHAT_API_KEY=$(grep "GIGACHAT_API_KEY:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | sed "s/.*GIGACHAT_API_KEY: '\(.*\)'.*/\1/" | head -1)
+        GIGACHAT_CLIENT_ID=$(grep "GIGACHAT_CLIENT_ID:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | sed "s/.*GIGACHAT_CLIENT_ID: '\(.*\)'.*/\1/" | head -1)
+        GIGACHAT_SCOPE=$(grep "GIGACHAT_SCOPE:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | sed "s/.*GIGACHAT_SCOPE: '\(.*\)'.*/\1/" | head -1)
+        YAMAPS_API_KEY=$(grep "YAMAPS_API_KEY:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | sed "s/.*YAMAPS_API_KEY: '\(.*\)'.*/\1/" | head -1)
+        
+        # Читаем SMTP настройки
+        SMTP_HOST=$(grep "SMTP_HOST:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | sed "s/.*SMTP_HOST: '\(.*\)'.*/\1/" | head -1)
+        SMTP_PORT=$(grep "SMTP_PORT:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | sed "s/.*SMTP_PORT: '\(.*\)'.*/\1/" | head -1)
+        SMTP_USER=$(grep "SMTP_USER:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | sed "s/.*SMTP_USER: '\(.*\)'.*/\1/" | head -1)
+        SMTP_PASS=$(grep "SMTP_PASS:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | sed "s/.*SMTP_PASS: '\(.*\)'.*/\1/" | head -1)
+        
+        # Определяем остальные параметры
+        PROJECT_USER="root"
+        DOMAIN=$(echo "$WORK_DIR" | sed 's/\/var\/www\/html\///')
+        GITHUB_REPO="$DEFAULT_PROJECT_NAME"
+        GITHUB_USER="JohnOpioid"
+        INSTALL_MONGODB="no"
+        
+        log "✅ Конфигурация прочитана из существующего файла"
+        log "Проект: $PROJECT_NAME"
+        log "Домен: $DOMAIN"
+        log "Рабочая директория: $WORK_DIR"
+        log "MongoDB: $MONGO_DB (пользователь: $MONGO_USER)"
+        
+        # Спрашиваем только GitHub токен
+        echo
+        question "Эти настройки будут использованы для обновления."
+        read_input "Введите GitHub Personal Access Token" GITHUB_TOKEN "true" ""
+        
+        # Генерируем URL репозитория
+        if [ -n "$GITHUB_TOKEN" ]; then
+            GITHUB_URL="https://$GITHUB_USER:$GITHUB_TOKEN@github.com/$GITHUB_USER/$GITHUB_REPO.git"
+        else
+            GITHUB_URL="https://github.com/$GITHUB_USER/$GITHUB_REPO.git"
+        fi
+        
+        # Устанавливаем пути
+        CLONE_DIR="/home/smp-help"
+        PROJECT_DIR="$CLONE_DIR/$GITHUB_REPO"
+        LOG_DIR="/var/log/$PROJECT_NAME"
+        
+        # Пропускаем остальной сбор информации
+        SKIP_INPUT=true
+    else
+        log "⚠️  Конфигурация не найдена, требуется ввод параметров"
+        SKIP_INPUT=false
+    fi
+else
+    SKIP_INPUT=false
+fi
+
+# Сбор информации о проекте (только если не пропускаем)
+if [ "$SKIP_INPUT" != "true" ]; then
 echo
 info "=== СБОР ИНФОРМАЦИИ О ПРОЕКТЕ ==="
 
@@ -231,6 +312,15 @@ info "=== НАСТРОЙКИ YANDEX MAPS ==="
 
 read_input "Введите Yandex Maps API Key" YAMAPS_API_KEY "false" "0cf3bb2c-e67f-4006-8a3e-c5df09b9da6c"
 
+# Устанавливаем пути после ввода всех данных
+CLONE_DIR="/home/smp-help"
+PROJECT_DIR="$CLONE_DIR/$GITHUB_REPO"
+WORK_DIR="/var/www/html/$DOMAIN"
+LOG_DIR="/var/log/$PROJECT_NAME"
+
+fi
+# Конец блока SKIP_INPUT
+
 # Подтверждение настроек
 echo
 info "=== ПОДТВЕРЖДЕНИЕ НАСТРОЕК ==="
@@ -255,12 +345,6 @@ if [[ ! $confirm =~ ^[Yy]$ ]]; then
     log "Установка отменена пользователем"
     exit 0
 fi
-
-# Устанавливаем пути
-CLONE_DIR="/home/smp-help"                    # Директория для клонирования репозитория
-PROJECT_DIR="$CLONE_DIR/$GITHUB_REPO"         # Полный путь к репозиторию
-WORK_DIR="/var/www/html/$DOMAIN"              # Рабочая директория для собранного проекта
-LOG_DIR="/var/log/$PROJECT_NAME"              # Директория для логов
 
 log "Начинаем установку с выбранными настройками..."
 
@@ -573,14 +657,13 @@ copy_files() {
     # Копируем собранные файлы из репозитория в рабочую директорию
     log "Копируем из $PROJECT_DIR/.output в $WORK_DIR..."
     
-    if [ -d "$PROJECT_DIR/.output/public" ]; then
-        cp -r $PROJECT_DIR/.output/public/* $WORK_DIR/ 2>/dev/null || true
-        log "✅ Статические файлы скопированы"
-    fi
-    
-    if [ -d "$PROJECT_DIR/.output/server" ]; then
-        cp -r $PROJECT_DIR/.output/server/* $WORK_DIR/ 2>/dev/null || true
-        log "✅ Серверные файлы скопированы"
+    # Копируем ВСЁ из .output (включая все поддиректории)
+    if [ -d "$PROJECT_DIR/.output" ]; then
+        cp -r $PROJECT_DIR/.output/* $WORK_DIR/ 2>/dev/null || true
+        log "✅ Все файлы из .output скопированы"
+    else
+        error "Директория .output не найдена"
+        exit 1
     fi
     
     # Устанавливаем права
@@ -668,7 +751,7 @@ EOFCONFIG
     sed -i "s|WORK_DIR_PLACEHOLDER|$WORK_DIR|g" $WORK_DIR/ecosystem.config.cjs
     sed -i "s|NUXT_PUBLIC_API_BASE_URL_PLACEHOLDER|https://$DOMAIN/api|g" $WORK_DIR/ecosystem.config.cjs
     sed -i "s|NUXT_PUBLIC_APP_URL_PLACEHOLDER|https://$DOMAIN|g" $WORK_DIR/ecosystem.config.cjs
-    sed -i "s|MONGODB_URI_PLACEHOLDER|mongodb://$MONGO_USER:$MONGO_PASS@localhost:27017/$MONGO_DB|g" $WORK_DIR/ecosystem.config.cjs
+    sed -i "s|MONGODB_URI_PLACEHOLDER|mongodb://$MONGO_USER:$MONGO_PASS@localhost:27017/$MONGO_DB?authSource=admin|g" $WORK_DIR/ecosystem.config.cjs
     sed -i "s|JWT_SECRET_PLACEHOLDER|$JWT_SECRET|g" $WORK_DIR/ecosystem.config.cjs
     sed -i "s|GIGACHAT_API_KEY_PLACEHOLDER|$GIGACHAT_API_KEY|g" $WORK_DIR/ecosystem.config.cjs
     sed -i "s|GIGACHAT_CLIENT_ID_PLACEHOLDER|$GIGACHAT_CLIENT_ID|g" $WORK_DIR/ecosystem.config.cjs
@@ -942,8 +1025,7 @@ npm run build
 
 echo "📁 Копируем файлы в рабочую директорию..."
 rm -rf \$WORK_DIR/*
-cp -r .output/public/* \$WORK_DIR/ 2>/dev/null || true
-cp -r .output/server/* \$WORK_DIR/ 2>/dev/null || true
+cp -r .output/* \$WORK_DIR/
 chmod -R 755 \$WORK_DIR
 
 echo "🚀 Перезапускаем приложение..."
@@ -1180,8 +1262,61 @@ main() {
             check_domain_dns
             check_status
             ;;
-        "update")
-            log "🔄 Начинаем обновление..."
+        "quick-update")
+            log "🔄 Быстрое обновление проекта..."
+            
+            # Проверяем что директории существуют
+            if [ ! -d "$PROJECT_DIR" ]; then
+                error "Репозиторий не найден: $PROJECT_DIR"
+                error "Используйте режим 'Чистая установка'"
+                exit 1
+            fi
+            
+            if [ ! -d "$WORK_DIR" ]; then
+                error "Рабочая директория не найдена: $WORK_DIR"
+                error "Используйте режим 'Чистая установка'"
+                exit 1
+            fi
+            
+            # Сохраняем конфигурацию PM2
+            log "Сохраняем конфигурацию PM2..."
+            if [ -f "$WORK_DIR/ecosystem.config.cjs" ]; then
+                cp "$WORK_DIR/ecosystem.config.cjs" "/tmp/ecosystem.config.cjs.backup"
+            fi
+            
+            # Обновляем репозиторий
+            log "Обновляем код из GitHub..."
+            cd $PROJECT_DIR
+            git pull origin main
+            
+            # Собираем проект
+            log "Собираем проект..."
+            npm run build
+            
+            # Копируем файлы
+            log "Копируем файлы..."
+            rm -rf $WORK_DIR/*
+            cp -r .output/* $WORK_DIR/
+            
+            # Восстанавливаем конфигурацию PM2
+            if [ -f "/tmp/ecosystem.config.cjs.backup" ]; then
+                cp "/tmp/ecosystem.config.cjs.backup" "$WORK_DIR/ecosystem.config.cjs"
+                log "Конфигурация PM2 восстановлена"
+            fi
+            
+            # Перезапускаем PM2
+            log "Перезапускаем приложение..."
+            pm2 restart $PROJECT_NAME
+            
+            sleep 3
+            
+            pm2 status
+            
+            log "✅ Обновление завершено!"
+            log "Проверьте сайт: http://$DOMAIN"
+            ;;
+        "full-update")
+            log "🔄 Полное обновление проекта..."
             setup_directories
             clone_and_build
             copy_files
