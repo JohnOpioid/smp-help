@@ -8,23 +8,23 @@
       </div>
 
       <!-- Навигация по профилю (вне всех блоков) -->
-      <div v-if="!isInitialLoading" class="px-4 max-w-5xl mx-auto pt-8 w-full">
-        <nav class="flex space-x-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 w-full justify-start items-start text-left">
-          <NuxtLink to="/profile" class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors"
+      <div v-if="!isInitialLoading" class="px-0 md:px-4 max-w-5xl mx-auto pt-8 w-full">
+        <nav class="flex space-x-1 bg-slate-100 dark:bg-slate-800 md:rounded-lg p-1 w-full justify-start items-start text-left overflow-x-auto hide-scrollbar">
+          <NuxtLink to="/profile" class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap"
             exact-active-class="bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
             inactive-class="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
             <UIcon name="i-heroicons-calendar-days" class="w-4 h-4 mr-2" />
             Смены
           </NuxtLink>
           <NuxtLink to="/profile/bookmarks"
-            class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors"
+            class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap"
             exact-active-class="bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
             inactive-class="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
             <UIcon name="i-heroicons-bookmark" class="w-4 h-4 mr-2" />
             Закладки
           </NuxtLink>
           <NuxtLink to="/profile/settings"
-            class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors"
+            class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap"
             exact-active-class="bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
             inactive-class="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
             <UIcon name="i-heroicons-cog-6-tooth" class="w-4 h-4 mr-2" />
