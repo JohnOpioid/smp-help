@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   if (getMethod(event) !== 'POST') {
     throw createError({
       statusCode: 405,
-      statusMessage: 'Method Not Allowed'
+      message: 'Method Not Allowed'
     })
   }
 
@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     if (!email || !password) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Email и пароль обязательны'
+        message: 'Email и пароль обязательны'
       })
     }
 
@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
     if (!user) {
       throw createError({
         statusCode: 401,
-        statusMessage: 'Неверный email или пароль'
+        message: 'Неверный email или пароль'
       })
     }
 
@@ -39,7 +39,7 @@ export default defineEventHandler(async (event) => {
     if (!isPasswordValid) {
       throw createError({
         statusCode: 401,
-        statusMessage: 'Неверный email или пароль'
+        message: 'Неверный email или пароль'
       })
     }
 
@@ -77,7 +77,7 @@ export default defineEventHandler(async (event) => {
     
     throw createError({
       statusCode: 500,
-      statusMessage: 'Ошибка сервера при авторизации'
+      message: 'Ошибка сервера при авторизации'
     })
   }
 })

@@ -71,7 +71,7 @@ export default defineEventHandler(async (event) => {
     console.error('Migration error:', error)
     throw createError({
       statusCode: 500,
-      statusMessage: 'Migration failed: ' + error.message
+      message: 'Migration failed: ' + error.message
     })
   }
 })

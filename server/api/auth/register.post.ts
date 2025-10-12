@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   if (getMethod(event) !== 'POST') {
     throw createError({
       statusCode: 405,
-      statusMessage: 'Method Not Allowed'
+      message: 'Method Not Allowed'
     })
   }
 
@@ -21,14 +21,14 @@ export default defineEventHandler(async (event) => {
     if (!email || !password || !firstName || !lastName) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Все поля обязательны для заполнения'
+        message: 'Все поля обязательны для заполнения'
       })
     }
 
     if (password.length < 6) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Пароль должен содержать минимум 6 символов'
+        message: 'Пароль должен содержать минимум 6 символов'
       })
     }
 
@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
     if (existingUser) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Пользователь с таким email уже существует'
+        message: 'Пользователь с таким email уже существует'
       })
     }
 
@@ -85,7 +85,7 @@ export default defineEventHandler(async (event) => {
     
     throw createError({
       statusCode: 500,
-      statusMessage: 'Ошибка сервера при регистрации'
+      message: 'Ошибка сервера при регистрации'
     })
   }
 })

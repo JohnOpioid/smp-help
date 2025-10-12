@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
   if (!name) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Название региона обязательно'
+      message: 'Название региона обязательно'
     })
   }
   
@@ -47,12 +47,12 @@ export default defineEventHandler(async (event) => {
     if (error.code === 11000) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Регион с таким названием уже существует'
+        message: 'Регион с таким названием уже существует'
       })
     }
     throw createError({
       statusCode: 500,
-      statusMessage: 'Ошибка при создании региона'
+      message: 'Ошибка при создании региона'
     })
   }
 })

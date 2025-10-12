@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
     console.error('Ошибка получения обратной связи:', error)
     throw createError({
       statusCode: 500,
-      statusMessage: 'Ошибка получения данных обучения'
+      message: 'Ошибка получения данных обучения'
     })
   }
 })

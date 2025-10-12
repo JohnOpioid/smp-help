@@ -15,14 +15,14 @@ export default defineEventHandler(async (event) => {
   if (!id) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'ID региона обязателен'
+      message: 'ID региона обязателен'
     })
   }
   
   if (!name) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Название региона обязательно'
+      message: 'Название региона обязательно'
     })
   }
   
@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
     if (!oldRegion) {
       throw createError({
         statusCode: 404,
-        statusMessage: 'Регион не найден'
+        message: 'Регион не найден'
       })
     }
     
@@ -78,12 +78,12 @@ export default defineEventHandler(async (event) => {
     if (error.code === 11000) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Регион с таким названием уже существует'
+        message: 'Регион с таким названием уже существует'
       })
     }
     throw createError({
       statusCode: 500,
-      statusMessage: 'Ошибка при обновлении региона'
+      message: 'Ошибка при обновлении региона'
     })
   }
 })

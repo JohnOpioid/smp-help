@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   if (!id) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'ID is required'
+      message: 'ID is required'
     })
   }
 
@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
     if (!section) {
       throw createError({
         statusCode: 404,
-        statusMessage: 'Section not found'
+        message: 'Section not found'
       })
     }
 
@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
     if (!section) {
       throw createError({
         statusCode: 404,
-        statusMessage: 'Section not found'
+        message: 'Section not found'
       })
     }
 
@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
     if (!section) {
       throw createError({
         statusCode: 404,
-        statusMessage: 'Section not found'
+        message: 'Section not found'
       })
     }
 
@@ -68,6 +68,6 @@ export default defineEventHandler(async (event) => {
 
   throw createError({
     statusCode: 405,
-    statusMessage: 'Method Not Allowed'
+    message: 'Method Not Allowed'
   })
 })

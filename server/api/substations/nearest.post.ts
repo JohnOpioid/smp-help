@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   if (!latitude || !longitude) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Координаты обязательны'
+      message: 'Координаты обязательны'
     })
   }
 
@@ -55,7 +55,7 @@ export default defineEventHandler(async (event) => {
     console.error('Ошибка поиска ближайших подстанций:', error)
     throw createError({
       statusCode: 500,
-      statusMessage: 'Ошибка поиска подстанций',
+      message: 'Ошибка поиска подстанций',
       data: error.message
     })
   }

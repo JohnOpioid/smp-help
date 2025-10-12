@@ -7,14 +7,14 @@ export default defineEventHandler(async (event) => {
   if (!question || !answer || !rating) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Отсутствуют обязательные поля: question, answer, rating'
+      message: 'Отсутствуют обязательные поля: question, answer, rating'
     })
   }
 
   if (!['positive', 'negative'].includes(rating)) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'rating должен быть positive или negative'
+      message: 'rating должен быть positive или negative'
     })
   }
 
@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
     console.error('Ошибка сохранения обратной связи:', error)
     throw createError({
       statusCode: 500,
-      statusMessage: 'Ошибка сохранения обратной связи'
+      message: 'Ошибка сохранения обратной связи'
     })
   }
 })

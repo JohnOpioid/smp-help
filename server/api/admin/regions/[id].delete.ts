@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
   if (!id) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'ID региона обязателен'
+      message: 'ID региона обязателен'
     })
   }
   
@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
     if (!region) {
       throw createError({
         statusCode: 404,
-        statusMessage: 'Регион не найден'
+        message: 'Регион не найден'
       })
     }
     
@@ -51,7 +51,7 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     throw createError({
       statusCode: 500,
-      statusMessage: 'Ошибка при удалении региона'
+      message: 'Ошибка при удалении региона'
     })
   }
 })

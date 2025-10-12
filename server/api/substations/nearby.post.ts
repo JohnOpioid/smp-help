@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   if (!substationId && !substationName) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'ID или название подстанции обязательны'
+      message: 'ID или название подстанции обязательны'
     })
   }
 
@@ -26,14 +26,14 @@ export default defineEventHandler(async (event) => {
     if (!sourceSubstation) {
       throw createError({
         statusCode: 404,
-        statusMessage: 'Подстанция не найдена'
+        message: 'Подстанция не найдена'
       })
     }
 
     if (!sourceSubstation.location?.coordinates) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'У подстанции отсутствуют координаты'
+        message: 'У подстанции отсутствуют координаты'
       })
     }
 
@@ -91,7 +91,7 @@ export default defineEventHandler(async (event) => {
     console.error('Ошибка поиска ближайших подстанций:', error)
     throw createError({
       statusCode: 500,
-      statusMessage: 'Ошибка поиска подстанций',
+      message: 'Ошибка поиска подстанций',
       data: error.message
     })
   }
