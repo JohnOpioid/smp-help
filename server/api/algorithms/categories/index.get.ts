@@ -7,23 +7,39 @@ import Algorithm from '~/server/models/Algorithm'
 export default defineEventHandler(async () => {
   await connectDB()
   
-  // Явно используем AlgorithmSection чтобы Nuxt bundler включил его
-  const _ensureAlgorithmSectionModel = AlgorithmSection
-  
-  // Старые сначала: по возрастанию createdAt
-  const items = await AlgorithmCategory.find({})
-    .populate('sections', 'name url')
+  // Получаем категории
+  const categories = await AlgorithmCategory.find({})
     .sort({ createdAt: 1 })
     .lean()
   
-  // Добавляем количество алгоритмов для каждой категории
+  // Получаем уникальные ID секций
+  const sectionIdsArrays = categories.map(c => c.sections || []).filter(arr => arr.length > 0)
+  const allSectionIds = sectionIdsArrays.flat()
+  const uniqueSectionIds = [...new Set(allSectionIds.map(id => String(id)))]
+  
+  // Получаем секции
+  const sections = await AlgorithmSection.find({ _id: { $in: uniqueSectionIds } })
+    .select('name url')
+    .lean()
+  
+  // Создаём Map для быстрого поиска
+  const sectionsMap = new Map(sections.map(s => [String(s._id), s]))
+  
+  // Собираем данные с подсчётом алгоритмов
   const itemsWithCounts = await Promise.all(
-    items.map(async (category) => {
+    categories.map(async (category) => {
       const algorithmCount = await Algorithm.countDocuments({ 
         category: category._id 
       })
+      
+      // Заполняем секции вручную
+      const populatedSections = (category.sections || [])
+        .map(sectionId => sectionsMap.get(String(sectionId)))
+        .filter(Boolean)
+      
       return {
         ...category,
+        sections: populatedSections,
         algorithmCount
       }
     })
@@ -31,5 +47,6 @@ export default defineEventHandler(async () => {
   
   return { success: true, items: itemsWithCounts }
 })
+
 
 

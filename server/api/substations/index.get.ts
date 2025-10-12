@@ -6,14 +6,30 @@ import Region from '~/server/models/Region'
 export default defineEventHandler(async () => {
   await connectDB()
   
-  // Явно используем Region чтобы Nuxt bundler включил его
-  const _ensureRegionModel = Region
-  
-  const items = await Substation.find({})
-    .populate('region', 'name phones manager district')
+  // Сначала получаем подстанции
+  const substations = await Substation.find({})
     .sort({ createdAt: 1 })
     .lean()
+  
+  // Получаем уникальные ID регионов
+  const regionIds = [...new Set(substations.map(s => s.region).filter(Boolean))]
+  
+  // Получаем регионы
+  const regions = await Region.find({ _id: { $in: regionIds } })
+    .select('name phones manager district')
+    .lean()
+  
+  // Создаём Map для быстрого поиска
+  const regionsMap = new Map(regions.map(r => [String(r._id), r]))
+  
+  // Собираем данные
+  const items = substations.map(substation => ({
+    ...substation,
+    region: substation.region ? regionsMap.get(String(substation.region)) || null : null
+  }))
+  
   return { success: true, items }
 })
+
 
 
