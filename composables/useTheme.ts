@@ -2,11 +2,22 @@ export const useTheme = () => {
   const isDark = ref(false)
   const isInitialized = ref(false)
 
-  // Инициализация темы (без localStorage)
+  // Инициализация темы с localStorage
   const initTheme = () => {
     if (process.client && !isInitialized.value) {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      isDark.value = prefersDark
+      // Проверяем сохраненную тему в localStorage
+      const savedTheme = localStorage.getItem('theme')
+      
+      if (savedTheme === 'dark' || savedTheme === 'light') {
+        isDark.value = savedTheme === 'dark'
+      } else {
+        // Если нет сохраненной темы, используем системную
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        isDark.value = prefersDark
+        // Сохраняем системную тему
+        localStorage.setItem('theme', prefersDark ? 'dark' : 'light')
+      }
+      
       updateTheme()
       isInitialized.value = true
     }
@@ -16,6 +27,11 @@ export const useTheme = () => {
   const toggleTheme = () => {
     isDark.value = !isDark.value
     updateTheme()
+    
+    // Сохраняем выбор пользователя
+    if (process.client) {
+      localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
+    }
   }
 
   // Обновление темы
