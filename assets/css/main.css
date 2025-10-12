@@ -7,6 +7,37 @@
 
 body {
   @apply bg-slate-50/25 dark:bg-slate-900 transition-colors duration-300 scroll-smooth;
+  /* Отключаем масштабирование двумя пальцами */
+  touch-action: pan-x pan-y;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Дополнительная защита от масштабирования */
+html {
+  touch-action: pan-x pan-y;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+/* Отключаем масштабирование для всех элементов */
+* {
+  touch-action: pan-x pan-y;
+}
+
+/* Разрешаем выделение текста для контентных областей */
+.content-text,
+.algorithm-content,
+.prose,
+p,
+span,
+div[contenteditable] {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+  touch-action: pan-x pan-y;
 }
 
 @layer utilities {

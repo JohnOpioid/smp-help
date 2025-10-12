@@ -1,11 +1,11 @@
 <template>
   <div class="max-w-5xl mx-auto px-4 pt-8">
     
-    <NuxtLink to="/algorithms" class="md:hidden inline-flex items-center px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors duration-200">
+    <NuxtLink :to="`/algorithms/${route.params.section}/${route.params.category}`" class="inline-flex items-center px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors duration-200">
       <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
       </svg>
-      Назад к алгоритмам
+      Назад
     </NuxtLink>
     <template v-if="!algo">
       <USkeleton class="h-7 w-2/3 mb-2" />
@@ -18,21 +18,21 @@
     <!-- Основные коды МКБ -->
     <ClientOnly>
       <div v-if="(algo?.mkbCodes || []).length > 0" class="mb-4">
-        <div class="text-sm text-slate-500 dark:text-slate-400 mb-2">Коды МКБ:</div>
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap gap-2 items-center mb-2">
+          <div class="text-sm text-slate-500 dark:text-slate-400">Коды МКБ:</div>
           <button 
             v-for="chip in displayMkbChips" 
             :key="chip" 
             @click="openCodifierPage(chip)"
-            class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs px-2 py-1 rounded font-mono hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors cursor-pointer"
+            class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs px-2 py-1 rounded font-mono hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors cursor-pointer whitespace-nowrap"
           >
             {{ chip }}
           </button>
         </div>
       </div>
       <div v-else-if="!algo" class="mb-4">
-        <div class="text-sm text-slate-500 dark:text-slate-400 mb-2">Коды МКБ:</div>
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap gap-2 items-center mb-2">
+          <div class="text-sm text-slate-500 dark:text-slate-400">Коды МКБ:</div>
           <USkeleton class="h-6 w-16 rounded" />
           <USkeleton class="h-6 w-14 rounded" />
           <USkeleton class="h-6 w-20 rounded" />
@@ -42,7 +42,7 @@
       <!-- Исключения -->
       <div v-if="(algo?.mkbExclusions || []).length > 0" class="mb-4">
         <div class="text-sm text-slate-500 dark:text-slate-400 mb-2">Исключения:</div>
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap gap-2 items-center">
           <button 
             v-for="code in (algo?.mkbExclusions || [])" 
             :key="`exclusion-${code}`" 
@@ -57,8 +57,8 @@
       <template #fallback>
         <!-- Fallback для SSR -->
         <div v-if="(algo?.mkbCodes || []).length > 0" class="mb-4">
-          <div class="text-sm text-slate-500 dark:text-slate-400 mb-2">Коды МКБ:</div>
-          <div class="flex flex-wrap gap-2">
+          <div class="flex flex-wrap gap-2 items-center mb-2">
+            <div class="text-sm text-slate-500 dark:text-slate-400">Коды МКБ:</div>
             <span 
               v-for="code in displayMkbChips" 
               :key="code" 
@@ -70,7 +70,7 @@
         </div>
         <div v-if="(algo?.mkbExclusions || []).length > 0" class="mb-4">
           <div class="text-sm text-slate-500 dark:text-slate-400 mb-2">Исключения:</div>
-          <div class="flex flex-wrap gap-2">
+          <div class="flex flex-wrap gap-2 items-center">
             <span 
               v-for="code in (algo?.mkbExclusions || [])" 
               :key="`exclusion-${code}`" 
@@ -350,6 +350,19 @@ thead {
 :deep(a.algocclink:hover) {
   color: #1d4ed8; /* tailwind blue-700 */
   background-color: #bfdbfe; /* tailwind blue-100 */
+}
+
+/* Перенос слов в таблицах */
+:deep(table td) {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+  text-align: left;
+  white-space: normal;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto;
+  -moz-hyphens: auto;
 }
 </style>
 
@@ -817,6 +830,7 @@ const openLocalStatus = (status: any) => {
   }
 }
 
+
 // Стилизация таблиц в контенте под стиль Nuxt UI Table
 const contentRef = ref<HTMLElement | null>(null)
 function styleTables() {
@@ -847,7 +861,9 @@ function styleTables() {
       th.classList.remove('text-left', 'align-top', 'h-[85px]')
       th.classList.add('px-4', 'py-3', 'text-sm', 'text-slate-600', 'dark:text-slate-300', 'text-center', 'font-medium', 'whitespace-normal', 'break-words', 'align-middle', 'sticky', 'top-0', 'z-20', 'bg-slate-50/25', 'dark:bg-slate-800')
     })
-    table.querySelectorAll('td').forEach(td => td.classList.add('p-4', 'text-sm', 'text-slate-600', 'dark:text-slate-300', 'whitespace-normal', 'break-words', 'align-top', 'bg-white', 'dark:bg-slate-800'))
+    table.querySelectorAll('td').forEach(td => {
+      td.classList.add('p-4', 'text-sm', 'text-slate-600', 'dark:text-slate-300', 'whitespace-normal', 'break-words', 'align-top', 'bg-white', 'dark:bg-slate-800')
+    })
     table.querySelectorAll('tr').forEach(tr => tr.classList.add('hover:bg-slate-50/60', 'dark:hover:bg-slate-700/40'))
     // Бордеры: у первой колонки справа, у второй слева и справа на md+ экранах
     table.querySelectorAll('thead tr').forEach(tr => {

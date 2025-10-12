@@ -42,34 +42,34 @@
           Доступные разделы:
         </h3>
         <div class="grid grid-cols-2 gap-2">
-          <NuxtLink
-            to="/"
-            class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200 text-sm"
+          <button
+            @click="navigateToPage('/')"
+            class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200 text-sm flex flex-col items-center"
           >
-            <Icon name="heroicons:home" class="w-4 h-4 mx-auto mb-1" />
+            <Icon name="heroicons:home" class="w-4 h-4 mb-1" />
             Главная
-          </NuxtLink>
-          <NuxtLink
-            to="/algorithms"
-            class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200 text-sm"
+          </button>
+          <button
+            @click="navigateToPage('/algorithms')"
+            class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200 text-sm flex flex-col items-center"
           >
-            <Icon name="heroicons:document-text" class="w-4 h-4 mx-auto mb-1" />
+            <Icon name="heroicons:document-text" class="w-4 h-4 mb-1" />
             Алгоритмы
-          </NuxtLink>
-          <NuxtLink
-            to="/calculators"
-            class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200 text-sm"
+          </button>
+          <button
+            @click="navigateToPage('/calculators')"
+            class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200 text-sm flex flex-col items-center"
           >
-            <Icon name="heroicons:calculator" class="w-4 h-4 mx-auto mb-1" />
+            <Icon name="heroicons:calculator" class="w-4 h-4 mb-1" />
             Калькуляторы
-          </NuxtLink>
-          <NuxtLink
-            to="/drugs"
-            class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200 text-sm"
+          </button>
+          <button
+            @click="navigateToPage('/drugs')"
+            class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200 text-sm flex flex-col items-center"
           >
-            <Icon name="heroicons:beaker" class="w-4 h-4 mx-auto mb-1" />
+            <Icon name="heroicons:beaker" class="w-4 h-4 mb-1" />
             Препараты
-          </NuxtLink>
+          </button>
         </div>
       </div>
     </div>
@@ -86,9 +86,14 @@ useHead({
   ]
 })
 
+const { isOnline, checkConnection } = useNetworkStatus()
+
 // Функция повтора подключения
-function retryConnection() {
-  if (navigator.onLine) {
+async function retryConnection() {
+  // Проверяем соединение
+  const connected = await checkConnection()
+  
+  if (connected) {
     // Если интернет появился, очищаем офлайн токен и переходим на главную
     localStorage.removeItem('offline-auth-token')
     navigateTo('/')
@@ -98,12 +103,29 @@ function retryConnection() {
   }
 }
 
+// Функция навигации по кешированным страницам
+function navigateToPage(path: string) {
+  try {
+    // Используем window.location для навигации в офлайн режиме
+    window.location.href = path
+  } catch (error) {
+    console.error('Ошибка навигации:', error)
+    // Fallback - перезагружаем страницу
+    window.location.reload()
+  }
+}
+
 // Слушаем события изменения статуса сети
 onMounted(() => {
-  const handleOnline = () => {
-    // Очищаем офлайн токен при восстановлении соединения
-    localStorage.removeItem('offline-auth-token')
-    navigateTo('/')
+  const handleOnline = async () => {
+    // Проверяем соединение при событии online
+    const connected = await checkConnection()
+    
+    if (connected) {
+      // Очищаем офлайн токен при восстановлении соединения
+      localStorage.removeItem('offline-auth-token')
+      navigateTo('/')
+    }
   }
   
   window.addEventListener('online', handleOnline)

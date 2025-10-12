@@ -12,7 +12,7 @@ export default defineNuxtConfig({
       title: 'Справочник СМП',
       titleTemplate: '%s — Справочник СМП',
       meta: [
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' },
         { name: 'description', content: 'Справочник СМП: алгоритмы, инструкции, кодификаторы и медицинские калькуляторы.' },
         { name: 'theme-color', content: '#3b82f6' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
@@ -77,17 +77,6 @@ export default defineNuxtConfig({
           }
         },
         {
-          urlPattern: /^\/offline$/i,
-          handler: 'CacheFirst',
-          options: {
-            cacheName: 'offline-page',
-            expiration: {
-              maxEntries: 1,
-              maxAgeSeconds: 60 * 60 * 24 * 30 // 30 дней
-            }
-          }
-        },
-        {
           urlPattern: /^\/manifest\.webmanifest$/i,
           handler: 'CacheFirst',
           options: {
@@ -117,8 +106,8 @@ export default defineNuxtConfig({
       periodicSyncForUpdates: 20
     },
     devOptions: {
-      enabled: true,
-      suppressWarnings: process.env.NODE_ENV === 'development'
+      enabled: false, // Отключаем PWA в режиме разработки
+      suppressWarnings: true
     },
     manifest: {
       name: 'Справочник СМП',
@@ -132,6 +121,7 @@ export default defineNuxtConfig({
       start_url: '/',
       lang: 'ru',
       categories: ['medical', 'health', 'reference'],
+      display_override: ['window-controls-overlay'],
       icons: [
         {
           src: '/icons/icon-72x72.png',

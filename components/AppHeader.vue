@@ -49,10 +49,6 @@
                 <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ user?.email }}</p>
               </div>
               <nav class="py-1">
-                <NuxtLink to="/profile" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700" @click="menuOpen = false">
-                  <UIcon name="i-heroicons-calendar-days" class="w-4 h-4 text-slate-500" />
-                  <span>Смены</span>
-                </NuxtLink>
                 <NuxtLink to="/profile/bookmarks" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700" @click="menuOpen = false">
                   <UIcon name="i-heroicons-bookmark" class="w-4 h-4 text-slate-500" />
                   <span>Закладки</span>
@@ -139,8 +135,7 @@ const navItems = [
   { to: '/drugs', label: 'Лекарства' },
   { to: '/apps', label: 'Приложения' },
   { to: '/instructions', label: 'Инструкции' },
-  { to: '/substations', label: 'Подстанции' },
-  { to: '/profile', label: 'Смены' }
+  { to: '/substations', label: 'Подстанции' }
 ]
 
 const primaryNav = navItems.filter(i => ['/', '/algorithms', '/codifier', '/calculators'].includes(i.to))

@@ -6,7 +6,8 @@
         <div 
           ref="sheetRef" 
           tabindex="-1"
-          class="bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-t-2xl border-t border-slate-200 dark:border-slate-600 shadow-xl flex flex-col will-change-transform outline-none" 
+          class="bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-t-2xl border-t border-slate-200 dark:border-slate-600 shadow-xl flex flex-col will-change-transform outline-none transition-height" 
+          :class="{ 'dragging': isDragging }"
           :style="{ 
             transform: `translateY(${dragOffset}px)`,
             height: `${sheetHeight}px`,
@@ -20,6 +21,10 @@
             @touchstart="onDragStart"
             @touchmove="onDragMove"
             @touchend="onDragEnd"
+            @mousedown="onDragStart"
+            @mousemove="onDragMove"
+            @mouseup="onDragEnd"
+            @mouseleave="onDragEnd"
           >
             <div class="flex items-center justify-center select-none">
               <div
@@ -33,7 +38,18 @@
           </div>
           
           <!-- Слот для контента -->
-          <div ref="contentRef" class="flex-1 overflow-y-auto">
+          <div 
+            ref="contentRef" 
+            class="flex-1" 
+            :class="{ 'overflow-y-auto': isExpanded, 'overflow-hidden': !isExpanded }"
+            @touchstart="onContentDragStart"
+            @touchmove="onContentDragMove"
+            @touchend="onContentDragEnd"
+            @mousedown="onContentDragStart"
+            @mousemove="onContentDragMove"
+            @mouseup="onContentDragEnd"
+            @mouseleave="onContentDragEnd"
+          >
             <slot />
           </div>
           
@@ -69,8 +85,22 @@ const dragOffset = ref(0)
 const startY = ref(0)
 const isDragging = ref(false)
 const sheetHeight = ref(400) // Начальная высота по умолчанию
+const maxHeight = ref(0) // Максимальная высота контента
+const isExpanded = ref(false) // Флаг расширенного состояния
 const isScrollDisabled = ref(false) // Флаг для отслеживания состояния скролла
 const savedScrollPosition = ref(0) // Сохраненная позиция скролла
+const isScrollingToTop = ref(false) // Флаг скролла наверх
+
+// Вспомогательная функция для безопасного предотвращения события
+function safePreventDefault(e: TouchEvent | MouseEvent) {
+  try {
+    if (e.cancelable && e.defaultPrevented === false) {
+      e.preventDefault()
+    }
+  } catch (error) {
+    // Игнорируем ошибки предотвращения событий
+  }
+}
 
 function close() {
   emit('update:modelValue', false)
@@ -79,51 +109,254 @@ function close() {
   enableBodyScroll()
 }
 
-function onDragStart(e: TouchEvent) {
-  // Проверяем, скроллится ли контент
-  const contentEl = contentRef.value
-  if (contentEl && contentEl.scrollTop > 0) {
-    // Если контент прокручен вниз, не начинаем drag
-    return
-  }
-  
-  startY.value = e.touches[0].clientY
+function onDragStart(e: TouchEvent | MouseEvent) {
+  startY.value = 'touches' in e ? e.touches[0].clientY : e.clientY
   dragOffset.value = 0
   isDragging.value = true
 }
 
-function onDragMove(e: TouchEvent) {
+function onDragMove(e: TouchEvent | MouseEvent) {
   if (!isDragging.value) return
   
-  const dy = e.touches[0].clientY - startY.value
+  const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
+  const dy = clientY - startY.value
   
-  // Проверяем, скроллится ли контент
-  const contentEl = contentRef.value
-  if (contentEl && contentEl.scrollTop > 0) {
-    // Если контент прокручен, отменяем drag
-    isDragging.value = false
-    dragOffset.value = 0
-    return
-  }
-  
-  // Разрешаем drag только если пользователь тянет вниз
+  // Если тянем вниз - плавно уменьшаем высоту
   if (dy > 0) {
-    e.preventDefault()
-    dragOffset.value = Math.max(0, dy)
+    safePreventDefault(e)
+    
+    if (isExpanded.value) {
+      // Если расширен, сначала уменьшаем высоту
+      const downwardDistance = dy
+      const newHeight = maxHeight.value - downwardDistance
+      
+      // Ограничиваем минимальной высотой
+      sheetHeight.value = Math.max(newHeight, getInitialHeight())
+      
+      // Если достигли начальной высоты, переключаемся в обычный режим
+      if (newHeight <= getInitialHeight()) {
+        isExpanded.value = false
+        sheetHeight.value = getInitialHeight()
+      }
+    } else {
+      // Если не расширен, показываем визуальную обратную связь
+      dragOffset.value = Math.max(0, dy)
+    }
   } else {
-    // Если тянет вверх, не применяем offset
+    // Если тянем вверх - расширяем
+    safePreventDefault(e)
+    
+    if (!isExpanded.value) {
+      const initialHeight = getInitialHeight()
+      const upwardDistance = Math.abs(dy)
+      
+      const newHeight = initialHeight + upwardDistance
+      sheetHeight.value = Math.min(newHeight, maxHeight.value)
+      
+      if (newHeight >= maxHeight.value) {
+        isExpanded.value = true
+        sheetHeight.value = maxHeight.value
+      }
+    }
+    
     dragOffset.value = 0
   }
 }
 
-function onDragEnd(e: TouchEvent) {
+function onDragEnd(e: TouchEvent | MouseEvent) {
   if (!isDragging.value) return
   
   const threshold = 100 // Порог в пикселях для закрытия
-  if (dragOffset.value > threshold) {
-    close()
+  const clientY = 'changedTouches' in e ? e.changedTouches[0].clientY : e.clientY
+  const dy = clientY - startY.value
+  
+  if (dy > 0) {
+    // Если тянем вниз
+    if (isExpanded.value) {
+      // Если расширен, проверяем, нужно ли закрыть
+      if (dy > threshold) {
+        close()
+      } else {
+        // Возвращаемся к начальной высоте
+        isExpanded.value = false
+        sheetHeight.value = getInitialHeight()
+      }
+    } else {
+      // Если не расширен, проверяем порог для закрытия
+      if (dragOffset.value > threshold) {
+        close()
+      } else {
+        // Возвращаемся к исходному состоянию
+        dragOffset.value = 0
+      }
+    }
+  } else {
+    // Если тянем вверх - определяем финальное состояние
+    if (!isExpanded.value) {
+      const upwardDistance = Math.abs(dy)
+      
+      if (upwardDistance > 100) {
+        isExpanded.value = true
+        sheetHeight.value = maxHeight.value
+      } else {
+        sheetHeight.value = getInitialHeight()
+      }
+    }
+    
+    dragOffset.value = 0
   }
+  
+  isDragging.value = false
+}
+
+// Функции для перетаскивания контента (только для расширения)
+function onContentDragStart(e: TouchEvent | MouseEvent) {
+  // Разрешаем перетаскивание только если не расширен
+  if (isExpanded.value) return
+  
+  // Проверяем, не скроллится ли контент
+  const contentEl = contentRef.value
+  if (contentEl && contentEl.scrollTop > 0) {
+    return // Если контент уже прокручен, не начинаем перетаскивание
+  }
+  
+  startY.value = 'touches' in e ? e.touches[0].clientY : e.clientY
   dragOffset.value = 0
+  isDragging.value = true
+}
+
+function onContentDragMove(e: TouchEvent | MouseEvent) {
+  if (!isDragging.value) return
+  
+  const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
+  const dy = clientY - startY.value
+  
+  // Проверяем состояние скролла
+  const contentEl = contentRef.value
+  const isScrolled = contentEl && contentEl.scrollTop > 0
+  
+  if (dy < 0) {
+    // Свайп вверх - расширение
+    if (!isScrolled && !isExpanded.value) {
+      safePreventDefault(e)
+      
+      const initialHeight = getInitialHeight()
+      const upwardDistance = Math.abs(dy)
+      const newHeight = initialHeight + upwardDistance
+      
+      sheetHeight.value = Math.min(newHeight, maxHeight.value)
+      
+      if (newHeight >= maxHeight.value) {
+        isExpanded.value = true
+        sheetHeight.value = maxHeight.value
+      }
+    }
+  } else if (dy > 0) {
+    // Свайп вниз
+    if (isScrolled) {
+      // Если контент прокручен, сначала прокручиваем наверх
+      safePreventDefault(e)
+      
+      if (contentEl) {
+        const scrollAmount = Math.min(dy * 1.5, contentEl.scrollTop) // Ускоряем скролл
+        contentEl.scrollTop -= scrollAmount
+        
+        // Если достигли верха, начинаем закрывать BottomSheet
+        if (contentEl.scrollTop <= 0) {
+          isScrollingToTop.value = true
+          
+          if (isExpanded.value) {
+            const downwardDistance = dy - (contentEl.scrollTop + scrollAmount)
+            const newHeight = maxHeight.value - downwardDistance
+            
+            // Убеждаемся, что высота не меньше начальной
+            sheetHeight.value = Math.max(newHeight, getInitialHeight())
+            
+            if (newHeight <= getInitialHeight()) {
+              isExpanded.value = false
+              sheetHeight.value = getInitialHeight()
+            }
+          } else {
+            dragOffset.value = Math.max(0, dy - scrollAmount)
+          }
+        }
+      }
+    } else {
+      // Если контент наверху, закрываем BottomSheet
+      safePreventDefault(e)
+      
+      if (isExpanded.value) {
+        // Если расширен, уменьшаем высоту
+        const downwardDistance = dy
+        const newHeight = maxHeight.value - downwardDistance
+        
+        // Убеждаемся, что высота не меньше начальной
+        sheetHeight.value = Math.max(newHeight, getInitialHeight())
+        
+        if (newHeight <= getInitialHeight()) {
+          isExpanded.value = false
+          sheetHeight.value = getInitialHeight()
+        }
+      } else {
+        // Если не расширен, показываем визуальную обратную связь
+        dragOffset.value = Math.max(0, dy)
+      }
+    }
+  }
+}
+
+function onContentDragEnd(e: TouchEvent | MouseEvent) {
+  if (!isDragging.value) return
+  
+  const threshold = 100
+  const clientY = 'changedTouches' in e ? e.changedTouches[0].clientY : e.clientY
+  const dy = clientY - startY.value
+  
+  // Проверяем состояние скролла
+  const contentEl = contentRef.value
+  const isScrolled = contentEl && contentEl.scrollTop > 0
+  
+  if (dy > 0) {
+    // Свайп вниз
+    if (isScrolled || isScrollingToTop.value) {
+      // Если контент был прокручен, завершаем скролл наверх
+      if (contentEl) {
+        contentEl.scrollTo({ top: 0, behavior: 'smooth' })
+        isScrollingToTop.value = false
+      }
+    } else {
+      // Если контент наверху, закрываем BottomSheet
+      if (isExpanded.value) {
+        if (dy > threshold) {
+          close()
+        } else {
+          isExpanded.value = false
+          sheetHeight.value = getInitialHeight()
+        }
+      } else {
+        if (dragOffset.value > threshold) {
+          close()
+        } else {
+          dragOffset.value = 0
+        }
+      }
+    }
+  } else {
+    // Свайп вверх
+    if (!isScrolled && !isExpanded.value) {
+      const upwardDistance = Math.abs(dy)
+      
+      if (upwardDistance > 100) {
+        isExpanded.value = true
+        sheetHeight.value = maxHeight.value
+      } else {
+        sheetHeight.value = getInitialHeight()
+      }
+    }
+    
+    dragOffset.value = 0
+  }
+  
   isDragging.value = false
 }
 
@@ -167,15 +400,27 @@ function measureContentHeight() {
   // Добавляем отступы и ограничиваем максимальной высотой экрана
   const totalHeight = contentHeight + headerHeight + 32 // 32px для отступов
   const maxHeight = window.innerHeight * 0.9 // 90% от высоты экрана
-  const minHeight = 300 // Минимальная высота
+  const minHeight = Math.max(300, getInitialHeight()) // Минимальная высота не меньше начальной
   
   return Math.max(minHeight, Math.min(totalHeight, maxHeight))
+}
+
+// Функция для получения начальной высоты (половина экрана)
+function getInitialHeight() {
+  return Math.min(window.innerHeight * 0.5, 400)
 }
 
 // Обновляем высоту при изменении контента
 function updateSheetHeight() {
   nextTick(() => {
-    sheetHeight.value = measureContentHeight()
+    const measuredHeight = measureContentHeight()
+    // Убеждаемся, что максимальная высота не меньше начальной высоты
+    maxHeight.value = Math.max(measuredHeight, getInitialHeight())
+    
+    // При открытии всегда устанавливаем начальную высоту (половина экрана)
+    if (!isExpanded.value) {
+      sheetHeight.value = getInitialHeight()
+    }
   })
 }
 
@@ -224,6 +469,10 @@ function enableBodyScroll() {
 // Следим за изменениями modelValue для обновления высоты
 watch(() => props.modelValue, (newValue) => {
   if (newValue) {
+    // Сбрасываем состояние при открытии
+    isExpanded.value = false
+    dragOffset.value = 0
+    
     // Отключаем скролл страницы
     disableBodyScroll()
     
@@ -246,10 +495,18 @@ watch(() => props.modelValue, (newValue) => {
   }
 })
 
-// Обработка случая, когда пользователь отпускает палец вне элемента
-function handleTouchEnd(e: TouchEvent) {
+// Обработка случая, когда пользователь отпускает палец/мышь вне элемента
+function handleTouchEnd(e: TouchEvent | MouseEvent) {
   if (isDragging.value) {
-    onDragEnd(e)
+    // Определяем, откуда было начато перетаскивание
+    const target = e.target as HTMLElement
+    const isContentDrag = contentRef.value?.contains(target)
+    
+    if (isContentDrag) {
+      onContentDragEnd(e)
+    } else {
+      onDragEnd(e)
+    }
   }
 }
 
@@ -263,10 +520,12 @@ onMounted(() => {
   
   document.addEventListener('keydown', handleEscape)
   document.addEventListener('touchend', handleTouchEnd, { passive: true })
+  document.addEventListener('mouseup', handleTouchEnd, { passive: true })
   
   onBeforeUnmount(() => {
     document.removeEventListener('keydown', handleEscape)
     document.removeEventListener('touchend', handleTouchEnd)
+    document.removeEventListener('mouseup', handleTouchEnd)
     // Восстанавливаем скролл при размонтировании компонента
     enableBodyScroll()
   })
@@ -282,5 +541,14 @@ onMounted(() => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.transition-height {
+  transition: height 0.2s ease-out;
+}
+
+/* Отключаем анимацию во время перетаскивания */
+.transition-height.dragging {
+  transition: none;
 }
 </style>

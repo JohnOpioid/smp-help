@@ -5,7 +5,7 @@
       <div class="p-4 border-b border-slate-100 dark:border-slate-700">
         <div class="flex items-center gap-2">
           <NuxtLink :to="`/algorithms/${section}`" title="Назад к разделу"
-            class="inline-flex items-center justify-center w-7 h-7 rounded-md border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer">
+            class="inline-flex items-center px-2 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors duration-200">
             <UIcon name="i-heroicons-arrow-left-20-solid" class="w-4 h-4" />
           </NuxtLink>
           <p class="text-sm text-slate-600 dark:text-slate-300">{{ categoryName }}</p>

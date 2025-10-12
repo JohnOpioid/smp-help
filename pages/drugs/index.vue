@@ -94,6 +94,7 @@
             <template #body>
               <div v-if="selected" class="space-y-5">
                 <div v-if="selected.categories && selected.categories.length">
+                  <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Категории</label>
                   <div class="flex flex-wrap gap-1.5">
                     <span
                       v-for="(cat, i) in selected.categories"
@@ -435,14 +436,11 @@
             <BottomSheet 
               v-model="modalOpen" 
               :title="selected?.name"
+              :subtitle="modalDescription"
               @close="modalOpen = false"
             >
               <div class="p-4 pb-6">
                 <div v-if="selected" class="space-y-5">
-                  <div>
-                    <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Латинское название</label>
-                    <p class="text-slate-900 dark:text-white">{{ selected.latinName || '—' }}</p>
-                  </div>
                   <div v-if="selected.categories && selected.categories.length">
                     <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Категории</label>
                     <div class="flex flex-wrap gap-1.5">
@@ -456,6 +454,11 @@
                         {{ cat?.name || '' }}
                       </span>
                     </div>
+                  </div>
+                  
+                  <div>
+                    <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Латинское название</label>
+                    <p class="text-slate-900 dark:text-white">{{ selected.latinName || '—' }}</p>
                   </div>
 
                   <div v-if="selected.ageRestrictions">

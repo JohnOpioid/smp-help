@@ -129,8 +129,7 @@ const moreItemsBase = [
   { to: '/apps', icon: 'i-lucide-smartphone', label: 'Приложения' },
   { to: '/instructions', icon: 'i-lucide-file-text', label: 'Инструкции' },
   { to: '/substations', icon: 'i-lucide-building-2', label: 'Подстанции' },
-  { to: '/local-statuses', icon: 'i-lucide-list-checks', label: 'Локальные статусы' },
-  { to: '/profile', icon: 'i-heroicons-user', label: 'Смены' }
+  { to: '/local-statuses', icon: 'i-lucide-list-checks', label: 'Локальные статусы' }
 ]
 
 const infoMap: Record<string, { description: string }> = {
