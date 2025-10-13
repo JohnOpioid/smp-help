@@ -8,18 +8,43 @@ import Substation from '~/server/models/Substation'
 
 export default defineEventHandler(async (event) => {
   console.log('🔍 API: Начинаем загрузку данных для поиска')
-  await connectDB()
   
   try {
+    await connectDB()
     console.log('🔍 API: Подключение к БД установлено')
     
+    // Проверяем модели
+    console.log('🔍 API: Проверяем модели:', {
+      LocalStatus: !!LocalStatus,
+      MKB: !!MKB,
+      Algorithm: !!Algorithm,
+      Drug: !!Drug,
+      Substation: !!Substation
+    })
+    
     // Получаем все данные из всех коллекций параллельно
+    console.log('🔍 API: Начинаем загрузку данных из коллекций...')
     const [localStatuses, mkbCodes, algorithms, drugs, substations] = await Promise.all([
-      LocalStatus.find({}).populate('category', 'name url').lean(),
-      MKB.find({}).populate('category', 'name url').lean(),
-      Algorithm.find({}).populate('category', 'name url').populate('section', 'name url').lean(),
-      Drug.find({}).populate('categories', 'name url').lean(),
-      Substation.find({}).populate('region', 'name').lean()
+      LocalStatus.find({}).populate('category', 'name url').lean().catch(err => {
+        console.error('❌ API: Ошибка загрузки LocalStatus:', err)
+        return []
+      }),
+      MKB.find({}).populate('category', 'name url').lean().catch(err => {
+        console.error('❌ API: Ошибка загрузки MKB:', err)
+        return []
+      }),
+      Algorithm.find({}).populate('category', 'name url').populate('section', 'name url').lean().catch(err => {
+        console.error('❌ API: Ошибка загрузки Algorithm:', err)
+        return []
+      }),
+      Drug.find({}).populate('categories', 'name url').lean().catch(err => {
+        console.error('❌ API: Ошибка загрузки Drug:', err)
+        return []
+      }),
+      Substation.find({}).populate('region', 'name').lean().catch(err => {
+        console.error('❌ API: Ошибка загрузки Substation:', err)
+        return []
+      })
     ])
     
     console.log('📊 API: Загружено данных:', {
@@ -29,6 +54,24 @@ export default defineEventHandler(async (event) => {
       drugs: drugs.length,
       substations: substations.length
     })
+    
+    // Проверяем, что хотя бы одна коллекция не пустая
+    const totalItems = localStatuses.length + mkbCodes.length + algorithms.length + drugs.length + substations.length
+    if (totalItems === 0) {
+      console.warn('⚠️ API: Все коллекции пусты!')
+      return {
+        success: false,
+        message: 'Все коллекции данных пусты',
+        data: {
+          localStatuses: { items: [], total: 0 },
+          mkbCodes: { items: [], total: 0 },
+          algorithms: { items: [], total: 0 },
+          drugs: { items: [], total: 0 },
+          substations: { items: [], total: 0 }
+        },
+        totalItems: 0
+      }
+    }
     
     return {
       success: true,
