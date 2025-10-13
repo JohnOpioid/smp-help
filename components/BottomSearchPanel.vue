@@ -1517,6 +1517,11 @@ const performSearch = async (query: string) => {
     try {
       searchData = await $fetch('/api/search/all-data')
       console.log('🔍 Ответ от нового API:', searchData)
+      
+      // Проверяем, успешен ли ответ
+      if (!searchData.success) {
+        throw new Error(`API вернул ошибку: ${(searchData as any).message || 'Неизвестная ошибка'}`)
+      }
     } catch (apiError) {
       console.warn('⚠️ Новый API недоступен, используем старые endpoints:', apiError)
       
