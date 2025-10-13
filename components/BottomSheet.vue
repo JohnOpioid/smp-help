@@ -2,11 +2,11 @@
   <transition name="fade">
     <div v-if="modelValue" class="fixed inset-0 z-50 sm:hidden">
       <div class="absolute inset-0 bg-black/40" @click="close" />
-      <div class="absolute inset-x-0 bottom-0">
+      <div class="absolute inset-0 flex items-end p-2 sm:p-4">
         <div 
           ref="sheetRef" 
           tabindex="-1"
-          class="bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-t-2xl border-t border-slate-200 dark:border-slate-600 shadow-xl flex flex-col will-change-transform outline-none transition-height" 
+          class="bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-2xl border border-slate-200 dark:border-slate-600 shadow-xl flex flex-col will-change-transform outline-none transition-height max-w-5xl w-full mx-auto overflow-hidden" 
           :class="{ 'dragging': isDragging }"
           :style="{ 
             transform: `translateY(${dragOffset}px)`,
@@ -53,10 +53,6 @@
             <slot />
           </div>
           
-          <!-- Футер с кнопками -->
-          <div v-if="$slots.footer" class="border-t border-slate-200 dark:border-slate-600 p-4 flex-shrink-0">
-            <slot name="footer" />
-          </div>
         </div>
       </div>
     </div>

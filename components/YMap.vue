@@ -25,7 +25,12 @@ onMounted(async () => {
 
   // Чистим контейнер на случай повторного монтирования
   mapRef.value.innerHTML = ''
-  map = new ym.Map(mapRef.value, { center: props.center, zoom: props.zoom ?? 11, controls: ['zoomControl'] })
+  map = new ym.Map(mapRef.value, { 
+    center: props.center, 
+    zoom: props.zoom ?? 11, 
+    controls: ['zoomControl'],
+    suppressMapOpenBlock: true
+  })
   updatePlacemarks()
 })
 

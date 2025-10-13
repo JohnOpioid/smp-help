@@ -8,10 +8,57 @@
 </template>
 
 <script setup lang="ts">
-const { isOnline } = useNetworkStatus()
+const isOnline = ref(true)
 const isMounted = ref(false)
 
-onMounted(() => {
+// Функция проверки реального подключения
+const checkRealConnection = async (): Promise<boolean> => {
+  try {
+    // Простая проверка через fetch с коротким таймаутом
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 3000)
+    
+    await fetch('/', {
+      method: 'HEAD',
+      cache: 'no-cache',
+      signal: controller.signal
+    })
+    
+    clearTimeout(timeoutId)
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
+// Обработчики объявляем на верхнем уровне setup
+const handleOnline = async () => {
+  console.log('📡 Online event triggered')
+  const realConnection = await checkRealConnection()
+  isOnline.value = realConnection
+  console.log('🌐 After online event - isOnline:', isOnline.value)
+}
+
+const handleOffline = () => {
+  console.log('📡 Offline event triggered')
+  isOnline.value = false
+}
+
+onMounted(async () => {
   isMounted.value = true
+  // Проверяем реальное подключение
+  const realConnection = await checkRealConnection()
+  isOnline.value = realConnection
+  console.log('🌐 Navigator.onLine:', navigator.onLine)
+  console.log('🌐 Real connection check:', realConnection)
+  console.log('🌐 Final isOnline:', isOnline.value)
+  // Подписываемся на события
+  window.addEventListener('online', handleOnline)
+  window.addEventListener('offline', handleOffline)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('online', handleOnline)
+  window.removeEventListener('offline', handleOffline)
 })
 </script>

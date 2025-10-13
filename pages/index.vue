@@ -21,7 +21,26 @@
 
       <!-- Разделы -->
       <div class="max-w-5xl mx-auto px-0 md:px-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+        <!-- Скелетоны контента при первичной загрузке -->
+        <div v-if="isInitialLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          <div v-for="n in 6" :key="n" class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg border-y border-slate-100 dark:border-slate-600 md:border md:rounded-lg">
+            <div class="p-4 h-full flex flex-col">
+              <div class="flex items-center mb-4 sm:mb-6">
+                <USkeleton class="w-12 h-12 rounded-lg" />
+                <div class="ml-4 sm:ml-6 flex-1">
+                  <USkeleton class="h-5 w-32 mb-2" />
+                  <USkeleton class="h-4 w-24" />
+                </div>
+              </div>
+              <USkeleton class="h-4 w-full mb-2" />
+              <USkeleton class="h-4 w-5/6 mb-4 sm:mb-6" />
+              <USkeleton class="h-10 w-full mt-auto rounded-md" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Реальный контент -->
+        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           <!-- Алгоритмы -->
           <div
             class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border-y border-slate-100 dark:border-slate-600 md:border md:rounded-lg">
@@ -215,4 +234,6 @@ definePageMeta({
 
 const { user, logout } = useAuth()
 const { isDark, toggleTheme } = useTheme()
+// Состояние первичной загрузки из лейаута/app
+const isInitialLoading = inject('isInitialLoading', ref(false))
 </script>

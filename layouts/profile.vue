@@ -1,9 +1,18 @@
 <template>
   <div :class="containerClass">
     <AppHeader v-if="!isInitialLoading" :title="headerTitle" />
+    <div v-else class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <USkeleton class="h-8 w-8 rounded" />
+          <USkeleton class="h-6 w-48" />
+        </div>
+        <USkeleton class="h-8 w-8 rounded-full" />
+      </div>
+    </div>
     <div class="flex-1 flex flex-col min-h-0">
       <div v-if="showBreadcrumbs" class="pt-6">
-        <Breadcrumbs v-if="!isInitialLoading" />
+        <Breadcrumbs v-if="!isInitialLoading && !isContentLoading" />
         <BreadcrumbsSkeleton v-else />
       </div>
 
@@ -33,8 +42,19 @@
         </nav>
       </div>
 
+      <!-- Скелетон контента при первичной загрузке -->
+      <div v-if="isInitialLoading" class="px-4 max-w-5xl mx-auto py-8 space-y-4">
+        <USkeleton class="h-6 w-1/3" />
+        <USkeleton class="h-4 w-2/3" />
+        <div class="space-y-2">
+          <USkeleton class="h-20 w-full" />
+          <USkeleton class="h-20 w-full" />
+          <USkeleton class="h-20 w-full" />
+        </div>
+      </div>
+
       <!-- Скелетон контента при навигации -->
-      <div v-if="isContentLoading" class="px-4 max-w-5xl mx-auto py-8 space-y-4">
+      <div v-else-if="isContentLoading" class="px-4 max-w-5xl mx-auto py-8 space-y-4">
         <USkeleton class="h-6 w-1/3" />
         <USkeleton class="h-4 w-2/3" />
         <div class="space-y-2">
@@ -103,8 +123,20 @@ onMounted(() => {
 
   window.addEventListener('openBottomSearch', handleOpenBottomSearch)
 
+  const handleGlobalHotkey = (e: KeyboardEvent) => {
+    const target = e.target as HTMLElement | null
+    const tag = (target?.tagName || '').toUpperCase()
+    const isEditable = tag === 'INPUT' || tag === 'TEXTAREA' || (target as any)?.isContentEditable
+    if (isEditable) return
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); isBottomSearchOpen.value = true; window.dispatchEvent(new Event('openBottomSearch')); return }
+    // '/' работает на любой раскладке (код клавиши 191)
+    if (!e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey && e.keyCode === 191) { e.preventDefault(); isBottomSearchOpen.value = true; window.dispatchEvent(new Event('openBottomSearch')) }
+  }
+  window.addEventListener('keydown', handleGlobalHotkey, { passive: false, capture: true })
+
   onUnmounted(() => {
     window.removeEventListener('openBottomSearch', handleOpenBottomSearch)
+    window.removeEventListener('keydown', handleGlobalHotkey as any)
   })
 })
 

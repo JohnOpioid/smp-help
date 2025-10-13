@@ -746,25 +746,26 @@
                   </div>
 
                 </div>
-              </div>
-              
-              <!-- Футер с кнопкой закладок -->
-              <template #footer>
-                <div class="flex justify-start">
+                
+                <!-- Кнопки действий -->
+                <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-600">
                   <UButton
                     :icon="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
                     :class="isBookmarked
                       ? 'text-amber-600 dark:text-amber-400'
                       : 'text-slate-600 dark:text-slate-300'"
-                    variant="ghost"
+                    variant="outline"
                     color="neutral"
                     @click="toggleBookmark()"
                     :disabled="!selected"
                     size="lg"
                     :title="isBookmarked ? 'В избранном' : 'В закладки'"
-                  />
+                    class="w-full justify-center"
+                  >
+                    {{ isBookmarked ? 'В избранном' : 'В закладки' }}
+                  </UButton>
                 </div>
-              </template>
+              </div>
             </BottomSheet>
           </ClientOnly>
         </template>

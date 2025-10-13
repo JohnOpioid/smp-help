@@ -1,4 +1,14 @@
 export default defineNuxtPlugin(() => {
+  if (!process.client || !('serviceWorker' in navigator)) return
+
+  // В режиме разработки полностью отключаем SW и удаляем любые старые регистрации
+  if (import.meta.env.DEV) {
+    navigator.serviceWorker.getRegistrations()
+      .then((regs) => regs.forEach((r) => r.unregister()))
+      .catch(() => {})
+    return
+  }
+
   if (process.client && 'serviceWorker' in navigator) {
     // Ждем готовности DOM и Nuxt PWA
     nextTick(() => {

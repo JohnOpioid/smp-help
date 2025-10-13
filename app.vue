@@ -18,54 +18,7 @@
       </template>
     </ClientOnly>
     
-    <!-- Скелетон шапки (только при принудительном обновлении) -->
-    <ClientOnly>
-      <div v-if="isMounted && isInitialLoading" class="fixed inset-0 bg-white dark:bg-slate-900 z-50 flex flex-col">
-      <!-- Хедер скелетон -->
-      <div class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-4">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-4">
-            <USkeleton class="h-8 w-8 rounded" />
-            <USkeleton class="h-6 w-48" />
-          </div>
-          <div class="flex items-center space-x-4">
-            <USkeleton class="h-8 w-8 rounded-full" />
-          </div>
-        </div>
-      </div>
-      
-      <!-- Контент скелетон -->
-      <div class="flex-1 p-4">
-        <div class="max-w-5xl mx-auto space-y-6">
-          <!-- Хлебные крошки -->
-          <div class="flex items-center space-x-2">
-            <USkeleton class="h-4 w-16" />
-            <USkeleton class="h-4 w-4" />
-            <USkeleton class="h-4 w-24" />
-          </div>
-          
-          <!-- Основной контент -->
-          <div class="space-y-4">
-            <USkeleton class="h-8 w-1/3" />
-            <USkeleton class="h-4 w-2/3" />
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <USkeleton class="h-32 w-full" />
-              <USkeleton class="h-32 w-full" />
-              <USkeleton class="h-32 w-full" />
-            </div>
-            <div class="space-y-2">
-              <USkeleton class="h-20 w-full" />
-              <USkeleton class="h-20 w-full" />
-              <USkeleton class="h-20 w-full" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-      <template #fallback>
-        <span></span>
-      </template>
-    </ClientOnly>
+    <!-- Удален глобальный оверлей-скелетон: за загрузку отвечают лейауты -->
     
     <NuxtLayout>
       <NuxtPage />
@@ -85,14 +38,11 @@ const isContentLoading = ref(false)
 provide('isInitialLoading', isInitialLoading)
 provide('isContentLoading', isContentLoading)
 
-// Скрываем скелетон шапки после первоначальной загрузки
+// Скрываем скелетоны сразу после первой отрисовки без искусственной задержки
 onMounted(() => {
   isMounted.value = true
-  
-  nextTick(() => {
-    setTimeout(() => {
-      isInitialLoading.value = false
-    }, 500)
+  requestAnimationFrame(() => {
+    isInitialLoading.value = false
   })
 })
 

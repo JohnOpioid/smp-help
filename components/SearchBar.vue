@@ -3,7 +3,7 @@
     <!-- Темный фон при фокусе -->
     <div v-if="isFocused" class="fixed inset-0 bg-slate-700/50 z-30" @click="blurSearch"></div>
     
-    <div class="relative z-40">
+    <div class="relative z-40" @click.prevent.stop="openPanelFromHeader">
       <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
         <svg class="h-5 w-5 sm:h-6 sm:w-6 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -572,6 +572,11 @@ const shareCalculatorResult = async (result: SearchResult) => {
 
 // Реф для input элемента
 const searchInput = ref<HTMLInputElement | null>(null)
+// Открытие полноэкранной панели из поисковой строки хедера
+function openPanelFromHeader() {
+  // Сообщаем лейауту открыть панель поиска
+  window.dispatchEvent(new Event('openBottomSearch'))
+}
 
 // Данные для поиска
 const searchData = ref<SearchResult[]>([])

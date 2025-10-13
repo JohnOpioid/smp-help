@@ -103,10 +103,10 @@ if (!user.value) {
     opts.headers = { cookie: headers.cookie as string }
   }
   try {
-    const { data } = await useFetch('/api/auth/me', opts)
-    if (data.value?.user) {
-      user.value = data.value.user as any
-    }
+    const { data: meData } = useFetch('/api/auth/me', opts)
+    watch(meData, (val) => {
+      if (val?.user) user.value = val.user as any
+    }, { immediate: true })
   } catch {}
 }
 
@@ -144,9 +144,9 @@ const moreNav = computed(() => {
   return base.filter(i => i.to !== '/admin' ? true : (user.value?.role === 'admin'))
 })
 
-// Данные для меню NavigationMenu
-const { data: categoriesData } = await useFetch('/api/categories', { server: false })
-const { data: algorithmCategoriesData } = await useFetch('/api/algorithms/categories', { server: false })
+// Данные для меню NavigationMenu (не блокируем рендеринг)
+const { data: categoriesData } = useFetch('/api/categories', { server: false })
+const { data: algorithmCategoriesData } = useFetch('/api/algorithms/categories', { server: false })
 
 function pluralizeDiagnosis(count: number) {
   const n = Math.abs(count) % 100

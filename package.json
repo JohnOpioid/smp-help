@@ -16,6 +16,7 @@
     "bcryptjs": "^3.0.2",
     "cheerio": "^1.1.2",
     "dompurify": "^3.0.6",
+    "fuse.js": "^7.1.0",
     "highlight.js": "^11.9.0",
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^9.0.2",
@@ -32,6 +33,7 @@
     "@iconify-json/heroicons": "^1.2.3",
     "@nuxt/ui": "^3.3.5",
     "@tailwindcss/postcss": "^4.0.0",
+    "@types/marked": "^5.0.2",
     "@vite-pwa/nuxt": "^1.0.4",
     "autoprefixer": "^10.4.20",
     "tailwindcss": "^4.0.0"

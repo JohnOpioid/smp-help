@@ -146,20 +146,34 @@
               <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Примечание</label>
               <p class="text-slate-600 dark:text-slate-300 whitespace-pre-line">{{ selectedItem.note }}</p>
             </div>
-          </div>
-          
-          <!-- Футер с кнопками -->
-          <template #footer>
-            <div class="flex items-center justify-between gap-2 w-full">
-              <div class="flex items-center gap-2">
-                <UButton size="sm" variant="outline" color="neutral" icon="i-heroicons-clipboard" class="cursor-pointer" @click="copyDescription">Копировать</UButton>
-                <UButton size="sm" variant="outline" color="neutral" icon="i-heroicons-share" class="cursor-pointer" aria-label="Поделиться" @click="shareItem" />
+            
+            <!-- Кнопки действий -->
+            <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-600">
+              <div class="flex gap-2">
+                <UButton 
+                  size="lg" 
+                  variant="outline" 
+                  color="neutral" 
+                  icon="i-heroicons-clipboard" 
+                  class="flex-1 justify-center cursor-pointer" 
+                  @click="copyDescription"
+                >
+                  Копировать
+                </UButton>
+                <UButton 
+                  size="lg" 
+                  variant="outline" 
+                  color="neutral" 
+                  icon="i-heroicons-share" 
+                  class="flex-1 justify-center cursor-pointer" 
+                  aria-label="Поделиться" 
+                  @click="shareItem"
+                >
+                  Поделиться
+                </UButton>
               </div>
-              <UButton color="neutral" variant="ghost" type="button" @click="closeModalMobile" class="cursor-pointer">
-                Закрыть
-              </UButton>
             </div>
-          </template>
+          </div>
         </BottomSheet>
       </ClientOnly>
     </template>

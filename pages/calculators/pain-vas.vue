@@ -562,7 +562,7 @@
                       <div class="mx-2 flex-1 border-b border-dashed border-slate-300 dark:border-slate-600"></div>
                       <span class="text-sm font-medium text-slate-900 dark:text-white">{{ selectedDrug.pharmacokinetics.duration }}</span>
                     </div>
-                    <div v-if="selectedDrug.pharmacokinetics.half_life" class="flex items_center">
+                    <div v-if="selectedDrug.pharmacokinetics.half_life" class="flex items-center">
                       <span>T1/2</span>
                       <div class="mx-2 flex-1 border-b border-dashed border-slate-300 dark:border-slate-600"></div>
                       <span class="text-sm font-medium text-slate-900 dark:text-white">{{ selectedDrug.pharmacokinetics.half_life }}</span>
@@ -578,6 +578,25 @@
                       <span class="text-sm font-medium text-slate-900 dark:text-white">{{ selectedDrug.pharmacokinetics.elimination }}</span>
                     </div>
                   </div>
+                </div>
+                
+                <!-- Кнопка в избранное -->
+                <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-600">
+                  <UButton
+                    :icon="isDrugBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
+                    :class="isDrugBookmarked
+                      ? 'text-amber-600 dark:text-amber-400'
+                      : 'text-slate-600 dark:text-slate-300'"
+                    variant="outline"
+                    color="neutral"
+                    @click="toggleDrugBookmark"
+                    :disabled="!selectedDrug"
+                    size="lg"
+                    :title="isDrugBookmarked ? 'В избранном' : 'В закладки'"
+                    class="w-full justify-center"
+                  >
+                    {{ isDrugBookmarked ? 'В избранном' : 'В закладки' }}
+                  </UButton>
                 </div>
               </div>
             </div>
@@ -802,6 +821,38 @@ const drugModalDescription = computed(() => {
   const syn = selectedDrug.value?.synonyms
   if (Array.isArray(syn) && syn.length) return syn.filter(Boolean).join(', ')
   return 'Информация о препарате'
+})
+
+// Закладки препаратов
+const drugBookmarks = ref<Set<string>>(new Set())
+const isDrugBookmarked = computed(() => {
+  return selectedDrug.value ? drugBookmarks.value.has(selectedDrug.value._id) : false
+})
+
+const toggleDrugBookmark = () => {
+  if (!selectedDrug.value) return
+  
+  const drugId = selectedDrug.value._id
+  if (drugBookmarks.value.has(drugId)) {
+    drugBookmarks.value.delete(drugId)
+  } else {
+    drugBookmarks.value.add(drugId)
+  }
+  
+  // Сохраняем в localStorage
+  localStorage.setItem('drug-bookmarks', JSON.stringify(Array.from(drugBookmarks.value)))
+}
+
+// Загружаем закладки из localStorage при инициализации
+onMounted(() => {
+  const saved = localStorage.getItem('drug-bookmarks')
+  if (saved) {
+    try {
+      drugBookmarks.value = new Set(JSON.parse(saved))
+    } catch (e) {
+      console.warn('Ошибка загрузки закладок препаратов:', e)
+    }
+  }
 })
 
 const categoriesSafe = computed<Array<{ name: string }>>(() => {

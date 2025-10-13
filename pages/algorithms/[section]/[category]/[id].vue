@@ -7,6 +7,56 @@
       </svg>
       Назад
     </NuxtLink>
+    
+    <!-- Общий скелетон для всей страницы при загрузке -->
+    <template v-if="pending">
+      <div class="space-y-6">
+        <!-- Заголовок -->
+        <div>
+          <USkeleton class="h-7 w-2/3 mb-2" />
+          <USkeleton class="h-4 w-1/3 mb-4" />
+        </div>
+        
+        <!-- Коды МКБ -->
+        <div class="mb-4">
+          <div class="flex flex-wrap gap-2 items-center mb-2">
+            <div class="text-sm text-slate-500 dark:text-slate-400">Коды МКБ:</div>
+            <USkeleton class="h-6 w-16 rounded" />
+            <USkeleton class="h-6 w-14 rounded" />
+            <USkeleton class="h-6 w-20 rounded" />
+          </div>
+        </div>
+        
+        <!-- Основной контент -->
+        <div class="space-y-4">
+          <USkeleton class="h-4 w-full" />
+          <USkeleton class="h-4 w-5/6" />
+          <USkeleton class="h-4 w-4/5" />
+          <USkeleton class="h-4 w-3/4" />
+          <USkeleton class="h-4 w-5/6" />
+          <USkeleton class="h-4 w-2/3" />
+        </div>
+        
+        <!-- Локальные статусы -->
+        <div class="border border-slate-200 dark:border-slate-700 rounded-lg">
+          <div class="p-4 border-b border-slate-100 dark:border-slate-700">
+            <USkeleton class="h-4 w-32" />
+          </div>
+          <div class="p-4">
+            <div class="space-y-3">
+              <USkeleton class="h-4 w-3/4" />
+              <USkeleton class="h-4 w-1/2" />
+              <USkeleton class="h-4 w-2/3" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <!-- Основной контент -->
+  <div v-if="!pending" class="max-w-5xl mx-auto px-4">
+    <!-- Заголовок -->
     <template v-if="!algo">
       <USkeleton class="h-7 w-2/3 mb-2" />
       <USkeleton class="h-4 w-1/3 mb-4" />
@@ -15,6 +65,7 @@
       <h1 class="text-2xl font-bold mb-2 text-slate-900 dark:text-white">{{ algo?.title }}</h1>
       <div class="text-sm text-slate-500 mb-4">{{ getSectionDisplayName(algo?.section) }} • {{ algo?.category?.name }}</div>
     </template>
+    
     <!-- Основные коды МКБ -->
     <ClientOnly>
       <div v-if="(algo?.mkbCodes || []).length > 0" class="mb-4">
@@ -53,6 +104,13 @@
           </button>
         </div>
       </div>
+      <div v-else-if="!algo" class="mb-4">
+        <div class="text-sm text-slate-500 dark:text-slate-400 mb-2">Исключения:</div>
+        <div class="flex flex-wrap gap-2 items-center">
+          <USkeleton class="h-6 w-12 rounded" />
+          <USkeleton class="h-6 w-16 rounded" />
+        </div>
+      </div>
       
       <template #fallback>
         <!-- Fallback для SSR -->
@@ -79,12 +137,26 @@
               {{ code }}
             </span>
           </div>
-    </div>
+        </div>
       </template>
     </ClientOnly>
   </div>
   <div class="max-w-5xl mx-auto md:px-4 pb-8">
-    <div class="prose dark:prose-invert max-w-none w-full" ref="contentRef" v-html="rendered"></div>
+    <template v-if="!algo">
+      <div class="space-y-4">
+        <USkeleton class="h-4 w-full" />
+        <USkeleton class="h-4 w-5/6" />
+        <USkeleton class="h-4 w-4/5" />
+        <USkeleton class="h-4 w-3/4" />
+        <USkeleton class="h-4 w-5/6" />
+        <USkeleton class="h-4 w-2/3" />
+        <USkeleton class="h-4 w-4/5" />
+        <USkeleton class="h-4 w-3/4" />
+      </div>
+    </template>
+    <template v-else>
+      <div class="prose dark:prose-invert max-w-none w-full" ref="contentRef" v-html="rendered"></div>
+    </template>
   </div>
 
   <!-- Модалка диагноза для десктопа -->
@@ -156,25 +228,27 @@
         <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Примечание</label>
         <p class="text-slate-600 dark:text-slate-300">{{ selectedDiagnosis.note }}</p>
       </div>
-    </div>
-    <div v-else class="text-sm text-slate-500 px-4 py-2">Не удалось загрузить данные диагноза</div>
-
-    <template #footer>
-      <div class="flex justify-start">
+      
+      <!-- Кнопки действий -->
+      <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-600">
         <UButton
           :icon="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
           :class="isBookmarked
             ? 'text-amber-600 dark:text-amber-400'
             : 'text-slate-600 dark:text-slate-300'"
-          variant="ghost"
+          variant="outline"
           color="neutral"
           @click="toggleBookmark"
           :disabled="!selectedDiagnosis"
           size="lg"
           :title="isBookmarked ? 'В избранном' : 'В закладки'"
-        />
+          class="w-full justify-center"
+        >
+          {{ isBookmarked ? 'В избранном' : 'В закладки' }}
+        </UButton>
       </div>
-    </template>
+    </div>
+    <div v-else class="text-sm text-slate-500 px-4 py-2">Не удалось загрузить данные диагноза</div>
   </BottomSheet>
 
   <!-- Блок локального статуса -->
@@ -185,8 +259,9 @@
           <p class="text-sm text-slate-600 dark:text-slate-300">Локальный статус</p>
         </div>
         
-        <!-- Загрузка -->
-        <div v-if="localStatusLoading" class="p-4">
+        
+        <!-- Локальный скелетон для статусов -->
+        <div v-if="!algo" class="p-4">
           <div class="space-y-3">
             <USkeleton class="h-4 w-3/4" />
             <USkeleton class="h-4 w-1/2" />
@@ -232,7 +307,7 @@
         </div>
         
         <!-- Заглушка при отсутствии локальных статусов -->
-        <div v-else class="p-8 text-center">
+        <div v-else-if="algo && localStatuses.length === 0" class="p-8 text-center">
           <div class="flex flex-col items-center space-y-4">
             <!-- Большая иконка -->
             <div class="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center">
@@ -416,7 +491,7 @@ type AlgorithmItem = {
   mkbExclusions?: string[]
 }
 type AlgorithmResponse = { success: true; item: AlgorithmItem } | { success: false; message: string }
-const { data } = await useFetch<AlgorithmResponse>(`/api/algorithms/${id}`)
+const { data, pending } = await useFetch<AlgorithmResponse>(`/api/algorithms/${id}`)
 function isSuccess(resp: AlgorithmResponse | null | undefined): resp is { success: true; item: AlgorithmItem } {
   return !!resp && (resp as any).success === true && 'item' in (resp as any)
 }
@@ -522,7 +597,7 @@ function normalizeTitleForMatch(t: string): string {
   return t.replace(/\s*\(дети\)\s*$/i, '').trim()
 }
 
-watch(algo, async (val) => {
+watch(algo, async (val: AlgorithmItem | undefined) => {
   const q = route.query?.section as string | undefined
   const desiredSection = mapSectionParamToRu(q)
   if (!val || !desiredSection) return
