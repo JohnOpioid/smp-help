@@ -56,8 +56,7 @@ export default defineNuxtConfig({
         '**/adults/**',
         '**/pediatrics/**',
         '**/onmp/**',
-        '**/*.html',
-        '**/manifest.webmanifest'
+        '**/*.html'
       ],
       cleanupOutdatedCaches: true,
       skipWaiting: false,
@@ -74,17 +73,6 @@ export default defineNuxtConfig({
               maxAgeSeconds: 60 * 60 * 24 // 1 день
             },
             networkTimeoutSeconds: 10
-          }
-        },
-        {
-          urlPattern: /^\/manifest\.webmanifest$/i,
-          handler: 'CacheFirst',
-          options: {
-            cacheName: 'manifest-cache',
-            expiration: {
-              maxEntries: 1,
-              maxAgeSeconds: 60 * 60 * 24 * 30 // 30 дней
-            }
           }
         },
         {
