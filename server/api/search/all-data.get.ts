@@ -7,23 +7,10 @@ import Drug from '~/server/models/Drug'
 import Substation from '~/server/models/Substation'
 
 export default defineEventHandler(async (event) => {
-  console.log('🔍 API: Начинаем загрузку данных для поиска')
-  
   try {
     await connectDB()
-    console.log('🔍 API: Подключение к БД установлено')
-    
-    // Проверяем модели
-    console.log('🔍 API: Проверяем модели:', {
-      LocalStatus: !!LocalStatus,
-      MKB: !!MKB,
-      Algorithm: !!Algorithm,
-      Drug: !!Drug,
-      Substation: !!Substation
-    })
     
     // Получаем все данные из всех коллекций параллельно
-    console.log('🔍 API: Начинаем загрузку данных из коллекций...')
     const [localStatuses, mkbCodes, algorithms, drugs, substations] = await Promise.all([
       LocalStatus.find({}).populate('category', 'name url').lean().catch(err => {
         console.error('❌ API: Ошибка загрузки LocalStatus:', err)
@@ -47,18 +34,9 @@ export default defineEventHandler(async (event) => {
       })
     ])
     
-    console.log('📊 API: Загружено данных:', {
-      localStatuses: localStatuses.length,
-      mkbCodes: mkbCodes.length,
-      algorithms: algorithms.length,
-      drugs: drugs.length,
-      substations: substations.length
-    })
-    
     // Проверяем, что хотя бы одна коллекция не пустая
     const totalItems = localStatuses.length + mkbCodes.length + algorithms.length + drugs.length + substations.length
     if (totalItems === 0) {
-      console.warn('⚠️ API: Все коллекции пусты!')
       return {
         success: false,
         message: 'Все коллекции данных пусты',

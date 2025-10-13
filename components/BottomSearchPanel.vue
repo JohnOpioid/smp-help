@@ -18,7 +18,7 @@
           <div class="flex items-center justify-center select-none py-2">
             <div class="w-10 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
           </div>
-          <div class="max-w-5xl mx-auto px-4 py-4">
+          <div class="max-w-5xl mx-auto px-4 py-2">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-4">
                 <div class="flex items-center gap-2 bg-white dark:bg-slate-700 rounded-lg px-3 py-1.5">
@@ -28,8 +28,8 @@
                 </div>
               </div>
 
-              <button v-if="chatMessages.length > 0" @click="clearChatHistory"
-                class="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
+              <button v-if="chatMessages.length > 0" @click="clearChatHistory" @touchstart="clearChatHistory"
+                class="p-3 sm:p-2 hover:bg-slate-200 dark:hover:bg-slate-700 active:bg-slate-300 dark:active:bg-slate-600 rounded-lg transition-colors cursor-pointer touch-manipulation select-none"
                 title="Очистить историю чата">
                 <svg class="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -243,8 +243,8 @@
                <div v-if="result.data?.content" class="relative">
                  <div :class="isTableExpanded(result.id) ? 'max-h-none' : 'max-h-32 overflow-hidden'">
                    <!-- Обертка таблицы с внешним border'ом как на странице алгоритма -->
-                   <div class="algorithm-table-container bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-none md:rounded-lg overflow-x-hidden relative sticky-container" data-styled-table-wrapper>
-                     <div v-html="renderAlgorithmTable(result.data.content)" class="text-xs sm:text-sm"></div>
+                   <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-none md:rounded-lg overflow-x-hidden relative sticky-container" data-styled-table-wrapper>
+                     <div v-html="renderAlgorithmTable(result.data.content)" class="text-xs sm:text-sm" @vue:mounted="setupMobileTableLogic"></div>
                    </div>
                  </div>
                  <!-- Градиент для визуального эффекта исчезновения (только когда таблица свернута) -->
@@ -1510,21 +1510,16 @@ const performSearch = async (query: string) => {
   isLoadingSearch.value = true
   
   try {
-    console.log('🔍 Начинаем поиск с Fuse.js:', query)
-    
     // Загружаем все данные одним запросом
     let searchData
     try {
       searchData = await $fetch('/api/search/all-data')
-      console.log('🔍 Ответ от нового API:', searchData)
       
       // Проверяем, успешен ли ответ
       if (!searchData.success) {
         throw new Error(`API вернул ошибку: ${(searchData as any).message || 'Неизвестная ошибка'}`)
       }
     } catch (apiError) {
-      console.warn('⚠️ Новый API недоступен, используем старые endpoints:', apiError)
-      
       // Fallback: используем старые API endpoints
       const [mkbData, lsResults, algoResults, drugResults, substationResults] = await Promise.all([
         $fetch('/api/mkb/all'),
@@ -1544,7 +1539,6 @@ const performSearch = async (query: string) => {
           substations: substationResults
         }
       }
-      console.log('🔍 Ответ от старых API:', searchData)
     }
     
     const { data } = searchData as any
@@ -1553,16 +1547,6 @@ const performSearch = async (query: string) => {
     const algoResults = data.algorithms
     const drugResults = data.drugs
     const substationResults = data.substations
-    
-    console.log('📊 Загружено данных:', {
-      mkb: (mkbData as any).items.length,
-      ls: (lsResults as any).items.length,
-      algo: (algoResults as any).items.length,
-      drug: (drugResults as any).items.length
-    })
-    
-    // Отладка исходных данных локальных статусов
-    console.log('🔍 Исходные данные локальных статусов из API:', (lsResults as any).items.slice(0, 3))
     
     // Подготавливаем данные для Fuse.js
     const prepareSearchItems = (items: any[], type: 'mkb' | 'ls' | 'algorithm' | 'drug' | 'substation') => {
@@ -1592,28 +1576,6 @@ const performSearch = async (query: string) => {
           type
         }
         
-        // Отладка для локальных статусов
-        if (type === 'ls') {
-          console.log(`🔍 Подготовка LS: "${item.name}"`, {
-            original: item,
-            prepared: prepared
-          })
-        }
-        
-        // Отладка для подстанций
-        if (type === 'substation') {
-          console.log(`🏥 Подготовка подстанции: "${item.name}"`, {
-            original: item,
-            prepared: prepared,
-            hasCoordinates: !!item.coordinates,
-            coordinates: item.coordinates,
-            possibleCoords: {
-              location: item.location,
-              locationCoords: item.location?.coordinates,
-              finalCoords: item.location?.coordinates ? [item.location.coordinates[1], item.location.coordinates[0]] : null
-            }
-          })
-        }
         
         return prepared
       })
@@ -1632,14 +1594,6 @@ const performSearch = async (query: string) => {
     
     const isSubstationSearch = substationKeywords.some(keyword => queryLower.includes(keyword)) || hasAddressKeywords
     
-    console.log('🔍 Анализ запроса для поиска подстанций:', {
-      query: query,
-      queryLower: queryLower,
-      hasSubstationKeywords: substationKeywords.some(keyword => queryLower.includes(keyword)),
-      hasAddressKeywords: hasAddressKeywords,
-      isSubstationSearch: isSubstationSearch
-    })
-    
     // Извлекаем номер подстанции из запроса
     const substationNumberMatch = query.match(/(\d+)/)
     const substationNumber = substationNumberMatch ? substationNumberMatch[1] : null
@@ -1648,13 +1602,10 @@ const performSearch = async (query: string) => {
     
     if (isSubstationSearch) {
       // Если в запросе есть "подстанция", ищем только подстанции
-      console.log('🏥 Поиск только подстанций по запросу:', query)
-      
       let substationItems = (substationResults as any).items
       
       // Если есть конкретный номер подстанции, фильтруем по нему
       if (substationNumber) {
-        console.log('🔢 Ищем подстанцию с номером:', substationNumber)
         substationItems = substationItems.filter((item: any) => {
           const name = (item.name || '').toLowerCase()
           const description = (item.description || '').toLowerCase()
@@ -1665,12 +1616,10 @@ const performSearch = async (query: string) => {
                  description.includes(substationNumber) || 
                  address.includes(substationNumber)
         })
-        console.log(`🎯 Найдено подстанций с номером ${substationNumber}:`, substationItems.length)
       }
       
       // Если поиск по адресным словам, дополнительно фильтруем по адресу
       if (addressKeywords.some(keyword => queryLower.includes(keyword))) {
-        console.log('🏠 Поиск подстанций по адресным словам:', query)
         substationItems = substationItems.filter((item: any) => {
           const address = (item.address || '').toLowerCase()
           const name = (item.name || '').toLowerCase()
@@ -1685,7 +1634,6 @@ const performSearch = async (query: string) => {
                name.includes(queryLower) || 
                description.includes(queryLower)
         })
-        console.log(`🏠 Найдено подстанций по адресным словам:`, substationItems.length)
       }
       
       allItems = [
@@ -1702,32 +1650,8 @@ const performSearch = async (query: string) => {
       ]
     }
     
-    console.log('🔍 Всего элементов для поиска:', allItems.length)
-    
     // Выполняем поиск с помощью Fuse.js
     const fuseResults = search(allItems, query)
-    
-    console.log('🎯 Найдено результатов Fuse.js:', fuseResults.length)
-    
-    // Отладка: показываем первые несколько результатов
-    if (fuseResults.length > 0) {
-      console.log('🔍 Первые 5 результатов Fuse.js:', fuseResults.slice(0, 5).map((r: any) => ({
-        type: r.type,
-        title: r.title || r.name,
-        mkbCode: r.mkbCode,
-        score: r.score
-      })))
-      
-      // Показываем количество по типам
-      const byType = {
-        mkb: fuseResults.filter((r: any) => r.type === 'mkb').length,
-        ls: fuseResults.filter((r: any) => r.type === 'ls').length,
-        algorithm: fuseResults.filter((r: any) => r.type === 'algorithm').length,
-        drug: fuseResults.filter((r: any) => r.type === 'drug').length,
-        substation: fuseResults.filter((r: any) => r.type === 'substation').length
-      }
-      console.log('📊 Результаты Fuse.js по типам:', byType)
-    }
     
     // Преобразуем результаты в формат SearchResult
     const searchResultsArray: SearchResult[] = fuseResults.map((item: any) => {
@@ -1781,47 +1705,16 @@ const performSearch = async (query: string) => {
       return aScore - bScore // Меньший score = лучшая релевантность
     })
     
-    // Отладка: показываем результаты после преобразования
-    console.log('🔄 Результаты после преобразования:', {
-      total: sortedResults.length,
-      byType: {
-        mkb: sortedResults.filter((r: SearchResult) => r.type === 'МКБ').length,
-        ls: sortedResults.filter((r: SearchResult) => r.type === 'Локальный статус').length,
-        algo: sortedResults.filter((r: SearchResult) => r.type === 'Алгоритм').length,
-        drug: sortedResults.filter((r: SearchResult) => r.type === 'Препарат').length,
-        substation: sortedResults.filter((r: SearchResult) => r.type === 'Подстанция').length
-      }
-    })
-    
-    // Показываем первые МКБ результаты
-    const mkbResultsAfterTransform = sortedResults.filter((r: SearchResult) => r.type === 'МКБ')
-    if (mkbResultsAfterTransform.length > 0) {
-      console.log('🏥 Первые 3 МКБ результата:', mkbResultsAfterTransform.slice(0, 3).map((r: SearchResult) => ({
-        title: r.title,
-        mkbCode: r.codes?.mkbCode,
-        url: r.url
-      })))
-    } else {
-      console.log('❌ МКБ результаты не найдены после преобразования')
-    }
     
     searchResults.value = sortedResults
     
     // Инициализируем мобильную логику для таблиц после обновления результатов
     nextTick(() => {
       setupMobileTableLogic()
-    })
-    
-    console.log('✅ Результаты поиска:', {
-      query,
-      total: sortedResults.length,
-      byType: {
-        mkb: sortedResults.filter((r: SearchResult) => r.type === 'МКБ').length,
-        ls: sortedResults.filter((r: SearchResult) => r.type === 'Локальный статус').length,
-        algo: sortedResults.filter((r: SearchResult) => r.type === 'Алгоритм').length,
-        drug: sortedResults.filter((r: SearchResult) => r.type === 'Препарат').length,
-        substation: sortedResults.filter((r: SearchResult) => r.type === 'Подстанция').length
-      }
+      // Дополнительный вызов с задержкой для гарантии
+      setTimeout(() => {
+        setupMobileTableLogic()
+      }, 100)
     })
     
   } catch (error) {
