@@ -26,6 +26,14 @@ export default defineNuxtPlugin(() => {
     }
   })
 
+  // Обработка ошибок манифеста
+  window.addEventListener('unhandledrejection', (event) => {
+    if (event.reason && event.reason.message && event.reason.message.includes('manifest')) {
+      console.warn('⚠️ Ошибка манифеста:', event.reason.message)
+      event.preventDefault() // Предотвращаем вывод ошибки в консоль
+    }
+  })
+
   if (process.client && 'serviceWorker' in navigator) {
     // Ждем готовности DOM и Nuxt PWA
     nextTick(() => {

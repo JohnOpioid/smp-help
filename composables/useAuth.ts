@@ -68,11 +68,17 @@ export const useAuth = () => {
   // Авторизация
   const login = async (credentials: { email: string; password: string }) => {
     try {
-      console.log('Attempting login with:', { email: credentials.email, passwordLength: credentials.password.length })
+      // Дополнительная очистка данных от невидимых символов
+      const cleanCredentials = {
+        email: credentials.email.replace(/[\u200B-\u200D\uFEFF]/g, '').trim().toLowerCase(),
+        password: credentials.password.replace(/[\u200B-\u200D\uFEFF]/g, '').trim()
+      }
+
+      console.log('Attempting login with:', { email: cleanCredentials.email, passwordLength: cleanCredentials.password.length })
       
       const data = await $fetch('/api/auth/login', {
         method: 'POST',
-        body: credentials
+        body: cleanCredentials
       })
 
       console.log('Login response:', data)

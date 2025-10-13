@@ -24,7 +24,8 @@ export default defineNuxtConfig({
       link: [
         { rel: 'apple-touch-icon', href: '/icons/icon-192x192.png' },
         { rel: 'icon', type: 'image/png', sizes: '192x192', href: '/icons/icon-192x192.png' },
-        { rel: 'icon', type: 'image/png', sizes: '512x512', href: '/icons/icon-512x512.png' }
+        { rel: 'icon', type: 'image/png', sizes: '512x512', href: '/icons/icon-512x512.png' },
+        { rel: 'manifest', href: '/manifest.webmanifest' }
       ]
     }
   },
@@ -50,20 +51,19 @@ export default defineNuxtConfig({
   pwa: {
     registerType: 'prompt',
     workbox: {
-      navigateFallback: null, // Отключаем fallback, используем runtime caching
+      navigateFallback: null,
       globPatterns: ['**/*.{js,css,png,svg,ico}'],
       globIgnores: [
         '**/adults/**',
         '**/pediatrics/**',
         '**/onmp/**',
-        '**/*.html',
-        '**/manifest.webmanifest' // Исключаем манифест из кэширования
+        '**/*.html'
       ],
       cleanupOutdatedCaches: true,
-      skipWaiting: true, // Включаем skipWaiting для автоматического обновления
-      clientsClaim: true, // Включаем clientsClaim для немедленного контроля
-      maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
-      mode: 'production', // Явно указываем режим продакшена
+      skipWaiting: true,
+      clientsClaim: true,
+      maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+      mode: 'production',
       runtimeCaching: [
         {
           urlPattern: /^\/api\/.*/i,
@@ -72,7 +72,7 @@ export default defineNuxtConfig({
             cacheName: 'api-cache',
             expiration: {
               maxEntries: 100,
-              maxAgeSeconds: 60 * 60 * 24 // 1 день
+              maxAgeSeconds: 60 * 60 * 24
             },
             networkTimeoutSeconds: 10
           }
@@ -84,7 +84,7 @@ export default defineNuxtConfig({
             cacheName: 'pages-cache',
             expiration: {
               maxEntries: 200,
-              maxAgeSeconds: 60 * 60 * 24 * 7 // 7 дней
+              maxAgeSeconds: 60 * 60 * 24 * 7
             },
             networkTimeoutSeconds: 5
           }
@@ -96,15 +96,11 @@ export default defineNuxtConfig({
       periodicSyncForUpdates: 20
     },
     devOptions: {
-      enabled: false, // Отключаем PWA в режиме разработки, работает только в продакшене
+      enabled: false,
       suppressWarnings: true
     },
-    // Настройки для исправления проблем с манифестом
     strategies: 'generateSW',
     filename: 'sw.js',
-    injectManifest: {
-      swSrc: '~/plugins/pwa.client.ts'
-    },
     manifest: {
       name: 'Справочник СМП',
       short_name: 'СМП Справочник',

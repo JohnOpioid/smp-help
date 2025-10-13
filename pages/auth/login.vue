@@ -27,6 +27,8 @@
                 class="appearance-none block w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-white transition-colors duration-200"
                 placeholder="Введите ваш email"
                 :disabled="loading"
+                @focus="clearFieldIfAutofilled('email')"
+                @input="form.email = form.email.trim()"
               />
             </div>
           </div>
@@ -46,6 +48,8 @@
                 class="appearance-none block w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-white transition-colors duration-200"
                 placeholder="Введите пароль"
                 :disabled="loading"
+                @focus="clearFieldIfAutofilled('password')"
+                @input="form.password = form.password.trim()"
               />
             </div>
           </div>
@@ -120,13 +124,50 @@ const loading = ref(false)
 const error = ref('')
 const success = ref('')
 
+// Функция для очистки поля при фокусе (если оно автозаполнено)
+const clearFieldIfAutofilled = (field: 'email' | 'password') => {
+  // Небольшая задержка, чтобы дать браузеру время на автозаполнение
+  setTimeout(() => {
+    if (field === 'email') {
+      // Если поле содержит автозаполненный email, очищаем его
+      if (form.email && form.email.includes('@')) {
+        form.email = ''
+      }
+    } else if (field === 'password') {
+      // Если поле содержит автозаполненный пароль, очищаем его
+      if (form.password && form.password.length > 0) {
+        form.password = ''
+      }
+    }
+  }, 100)
+}
+
 const onSubmit = async () => {
   loading.value = true
   error.value = ''
   success.value = ''
 
   try {
-    const result = await login(form)
+    // Очищаем поля от невидимых символов и лишних пробелов
+    const cleanForm = {
+      email: form.email.trim().toLowerCase(),
+      password: form.password.trim()
+    }
+
+    // Валидация
+    if (!cleanForm.email || !cleanForm.password) {
+      error.value = 'Пожалуйста, заполните все поля'
+      return
+    }
+
+    // Проверяем email на корректность
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(cleanForm.email)) {
+      error.value = 'Пожалуйста, введите корректный email'
+      return
+    }
+
+    const result = await login(cleanForm)
     
     if (result.success) {
       success.value = result.message
