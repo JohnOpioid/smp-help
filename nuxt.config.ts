@@ -56,12 +56,14 @@ export default defineNuxtConfig({
         '**/adults/**',
         '**/pediatrics/**',
         '**/onmp/**',
-        '**/*.html'
+        '**/*.html',
+        '**/manifest.webmanifest' // Исключаем манифест из кэширования
       ],
       cleanupOutdatedCaches: true,
-      skipWaiting: false,
-      clientsClaim: false,
+      skipWaiting: true, // Включаем skipWaiting для автоматического обновления
+      clientsClaim: true, // Включаем clientsClaim для немедленного контроля
       maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
+      mode: 'production', // Явно указываем режим продакшена
       runtimeCaching: [
         {
           urlPattern: /^\/api\/.*/i,
@@ -96,6 +98,12 @@ export default defineNuxtConfig({
     devOptions: {
       enabled: false, // Отключаем PWA в режиме разработки, работает только в продакшене
       suppressWarnings: true
+    },
+    // Настройки для исправления проблем с манифестом
+    strategies: 'generateSW',
+    filename: 'sw.js',
+    injectManifest: {
+      swSrc: '~/plugins/pwa.client.ts'
     },
     manifest: {
       name: 'Справочник СМП',

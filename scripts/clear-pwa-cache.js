@@ -1,35 +1,33 @@
-// Скрипт для очистки кеша PWA
-// Выполните в консоли браузера для очистки всех кешей
+// Скрипт для очистки PWA кэша и Service Worker
+// Запускать в консоли браузера на продакшн сайте
 
-console.log('🧹 Очистка кеша PWA...')
+console.log('🧹 Начинаем очистку PWA кэша...')
 
-// Очищаем все кеши
-if ('caches' in window) {
-  caches.keys().then(cacheNames => {
-    console.log('Найдены кеши:', cacheNames)
-    
-    return Promise.all(
-      cacheNames.map(cacheName => {
-        console.log('Удаляем кеш:', cacheName)
-        return caches.delete(cacheName)
-      })
-    )
-  }).then(() => {
-    console.log('✅ Все кеши очищены')
-    
-    // Перезагружаем страницу
-    window.location.reload()
-  }).catch(error => {
-    console.error('❌ Ошибка при очистке кеша:', error)
+// 1. Удаляем все регистрации Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    console.log(`📱 Найдено ${registrations.length} Service Worker регистраций`)
+    registrations.forEach(registration => {
+      console.log('🗑️ Удаляем Service Worker:', registration.scope)
+      registration.unregister()
+    })
   })
-} else {
-  console.log('❌ Кеши не поддерживаются в этом браузере')
 }
 
-// Очищаем localStorage
-localStorage.clear()
-console.log('✅ localStorage очищен')
+// 2. Очищаем все кэши
+if ('caches' in window) {
+  caches.keys().then(cacheNames => {
+    console.log(`💾 Найдено ${cacheNames.length} кэшей`)
+    cacheNames.forEach(cacheName => {
+      console.log('🗑️ Удаляем кэш:', cacheName)
+      caches.delete(cacheName)
+    })
+  })
+}
 
-// Очищаем sessionStorage
+// 3. Очищаем localStorage и sessionStorage
+console.log('🗑️ Очищаем localStorage и sessionStorage')
+localStorage.clear()
 sessionStorage.clear()
-console.log('✅ sessionStorage очищен')
+
+console.log('✅ Очистка завершена! Перезагрузите страницу.')

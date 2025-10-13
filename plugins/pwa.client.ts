@@ -9,6 +9,23 @@ export default defineNuxtPlugin(() => {
     return
   }
 
+  // Обработка ошибок Service Worker
+  window.addEventListener('error', (event) => {
+    if (event.message && event.message.includes('ServiceWorker')) {
+      console.warn('⚠️ Ошибка Service Worker:', event.message)
+      // При ошибке SW пытаемся перезарегистрировать
+      setTimeout(() => {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          registrations.forEach(registration => {
+            registration.unregister().then(() => {
+              console.log('🔄 Service Worker перерегистрирован')
+            })
+          })
+        })
+      }, 5000)
+    }
+  })
+
   if (process.client && 'serviceWorker' in navigator) {
     // Ждем готовности DOM и Nuxt PWA
     nextTick(() => {

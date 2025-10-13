@@ -6,7 +6,7 @@
     <!-- Bottom sheet панель -->
     <Transition name="bsp-slide">
       <div ref="panelRef"
-        class="relative z-10 h-[calc(100vh-1rem)] h-[calc(100dvh-1rem)] sm:h-[calc(100vh-2rem)] sm:h-[calc(100dvh-2rem)] max-w-5xl w-full mx-auto flex flex-col rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 translate-y-0 will-change-transform"
+        class="relative z-10 h-[calc(100dvh-1rem)] h-[calc(100vh-1rem)] sm:h-[calc(100dvh-2rem)] sm:h-[calc(100vh-2rem)] max-w-5xl w-full mx-auto flex flex-col rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 translate-y-0 will-change-transform"
         :class="{ 'transition-transform duration-300 ease-out': !isDragging }"
         :style="{ transform: 'translateY(' + panelOffsetY + 'px)' }">
 
