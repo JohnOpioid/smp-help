@@ -26,13 +26,49 @@ export default defineNuxtPlugin(() => {
     }
   })
 
-  // Обработка ошибок манифеста
+  // Обработка ошибок манифеста и PWA
   window.addEventListener('unhandledrejection', (event) => {
-    if (event.reason && event.reason.message && event.reason.message.includes('manifest')) {
-      console.warn('⚠️ Ошибка манифеста:', event.reason.message)
-      event.preventDefault() // Предотвращаем вывод ошибки в консоль
+    if (event.reason && event.reason.message) {
+      const message = event.reason.message.toLowerCase()
+      if (message.includes('manifest') || 
+          message.includes('bad-precaching-response') ||
+          message.includes('content_length_mismatch') ||
+          message.includes('serviceworker')) {
+        console.warn('⚠️ PWA ошибка:', event.reason.message)
+        event.preventDefault() // Предотвращаем вывод ошибки в консоль
+        
+        // Очищаем кэш при критических ошибках
+        if (message.includes('bad-precaching-response')) {
+          setTimeout(() => {
+            caches.keys().then(names => {
+              names.forEach(name => {
+                if (name.includes('workbox') || name.includes('precache')) {
+                  caches.delete(name).then(() => {
+                    console.log('🧹 Очищен кэш:', name)
+                  })
+                }
+              })
+            })
+          }, 2000)
+        }
+      }
     }
   })
+
+  // Обработка ошибок загрузки манифеста
+  const originalFetch = window.fetch
+  window.fetch = function(...args) {
+    return originalFetch.apply(this, args).catch(error => {
+      if (args[0] && args[0].toString().includes('manifest.webmanifest')) {
+        console.warn('⚠️ Ошибка загрузки манифеста:', error.message)
+        return Promise.resolve(new Response('{}', {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        }))
+      }
+      throw error
+    })
+  }
 
   if (process.client && 'serviceWorker' in navigator) {
     // Ждем готовности DOM и Nuxt PWA
