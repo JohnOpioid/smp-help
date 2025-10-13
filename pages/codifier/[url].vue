@@ -188,7 +188,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 
 definePageMeta({ middleware: 'auth', headerTitle: 'Кодификатор' })
 
@@ -281,11 +281,37 @@ onMounted(async () => {
     console.log('❌ Не можем настроить observer:', 'loadMoreTrigger:', !!loadMoreTrigger.value, 'io:', !!io)
   }
 
-  // Авто-открытие по query ?open=<id> или ?mkb=<code>
+  // Авто-открытие по query параметрам
+  const itemId = routeQuery.query.id as string | undefined
   const openId = routeQuery.query.open as string | undefined
   const mkbCode = routeQuery.query.mkb as string | undefined
   
-  if (openId) {
+  console.log('🔍 Авто-открытие кодификатора:', { itemId, openId, mkbCode, itemsCount: items.value.length })
+  
+  if (itemId) {
+    // Ждем загрузки данных и открываем нужный элемент
+    const checkAndOpenItem = () => {
+      console.log('🔍 Проверка авто-открытия:', { itemsCount: items.value.length, itemId })
+      if (items.value.length > 0) {
+        const found = items.value.find((i: any) => String(i._id) === String(itemId))
+        console.log('🔍 Поиск элемента:', { found: !!found, foundId: found?._id, searchId: itemId })
+        if (found) {
+          console.log('✅ Открываем модалку кодификатора')
+          // Открываем модалку без изменения URL для предотвращения моргания
+          selectedItem.value = found
+          modalOpen.value = true
+          updateIsBookmarked()
+        } else {
+          console.log('❌ Элемент не найден в загруженных данных')
+        }
+      } else {
+        console.log('⏳ Данные еще загружаются, повторяем через 100мс')
+        // Данные еще загружаются, повторяем через 100мс
+        setTimeout(checkAndOpenItem, 100)
+      }
+    }
+    checkAndOpenItem()
+  } else if (openId) {
     const found = items.value.find((i: any) => String(i._id) === String(openId))
     if (found) openModal(found)
   } else if (mkbCode) {
@@ -314,21 +340,29 @@ const userBookmarks = ref<any[]>([])
 // Функция для обработки открытия BottomSheet
 
 function openModal(item: any) {
-  console.log('🚀 openModal вызвана для:', item.name)
-  console.log('📱 isMobile:', isMobile.value)
-  
   selectedItem.value = item
   modalOpen.value = true
+  
+  // Обновляем URL с ID диагноза через query параметр только если его еще нет
+  if (!route.query.id || route.query.id !== item._id) {
+    // Используем прямое изменение истории браузера для избежания моргания
+    const newUrl = new URL(window.location.href)
+    newUrl.searchParams.set('id', item._id)
+    window.history.replaceState({}, '', newUrl.toString())
+  }
+  
   // обновляем статус избранного
   updateIsBookmarked()
 }
 
 function closeModal() {
   modalOpen.value = false
-  const q = { ...route.query }
-  if ('open' in q) delete q.open
-  if ('mkb' in q) delete q.mkb
-  navigateTo({ path: route.path, query: q }, { replace: true })
+  // Очищаем query параметры используя прямое изменение истории браузера
+  const newUrl = new URL(window.location.href)
+  newUrl.searchParams.delete('id')
+  newUrl.searchParams.delete('open')
+  newUrl.searchParams.delete('mkb')
+  window.history.replaceState({}, '', newUrl.toString())
 }
 
 async function loadBookmarks() {
@@ -339,7 +373,7 @@ async function loadBookmarks() {
 }
 
 function buildItemUrl(it: any) {
-  return `/codifier/${url}?mkb=${it?.mkbCode}`
+  return `/codifier/${url}?id=${it?._id}`
 }
 
 async function updateIsBookmarked() {
@@ -359,7 +393,7 @@ async function addBookmark() {
         title: selectedItem.value.name,
         description: selectedItem.value.note,
         category: category.value?.name,
-        url: `/codifier/${url}?mkb=${selectedItem.value.mkbCode}`
+        url: `/codifier/${url}?id=${selectedItem.value._id}`
       }
     })
     isBookmarked.value = true
@@ -406,19 +440,55 @@ async function toggleBookmark() {
 const routeQuery = useRoute()
 
 
-// Открытие/закрытие модалки при изменении query на текущей странице
+// Открытие/закрытие модалки при изменении query параметров
 watch(() => [route.query.open, route.query.mkb], ([openVal, mkbVal]) => {
-  const id = openVal as string | undefined
+  const openId = openVal as string | undefined
   const mkbCode = mkbVal as string | undefined
   
-  if (id) {
-    const found = items.value.find((i: any) => String(i._id) === String(id))
+  if (openId) {
+    const found = items.value.find((i: any) => String(i._id) === String(openId))
     if (found) openModal(found)
   } else if (mkbCode) {
     const found = items.value.find((i: any) => i.mkbCode === mkbCode)
     if (found) openModal(found)
   } else if (modalOpen.value) {
     closeModal()
+  }
+})
+
+// Отдельный watcher для id параметра
+watch(() => route.query.id, (newId, oldId) => {
+  console.log('🔍 Watcher route.query.id:', { newId, oldId, itemsCount: items.value.length })
+  // Если есть новый ID и он отличается от старого
+  if (newId && newId !== oldId) {
+    const found = items.value.find((i: any) => String(i._id) === String(newId))
+    console.log('🔍 Watcher поиск элемента:', { found: !!found, foundId: found?._id, searchId: newId })
+    if (found) {
+      console.log('✅ Watcher открываем модалку кодификатора')
+      // Открываем модалку без изменения URL
+      selectedItem.value = found
+      modalOpen.value = true
+      updateIsBookmarked()
+    } else {
+      console.log('❌ Watcher элемент не найден')
+    }
+  } else if (!newId && modalOpen.value) {
+    console.log('🔍 Watcher закрываем модалку')
+    // Если id убран, закрываем модалку
+    modalOpen.value = false
+  }
+})
+
+// Watcher для modalOpen - очищаем URL при закрытии модалки
+watch(modalOpen, (newValue, oldValue) => {
+  // Если модалка закрылась (была открыта, стала закрыта)
+  if (oldValue === true && newValue === false) {
+    // Очищаем query параметры используя прямое изменение истории браузера
+    const newUrl = new URL(window.location.href)
+    newUrl.searchParams.delete('id')
+    newUrl.searchParams.delete('open')
+    newUrl.searchParams.delete('mkb')
+    window.history.replaceState({}, '', newUrl.toString())
   }
 })
 </script>

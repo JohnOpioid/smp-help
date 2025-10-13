@@ -38,7 +38,7 @@ export const useFuseSearch = () => {
         },
         {
           name: 'name', 
-          weight: 0.3
+          weight: 0.4
         },
         {
           name: 'description',
@@ -66,11 +66,11 @@ export const useFuseSearch = () => {
         },
         {
           name: 'latinName',
-          weight: 0.05
+          weight: 0.2
         },
         {
           name: 'synonyms',
-          weight: 0.1
+          weight: 0.25
         },
         {
           name: 'category.name',
@@ -128,8 +128,25 @@ export const useFuseSearch = () => {
     // Отладочная информация о структуре всех типов данных
     const algoItems = items.filter(item => item.type === 'algorithm')
     const mkbItems = items.filter(item => item.type === 'mkb')
+    const drugItems = items.filter(item => item.type === 'drug')
     
     console.log(`🔍 МКБ коды для поиска: ${mkbItems.length}`)
+    console.log(`🔍 Препараты для поиска: ${drugItems.length}`)
+    
+    if (drugItems.length > 0) {
+      const drug = drugItems[0]
+      console.log('📋 Структура препаратов:')
+      console.log('  Поля:', Object.keys(drug))
+      console.log('  Данные:', {
+        title: drug.title,
+        name: drug.name,
+        description: drug.description,
+        note: drug.note,
+        latinName: drug.latinName,
+        synonyms: drug.synonyms,
+        category: drug.category
+      })
+    }
     
     if (algoItems.length > 0) {
       const algo = algoItems[0]
@@ -354,6 +371,12 @@ export const useFuseSearch = () => {
         console.log(`🔍 Локальный статус: "${title}" (score: ${score.toFixed(3)}, words: ${foundWords.length}/${queryWords.length}, ratio: ${wordMatchRatio.toFixed(2)})`)
       }
       
+      // Отладочная информация для препаратов
+      if (item.type === 'drug') {
+        console.log(`🔍 Препарат: "${title}" (score: ${score.toFixed(3)}, words: ${foundWords.length}/${queryWords.length}, ratio: ${wordMatchRatio.toFixed(2)})`)
+        console.log(`  name: "${item.name}", latinName: "${item.latinName}", synonyms: [${item.synonyms?.join(', ') || 'нет'}]`)
+      }
+      
       // Специальная логика для МКБ кодов - более строгая фильтрация
       if (item.type === 'mkb') {
         // Для МКБ кодов принимаем если:
@@ -369,6 +392,23 @@ export const useFuseSearch = () => {
         }
         
         return mkbAccepted
+      }
+      
+      // Специальная логика для препаратов - более строгая фильтрация
+      if (item.type === 'drug') {
+        // Для препаратов принимаем если:
+        // 1. Есть совпадение в названии/латинском названии/синонимах И найдено достаточно релевантных слов ИЛИ
+        // 2. Очень хороший score (точное совпадение)
+        const drugAccepted = ((hasTitleMatch || hasDescriptionMatch) && relevantWordMatchRatio >= 0.5) || 
+                           score < 0.3
+        
+        if (drugAccepted) {
+          console.log(`✅ Препарат принят: "${title}" (score: ${score.toFixed(3)}, relevantWords: ${foundRelevantWords.length}/${relevantWords.length}, titleMatch: ${hasTitleMatch}, descMatch: ${hasDescriptionMatch})`)
+        } else {
+          console.log(`❌ Препарат исключен: "${title}" (score: ${score.toFixed(3)}, relevantWords: ${foundRelevantWords.length}/${relevantWords.length}, titleMatch: ${hasTitleMatch}, descMatch: ${hasDescriptionMatch})`)
+        }
+        
+        return drugAccepted
       }
       
       // Более строгая фильтрация для остальных типов - исключаем нерелевантные результаты
@@ -393,6 +433,15 @@ export const useFuseSearch = () => {
     })
     
     console.log(`✅ После фильтрации: ${filteredResults.length} результатов`)
+    
+    // Отладочная информация о результатах после фильтрации
+    if (filteredResults.length > 0) {
+      console.log('📋 Результаты после фильтрации:', filteredResults.map(r => ({
+        type: r.type,
+        title: r.title || r.name,
+        score: r.score?.toFixed(3)
+      })))
+    }
     
     return filteredResults.map(result => ({
       ...result.item,

@@ -780,6 +780,9 @@ import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
 
 definePageMeta({ middleware: 'auth', headerTitle: 'Лекарства' })
 
+// Получаем route для работы с query параметрами
+const route = useRoute()
+
 // Пагинация по 20
 const PAGE_SIZE = 20
 const items = ref<any[]>([])
@@ -820,6 +823,45 @@ onMounted(async () => {
     }
   })
   if (sentinel.value && io) io.observe(sentinel.value)
+  
+  // Проверяем URL параметр для автоматического открытия модального окна
+  const openDrugId = route.query.id
+  
+  if (openDrugId) {
+    // Ждем загрузки данных и открываем нужный препарат
+    const checkAndOpenDrug = async () => {
+      if (!initialLoading.value && items.value.length > 0) {
+        const found = items.value.find((d: any) => String(d._id) === String(openDrugId))
+        if (found) {
+          // Открываем модалку без изменения URL для предотвращения моргания
+          selected.value = found
+          modalOpen.value = true
+          updateIsBookmarked()
+          dropdownOpen.value = false
+        } else {
+          
+          // Загружаем препарат напрямую по ID
+          try {
+            const response = await $fetch(`/api/drugs/${openDrugId}`)
+            if (response.success && response.data) {
+              selected.value = response.data
+              modalOpen.value = true
+              updateIsBookmarked()
+              dropdownOpen.value = false
+            } else {
+            }
+          } catch (error) {
+          }
+        }
+      } else if (!initialLoading.value) {
+        // Данные загружены, но препарат не найден
+      } else {
+        // Данные еще загружаются, повторяем через 100мс
+        setTimeout(checkAndOpenDrug, 100)
+      }
+    }
+    checkAndOpenDrug()
+  }
 })
 
 const { isMobile } = useIsMobile()
@@ -876,13 +918,18 @@ function normalizeCategoryName(name: string): string {
 
 
 function openModal(drug: any) {
-  console.log('🚀 openModal вызвана для препарата:', drug.name)
-  console.log('📱 isMobile:', isMobile.value)
-
   selected.value = drug
   modalOpen.value = true
   updateIsBookmarked()
   dropdownOpen.value = false
+  
+  // Обновляем URL с ID препарата через query параметр только если его еще нет
+  if (!route.query.id || route.query.id !== drug._id) {
+    // Используем прямое изменение истории браузера для избежания моргания
+    const newUrl = new URL(window.location.href)
+    newUrl.searchParams.set('id', drug._id)
+    window.history.replaceState({}, '', newUrl.toString())
+  }
 }
 async function loadBookmarks() {
   try {
@@ -892,7 +939,7 @@ async function loadBookmarks() {
 }
 
 function buildDrugUrl(it: any) {
-  return `/drugs?open=${it?._id}`
+  return `/drugs?id=${it?._id}`
 }
 
 async function updateIsBookmarked() {
@@ -946,6 +993,11 @@ function closeModal() {
   modalOpen.value = false
   selected.value = null
   dropdownOpen.value = false
+  
+  // Очищаем query параметры используя прямое изменение истории браузера
+  const newUrl = new URL(window.location.href)
+  newUrl.searchParams.delete('id')
+  window.history.replaceState({}, '', newUrl.toString())
 }
 
 
@@ -1104,45 +1156,23 @@ const selectOption = (label: string) => {
   dropdownOpen.value = false
 }
 
-// Закрываем выпадающий список при закрытии BottomSheet
-watch(modalOpen, (newValue) => {
+// Закрываем выпадающий список при закрытии BottomSheet и очищаем URL
+watch(modalOpen, (newValue, oldValue) => {
   if (!newValue) {
     dropdownOpen.value = false
+  }
+  
+  // Если модалка закрылась (была открыта, стала закрыта)
+  if (oldValue === true && newValue === false) {
+    // Очищаем query параметры используя прямое изменение истории браузера
+    const newUrl = new URL(window.location.href)
+    newUrl.searchParams.delete('id')
+    window.history.replaceState({}, '', newUrl.toString())
   }
 })
 
 // Добавляем обработчик клика вне элемента
 onMounted(() => {
-  // Проверяем URL параметр для автоматического открытия модального окна
-  const route = useRoute()
-  const openDrugId = route.query.open
-
-  if (openDrugId) {
-    // Ждем загрузки данных и открываем нужный препарат
-    const checkAndOpenDrug = () => {
-      if (!initialLoading.value && items.value.length > 0) {
-        const found = items.value.find((d: any) => String(d._id) === String(openDrugId))
-        if (found) {
-          console.log('🔗 Открываем препарат по URL параметру:', found.name)
-          openModal(found)
-
-          // Убираем параметр из URL после открытия модального окна, но без перезагрузки
-          nextTick(() => {
-            const newUrl = window.location.pathname
-            window.history.replaceState({}, '', newUrl)
-          })
-        }
-      } else if (!initialLoading.value) {
-        // Данные загружены, но препарат не найден
-        console.warn('⚠️ Препарат с ID', openDrugId, 'не найден')
-      } else {
-        // Данные еще загружаются, повторяем через 100мс
-        setTimeout(checkAndOpenDrug, 100)
-      }
-    }
-    checkAndOpenDrug()
-  }
-
   // Обработчик события от поиска
   const handleOpenDrugModal = (event: CustomEvent) => {
     const drugId = event.detail.drugId

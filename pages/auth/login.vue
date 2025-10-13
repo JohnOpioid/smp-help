@@ -28,7 +28,6 @@
                 placeholder="Введите ваш email"
                 :disabled="loading"
                 @focus="clearFieldIfAutofilled('email')"
-                @input="form.email = form.email.trim()"
               />
             </div>
           </div>
@@ -49,7 +48,6 @@
                 placeholder="Введите пароль"
                 :disabled="loading"
                 @focus="clearFieldIfAutofilled('password')"
-                @input="form.password = form.password.trim()"
               />
             </div>
           </div>
@@ -129,13 +127,13 @@ const clearFieldIfAutofilled = (field: 'email' | 'password') => {
   // Небольшая задержка, чтобы дать браузеру время на автозаполнение
   setTimeout(() => {
     if (field === 'email') {
-      // Если поле содержит автозаполненный email, очищаем его
-      if (form.email && form.email.includes('@')) {
+      // Очищаем только если поле содержит невидимые символы или лишние пробелы
+      if (form.email && (form.email.includes('\u200B') || form.email.includes('\u200C') || form.email.includes('\u200D') || form.email.includes('\uFEFF'))) {
         form.email = ''
       }
     } else if (field === 'password') {
-      // Если поле содержит автозаполненный пароль, очищаем его
-      if (form.password && form.password.length > 0) {
+      // Очищаем только если поле содержит невидимые символы
+      if (form.password && (form.password.includes('\u200B') || form.password.includes('\u200C') || form.password.includes('\u200D') || form.password.includes('\uFEFF'))) {
         form.password = ''
       }
     }

@@ -260,7 +260,7 @@
              </div>
                                   <div class="px-3 pb-3 pt-0 border-t border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
                                     <div class="flex flex-wrap gap-1 pt-2">
-                                      <button @click="navigateTo('/algorithms'); closePanel()" class="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-full text-xs hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors border-0 cursor-pointer">
+                                      <button @click="openAlgorithmModal(result)" class="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-full text-xs hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors border-0 cursor-pointer">
                                         <UIcon name="i-lucide-list-tree" class="w-3 h-3" />Открыть
                                       </button>
                                       <button @click="copyToClipboard(result.title + ': ' + result.description)" class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
@@ -274,6 +274,46 @@
                                 <button type="button" @click="toggleSection(message.id, 'algo')" class="rounded-md font-medium inline-flex items-center transition-colors px-2.5 py-1.5 text-sm gap-1.5 cursor-pointer bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
                                   <UIcon :name="isExpandedSection(message.id, 'algo') ? 'i-heroicons:chevron-up' : 'i-heroicons:chevron-down'" class="me-1 w-4 h-4" />
                                   {{ isExpandedSection(message.id, 'algo') ? 'Скрыть' : `Показать все (${getSectionAll(message, 'algo').length})` }}
+                                </button>
+                              </div>
+                            </template>
+
+                            <!-- Препараты -->
+                            <template v-if="getSectionAll(message, 'drug').length">
+                              <div class="text-xs font-medium text-slate-500 dark:text-slate-400 px-1">Препараты</div>
+                              <div class="space-y-3">
+                                <div v-for="result in getSectionVisible(message, 'drug')" :key="result.id" class="bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
+                                  <div class="p-3">
+                                    <div class="flex items-start justify-between">
+                                      <div class="flex-1">
+                                        <h4 class="font-medium text-slate-900 dark:text-white">{{ result.title }}</h4>
+                                        <p v-if="result.data?.latinName" class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ result.data.latinName }}</p>
+                                        <p v-if="result.data?.synonyms && result.data.synonyms.length > 0" class="text-sm text-slate-600 dark:text-slate-300 mt-1">
+                                          <span class="font-medium">Синонимы:</span> {{ result.data.synonyms.join(', ') }}
+                                        </p>
+                                        <p v-if="result.description" class="text-sm text-slate-600 dark:text-slate-300 mt-1">{{ result.description }}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="px-3 pb-3 pt-0 border-t border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
+                                    <div class="flex flex-wrap gap-1 pt-2">
+                                      <button @click="openDrugModal(result.data)" class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-xs hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors border-0 cursor-pointer">
+                                        <UIcon name="i-heroicons:eye" class="w-3 h-3" />Подробнее
+                                      </button>
+                                      <button @click="addDrugBookmark(result.data)" class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-xs hover:bg-green-200 dark:hover:bg-green-800 transition-colors border-0 cursor-pointer">
+                                        <UIcon name="i-heroicons:bookmark" class="w-3 h-3" />В закладки
+                                      </button>
+                                      <button @click="copyToClipboard(result.title + ': ' + result.description)" class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
+                                        <UIcon name="i-lucide-copy" class="w-3 h-3" />Копировать
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div v-if="getSectionAll(message, 'drug').length > 3" class="px-4 border-t border-slate-100 dark:border-slate-600 flex items-center justify-center">
+                                <button type="button" @click="toggleSection(message.id, 'drug')" class="rounded-md font-medium inline-flex items-center transition-colors px-2.5 py-1.5 text-sm gap-1.5 cursor-pointer bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                                  <UIcon :name="isExpandedSection(message.id, 'drug') ? 'i-heroicons:chevron-up' : 'i-heroicons:chevron-down'" class="me-1 w-4 h-4" />
+                                  {{ isExpandedSection(message.id, 'drug') ? 'Скрыть' : `Показать все (${getSectionAll(message, 'drug').length})` }}
                                 </button>
                               </div>
                             </template>
@@ -1653,6 +1693,24 @@ const performSearch = async (query: string) => {
     // Выполняем поиск с помощью Fuse.js
     const fuseResults = search(allItems, query)
     
+    console.log('🔍 Fuse.js результаты:', fuseResults.length, 'элементов')
+    if (fuseResults.length > 0) {
+    console.log('📋 Первые результаты Fuse.js:', fuseResults.slice(0, 3).map(r => ({
+      type: r.type,
+      title: r.title || r.name,
+      score: r.score?.toFixed(3)
+    })))
+    console.log('📋 Полные результаты Fuse.js:', fuseResults)
+    if (fuseResults.length > 0) {
+      console.log('📋 Детали первого результата:', {
+        type: fuseResults[0].type,
+        title: fuseResults[0].title,
+        _id: fuseResults[0]._id,
+        name: fuseResults[0].name
+      })
+    }
+    }
+    
     // Преобразуем результаты в формат SearchResult
     const searchResultsArray: SearchResult[] = fuseResults.map((item: any) => {
       let url = ''
@@ -1661,11 +1719,11 @@ const performSearch = async (query: string) => {
       switch (item.type) {
         case 'mkb':
           typeLabel = 'МКБ'
-          url = `/codifier/${item.mkbCode}`
+          url = `/codifier/${item.category?.url}?id=${item._id}`
           break
         case 'ls':
           typeLabel = 'Локальный статус'
-          url = `/local-statuses/${item.code}`
+          url = `/local-statuses/${item.category?.url}?id=${item._id}`
           break
         case 'algorithm':
           typeLabel = 'Алгоритм'
@@ -1673,11 +1731,11 @@ const performSearch = async (query: string) => {
           break
         case 'drug':
           typeLabel = 'Препарат'
-          url = `/drugs#${item._id}`
+          url = `/drugs?id=${item._id}`
           break
         case 'substation':
           typeLabel = 'Подстанция'
-          url = `/substations#${item._id}`
+          url = `/substations?select=${encodeURIComponent(item.title)}`
           break
       }
       
@@ -1698,6 +1756,15 @@ const performSearch = async (query: string) => {
       }
     })
     
+    console.log('📋 Преобразованные результаты:', searchResultsArray.length, 'элементов')
+    if (searchResultsArray.length > 0) {
+      console.log('📋 Первые преобразованные результаты:', searchResultsArray.slice(0, 3).map(r => ({
+        type: r.type,
+        title: r.title,
+        url: r.url
+      })))
+    }
+    
     // Сортируем по релевантности (Fuse.js уже отсортировал, но можем дополнительно)
     const sortedResults = searchResultsArray.sort((a: SearchResult, b: SearchResult) => {
       const aScore = (a.data as any).score || 0
@@ -1706,7 +1773,21 @@ const performSearch = async (query: string) => {
     })
     
     
+    console.log('📋 Отсортированные результаты:', sortedResults.length, 'элементов')
+    if (sortedResults.length > 0) {
+      console.log('📋 Первые отсортированные результаты:', sortedResults.slice(0, 3).map(r => ({
+        type: r.type,
+        title: r.title,
+        url: r.url
+      })))
+    }
+    
     searchResults.value = sortedResults
+    
+    console.log('📋 Финальное состояние searchResults.value:', searchResults.value.length, 'элементов')
+    if (searchResults.value.length > 0) {
+      console.log('📋 Первые элементы searchResults.value:', searchResults.value.slice(0, 3))
+    }
     
     // Инициализируем мобильную логику для таблиц после обновления результатов
     nextTick(() => {
@@ -1917,7 +1998,7 @@ const openMkbModal = (result: SearchResult) => {
   const categoryUrl = (result as any).data?.category?.url
   const mkbId = (result as any).data?._id || (result as any).id?.replace('mkb-', '')
   if (categoryUrl && mkbId) {
-    const target = `/codifier/${categoryUrl}?open=${mkbId}`
+    const target = `/codifier/${categoryUrl}?id=${mkbId}`
     preloadAndNavigate(target, async () => { await $fetch(`/api/codifier/${categoryUrl}`).catch(() => {}) })
     return
   }
@@ -1930,6 +2011,76 @@ const openLocalStatusModal = (result: SearchResult) => {
       const m = url.match(/\/local-statuses\/(.*?)\?/)
       const cat = m?.[1]
       if (cat) { await $fetch(`/api/local-statuses/${cat}`).catch(() => {}) }
+    })
+  }
+}
+
+const openAlgorithmModal = (result: SearchResult) => {
+  if (result.url) {
+    const url = result.url
+    preloadAndNavigate(url, async () => {
+      const m = url.match(/\/algorithms\/(.*?)\/(.*?)\/(.*?)\?/)
+      const section = m?.[1]
+      const category = m?.[2] 
+      const algorithmId = m?.[3]
+      if (section && category) { 
+        await $fetch(`/api/algorithms/${section}/${category}`).catch(() => {}) 
+      }
+    })
+    return
+  }
+  const algorithmId = (result as any).data?._id || (result as any).id?.replace('algo-', '')
+  const section = (result as any).data?.section?.url
+  const category = (result as any).data?.category?.url
+  if (section && category && algorithmId) {
+    const target = `/algorithms/${section}/${category}/${algorithmId}`
+    preloadAndNavigate(target, async () => { 
+      await $fetch(`/api/algorithms/${section}/${category}`).catch(() => {}) 
+    })
+    return
+  }
+  // Fallback - открываем общую страницу алгоритмов
+  navigateTo('/algorithms')
+  closePanel()
+}
+
+const openDrugModal = (drugData: any) => {
+  if (drugData?._id) {
+    const url = `/drugs?id=${drugData._id}`
+    preloadAndNavigate(url, async () => {
+      await $fetch('/api/drugs').catch(() => {})
+    })
+  }
+}
+
+const addDrugBookmark = async (drugData: any) => {
+  if (!drugData?._id) return
+  
+  try {
+    await $fetch('/api/bookmarks', {
+      method: 'POST',
+      body: {
+        type: 'drug',
+        itemId: drugData._id,
+        title: drugData.name || drugData.title,
+        url: `/drugs?id=${drugData._id}`
+      }
+    })
+    
+    // Показываем уведомление об успехе
+    const toast = useToast()
+    toast.add({
+      title: 'Добавлено в закладки',
+      description: `${drugData.name || drugData.title} добавлен в закладки`,
+      color: 'success'
+    })
+  } catch (error) {
+    console.error('Ошибка добавления в закладки:', error)
+    const toast = useToast()
+    toast.add({
+      title: 'Ошибка',
+      description: 'Не удалось добавить в закладки',
+      color: 'error'
     })
   }
 }
@@ -1974,7 +2125,7 @@ const getContextMenuItems = (message: any) => {
 
 // Секции результатов в сообщении
 const expandedSections = ref<Record<string, Record<string, boolean>>>({})
-const getSectionAll = (message: any, section: 'mkb' | 'ls' | 'algo' | 'substation') => {
+const getSectionAll = (message: any, section: 'mkb' | 'ls' | 'algo' | 'substation' | 'drug') => {
   const full = message.fullResults?.[section]
   if (full && Array.isArray(full)) return full
   if (!message.results) return []
@@ -1982,11 +2133,12 @@ const getSectionAll = (message: any, section: 'mkb' | 'ls' | 'algo' | 'substatio
   if (section === 'ls') return message.results.filter((r: any) => r.type === 'Локальный статус' || r.type === 'local-status')
   if (section === 'algo') return message.results.filter((r: any) => r.type === 'Алгоритм' || r.type === 'algorithm')
   if (section === 'substation') return message.results.filter((r: any) => r.type === 'Подстанция' || r.type === 'substation')
+  if (section === 'drug') return message.results.filter((r: any) => r.type === 'Препарат' || r.type === 'drug')
   return []
 }
 const isExpandedSection = (messageId: string, section: string) => !!expandedSections.value[messageId]?.[section]
 const toggleSection = (messageId: string, section: string) => { if (!expandedSections.value[messageId]) expandedSections.value[messageId] = {}; expandedSections.value[messageId][section] = !expandedSections.value[messageId][section] }
-const getSectionVisible = (message: any, section: 'mkb' | 'ls' | 'algo' | 'substation') => { const all = getSectionAll(message, section); return isExpandedSection(message.id, section) ? all : all.slice(0, 3) }
+const getSectionVisible = (message: any, section: 'mkb' | 'ls' | 'algo' | 'substation' | 'drug') => { const all = getSectionAll(message, section); return isExpandedSection(message.id, section) ? all : all.slice(0, 3) }
 
 // Прелоад + навигация
 const preloadAndNavigate = async (to: string, preloadFn: () => Promise<void>) => {

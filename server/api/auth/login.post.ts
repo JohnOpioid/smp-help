@@ -17,8 +17,6 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event)
     const { email, password } = body
 
-    console.log('Login attempt:', { email, passwordLength: password?.length })
-
     // Валидация
     if (!email || !password) {
       throw createError({

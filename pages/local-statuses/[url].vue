@@ -183,7 +183,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, watch } from 'vue'
 
 definePageMeta({ middleware: 'auth', headerTitle: 'Локальные статусы' })
 
@@ -251,15 +251,25 @@ async function shareItem() {
 function openModal(item: any) {
   selectedItem.value = item
   modalOpen.value = true
+  
+  // Обновляем URL с ID локального статуса через query параметр только если его еще нет
+  if (!routeQuery.query.id || routeQuery.query.id !== item._id) {
+    // Используем прямое изменение истории браузера для избежания моргания
+    const newUrl = new URL(window.location.href)
+    newUrl.searchParams.set('id', item._id)
+    window.history.replaceState({}, '', newUrl.toString())
+  }
 }
 
-// Авто-открытие по query ?open=<id>
+// Авто-открытие по query ?id=<id>
 const routeQuery = useRoute()
 function closeModal() {
   modalOpen.value = false
-  const q: Record<string, any> = { ...route.query }
-  if ('open' in q) delete q.open
-  navigateTo({ path: route.path, query: q }, { replace: true })
+  
+  // Очищаем query параметры используя прямое изменение истории браузера
+  const newUrl = new URL(window.location.href)
+  newUrl.searchParams.delete('id')
+  window.history.replaceState({}, '', newUrl.toString())
 }
 
 function closeModalMobile() {
@@ -274,23 +284,42 @@ onMounted(async () => {
     }
   })
   if (sentinel.value) io.observe(sentinel.value)
-  const openId = routeQuery.query.open as string | undefined
-  if (openId) {
-    const found = items.value.find((i: any) => String(i._id) === String(openId))
-    if (found) openModal(found)
+  const itemId = routeQuery.query.id as string | undefined
+  if (itemId) {
+    const found = items.value.find((i: any) => String(i._id) === String(itemId))
+    if (found) {
+      // Открываем модалку без изменения URL для предотвращения моргания
+      selectedItem.value = found
+      modalOpen.value = true
+    }
   }
 })
 
 // Не трогаем общий скролл страницы — полагаемся на UModal/BottomSheet
 
 // Реакция на изменение query на текущей странице (открыть/закрыть модалку)
-watch(() => route.query.open, (val) => {
+watch(() => routeQuery.query.id, (val) => {
   const id = val as string | undefined
   if (id) {
     const found = items.value.find((i: any) => String(i._id) === String(id))
-    if (found) openModal(found)
+    if (found) {
+      // Открываем модалку без изменения URL
+      selectedItem.value = found
+      modalOpen.value = true
+    }
   } else if (modalOpen.value) {
     closeModal()
+  }
+})
+
+// Watcher для modalOpen - очищаем URL при закрытии модалки
+watch(modalOpen, (newValue, oldValue) => {
+  // Если модалка закрылась (была открыта, стала закрыта)
+  if (oldValue === true && newValue === false) {
+    // Очищаем query параметры используя прямое изменение истории браузера
+    const newUrl = new URL(window.location.href)
+    newUrl.searchParams.delete('id')
+    window.history.replaceState({}, '', newUrl.toString())
   }
 })
 
