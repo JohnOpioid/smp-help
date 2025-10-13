@@ -1513,18 +1513,34 @@ const performSearch = async (query: string) => {
     console.log('🔍 Начинаем поиск с Fuse.js:', query)
     
     // Загружаем все данные одним запросом
-    const searchData = await $fetch('/api/search/all-data').catch(() => ({ 
-      success: false, 
-      data: { 
-        localStatuses: { items: [] }, 
-        mkbCodes: { items: [] }, 
-        algorithms: { items: [] }, 
-        drugs: { items: [] }, 
-        substations: { items: [] } 
-      } 
-    }))
-    
-    console.log('🔍 Ответ от API:', searchData)
+    let searchData
+    try {
+      searchData = await $fetch('/api/search/all-data')
+      console.log('🔍 Ответ от нового API:', searchData)
+    } catch (apiError) {
+      console.warn('⚠️ Новый API недоступен, используем старые endpoints:', apiError)
+      
+      // Fallback: используем старые API endpoints
+      const [mkbData, lsResults, algoResults, drugResults, substationResults] = await Promise.all([
+        $fetch('/api/mkb/all'),
+        $fetch('/api/local-statuses/all'),
+        $fetch('/api/algorithms'),
+        $fetch('/api/drugs'),
+        $fetch('/api/substations')
+      ])
+      
+      searchData = {
+        success: true,
+        data: {
+          mkbCodes: mkbData,
+          localStatuses: lsResults,
+          algorithms: algoResults,
+          drugs: drugResults,
+          substations: substationResults
+        }
+      }
+      console.log('🔍 Ответ от старых API:', searchData)
+    }
     
     const { data } = searchData as any
     const mkbData = data.mkbCodes
