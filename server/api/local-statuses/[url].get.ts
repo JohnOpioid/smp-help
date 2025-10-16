@@ -17,8 +17,6 @@ export default defineEventHandler(async (event) => {
     const parts = raw.split('?')[0].split('/')
     url = parts[parts.length - 1]
   }
-  console.log('[local-statuses] incoming url param =', url)
-
   if (!url) {
     return { success: false, message: 'URL категории не указан' }
   }
@@ -26,7 +24,6 @@ export default defineEventHandler(async (event) => {
   const normalized = slugifyForUrl(url)
   const newCat = await LocalStatusCategory.findOne({ $or: [{ url }, { url: normalized }] }).lean()
   const oldCat = await Category.findOne({ $or: [{ url }, { url: normalized }] }).lean()
-  console.log('[local-statuses] normalized =', normalized, 'newCat?', !!newCat, 'oldCat?', !!oldCat)
 
   if (!newCat && !oldCat) {
     return { success: false, message: 'Категория не найдена' }
@@ -43,8 +40,6 @@ export default defineEventHandler(async (event) => {
   if (newCat?._id) pushId(newCat._id)
   if (oldCat?._id) pushId(oldCat._id)
 
-  console.log('[local-statuses] candidateIds =', candidateIds.map((v:any)=>String(v)))
-
   const q = getQuery(event)
   const limit = Math.min(parseInt(String(q.limit || '10')) || 10, 100)
   const skip = Math.max(parseInt(String(q.skip || '0')) || 0, 0)
@@ -57,7 +52,6 @@ export default defineEventHandler(async (event) => {
       .lean(),
     LocalStatus.countDocuments({ category: { $in: candidateIds } })
   ])
-  console.log('[local-statuses] page len =', rawItems.length, 'total =', total)
   const category = newCat || oldCat
   const items = rawItems.map((it: any) => ({
     ...it,

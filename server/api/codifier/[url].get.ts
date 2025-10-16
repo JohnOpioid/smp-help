@@ -37,9 +37,6 @@ export default defineEventHandler(async (event) => {
   const totalPages = Math.ceil(totalItems / limit)
   const hasNextPage = page < totalPages
   
-  console.log(`🔍 API: Запрос страницы ${page}, limit: ${limit}, skip: ${skip}`)
-  console.log(`📊 API: Найдено ${items.length} элементов из ${totalItems} (страница ${page}/${totalPages}), hasNextPage: ${hasNextPage}`)
-  
   return { 
     success: true, 
     category, 

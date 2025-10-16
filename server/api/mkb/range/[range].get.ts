@@ -7,9 +7,6 @@ export default defineEventHandler(async (event) => {
   await connectDB()
   const range = getRouterParam(event, 'range')
 
-  console.log('🔍 Получен параметр range:', range)
-  console.log('🔍 Тип параметра:', typeof range)
-
   if (!range) {
     return { success: false, message: 'Диапазон кодов МКБ не указан' }
   }
@@ -30,12 +27,6 @@ export default defineEventHandler(async (event) => {
     // Извлекаем буквенную часть и числовую часть
     const startMatch = start.match(/^([A-Z])(\d+)$/)
     const endMatch = end.match(/^([A-Z])(\d+)$/)
-    
-    console.log('🔍 Парсинг диапазона:', { start, end, startMatch, endMatch })
-    
-    if (!startMatch || !endMatch) {
-      return { success: false, message: 'Не удалось распарсить коды диапазона' }
-    }
     
     const [, startLetter, startNum] = startMatch
     const [, endLetter, endNum] = endMatch
@@ -61,15 +52,12 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    console.log('🔍 Ищем категорию для диапазона:', range)
-    console.log('🔍 Коды для поиска:', searchCodes)
 
     // Ищем любой из кодов в базе данных
     for (const code of searchCodes) {
       const diagnosis = await MKB.findOne({ mkbCode: code }).populate('category', 'name url').lean()
       
       if (diagnosis && diagnosis.category) {
-        console.log('✅ Найден код:', code, 'в категории:', diagnosis.category.name)
         return {
           success: true,
           category: diagnosis.category,

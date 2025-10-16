@@ -54,8 +54,7 @@ export default defineNuxtConfig({
         '**/adults/**',
         '**/pediatrics/**',
         '**/onmp/**',
-        '**/*.html',
-        '**/manifest.webmanifest'
+        '**/*.html'
       ],
       cleanupOutdatedCaches: true,
       skipWaiting: true,

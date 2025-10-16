@@ -25,8 +25,11 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    // Дополнительная очистка email
+    const cleanEmail = email.trim().toLowerCase()
+
     // Поиск пользователя
-    const user = await User.findOne({ email })
+    const user = await User.findOne({ email: cleanEmail })
     if (!user) {
       throw createError({
         statusCode: 401,
@@ -45,6 +48,15 @@ export default defineEventHandler(async (event) => {
 
     // Создание JWT токена
     const { jwtSecret } = useRuntimeConfig()
+    
+    // Проверяем наличие JWT_SECRET
+    if (!jwtSecret || jwtSecret === 'your-secret-key') {
+      throw createError({
+        statusCode: 500,
+        message: 'Ошибка конфигурации сервера'
+      })
+    }
+
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       jwtSecret,
@@ -56,6 +68,7 @@ export default defineEventHandler(async (event) => {
       httpOnly: true,
       sameSite: 'lax',
       path: '/',
+      secure: process.env.NODE_ENV === 'production'
     })
 
     return {
@@ -71,6 +84,9 @@ export default defineEventHandler(async (event) => {
       }
     }
   } catch (error: any) {
+    // Логируем ошибку для отладки
+    console.error('Login error:', error)
+    
     if (error.statusCode) {
       throw error
     }

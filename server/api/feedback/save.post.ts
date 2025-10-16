@@ -39,8 +39,6 @@ export default defineEventHandler(async (event) => {
 
     await feedback.save()
 
-    console.log(`📝 Получена обратная связь: ${rating} для запроса "${question}"`)
-
     return { 
       success: true, 
       message: 'Обратная связь сохранена',

@@ -7,7 +7,6 @@ export default defineEventHandler(async (event) => {
   try {
     await connectDB()
     const body = await readBody(event)
-    console.log('[local-statuses] POST body:', body)
     const { name } = body || {}
     if (!name || !String(name).trim()) {
       return { success: false, message: 'Название обязательно' }
@@ -22,7 +21,6 @@ export default defineEventHandler(async (event) => {
     }
 
     const item = await LocalStatusCategory.create({ name, url })
-    console.log('[local-statuses] created category:', { _id: item._id, name: item.name, url: item.url })
     return { success: true, item }
   } catch (e: any) {
     console.error('[local-statuses] POST error:', e)

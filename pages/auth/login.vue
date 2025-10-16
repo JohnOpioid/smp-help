@@ -140,28 +140,39 @@ const clearFieldIfAutofilled = (field: 'email' | 'password') => {
   }, 100)
 }
 
+// Функция для проверки и очистки полей перед отправкой
+const validateAndCleanFields = () => {
+  // Очищаем поля от невидимых символов и лишних пробелов
+  const cleanForm = {
+    email: form.email.replace(/[\u200B-\u200D\uFEFF]/g, '').trim().toLowerCase(),
+    password: form.password.replace(/[\u200B-\u200D\uFEFF]/g, '').trim()
+  }
+
+  // Валидация
+  if (!cleanForm.email || !cleanForm.password) {
+    error.value = 'Пожалуйста, заполните все поля'
+    return null
+  }
+
+  // Проверяем email на корректность
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(cleanForm.email)) {
+    error.value = 'Пожалуйста, введите корректный email'
+    return null
+  }
+
+  return cleanForm
+}
+
 const onSubmit = async () => {
   loading.value = true
   error.value = ''
   success.value = ''
 
   try {
-    // Очищаем поля от невидимых символов и лишних пробелов
-    const cleanForm = {
-      email: form.email.trim().toLowerCase(),
-      password: form.password.trim()
-    }
-
-    // Валидация
-    if (!cleanForm.email || !cleanForm.password) {
-      error.value = 'Пожалуйста, заполните все поля'
-      return
-    }
-
-    // Проверяем email на корректность
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(cleanForm.email)) {
-      error.value = 'Пожалуйста, введите корректный email'
+    // Валидация и очистка полей
+    const cleanForm = validateAndCleanFields()
+    if (!cleanForm) {
       return
     }
 
