@@ -160,6 +160,14 @@ if [[ "$INSTALL_MODE" == "quick-update" || "$INSTALL_MODE" == "full-update" ]]; 
         # Читаем JWT_SECRET
         JWT_SECRET=$(grep "JWT_SECRET:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | sed "s/.*JWT_SECRET: '\(.*\)'.*/\1/" | head -1)
         
+        # Если JWT_SECRET не найден или пустой, генерируем новый
+        if [ -z "$JWT_SECRET" ] || [ "$JWT_SECRET" = "your-secret-key" ]; then
+            JWT_SECRET=$(generate_jwt_secret)
+            log "⚠️ JWT_SECRET не найден или имеет значение по умолчанию, генерируем новый"
+        else
+            log "✅ Используем существующий JWT_SECRET"
+        fi
+        
         # Читаем API ключи
         GIGACHAT_API_KEY=$(grep "GIGACHAT_API_KEY:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | sed "s/.*GIGACHAT_API_KEY: '\(.*\)'.*/\1/" | head -1)
         GIGACHAT_CLIENT_ID=$(grep "GIGACHAT_CLIENT_ID:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | sed "s/.*GIGACHAT_CLIENT_ID: '\(.*\)'.*/\1/" | head -1)
@@ -594,6 +602,37 @@ clone_and_build() {
     log "⚙️ Создаем конфигурацию окружения..."
     cat > .env.production << EOF
 # Production Environment Variables
+NODE_ENV=production
+NUXT_PUBLIC_API_BASE_URL=https://$DOMAIN/api
+NUXT_PUBLIC_APP_URL=https://$DOMAIN
+PORT=3000
+
+# MongoDB
+MONGODB_URI=mongodb://$MONGO_USER:$MONGO_PASS@localhost:27017/$MONGO_DB
+
+# JWT Secret
+JWT_SECRET=$JWT_SECRET
+
+# AI Configuration
+GIGACHAT_API_KEY=$GIGACHAT_API_KEY
+GIGACHAT_CLIENT_ID=$GIGACHAT_CLIENT_ID
+GIGACHAT_SCOPE=$GIGACHAT_SCOPE
+GIGACHAT_API_URL=https://gigachat.devices.sberbank.ru/api/v1
+
+# Email Configuration
+SMTP_HOST=$SMTP_HOST
+SMTP_PORT=$SMTP_PORT
+SMTP_USER=$SMTP_USER
+SMTP_PASS=$SMTP_PASS
+
+# Yandex Maps
+YAMAPS_API_KEY=$YAMAPS_API_KEY
+EOF
+
+    # Создаем также файл .env в рабочей директории для локального использования
+    log "⚙️ Создаем локальный файл .env..."
+    cat > "$WORK_DIR/.env" << EOF
+# Local Environment Variables
 NODE_ENV=production
 NUXT_PUBLIC_API_BASE_URL=https://$DOMAIN/api
 NUXT_PUBLIC_APP_URL=https://$DOMAIN

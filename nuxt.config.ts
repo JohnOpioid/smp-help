@@ -55,6 +55,7 @@ export default defineNuxtConfig({
         '**/pediatrics/**',
         '**/onmp/**',
         '**/*.html'
+        // Убрали '**/manifest.webmanifest' чтобы он кэшировался
       ],
       cleanupOutdatedCaches: true,
       skipWaiting: true,

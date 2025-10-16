@@ -18,6 +18,7 @@
             </label>
             <div class="mt-1">
               <input
+                ref="emailField"
                 id="email"
                 v-model="form.email"
                 name="email"
@@ -28,6 +29,7 @@
                 placeholder="Введите ваш email"
                 :disabled="loading"
                 @focus="clearFieldIfAutofilled('email')"
+                @input="checkAutofill"
               />
             </div>
           </div>
@@ -38,6 +40,7 @@
             </label>
             <div class="mt-1">
               <input
+                ref="passwordField"
                 id="password"
                 v-model="form.password"
                 name="password"
@@ -48,6 +51,7 @@
                 placeholder="Введите пароль"
                 :disabled="loading"
                 @focus="clearFieldIfAutofilled('password')"
+                @input="checkAutofill"
               />
             </div>
           </div>
@@ -67,8 +71,13 @@
           <div>
             <button
               type="submit"
-              :disabled="!form.email || !form.password || loading"
-              class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              :disabled="!isFormValid || loading"
+              :class="[
+                'group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white transition-colors duration-200',
+                isFormValid && !loading 
+                  ? 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' 
+                  : 'bg-indigo-400 cursor-not-allowed'
+              ]"
             >
               <span v-if="loading" class="absolute left-0 inset-y-0 flex items-center pl-3">
                 <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -122,6 +131,15 @@ const loading = ref(false)
 const error = ref('')
 const success = ref('')
 
+// Отслеживаем изменения полей для корректной работы с автозаполнением
+const emailField = ref<HTMLInputElement | null>(null)
+const passwordField = ref<HTMLInputElement | null>(null)
+
+// Вычисляемое свойство для проверки валидности формы
+const isFormValid = computed(() => {
+  return form.email.trim() && form.password.trim()
+})
+
 // Функция для очистки поля при фокусе (если оно автозаполнено)
 const clearFieldIfAutofilled = (field: 'email' | 'password') => {
   // Небольшая задержка, чтобы дать браузеру время на автозаполнение
@@ -138,6 +156,17 @@ const clearFieldIfAutofilled = (field: 'email' | 'password') => {
       }
     }
   }, 100)
+}
+
+// Функция для проверки автозаполнения
+const checkAutofill = () => {
+  if (emailField.value && passwordField.value) {
+    // Проверяем, заполнены ли поля браузером
+    if (emailField.value.value && passwordField.value.value) {
+      form.email = emailField.value.value
+      form.password = passwordField.value.value
+    }
+  }
 }
 
 // Функция для проверки и очистки полей перед отправкой
