@@ -10,4 +10,5 @@ const MKBSchema = new Schema({
   note: { type: String }
 }, { timestamps: true })
 
+MKBSchema.index({ name: 'text', note: 'text' })
 export default models.MKB || model('MKB', MKBSchema)

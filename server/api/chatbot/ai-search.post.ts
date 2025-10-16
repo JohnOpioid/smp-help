@@ -1,881 +1,893 @@
+import { defineEventHandler, readBody } from 'h3'
 import connectDB from '~/server/utils/mongodb'
+import { ollamaAI } from '~/server/utils/ai/ollama-medical-ai'
 import MKB from '~/server/models/MKB'
-import Drug from '~/server/models/Drug'
-import Instruction from '~/server/models/Instruction'
 import LocalStatus from '~/server/models/LocalStatus'
-import Category from '~/server/models/Category'
-import LocalStatusCategory from '~/server/models/LocalStatusCategory'
+import Algorithm from '~/server/models/Algorithm'
+import Drug from '~/server/models/Drug'
 import Substation from '~/server/models/Substation'
-import Feedback from '~/server/models/Feedback'
-import { mockHubAI } from '~/server/utils/mockAI'
+import Fuse from 'fuse.js'
 
-// Функция для генерации контекстных предложений
-function generateContextualSuggestions(searchTerm: string, results: any[]): string[] {
-  const suggestions: string[] = []
-  
-  // Анализируем контекст поиска
-  const isTraumaContext = /травм|перелом|ушиб|рана|повреждени|ожог|порез|ссадин|гематом|вывих|растяжени/i.test(searchTerm)
-  const isDiagnosisContext = results.some(r => r.type === 'mkb' || r.type === 'codifier')
-  const isDrugContext = results.some(r => r.type === 'drug')
-  const isEmergencyContext = /неотложн|экстренн|срочн|критическ|реанимаци|шок|остановк|приступ/i.test(searchTerm)
-  const isSubstationContext = results.some(r => r.type === 'substation') || /подстанци|станци|адрес|телефон|номер.*\d+/i.test(searchTerm)
-  
-  // Базовые предложения
-  if (isDiagnosisContext) {
-    suggestions.push('Тактика лечения')
-  }
-  
-  // Контекстные предложения для травм
-  if (isTraumaContext) {
-    suggestions.push('Локальный статус')
-  }
-  
-  // Предложения для неотложных состояний
-  if (isEmergencyContext) {
-    suggestions.push('Возможные результаты вызова')
-  } else if (!isSubstationContext) {
-    // Не добавляем "Возможные результаты вызова" для запросов о подстанциях
-    suggestions.push('Возможные результаты вызова')
-  }
-  
-  // Дополнительные предложения в зависимости от контекста
-  if (isDrugContext) {
-    suggestions.push('Побочные эффекты')
-  } else if (isDiagnosisContext) {
-    suggestions.push('Дифференциальная диагностика')
-  } else if (isSubstationContext) {
-    suggestions.push('Ближайшие подстанции')
-  }
-  
-  // Если предложений мало, добавляем общие (но не для подстанций)
-  if (suggestions.length < 3 && !isSubstationContext) {
-    const generalSuggestions = [
-      'Клинические рекомендации',
-      'Алгоритм действий',
-      'Показания к госпитализации'
-    ]
+function sortResults(a: any, b: any) {
+  const typeWeight: Record<string, number> = { mkb: 1, ls: 2, algorithm: 3, drug: 4, substation: 5 }
+  const wa = typeWeight[a.type] || 99
+  const wb = typeWeight[b.type] || 99
+  if (wa !== wb) return wa - wb
+  return a.distance - b.distance
+}
+
+// Функция для поиска похожих диагнозов с расширенной логикой (без лимитов поиска)
+async function findSimilarDiagnoses(diagnosisTitle: string, mkbCode: string) {
+  try {
+    console.log('🔍 Поиск похожих диагнозов для:', diagnosisTitle)
     
-    for (const suggestion of generalSuggestions) {
-      if (!suggestions.includes(suggestion) && suggestions.length < 4) {
-        suggestions.push(suggestion)
+    let similarDiagnoses: any[] = []
+    
+    // 1. Извлекаем ключевые слова из диагноза
+    const excludeWords = ['болезнь', 'синдром', 'состояние', 'нарушение', 'патология', 'заболевание']
+    const keywords = diagnosisTitle.toLowerCase()
+      .replace(/[\[\]()]/g, '')
+      .split(/[\s,]+/)
+      .filter((word: string) => word.length > 3 && !excludeWords.includes(word))
+      .slice(0, 4) // Увеличиваем до 4 ключевых слов
+    
+    console.log('🔑 Ключевые слова:', keywords)
+    
+    // 2. Ищем по ключевым словам с более гибкими критериями
+    if (keywords.length > 0) {
+      const allDiagnoses = await MKB.find({
+        mkbCode: { $ne: mkbCode } // Исключаем текущий диагноз по МКБ коду
+      })
+      .populate('category', 'name url')
+      .lean()
+      
+      // Фильтруем по точности совпадения (снижаем до 50% для большего охвата)
+      similarDiagnoses = allDiagnoses.filter((diagnosis: any) => {
+        const diagnosisText = `${diagnosis.name} ${diagnosis.note || ''}`.toLowerCase()
+        const matchedKeywords = keywords.filter(keyword => 
+          diagnosisText.includes(keyword)
+        )
+        
+        // Считаем процент совпадения
+        const matchPercentage = (matchedKeywords.length / keywords.length) * 100
+        
+        return matchPercentage >= 50 // Снижаем до 50% для большего охвата
+      })
+      .sort((a: any, b: any) => {
+        // Сортируем по количеству совпавших ключевых слов
+        const aMatches = keywords.filter(k => `${a.name} ${a.note || ''}`.toLowerCase().includes(k)).length
+        const bMatches = keywords.filter(k => `${b.name} ${b.note || ''}`.toLowerCase().includes(k)).length
+        return bMatches - aMatches
+      })
+      // Убираем лимит для максимального охвата
+    }
+    
+    // 3. Если найдено мало результатов, ищем по более широким критериям
+    if (similarDiagnoses.length < 3) {
+      console.log('🔍 Расширяем поиск по более широким критериям')
+      
+      // Ищем по частичным совпадениям ключевых слов
+      const broaderKeywords = keywords.slice(0, 2) // Берем только 2 самых важных слова
+      
+      if (broaderKeywords.length > 0) {
+        const broaderResults = await MKB.find({
+          mkbCode: { $ne: mkbCode },
+          $or: broaderKeywords.map(keyword => ({
+            $or: [
+              { name: { $regex: keyword, $options: 'i' } },
+              { note: { $regex: keyword, $options: 'i' } }
+            ]
+          }))
+        })
+        .populate('category', 'name url')
+        .lean()
+        
+        // Добавляем результаты, которых еще нет
+        const existingIds = similarDiagnoses.map((d: any) => d._id.toString())
+        const newResults = broaderResults.filter((d: any) => !existingIds.includes(d._id.toString()))
+        
+        similarDiagnoses = [...similarDiagnoses, ...newResults]
       }
     }
+    
+    // 4. Если все еще мало результатов, ищем по категории
+    if (similarDiagnoses.length < 3) {
+      console.log('🔍 Ищем по категории')
+      
+      // Находим категорию текущего диагноза
+      const currentDiagnosis = await MKB.findOne({ mkbCode }).populate('category', 'name url').lean()
+      if (currentDiagnosis?.category) {
+        const categoryResults = await MKB.find({
+          mkbCode: { $ne: mkbCode },
+          category: currentDiagnosis.category._id
+        })
+        .populate('category', 'name url')
+        // Убираем лимит для максимального охвата
+        .lean()
+        
+        // Добавляем результаты, которых еще нет
+        const existingIds = similarDiagnoses.map((d: any) => d._id.toString())
+        const newResults = categoryResults.filter((d: any) => !existingIds.includes(d._id.toString()))
+        
+        similarDiagnoses = [...similarDiagnoses, ...newResults]
+      }
+    }
+    
+    // 5. Всегда ищем по МКБ кодам из алгоритмов для максимального охвата
+    console.log('🔍 Ищем по МКБ кодам из алгоритмов')
+      
+      // Ищем алгоритмы, которые содержат текущий МКБ код
+      const algorithms = await Algorithm.find({
+        $or: [
+          { content: { $regex: mkbCode, $options: 'i' } },
+          { description: { $regex: mkbCode, $options: 'i' } }
+        ]
+      }).lean()
+      
+      if (algorithms.length > 0) {
+        // Извлекаем все МКБ коды из найденных алгоритмов
+        const mkbCodesFromAlgorithms = new Set<string>()
+        
+        algorithms.forEach(algo => {
+          const content = `${algo.content || ''} ${algo.description || ''}`
+          const mkbMatches = content.match(/[A-Z]\d{2}(?:\.\d+)?/g)
+          if (mkbMatches) {
+            mkbMatches.forEach(code => mkbCodesFromAlgorithms.add(code))
+          }
+        })
+        
+        // Ищем диагнозы по найденным МКБ кодам
+        if (mkbCodesFromAlgorithms.size > 0) {
+          const mkbCodesArray = Array.from(mkbCodesFromAlgorithms).filter(code => code !== mkbCode)
+          
+          if (mkbCodesArray.length > 0) {
+            const algorithmResults = await MKB.find({
+              mkbCode: { $in: mkbCodesArray }
+            })
+            .populate('category', 'name url')
+            // Убираем лимит для максимального охвата
+            .lean()
+            
+            // Добавляем результаты, которых еще нет
+            const existingIds = similarDiagnoses.map((d: any) => d._id.toString())
+            const newResults = algorithmResults.filter((d: any) => !existingIds.includes(d._id.toString()))
+            
+            similarDiagnoses = [...similarDiagnoses, ...newResults]
+            
+            console.log('🔍 Найдено МКБ кодов в алгоритмах:', mkbCodesFromAlgorithms.size)
+          }
+        }
+      }
+    
+    console.log('📊 Найдено похожих диагнозов (≥50%):', similarDiagnoses.length)
+    
+    return similarDiagnoses
+  } catch (error) {
+    console.error('Ошибка поиска похожих диагнозов:', error)
+    return []
   }
-  
-  return suggestions.slice(0, 4) // Максимум 4 предложения
+}
+
+// Функция для поиска связанного контента
+async function findRelatedContent(diagnosisTitle: string, mkbCode: string) {
+  try {
+    // Извлекаем ключевые слова из диагноза, исключая общие слова
+    const excludeWords = ['болезнь', 'синдром', 'состояние', 'нарушение', 'патология', 'заболевание']
+    const keywords = diagnosisTitle.toLowerCase()
+      .replace(/[\[\]()]/g, '')
+      .split(/[\s,]+/)
+      .filter((word: string) => word.length > 3 && !excludeWords.includes(word))
+      .slice(0, 3) // Берем только первые 3 ключевых слова для более точного поиска
+    
+    console.log('🔍 Поиск связанного контента для:', diagnosisTitle)
+    console.log('🔑 Ключевые слова:', keywords)
+    
+    // Ищем алгоритмы по более точным ключевым словам
+    let algorithms: any[] = []
+    if (keywords.length > 0) {
+      algorithms = await Algorithm.find({
+        $or: [
+          { title: { $regex: keywords.join('|'), $options: 'i' } },
+          { description: { $regex: keywords.join('|'), $options: 'i' } },
+          { content: { $regex: keywords.join('|'), $options: 'i' } }
+        ]
+      })
+      .populate('section', 'name url')
+      .populate('category', 'name url')
+      // Убираем лимит для максимального охвата
+      .lean()
+    }
+    
+    // Если алгоритмы не найдены по ключевым словам, ищем по МКБ коду
+    if (algorithms.length === 0 && mkbCode) {
+      console.log('🔍 Ищем алгоритмы по МКБ коду:', mkbCode)
+      algorithms = await Algorithm.find({
+        $or: [
+          { content: { $regex: mkbCode, $options: 'i' } },
+          { description: { $regex: mkbCode, $options: 'i' } }
+        ]
+      })
+      .populate('section', 'name url')
+      .populate('category', 'name url')
+      // Убираем лимит для максимального охвата
+      .lean()
+    }
+    
+    // Ищем препараты по ключевым словам
+    let drugs: any[] = []
+    if (keywords.length > 0) {
+      drugs = await Drug.find({
+        $or: [
+          { name: { $regex: keywords.join('|'), $options: 'i' } },
+          { description: { $regex: keywords.join('|'), $options: 'i' } }
+        ]
+      })
+      // Убираем лимит для максимального охвата
+      .lean()
+    }
+    
+    console.log('📊 Найдено алгоритмов:', algorithms.length)
+    console.log('💊 Найдено препаратов:', drugs.length)
+    
+    return {
+      algorithms,
+      drugs
+    }
+  } catch (error) {
+    console.error('Ошибка поиска связанного контента:', error)
+    return {
+      algorithms: [],
+      drugs: []
+    }
+  }
 }
 
 export default defineEventHandler(async (event) => {
-  const { query: searchTerm } = await readBody(event)
+  await connectDB()
+  const body = await readBody<{ query: string, history?: Array<{ role: 'user'|'assistant', text: string, intent?: string }> }>(event)
+  const query = (body?.query || '').trim()
+  const history = Array.isArray(body?.history) ? body!.history!.slice(-5) : []
+  if (!query) return { message: 'Пустой запрос', results: [] }
 
-  if (!searchTerm || searchTerm.length < 2) {
-    return {
-      success: false,
-      results: [],
-      message: 'Введите минимум 2 символа для поиска'
+  console.log('🤖 Ollama AI: Обрабатываем запрос:', query)
+
+  // Детекция запросов на показ конкретного раздела (из быстрых кнопок)
+  const queryLower = query.toLowerCase()
+  const askAlgo = /показ(ать|и).*алгоритм/i.test(queryLower)
+  const askLs = /показ(ать|и).*локальн.*статус/i.test(queryLower)
+  const askMkb = /показ(ать|и).*кодификатор|\bмкб\b/i.test(queryLower)
+  const askDrug = /показ(ать|и).*препарат/i.test(queryLower)
+
+  // Детекция МКБ кодов и кодов станций
+  const mkbCodePattern = /^[A-Z]\d{2}(\.\d+)?$/i
+  const isMkbCode = mkbCodePattern.test(query.trim())
+  const stationCodePattern = /^\d{4}$/
+  const isStationCode = stationCodePattern.test(query.trim())
+
+  // Выделим исходный запрос пользователя из текста после двоеточия
+  let effectiveQuery = query
+  let originalQuery = query
+  if (askAlgo || askLs || askMkb || askDrug) {
+    const m = query.match(/:(.+)$/)
+    if (m && m[1]) {
+      effectiveQuery = m[1].trim()
+      originalQuery = m[1].trim()
+    } else {
+      effectiveQuery = query.replace(/показ(ать|и)[^:]*:?/i, '').trim()
+      originalQuery = effectiveQuery
     }
   }
 
-  await connectDB()
+  // ФАЗА 1 — точный поиск Fuse.js по всем типам (как обычный поиск)
+  const [mkbFuse, lsFuse, algoFuse, drugFuse, substationFuse] = await Promise.all([
+    MKB.find({}, { name: 1, mkbCode: 1, stationCode: 1, note: 1, category: 1 }).populate('category', 'name url').lean(),
+    LocalStatus.find({}, { name: 1, description: 1, note: 1, localis: 1, category: 1 }).populate('category', 'name url').lean(),
+    Algorithm.find({}, { title: 1, description: 1, content: 1, category: 1, section: 1 }).populate('category', 'name url').populate('section', 'name url').lean(),
+    Drug.find({}, { name: 1, latinName: 1, synonyms: 1, description: 1, forms: 1, pediatricDose: 1, pediatricDoseUnit: 1, ageRestrictions: 1 }).lean(),
+    Substation.find({}, { name: 1, address: 1, phone: 1, region: 1 }).populate('region', 'name').lean()
+  ])
 
-  try {
-    // Специальная обработка для 4-значных запросов (коды станций)
-    const fourDigitCodeMatch = searchTerm.match(/^(\d{4})$/)
-    if (fourDigitCodeMatch) {
-      const stationCode = fourDigitCodeMatch[1]
-      console.log(`API: обрабатываю запрос по коду станции: ${stationCode}`)
-      
-      const relevantCodes = await MKB.find({
-        $or: [
-          { stationCode: stationCode },
-          { stationCode: `${stationCode}*` },
-          { stationCode: new RegExp(`^${stationCode}`, 'i') }
-        ]
-      }).populate('category').lean()
-      
-      if (relevantCodes.length > 0) {
-        const introMessages = [
-          'Вот что удалось найти в базе данных:',
-          'Нашёл точные записи из БД:',
-          'Данные из БД по вашему запросу:',
-          'Подборка записей из базы данных:'
-        ];
-        const randomIntro = introMessages[Math.floor(Math.random() * introMessages.length)];
-        
-        let response = `${randomIntro}\n\n`
-        response += `<mkb-cards>\n`
-        relevantCodes.forEach((code: any) => {
-          const mkbCode = (code.mkbCode || 'Код не указан').toString().trim()
-          const codeName = (code.name || 'Название не указано').toString().trim()
-          const categoryName = (code.category?.name || 'Без категории').toString().trim()
-          const codeNote = (code.note || '').toString().trim()
-          const stationCode = (code.stationCode || '').toString().trim()
+  const fuseItems: any[] = [
+    ...mkbFuse.map((i: any) => ({ _id: i._id, type: 'mkb', title: i.name, name: i.name, mkbCode: i.mkbCode, stationCode: i.stationCode, note: i.note, category: i.category })),
+    ...lsFuse.map((i: any) => ({ _id: i._id, type: 'ls', title: i.name, name: i.name, description: i.description, note: i.note, localis: i.localis, category: i.category })),
+    ...algoFuse.map((i: any) => ({ _id: i._id, type: 'algorithm', title: i.title, description: i.description, content: i.content, category: i.category, section: i.section })),
+    ...drugFuse.map((i: any) => ({ _id: i._id, type: 'drug', title: i.name, name: i.name, latinName: i.latinName, synonyms: i.synonyms, description: i.description, forms: i.forms, pediatricDose: i.pediatricDose, pediatricDoseUnit: i.pediatricDoseUnit, ageRestrictions: i.ageRestrictions })),
+    ...substationFuse.map((i: any) => ({ _id: i._id, type: 'substation', title: i.name, name: i.name, address: i.address, phone: i.phone, region: i.region }))
+  ]
+
+  const fuse = new Fuse(fuseItems, {
+    includeScore: true,
+    threshold: 0.35,
+    keys: [
+      { name: 'title', weight: 0.6 },
+      { name: 'name', weight: 0.6 },
+      { name: 'latinName', weight: 0.5 },
+      { name: 'synonyms', weight: 0.4 },
+      { name: 'description', weight: 0.3 },
+      { name: 'content', weight: 0.2 },
+      { name: 'note', weight: 0.2 },
+      { name: 'mkbCode', weight: 0.5 },
+      { name: 'address', weight: 0.2 }
+    ]
+  })
+  const fuseResults = fuse.search(effectiveQuery).map(r => ({ ...r.item, score: r.score }))
+
+  console.log('🔍 Fuse результаты:', fuseResults.length)
+
+  // Простое определение намерения без ИИ для ускорения
+  let simpleIntent = 'general'
+  if (queryLower.includes('мкб') || queryLower.includes('код') || queryLower.includes('диагноз') || isStationCode || isMkbCode) {
+    simpleIntent = 'mkb'
+  } else if (queryLower.includes('препарат') || queryLower.includes('лекарство') || queryLower.includes('дозировк')) {
+    simpleIntent = 'drug'
+  } else if (queryLower.includes('алгоритм') || queryLower.includes('лечение') || queryLower.includes('протокол')) {
+    simpleIntent = 'algo'
+  } else if (queryLower.includes('статус') || queryLower.includes('локалис') || queryLower.includes('описание')) {
+    simpleIntent = 'ls'
+  } else if (queryLower.includes('подстанц') || queryLower.includes('станция')) {
+    simpleIntent = 'substation'
+  }
+
+  // Обрабатываем follow-up запросы ПЕРЕД точным поиском (без ИИ для скорости)
+  if (askAlgo || askLs || askMkb || askDrug) {
+    const selectedSection = askAlgo ? 'algo' : (askLs ? 'ls' : (askMkb ? 'mkb' : 'drug'))
+    
+    console.log('⚡ Быстрый follow-up поиск для раздела:', selectedSection)
+    
+    // Извлекаем название диагноза из истории или из предыдущего результата
+    let diagnosisName = ''
+    if (history && history.length > 0) {
+      // Ищем последний AI ответ с диагнозом
+      for (let i = history.length - 1; i >= 0; i--) {
+        const msg = history[i]
+        if (msg.role === 'assistant' && msg.text) {
+          // Ищем паттерн диагноза в тексте ответа (разные варианты)
+          let diagnosisMatch = null
           
-          if (mkbCode.length > 0 && mkbCode !== 'undefined' && 
-              codeName.length > 0 && codeName !== 'undefined' && codeName !== ',' &&
-              !mkbCode.includes('|') && !codeName.includes('|')) {
-            response += `${mkbCode}|${codeName}|${categoryName}|${codeNote}|${stationCode}\n`
+          // 1. Ищем основной диагноз в формате "**диагноз**" (первое вхождение)
+          diagnosisMatch = msg.text.match(/\*\*([^*]+?)\*\*/)
+          
+          // 2. Если не нашли, ищем в формате "По коду станции найден диагноз: **диагноз**"
+          if (!diagnosisMatch) {
+            diagnosisMatch = msg.text.match(/найден диагноз:\s*\n\*\*([^*]+?)\*\*/)
           }
-        })
-        response += `</mkb-cards>\n\n`
-        
-        return {
-          success: true,
-          results: [], // No regular results for this specific query
-          message: response,
-          suggestions: [], // No quick replies for this specific query
-          query: searchTerm,
-          aiAnalysis: true
-        }
-      } else {
-        const introMessages = [
-          'Вот что удалось найти в базе данных:',
-          'Нашёл точные записи из БД:',
-          'Данные из БД по вашему запросу:',
-          'Подборка записей из базы данных:'
-        ];
-        const randomIntro = introMessages[Math.floor(Math.random() * introMessages.length)];
-        
-        return {
-          success: true,
-          results: [],
-          message: `${randomIntro}\n\nПо запросу "${searchTerm}" не найдено МКБ кодов для станции ${stationCode}.`,
-          suggestions: [],
-          query: searchTerm,
-          aiAnalysis: true
+          
+          // 2.1. Если не нашли, ищем в формате "По коду станции найден диагноз: **диагноз**" (без переноса строки)
+          if (!diagnosisMatch) {
+            diagnosisMatch = msg.text.match(/найден диагноз:\s*\*\*([^*]+?)\*\*/)
+          }
+          
+          // 3. Если не нашли, ищем в формате "— МКБ:"
+          if (!diagnosisMatch) {
+            diagnosisMatch = msg.text.match(/([^—\n]+?)\s*—\s*МКБ:/)
+          }
+          
+          // 4. Если не нашли, ищем в формате "• диагноз —"
+          if (!diagnosisMatch) {
+            diagnosisMatch = msg.text.match(/•\s*([^—\n]+?)\s*—/)
+          }
+          
+          // 5. Если не нашли, ищем в формате "1. диагноз —"
+          if (!diagnosisMatch) {
+            diagnosisMatch = msg.text.match(/\d+\.\s*\*\*([^*]+?)\*\*/)
+          }
+          
+          if (diagnosisMatch) {
+            diagnosisName = diagnosisMatch[1].trim()
+            // Очищаем от лишних символов и проверяем что это не заголовок
+            diagnosisName = diagnosisName.replace(/^🏥\s*/, '').replace(/\(.+?\)$/, '').trim()
+            
+            // Проверяем что это не заголовок типа "Диагнозы МКБ по запросу"
+            if (!diagnosisName.includes('Диагнозы МКБ по запросу') && 
+                !diagnosisName.includes('Алгоритмы лечения по запросу') &&
+                !diagnosisName.includes('Препараты по запросу') &&
+                !diagnosisName.includes('По коду станции') &&
+                !diagnosisName.includes('найден диагноз') &&
+                diagnosisName.length > 10) {
+              console.log('🎯 Извлечен диагноз из истории:', diagnosisName)
+              break
+            } else {
+              diagnosisName = '' // Сбрасываем если это заголовок
+            }
+          }
         }
       }
     }
-
-    // Получаем обратную связь для обучения AI
-    const learningData = await Feedback.find({
-      $or: [
-        { question: { $regex: searchTerm, $options: 'i' } },
-        { answer: { $regex: searchTerm, $options: 'i' } }
-      ]
-    })
-    .sort({ createdAt: -1 })
-    .limit(10)
-    .select('question answer rating userComment')
-
-    // Получаем полную информацию из всех коллекций БД
-    const [mkbData, drugData, instructionData, localStatusData, categoryData, localStatusCategoryData, substationData] = await Promise.all([
-      MKB.find({}).populate('category').lean(),
-      Drug.find({}).lean(),
-      Instruction.find({}).lean(),
-      LocalStatus.find({}).populate('category').lean(),
-      Category.find({}).lean(),
-      LocalStatusCategory.find({}).lean(),
-      Substation.find({}).lean()
-    ])
-
-    // Создаем контекст для AI с полной информацией из БД
-    // Передаем ВСЕ записи для анализа
-    console.log('📊 Статистика данных для ИИ:', {
-      mkb: mkbData.length,
-      drugs: drugData.length,
-      instructions: instructionData.length,
-      localStatuses: localStatusData.length,
-      substations: substationData.length
-    })
     
-    const databaseContext = {
-      mkb: mkbData.map(item => ({
-        id: item._id.toString(),
-        name: item.name,
-        mkbCode: item.mkbCode,
-        stationCode: item.stationCode,
-        note: item.note,
-        category: item.category?.name
-      })),
-      drugs: drugData.map(item => ({
-        id: item._id.toString(),
-        name: item.name,
-        latinName: item.latinName,
-        description: item.description?.substring(0, 200),
-        synonyms: item.synonyms,
-        forms: item.forms,
-        pediatricDose: item.pediatricDose,
-        ageRestrictions: item.ageRestrictions,
-        pediatricDoseUnit: item.pediatricDoseUnit
-      })),
-      instructions: instructionData.map(item => ({
-        id: item._id.toString(),
-        title: item.title,
-        content: item.content?.substring(0, 300)
-      })),
-      localStatuses: localStatusData.map(item => ({
-        id: item._id.toString(),
-        name: item.name,
-        encoding: item.encoding,
-        description: item.description,
-        note: item.note,
-        category: item.category?.name
-      })),
-      substations: substationData.map(item => ({
-        id: item._id.toString(),
-        name: item.name,
-        address: item.address,
-        phone: item.phone
+    // Если не нашли в истории, используем effectiveQuery как fallback
+    if (!diagnosisName) {
+      // Для follow-up запросов извлекаем исходный запрос пользователя
+      if (effectiveQuery && !effectiveQuery.includes('Показать')) {
+        diagnosisName = effectiveQuery
+      } else {
+        // Если effectiveQuery содержит "Показать", ищем в истории пользователя
+        for (let i = history.length - 1; i >= 0; i--) {
+          const msg = history[i]
+          if (msg.role === 'user' && msg.text && !msg.text.includes('Показать')) {
+            diagnosisName = msg.text.trim()
+            break
+          }
+        }
+      }
+      
+      // Если все еще не нашли, используем код из запроса
+      if (!diagnosisName && effectiveQuery) {
+        const codeMatch = effectiveQuery.match(/\d{4}|[A-Z]\d{2}(\.\d+)?/i)
+        if (codeMatch) {
+          diagnosisName = codeMatch[0]
+          console.log('🔢 Используем код из запроса как диагноз:', diagnosisName)
+        }
+      }
+      
+      console.log('🔄 Используем fallback диагноз:', diagnosisName)
+    }
+    
+    console.log('📋 Название диагноза для поиска:', diagnosisName)
+    
+    // Ищем связанный контент по названию диагноза
+    // Сначала извлекаем МКБ код из исходного диагноза для более точного поиска
+    let mkbCodeForSearch = ''
+    if (history && history.length > 0) {
+      // Ищем МКБ код в последнем AI ответе
+      for (let i = history.length - 1; i >= 0; i--) {
+        const msg = history[i]
+        if (msg.role === 'assistant' && msg.text) {
+          const mkbMatch = msg.text.match(/МКБ код:\s*([A-Z]\d{2}(?:\.\d+)?)/i)
+          if (mkbMatch) {
+            mkbCodeForSearch = mkbMatch[1]
+            console.log('🔍 Найден МКБ код для поиска:', mkbCodeForSearch)
+            break
+          }
+        }
+      }
+    }
+    
+    const relatedContent = await findRelatedContent(diagnosisName, mkbCodeForSearch)
+    
+    // Формируем результаты в зависимости от запрошенного раздела
+    let results: any[] = []
+    let availableSections: string[] = []
+    let similarDiagnoses: any[] = []
+    
+    if (selectedSection === 'mkb') {
+      // Для МКБ ищем по названию диагноза
+      let mkbResults = await MKB.find({
+        name: { $regex: diagnosisName.replace(/[\[\]()]/g, ''), $options: 'i' }
+      })
+      .populate('category', 'name url')
+      // Убираем лимит для максимального охвата
+      .lean()
+      
+      // Если ничего не найдено, ищем по кодам МКБ/станции из исходного запроса
+      if (mkbResults.length === 0 && effectiveQuery) {
+        console.log('🔍 Ищем по кодам из исходного запроса:', effectiveQuery)
+        
+        // Ищем по коду станции
+        const stationCodeMatch = effectiveQuery.match(/\d{4}/)
+        if (stationCodeMatch) {
+          mkbResults = await MKB.find({ stationCode: stationCodeMatch[0] })
+          .populate('category', 'name url')
+          .limit(5)
+          .lean()
+        }
+        
+        // Ищем по МКБ коду
+        if (mkbResults.length === 0) {
+          const mkbCodeMatch = effectiveQuery.match(/[A-Z]\d{2}(\.\d+)?/i)
+          if (mkbCodeMatch) {
+            mkbResults = await MKB.find({ mkbCode: mkbCodeMatch[0] })
+            .populate('category', 'name url')
+            .limit(5)
+            .lean()
+          }
+        }
+      }
+      
+      // Если все еще ничего не найдено, ищем по более точным ключевым словам
+      if (mkbResults.length === 0) {
+        console.log('🔍 Ищем по более точным ключевым словам')
+        
+        // Извлекаем более специфичные ключевые слова
+        const specificKeywords = diagnosisName.toLowerCase()
+          .replace(/[\[\]()]/g, '')
+          .split(/[\s,]+/)
+          .filter((word: string) => word.length > 4 && 
+            !['болезнь', 'синдром', 'состояние', 'нарушение', 'патология', 'заболевание'].includes(word))
+          .slice(0, 2) // Берем только 2 самых специфичных слова
+        
+        if (specificKeywords.length > 0) {
+          // Ищем диагнозы, которые содержат ВСЕ ключевые слова
+          mkbResults = await MKB.find({
+            $and: specificKeywords.map(keyword => ({
+              $or: [
+                { name: { $regex: keyword, $options: 'i' } },
+                { note: { $regex: keyword, $options: 'i' } }
+              ]
+            }))
+          })
+          .populate('category', 'name url')
+          .limit(5)
+          .lean()
+        }
+      }
+      
+      // Ищем похожие диагнозы
+      if (mkbResults.length > 0) {
+        const firstResult = mkbResults[0]
+        similarDiagnoses = await findSimilarDiagnoses(firstResult.name, firstResult.mkbCode || '')
+      }
+      
+      results = mkbResults.map((item: any) => ({
+        id: String(item._id),
+        title: item.name,
+        description: item.note || '',
+        type: 'mkb',
+        url: `/codifier/${item.category?.url}?id=${item._id}`,
+        codes: { mkbCode: item.mkbCode, stationCode: item.stationCode },
+        category: item.category?.name,
+        data: item
+      }))
+      
+      // Добавляем похожие диагнозы к результатам
+      if (similarDiagnoses.length > 0) {
+        const similarResults = similarDiagnoses.map((item: any) => ({
+          id: String(item._id),
+          title: item.name,
+          description: item.note || '',
+          type: 'mkb',
+          url: `/codifier/${item.category?.url}?id=${item._id}`,
+          codes: { mkbCode: item.mkbCode, stationCode: item.stationCode },
+          category: item.category?.name,
+          data: item,
+          isSimilar: true // Помечаем как похожий диагноз
+        }))
+        
+        // Объединяем основные и похожие результаты
+        results = [...results, ...similarResults]
+      }
+      
+      availableSections = ['mkb']
+    } else if (selectedSection === 'algo') {
+      // Для алгоритмов используем найденные алгоритмы
+      let algoResults = relatedContent.algorithms
+      
+      console.log('🔍 Начальное количество алгоритмов:', algoResults.length)
+      
+      // Если ничего не найдено, ищем по частичным совпадениям
+      if (algoResults.length === 0) {
+        console.log('🔍 Алгоритмы не найдены, ищем по частичным совпадениям')
+        
+        // Сначала ищем по МКБ кодам из исходного запроса и истории
+        const mkbCodesToSearch = []
+        
+        // Извлекаем МКБ код из исходного запроса
+        if (effectiveQuery) {
+          const mkbCodeMatch = effectiveQuery.match(/[A-Z]\d{2}(\.\d+)?/i)
+          if (mkbCodeMatch) {
+            mkbCodesToSearch.push(mkbCodeMatch[0])
+          }
+        }
+        
+        // Извлекаем МКБ код из истории
+        if (history && history.length > 0) {
+          for (let i = history.length - 1; i >= 0; i--) {
+            const msg = history[i]
+            if (msg.role === 'assistant' && msg.text) {
+              const mkbMatch = msg.text.match(/МКБ код:\s*([A-Z]\d{2}(?:\.\d+)?)/i)
+              if (mkbMatch && !mkbCodesToSearch.includes(mkbMatch[1])) {
+                mkbCodesToSearch.push(mkbMatch[1])
+              }
+            }
+          }
+        }
+        
+        // Ищем алгоритмы по всем найденным МКБ кодам
+        if (mkbCodesToSearch.length > 0) {
+          console.log('🔍 Ищем алгоритмы по МКБ кодам:', mkbCodesToSearch)
+          const mkbAlgoResults = await Algorithm.find({
+            $or: mkbCodesToSearch.map(code => ({
+              $or: [
+                { content: { $regex: code, $options: 'i' } },
+                { description: { $regex: code, $options: 'i' } }
+              ]
+            }))
+          })
+          .populate('section', 'name url')
+          .populate('category', 'name url')
+          .limit(10) // Увеличиваем лимит для большего охвата
+          .lean()
+          
+          if (mkbAlgoResults.length > 0) {
+            algoResults = mkbAlgoResults
+            console.log('✅ Найдено алгоритмов по МКБ кодам:', mkbAlgoResults.length)
+          }
+        }
+        
+        // Если все еще ничего не найдено, ищем по ключевым словам
+        if (algoResults.length === 0) {
+          // Извлекаем более специфичные ключевые слова из диагноза
+          const specificKeywords = diagnosisName.toLowerCase()
+            .replace(/[\[\]()]/g, '')
+            .split(/[\s,]+/)
+            .filter((word: string) => word.length > 4 && 
+              !['болезнь', 'синдром', 'состояние', 'нарушение', 'патология', 'заболевание'].includes(word))
+            .slice(0, 2) // Берем только 2 самых специфичных слова
+          
+          if (specificKeywords.length > 0) {
+            // Ищем алгоритмы, которые содержат ВСЕ ключевые слова
+            const directAlgoResults = await Algorithm.find({
+              $and: specificKeywords.map(keyword => ({
+                $or: [
+                  { title: { $regex: keyword, $options: 'i' } },
+                  { description: { $regex: keyword, $options: 'i' } },
+                  { content: { $regex: keyword, $options: 'i' } }
+                ]
+              }))
+            })
+            .populate('section', 'name url')
+            .populate('category', 'name url')
+            .limit(5)
+            .lean()
+            
+            algoResults = directAlgoResults
+          }
+        }
+      }
+      
+      results = algoResults.map((algo: any) => ({
+        id: String(algo._id),
+        title: algo.title,
+        description: algo.description || algo.content?.substring(0, 200) || '',
+        type: 'algorithm',
+        url: `/algorithms/${algo.section?.url}/${algo.category?.url}/${algo._id}`,
+        category: algo.category?.name,
+        section: algo.section?.name,
+        data: algo
+      }))
+      availableSections = ['algo']
+    } else if (selectedSection === 'drug') {
+      // Для препаратов используем найденные препараты
+      results = relatedContent.drugs.map((drug: any) => ({
+        id: String(drug._id),
+        title: drug.name,
+        description: drug.description || '',
+        type: 'drug',
+        url: `/drugs/${drug._id}`,
+        latinName: drug.latinName,
+        forms: drug.forms,
+        data: drug
+      }))
+      availableSections = ['drug']
+    }
+        
+        // Формируем информативное сообщение
+    let followUpMessage = ''
+    
+    if (selectedSection === 'mkb') {
+      const totalDiagnoses = results.length
+      followUpMessage = `**Диагнозы МКБ по запросу "${diagnosisName}":**\n\nНайдено ${totalDiagnoses} диагнозов:`
+    } else if (selectedSection === 'algo') {
+      followUpMessage = `**Алгоритмы лечения по запросу "${diagnosisName}":**\n\nНайдено ${results.length} алгоритмов:`
+    } else if (selectedSection === 'drug') {
+      followUpMessage = `**Препараты по запросу "${diagnosisName}":**\n\nНайдено ${results.length} препаратов:`
+    }
+        
+        // Не добавляем детальную информацию о похожих диагнозах в текст,
+        // так как они уже отображаются в блоках результатов
+        
+        return {
+      message: followUpMessage,
+      results,
+      fullResults: {
+        mkb: selectedSection === 'mkb' ? results : [],
+        ls: [],
+        algo: selectedSection === 'algo' ? results : [],
+        drug: selectedSection === 'drug' ? results : [],
+        substation: []
+      },
+      forceExpand: selectedSection,
+      intent: selectedSection,
+      availableSections,
+      clarifyingQuestions: [],
+      aiIntent: selectedSection,
+      aiConfidence: 1.0
+    }
+  }
+
+  // Точный поиск по кодам станций и МКБ (приоритет над AI анализом)
+  if (isStationCode || isMkbCode) {
+    console.log('🎯 Точный поиск по коду:', effectiveQuery)
+    
+    let exactResults: any[] = []
+    
+    if (isStationCode) {
+      // Точный поиск по коду станции
+      const stationCode = effectiveQuery.trim()
+      const exactMkb = await MKB.find({ stationCode }).populate('category', 'name url').lean()
+      exactResults = exactMkb.map((i: any) => ({ 
+        _id: i._id, 
+        type: 'mkb', 
+        title: i.name, 
+        name: i.name, 
+        mkbCode: i.mkbCode, 
+        stationCode: i.stationCode, 
+        note: i.note, 
+        category: i.category 
+      }))
+    } else if (isMkbCode) {
+      // Точный поиск по МКБ коду
+      const mkbCode = effectiveQuery.trim()
+      const exactMkb = await MKB.find({ mkbCode }).populate('category', 'name url').lean()
+      exactResults = exactMkb.map((i: any) => ({ 
+        _id: i._id, 
+        type: 'mkb', 
+        title: i.name, 
+        name: i.name, 
+        mkbCode: i.mkbCode, 
+        stationCode: i.stationCode, 
+        note: i.note, 
+        category: i.category 
       }))
     }
-
-    // Пытаемся использовать AI для анализа запроса
-    let aiResponse = null
-    let aiAnalysisAvailable = false
     
-    // Формируем контекст обучения
-    const learningContext = learningData.length > 0 ? `
-ДАННЫЕ ОБУЧЕНИЯ (предыдущие оценки пользователей):
-${learningData.map(feedback => `
-Вопрос: ${feedback.question}
-Ответ: ${feedback.answer}
-Оценка: ${feedback.rating === 'positive' ? '👍 Положительная' : '👎 Отрицательная'}
-${feedback.userComment ? `Комментарий: ${feedback.userComment}` : ''}
-`).join('\n')}
-
-ВАЖНО: Учти эти данные при формировании ответа. Если есть положительные примеры - используй их стиль. Если есть отрицательные - избегай указанных проблем.
-
-` : ''
-
-    // Пробуем использовать AI в порядке приоритета: GigaChat -> hubAI -> Mock AI
-    let aiProvider = 'mock'
-    
-    try {
-      // Сначала пробуем GigaChat
-      const { gigaChatAI } = await import('~/server/utils/gigachatAI')
-      const gigaChat = gigaChatAI()
+    if (exactResults.length > 0) {
+      console.log('✅ Найдено точных совпадений:', exactResults.length)
       
-      // Умная фильтрация данных по релевантности для GigaChat
-      const searchLower = searchTerm.toLowerCase()
-      
-      // Расширенная фильтрация МКБ кодов с медицинскими синонимами
-      let relevantMkb = []
-      
-      // Специальные правила для медицинских терминов и подстанций
-      const medicalExpansions = {
-        'панкреатит': ['панкреат', 'поджелудочн', 'K85', 'K86'],
-        'гипертони': ['гипертенз', 'давлени', 'I10', 'I11', 'I15'],
-        'диабет': ['сахарн', 'E10', 'E11', 'E14'],
-        'инфаркт': ['миокард', 'I21', 'I22', 'I25'],
-        'язва': ['язвенн', 'пептическ', 'K25', 'K26', 'K27', 'K28'],
-        'аппендицит': ['аппендикс', 'червеобразн', 'K35', 'K36', 'K37']
-      }
-      
-      // Специальная обработка запросов о подстанциях
-      const substationMatch = searchLower.match(/подстанция.*?(\d+)|(\d+).*?подстанция/i)
-      const nearbyMatch = /ближайш|близк|рядом|около|возле/i.test(searchLower) && /подстанц/i.test(searchLower)
-      let relevantSubstations = []
-      
-      if (substationMatch) {
-        const stationNumber = substationMatch[1] || substationMatch[2]
-        console.log('🏥 Поиск подстанции номер:', stationNumber)
-        
-        // Точный поиск подстанции по номеру
-        relevantSubstations = databaseContext.substations.filter(station => 
-          station.name?.includes(`№ ${stationNumber}`) || 
-          station.name?.includes(`№${stationNumber}`) ||
-          station.name?.includes(`Подстанция ${stationNumber}`) ||
-          station.name?.endsWith(` ${stationNumber}`)
-        )
-        
-        console.log('🔍 Найдено подстанций:', relevantSubstations.length)
-      } else if (nearbyMatch) {
-        console.log('📍 Запрос на поиск ближайших подстанций')
-        // Для запросов о ближайших подстанциях - берем все, сортировка будет по геолокации
-        relevantSubstations = databaseContext.substations.slice(0, 20)
-      }
-      
-      // Находим подходящие термины для расширения
-      let searchTerms = [searchLower]
-      for (const [term, expansions] of Object.entries(medicalExpansions)) {
-        if (searchLower.includes(term)) {
-          searchTerms.push(...expansions)
-          break
-        }
-      }
-      
-      // Фильтруем по всем найденным терминам
-      relevantMkb = databaseContext.mkb.filter(item => {
-        return searchTerms.some(term => 
-          item.name?.toLowerCase().includes(term) ||
-          item.mkbCode?.toLowerCase().includes(term) ||
-          item.note?.toLowerCase().includes(term) ||
-          item.category?.name?.toLowerCase().includes(term)
-        )
-      }).slice(0, 100)  // Увеличиваем лимит для медицинских терминов
-      
-      // Если релевантных мало, добавляем случайные
-      const finalMkb = relevantMkb.length > 5 ? relevantMkb : 
-        [...relevantMkb, ...databaseContext.mkb.slice(0, 50 - relevantMkb.length)]
-      
-      // Аналогично для препаратов
-      const relevantDrugs = databaseContext.drugs.filter(item =>
-        item.name?.toLowerCase().includes(searchLower) ||
-        item.latinName?.toLowerCase().includes(searchLower) ||
-        item.description?.toLowerCase().includes(searchLower)
-      ).slice(0, 15)
-      
-      const finalDrugs = relevantDrugs.length > 5 ? relevantDrugs :
-        [...relevantDrugs, ...databaseContext.drugs.slice(0, 15 - relevantDrugs.length)]
-
-      // Приоритизируем найденные подстанции или берем случайные
-      const finalSubstations = relevantSubstations.length > 0 ? 
-        [...relevantSubstations, ...databaseContext.substations.slice(0, 10 - relevantSubstations.length)] :
-        databaseContext.substations.slice(0, 15)
-
-      const limitedContext = {
-        mkb: finalMkb,
-        drugs: finalDrugs,
-        instructions: databaseContext.instructions.slice(0, 10),
-        localStatuses: databaseContext.localStatuses.slice(0, 10),
-        substations: finalSubstations
-      }
-
-      const aiPrompt = `
-Ты - помощник СМП. Отвечай живо и дружелюбно, но СТРОГО по данным БД.
-
-ЗАПРОС: "${searchTerm}"
-
-${learningContext}
-
-БД:
-МКБ (${limitedContext.mkb.length}): ${JSON.stringify(limitedContext.mkb, null, 1)}
-ПРЕПАРАТЫ (${limitedContext.drugs.length}): ${JSON.stringify(limitedContext.drugs, null, 1)}
-ИНСТРУКЦИИ (${limitedContext.instructions.length}): ${JSON.stringify(limitedContext.instructions, null, 1)}
-СТАТУСЫ (${limitedContext.localStatuses.length}): ${JSON.stringify(limitedContext.localStatuses, null, 1)}
-ПОДСТАНЦИИ (${limitedContext.substations.length}): ${JSON.stringify(limitedContext.substations, null, 1)}
-
-СТИЛЬ ОТВЕТА:
-- Будь дружелюбным и разговорным
-- Используй ТОЛЬКО факты из БД
-- Добавляй короткие пояснения для контекста
-- Поддерживай беседу естественно
-- Для подстанций: точно по номеру, не путай цифры!
-- Для запросов "ближайшие подстанции": используй <geolocation-request>Для поиска ближайших подстанций нужна ваша геолокация</geolocation-request>
-- Форматы: <mkb-cards>код|название|категория|примечание|станция</mkb-cards> или <substation-cards>название|адрес|телефоны|координаты</substation-cards>
-`
-
-      console.log('📏 GigaChat: Размер промпта:', aiPrompt.length, 'символов')
-      console.log('🔍 GigaChat: Найдено релевантных МКБ кодов:', relevantMkb.length)
-      console.log('📋 GigaChat: Поисковые термины:', searchTerms)
-      
-      aiResponse = await gigaChat.run('GigaChat', {
-        prompt: aiPrompt,
-        max_tokens: 800  // Уменьшаем лимит для экономии токенов
-      })
-      aiAnalysisAvailable = true
-      aiProvider = 'gigachat'
-      console.log('✅ Используется GigaChat AI')
-      
-    } catch (gigaChatError) {
-      console.log('⚠️ GigaChat недоступен:', gigaChatError.message)
-      
-      try {
-        // Пробуем использовать hubAI
-        const ai = hubAI()
-        const aiPrompt = `
-Ты - медицинский помощник для системы скорой медицинской помощи (СМП). 
-Пользователь задал вопрос: "${searchTerm}"
-
-${learningContext}
-
-Проанализируй следующую базу данных и найди наиболее релевантную информацию:
-
-БАЗА ДАННЫХ:
-МКБ коды: ${JSON.stringify(databaseContext.mkb)}
-Препараты: ${JSON.stringify(databaseContext.drugs)}
-Инструкции: ${JSON.stringify(databaseContext.instructions)}
-Локальные статусы: ${JSON.stringify(databaseContext.localStatuses)}
-Подстанции: ${JSON.stringify(databaseContext.substations)}
-
-Задача:
-1. Проанализируй запрос пользователя
-2. Найди наиболее релевантные записи из базы данных
-3. Предоставь полезный ответ с конкретными данными и рекомендациями
-4. Предложи дополнительные вопросы или уточнения
-
-Отвечай на русском языке, будь конкретным и полезным. Используй медицинскую терминологию корректно.
-Если находишь релевантные данные, обязательно укажи их ID для дальнейшего использования.
-`
-
-        aiResponse = await ai.run('@cf/meta/llama-3.1-8b-instruct', {
-          prompt: aiPrompt,
-          max_tokens: 1000
-        })
-        aiAnalysisAvailable = true
-        aiProvider = 'hubai'
-        console.log('✅ Используется hubAI')
-        
-      } catch (hubAiError) {
-        console.log('⚠️ hubAI недоступен:', hubAiError.message)
-        console.log('💡 Используем Mock AI')
-        
-        // Fallback на mock AI
-        try {
-          const mockAI = mockHubAI()
-          const aiPrompt = `
-Ты - медицинский помощник для системы скорой медицинской помощи (СМП). 
-Пользователь задал вопрос: "${searchTerm}"
-
-${learningContext}
-
-Проанализируй следующую базу данных и найди наиболее релевантную информацию:
-
-БАЗА ДАННЫХ:
-МКБ коды: ${JSON.stringify(databaseContext.mkb)}
-Препараты: ${JSON.stringify(databaseContext.drugs)}
-Инструкции: ${JSON.stringify(databaseContext.instructions)}
-Локальные статусы: ${JSON.stringify(databaseContext.localStatuses)}
-Подстанции: ${JSON.stringify(databaseContext.substations)}
-
-Задача:
-1. Проанализируй запрос пользователя
-2. Найди наиболее релевантные записи из базы данных
-3. Предоставь полезный ответ с конкретными данными и рекомендациями
-4. Предложи дополнительные вопросы или уточнения
-
-Отвечай на русском языке, будь конкретным и полезным. Используй медицинскую терминологию корректно.
-Если находишь релевантные данные, обязательно укажи их ID для дальнейшего использования.
-`
-          
-          // Передаем реальные данные в mock AI
-          aiResponse = await mockAI.run('@cf/meta/llama-3.1-8b-instruct', {
-            prompt: aiPrompt,
-            max_tokens: 1000,
-            // Передаем реальные данные напрямую
-            realData: {
-              drugs: drugData,
-              mkb: mkbData,
-              instructions: instructionData,
-              localStatuses: localStatusData,
-              substations: substationData,
-              learningData: learningData // Передаем данные обучения
-            }
-          })
-          aiAnalysisAvailable = true
-          aiProvider = 'mock'
-          console.log('✅ Используется Mock AI с реальными данными БД')
-        } catch (mockError) {
-          console.log('❌ Mock AI также недоступен:', mockError.message)
-          aiAnalysisAvailable = false
-        }
-      }
-    }
-
-    // Также выполняем обычный поиск для получения конкретных результатов
-    const results: any[] = []
-    const searchRegex = new RegExp(searchTerm, 'i')
-
-    // Улучшенный поиск в МКБ с дополнительными условиями
-    const mkbSearchConditions = [
-      { name: searchRegex },
-      { mkbCode: searchRegex },
-      { stationCode: searchRegex },
-      { note: searchRegex }
-    ]
-    
-    // Специальная логика для поиска по коду станции
-    const stationCodeMatch = searchTerm.match(/(\d{4})/i)
-    if (stationCodeMatch && /\d{4}.*код|\d{4}.*диагноз|станция.*\d{4}|код.*станци/i.test(searchTerm)) {
-      const stationCode = stationCodeMatch[1]
-      mkbSearchConditions.push(
-        { stationCode: new RegExp(`^${stationCode}`, 'i') },
-        { stationCode: new RegExp(stationCode, 'i') }
-      )
-    }
-    
-    // Импортируем комплексные медицинские синонимы
-    const { comprehensiveMedicalSynonyms } = await import('~/server/utils/comprehensiveMedicalSynonyms')
-    
-    // Создаем расширенный список медицинских терминов
-    const medicalTerms: { [key: string]: string[] } = {}
-    
-    // Добавляем термины из комплексной системы
-    Object.entries(comprehensiveMedicalSynonyms).forEach(([area, data]: [string, any]) => {
-      const { primary, secondary, conditions } = data
-      
-      // Добавляем основные термины области
-      primary.forEach((term: string) => {
-        if (!medicalTerms[term]) medicalTerms[term] = []
-        medicalTerms[term].push(...primary, ...secondary.slice(0, 3), ...conditions.slice(0, 5))
-      })
-      
-      // Добавляем условия/заболевания
-      conditions.forEach((condition: string) => {
-        if (!medicalTerms[condition]) medicalTerms[condition] = []
-        medicalTerms[condition].push(...conditions.slice(0, 3), ...primary.slice(0, 2))
-      })
-    })
-    
-    // Добавляем базовые синонимы для обратной совместимости
-    const basicTerms = {
-      'аппендицит': ['аппендицит', 'аппендикс', 'червеобразн'],
-      'инсульт': ['инсульт', 'кровоизлияние', 'инфаркт мозга', 'цереброваскулярн', 'ОНМК', 'острое нарушение мозгового кровообращения'],
-      'ОНМК': ['ОНМК', 'онмк', 'острое нарушение мозгового кровообращения', 'инсульт', 'кровоизлияние', 'церебральн', 'мозг'],
-      'инфаркт': ['инфаркт', 'миокард', 'коронарн', 'сердечн', 'ОКС', 'острый коронарный синдром'],
-      'ОКС': ['ОКС', 'окс', 'острый коронарный синдром', 'инфаркт', 'миокард', 'коронарн', 'ишемическ', 'стенокарди'],
-      'гипертония': ['гипертенз', 'гипертони', 'давлени', 'артериальн'],
-      'диабет': ['диабет', 'сахарн', 'глюкоз'],
-      'пневмония': ['пневмони', 'воспаление легких', 'легочн'],
-      'гастрит': ['гастрит', 'желудок', 'гастро'],
-      'бронхит': ['бронхит', 'бронх', 'дыхательн'],
-      'язва': ['язва', 'язвенн', 'пептическ', 'эрозивн', 'дуоденальн'],
-      'панкреатит': ['панкреатит', 'поджелудочн', 'панкреас'],
-      'холецистит': ['холецистит', 'желчн', 'холедох']
-    }
-    
-    // Объединяем с базовыми терминами
-    Object.entries(basicTerms).forEach(([key, synonyms]) => {
-      if (!medicalTerms[key]) medicalTerms[key] = []
-      medicalTerms[key].push(...synonyms)
-      medicalTerms[key] = [...new Set(medicalTerms[key])] // Убираем дубликаты
-    })
-    
-    // Ищем совпадения с медицинскими терминами
-    for (const [term, synonyms] of Object.entries(medicalTerms)) {
-      if (new RegExp(term, 'i').test(searchTerm)) {
-        synonyms.forEach(synonym => {
-          mkbSearchConditions.push(
-            { name: new RegExp(synonym, 'i') },
-            { note: new RegExp(synonym, 'i') }
-          )
-        })
-      }
-    }
-    
-    const mkbResults = await MKB.find({
-      $or: mkbSearchConditions
-    }).populate('category').limit(10) // Увеличиваем лимит для лучшего покрытия
-
-    mkbResults.forEach(item => {
-      results.push({
-        id: item._id.toString(),
-        title: item.name,
-        description: `МКБ: ${item.mkbCode} | Станция: ${item.stationCode}`,
-        type: 'mkb',
-        url: `/codifier/${item.category?.url}?open=${item._id}`,
-        codes: {
-          mkbCode: item.mkbCode,
-          stationCode: item.stationCode
-        },
-        data: item
-      })
-    })
-
-    // Улучшенный поиск в Drugs с частичными совпадениями и специальными препаратами
-    const drugSearchTerms = searchTerm.toLowerCase().split(/\s+/)
-    
-    // Специальные паттерны для известных препаратов
-    const specialDrugPatterns = [
-      { pattern: /(эуфиллин|eufillin)/i, terms: ['эуфиллин', 'аминофиллин', 'aminophylline', 'теофиллин'] },
-      { pattern: /(аминофиллин|aminophylline)/i, terms: ['аминофиллин', 'эуфиллин', 'aminophylline', 'теофиллин'] },
-      { pattern: /(теофиллин|theophylline)/i, terms: ['теофиллин', 'эуфиллин', 'аминофиллин', 'theophylline'] }
-    ]
-    
-    let searchQueries = [
-      { name: searchRegex },
-      { latinName: searchRegex },
-      { synonyms: searchRegex },
-      { description: searchRegex },
-      // Поиск по частичным совпадениям в названии
-      ...drugSearchTerms.map(term => ({ name: new RegExp(term, 'i') })),
-      // Поиск по латинскому названию
-      ...drugSearchTerms.map(term => ({ latinName: new RegExp(term, 'i') })),
-      // Поиск по синонимам
-      ...drugSearchTerms.map(term => ({ synonyms: new RegExp(term, 'i') }))
-    ]
-    
-    // Добавляем специальные паттерны поиска
-    for (const special of specialDrugPatterns) {
-      if (special.pattern.test(searchTerm)) {
-        for (const term of special.terms) {
-          searchQueries.push(
-            { name: new RegExp(term, 'i') },
-            { latinName: new RegExp(term, 'i') },
-            { synonyms: new RegExp(term, 'i') }
-          )
-        }
-        break
-      }
-    }
-    
-    const drugResults = await Drug.find({
-      $and: [
-        { $or: searchQueries },
-        // Исключаем вспомогательные вещества
-        {
-          name: { 
-            $not: /^(вода для инъекций|натрия хлорид|глюкоза|физиологический раствор)$/i 
-          }
-        }
-      ]
-    }).limit(10)
-
-    drugResults.forEach(item => {
-      results.push({
-        id: item._id.toString(),
-        title: item.name,
-        description: item.latinName ? `Лат.: ${item.latinName}` : item.description?.substring(0, 100) + '...',
-        type: 'drug',
-        url: `/drugs?open=${item._id}`,
-        drugData: {
-          forms: item.forms,
-          pediatricDose: item.pediatricDose,
-          ageRestrictions: item.ageRestrictions,
-          pediatricDoseUnit: item.pediatricDoseUnit
-        },
-        data: item
-      })
-    })
-
-    // Поиск в Instructions
-    const instructionResults = await Instruction.find({
-      $or: [
-        { title: searchRegex },
-        { content: searchRegex }
-      ]
-    }).limit(5)
-
-    instructionResults.forEach(item => {
-      results.push({
-        id: item._id.toString(),
+      let results = exactResults.map((item: any) => ({
+        id: String(item._id),
         title: item.title,
-        description: item.content?.substring(0, 100) + '...',
-        type: 'instruction',
-        url: `/instructions/${item.url}`,
+        description: item.note || '',
+        type: 'mkb',
+        url: `/codifier/${item.category?.url}?id=${item._id}`,
+        codes: { mkbCode: item.mkbCode, stationCode: item.stationCode },
+        category: item.category?.name,
         data: item
-      })
-    })
-
-    // Поиск в LocalStatus
-    const localStatusResults = await LocalStatus.find({
-      $or: [
-        { name: searchRegex },
-        { encoding: searchRegex },
-        { description: searchRegex },
-        { note: searchRegex }
-      ]
-    }).populate('category').limit(5)
-
-    localStatusResults.forEach(item => {
-      results.push({
-        id: item._id.toString(),
-        title: item.name,
-        description: `Кодировка: ${item.encoding}`,
-        type: 'local-status',
-        url: `/local-statuses/${item.category?.url}?open=${item._id}`,
-        data: item
-      })
-    })
-
-    // Поиск в Substations
-    const substationResults = await Substation.find({
-      $or: [
-        { name: searchRegex },
-        { address: searchRegex },
-        { phone: searchRegex }
-      ]
-    }).limit(3)
-
-    substationResults.forEach(item => {
-      results.push({
-        id: item._id.toString(),
-        title: item.name,
-        description: `Адрес: ${item.address}${item.phone ? ` | Тел: ${item.phone}` : ''}`,
-        type: 'substation',
-        url: `/substations`,
-        data: item
-      })
-    })
-
-    // Интеллектуальный анализ запроса без AI
-    let intelligentMessage = ''
-    let suggestions = []
-    
-    if (aiAnalysisAvailable && aiResponse?.response) {
-      // Короткое интро перед сообщением ИИ
-      const introVariants = [
-        'Вот что удалось найти в базе данных:',
-        'Нашёл точные записи из БД:',
-        'Данные из БД по вашему запросу:',
-        'Подборка записей из базы данных:'
-      ]
-      const intro = introVariants[Math.floor(Math.random() * introVariants.length)]
-      intelligentMessage = `${intro}\n\n${aiResponse.response}`
-      suggestions = aiResponse.suggestions || generateContextualSuggestions(searchTerm, results)
-    } else {
-      // Анализируем запрос на предмет расчета дозировки
-      const isDosageQuery = /дозировк|дозу|рассчита|расчет|ребенок|кг|мг|мл/i.test(searchTerm)
-      const weightMatch = searchTerm.match(/(\d+)\s*кг/i)
-      const drugNameMatch = searchTerm.match(/(эуфиллин|аминофиллин|aminophylline|eufillin|теофиллин|theophylline|адреналин|adrenaline|epinephrine|атропин|atropine|морфин|morphine|дексаметазон|dexamethasone)/i)
+      }))
       
-      console.log('Анализ запроса:', {
-        searchTerm,
-        isDosageQuery,
-        weightMatch: weightMatch?.[1],
-        drugNameMatch: drugNameMatch?.[1],
-        drugResultsCount: drugResults.length
-      })
+      // Ищем похожие диагнозы
+      const firstResult = exactResults[0]
+      const similarDiagnoses = await findSimilarDiagnoses(firstResult.title, firstResult.mkbCode)
       
-      if (isDosageQuery && weightMatch && drugNameMatch) {
-        const weight = parseInt(weightMatch[1])
-        const drugName = drugNameMatch[1]
+      // Добавляем похожие диагнозы к результатам
+      if (similarDiagnoses.length > 0) {
+        const similarResults = similarDiagnoses.map((item: any) => ({
+          id: String(item._id),
+          title: item.name,
+          description: item.note || '',
+          type: 'mkb',
+          url: `/codifier/${item.category?.url}?id=${item._id}`,
+          codes: { mkbCode: item.mkbCode, stationCode: item.stationCode },
+          category: item.category?.name,
+          data: item,
+          isSimilar: true // Помечаем как похожий диагноз
+        }))
         
-        // Ищем препарат в результатах
-        console.log('Обычный поиск: найдено препаратов:', drugResults.length)
-        drugResults.forEach(drug => {
-          console.log('Обычный поиск: препарат в результатах:', drug.name, drug.latinName, drug.synonyms)
-        })
-        
-        const foundDrug = drugResults.find(drug => 
-          drug.name.toLowerCase().includes(drugName.toLowerCase()) ||
-          drug.latinName?.toLowerCase().includes(drugName.toLowerCase()) ||
-          drug.synonyms?.some(syn => syn.toLowerCase().includes(drugName.toLowerCase()))
-        )
-        
-        console.log('Обычный поиск: найден препарат для расчета:', foundDrug?.name || 'не найден')
-        
-        if (foundDrug && foundDrug.pediatricDose && foundDrug.pediatricDose.length > 0) {
-          const introVariants = [
-            'Вот что удалось найти в базе данных:',
-            'Нашёл точные записи из БД:',
-            'Данные из БД по вашему запросу:'
-          ]
-          const intro = introVariants[Math.floor(Math.random() * introVariants.length)]
-          intelligentMessage = `${intro}\n\nДля расчета дозировки ${foundDrug.name} для ребенка весом ${weight} кг:\n\n`
-          
-          // Парсим педиатрическую дозировку
-          foundDrug.pediatricDose.forEach((dose, index) => {
-            const doseMatch = dose.match(/(\d+(?:[.,]\d+)?)\s*-?\s*(\d+(?:[.,]\d+)?)?/);
-            if (doseMatch) {
-              const minDose = parseFloat(doseMatch[1].replace(',', '.'))
-              const maxDose = doseMatch[2] ? parseFloat(doseMatch[2].replace(',', '.')) : minDose
-              
-              const minResult = (minDose * weight).toFixed(1)
-              const maxResult = (maxDose * weight).toFixed(1)
-              
-              intelligentMessage += `• Дозировка ${dose} ${foundDrug.pediatricDoseUnit || 'мг/кг'}: ${minResult}${maxDose !== minDose ? ` - ${maxResult}` : ''} мг\n`
-            }
-          })
-          
-          // Добавляем информацию о форме выпуска для расчета объема
-          if (foundDrug.forms && foundDrug.forms.doseValue && foundDrug.forms.volumeMl) {
-            const concentration = foundDrug.forms.doseValue / foundDrug.forms.volumeMl
-            intelligentMessage += `\nФорма выпуска: ${foundDrug.forms.doseValue}${foundDrug.forms.doseUnit || 'мг'} в ${foundDrug.forms.volumeMl}мл\n`
-            intelligentMessage += `Концентрация: ${concentration.toFixed(1)} мг/мл\n`
-            
-            // Рассчитываем объем для каждой дозировки
-            foundDrug.pediatricDose.forEach((dose) => {
-              const doseMatch = dose.match(/(\d+(?:[.,]\d+)?)\s*-?\s*(\d+(?:[.,]\d+)?)?/);
-              if (doseMatch) {
-                const minDose = parseFloat(doseMatch[1].replace(',', '.'))
-                const maxDose = doseMatch[2] ? parseFloat(doseMatch[2].replace(',', '.')) : minDose
-                
-                const minMg = minDose * weight
-                const maxMg = maxDose * weight
-                const minMl = (minMg / concentration).toFixed(2)
-                const maxMl = (maxMg / concentration).toFixed(2)
-                
-                intelligentMessage += `Объем для дозы ${dose}: ${minMl}${maxDose !== minDose ? ` - ${maxMl}` : ''} мл\n`
-              }
-            })
-          }
-          
-          suggestions = generateContextualSuggestions(searchTerm, results)
-        } else {
-          intelligentMessage = `Для расчета дозировки ${drugName} для ребенка весом ${weight} кг нужны данные о педиатрической дозировке. Проверьте наличие препарата в базе данных.`
-          suggestions = generateContextualSuggestions(searchTerm, results)
+        // Объединяем основные и похожие результаты
+        results = [...results, ...similarResults]
+      }
+      
+      // Создаем краткое информативное сообщение
+      const totalDiagnoses = results.length
+      let message = `По коду станции "${effectiveQuery}" найден диагноз:\n\n`
+      message += `**${firstResult.title}**\n`
+      message += `• МКБ код: ${firstResult.mkbCode}\n`
+      message += `• Код станции: ${firstResult.stationCode}\n`
+      if (firstResult.note) {
+        message += `• Описание: ${firstResult.note}\n`
+      }
+      
+      if (similarDiagnoses.length > 0) {
+        message += `\n\nНайдено ${totalDiagnoses} диагнозов (включая похожие):`
+      }
+      
+      // Ищем связанный контент по всему диагнозу
+      const relatedContent = await findRelatedContent(firstResult.title, firstResult.mkbCode)
+      if (relatedContent.algorithms.length > 0 || relatedContent.drugs.length > 0) {
+        message += `\n📋 **Связанный контент:**\n`
+        if (relatedContent.algorithms.length > 0) {
+          message += `• Найдено алгоритмов: ${relatedContent.algorithms.length}\n`
         }
-      } else if (results.length > 0) {
-        intelligentMessage = `Найдено ${results.length} результатов по запросу "${searchTerm}"`
-        suggestions = generateContextualSuggestions(searchTerm, results)
-      } else {
-        intelligentMessage = `По запросу "${searchTerm}" ничего не найдено. Попробуйте изменить запрос или проверить правильность написания.`
-        suggestions = generateContextualSuggestions(searchTerm, results)
+        if (relatedContent.drugs.length > 0) {
+          message += `• Найдено препаратов: ${relatedContent.drugs.length}\n`
+        }
+      }
+      
+      // Подготавливаем связанный контент
+      const availableSections = ['mkb']
+      
+      if (relatedContent.algorithms.length > 0) {
+        availableSections.push('algo')
+      }
+      
+      if (relatedContent.drugs.length > 0) {
+        availableSections.push('drug')
+      }
+      
+      return {
+        message,
+        results,
+        fullResults: {
+          mkb: results,
+          ls: [],
+          algo: relatedContent.algorithms.map((algo: any) => ({
+            id: String(algo._id),
+            title: algo.title,
+            description: algo.description || algo.content?.substring(0, 200) || '',
+            type: 'algorithm',
+            url: `/algorithms/${algo.section?.url}/${algo.category?.url}/${algo._id}`,
+            category: algo.category?.name,
+            section: algo.section?.name,
+            data: algo
+          })),
+          drug: relatedContent.drugs.map((drug: any) => ({
+            id: String(drug._id),
+            title: drug.name,
+            description: drug.description || '',
+            type: 'drug',
+            url: `/drugs/${drug._id}`,
+            latinName: drug.latinName,
+            forms: drug.forms,
+            data: drug
+          })),
+          substation: []
+        },
+        forceExpand: null,
+        intent: 'mkb',
+        availableSections,
+        clarifyingQuestions: [],
+        aiIntent: 'mkb',
+        aiConfidence: 1.0
       }
     }
+  }
 
-    // Проверяем, является ли это дозировочным запросом
-    const isDosageQuery = /дозировк|дозу|рассчита|расчет.*кг|мг.*кг|мл.*кг/i.test(searchTerm)
-    const hasWeightAndDrug = /(\d+)\s*кг/i.test(searchTerm) && /(эуфиллин|аминофиллин|aminophylline|eufillin|теофиллин|theophylline|адреналин|adrenaline|epinephrine|атропин|atropine|морфин|morphine|дексаметазон|dexamethasone)/i.test(searchTerm)
-    
-    // Если ИИ ответ содержит МКБ карточки, исключаем МКБ результаты из обычного списка
-    let filteredResults = results
-    if (aiAnalysisAvailable && intelligentMessage.includes('<mkb-cards>')) {
-      console.log('🎯 ИИ ответ содержит МКБ карточки, исключаем дублирующие МКБ результаты')
-      filteredResults = results.filter(result => result.type !== 'mkb')
-      console.log(`📊 Результаты после фильтрации МКБ: ${filteredResults.length} (было ${results.length})`)
-    }
-    
-    // Для дозировочных запросов исключаем МКБ результаты полностью
-    if (isDosageQuery && hasWeightAndDrug) {
-      console.log('🎯 Дозировочный запрос, исключаем все МКБ результаты')
-      filteredResults = filteredResults.filter(result => result.type !== 'mkb')
-      console.log(`📊 Результаты после фильтрации МКБ для дозировочного запроса: ${filteredResults.length}`)
-    }
-    
-    // Если ИИ ответ содержит карточки подстанций, исключаем подстанции из обычного списка
-    if (aiAnalysisAvailable && intelligentMessage.includes('<substation-cards>')) {
-      console.log('🎯 ИИ ответ содержит карточки подстанций, исключаем дублирующие результаты подстанций')
-      filteredResults = filteredResults.filter(result => result.type !== 'substation')
-      console.log(`📊 Результаты после фильтрации подстанций: ${filteredResults.length}`)
-    }
-    
-    // Если ИИ ответ содержит карточки препаратов, исключаем препараты из обычного списка
-    if (aiAnalysisAvailable && intelligentMessage.includes('<drug-cards>')) {
-      console.log('🎯 ИИ ответ содержит карточки препаратов, исключаем дублирующие результаты препаратов')
-      filteredResults = filteredResults.filter(result => result.type !== 'drug')
-      console.log(`📊 Результаты после фильтрации препаратов: ${filteredResults.length}`)
+  // Используем ИИ только для сложных запросов или когда есть хорошие результаты Fuse
+  const shouldUseAI = fuseResults.length > 0 && fuseResults.some(r => r.score < 0.4) && !isStationCode && !isMkbCode
+  
+  if (shouldUseAI) {
+    console.log('🤖 Используем ИИ для анализа результатов')
+    const aiResponse = await ollamaAI.analyzeQuery(query, fuseResults, history)
+    console.log('🤖 Ollama AI ответ получен:', aiResponse.message)
+    return aiResponse
+  } else {
+    console.log('⚡ Используем быстрый режим без ИИ')
+    // Простой ответ на основе результатов Fuse
+    const results = fuseResults.map(item => ({
+      id: String(item._id),
+      title: item.title || item.name,
+      description: item.description || item.note || '',
+      type: item.type,
+      url: item.type === 'mkb' ? `/codifier/${item.category?.url}?id=${item._id}` : 
+           item.type === 'algorithm' ? `/algorithms/${item.section?.url}/${item.category?.url}/${item._id}` :
+           item.type === 'drug' ? `/drugs/${item._id}` : '',
+      codes: item.mkbCode ? { mkbCode: item.mkbCode, stationCode: item.stationCode } : undefined,
+      category: item.category?.name,
+      data: item
+    }))
+
+    let message = `По запросу "${query}" найдено ${results.length} результатов:`
+    if (results.length > 0) {
+      message += `\n\n**${results[0].title}**`
+      if (results[0].codes?.mkbCode) message += ` — МКБ: ${results[0].codes.mkbCode}`
+      if (results[0].codes?.stationCode) message += `; Станция: ${results[0].codes.stationCode}`
     }
 
     return {
-      success: true,
-      results: filteredResults,
-      message: intelligentMessage,
-      suggestions,
-      query: searchTerm,
-      aiAnalysis: aiAnalysisAvailable
-    }
-
-  } catch (error) {
-    console.error('Ошибка AI поиска:', error)
-    
-    // Fallback к обычному поиску при ошибке AI
-    const results: any[] = []
-    const searchRegex = new RegExp(searchTerm, 'i')
-
-    const mkbResults = await MKB.find({
-      $or: [
-        { name: searchRegex },
-        { mkbCode: searchRegex },
-        { stationCode: searchRegex },
-        { note: searchRegex }
-      ]
-    }).populate('category').limit(5)
-
-    mkbResults.forEach(item => {
-      results.push({
-        id: item._id.toString(),
-        title: item.name,
-        description: `МКБ: ${item.mkbCode} | Станция: ${item.stationCode}`,
-        type: 'mkb',
-        url: `/codifier/${item.category?.url}?open=${item._id}`,
-        codes: {
-          mkbCode: item.mkbCode,
-          stationCode: item.stationCode
-        },
-        data: item
-      })
-    })
-
-    return {
-      success: true,
-      results,
-      message: `Найдено ${results.length} результатов по запросу "${searchTerm}" (обычный поиск)`,
-      suggestions: ['Попробовать еще раз', 'Уточнить запрос'],
-      query: searchTerm,
-      aiAnalysis: false
+    message,
+      results: results.slice(0, 5),
+      fullResults: {
+        mkb: results.filter(r => r.type === 'mkb'),
+        ls: results.filter(r => r.type === 'ls'),
+        algo: results.filter(r => r.type === 'algorithm'),
+        drug: results.filter(r => r.type === 'drug'),
+        substation: results.filter(r => r.type === 'substation')
+      },
+      forceExpand: null,
+      intent: simpleIntent,
+      availableSections: [...new Set(results.map(r => r.type === 'algorithm' ? 'algo' : r.type))],
+      clarifyingQuestions: [],
+      aiIntent: simpleIntent,
+      aiConfidence: 0.8
     }
   }
 })

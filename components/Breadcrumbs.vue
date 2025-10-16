@@ -12,9 +12,10 @@ const customLastLabel = ref<string>('')
 const customAlgoTrail = ref<{ sectionSlug: string; sectionName: string; categoryId?: string; categoryUrl?: string; categoryName: string; algoTitle?: string } | null>(null)
 
 async function resolveLastLabel() {
+  // Сбрасываем состояние сразу, чтобы не мигал хвост от предыдущей страницы
+  customLastLabel.value = ''
+  customAlgoTrail.value = null
   if (!route || !route.path) { 
-    customLastLabel.value = ''
-    customAlgoTrail.value = null
     return 
   }
   const path = route.path
@@ -39,25 +40,13 @@ async function resolveLastLabel() {
     try {
       const segs = path.split('/').filter(Boolean)
       const last = segs[segs.length - 1]
-      // /algorithms/view/:id → подставим название алгоритма
-      if (segs[1] === 'view' && /^[a-f0-9]{24}$/i.test(segs[2] || '')) {
-        const res: any = await $fetch(`/api/algorithms/${segs[2]}`)
-        const item = res?.item
-        customLastLabel.value = item?.title || ''
-        if (item?.category?._id) {
-          const sectionName: string = item?.section || ''
-          const sectionSlug = sectionName === 'Взрослые' ? 'adults' : sectionName === 'Детские' ? 'pediatrics' : sectionName === 'ОНМП Дети' ? 'onmp-children' : 'onmp'
-          customAlgoTrail.value = {
-            sectionSlug,
-            sectionName: sectionName || 'Раздел',
-            categoryId: String(item.category._id),
-            categoryName: item.category.name || 'Категория',
-            algoTitle: item.title || ''
-          }
-        }
+      // /algorithms/:section/:category → страница категории по URL; /algorithms/:section/:category/:id → страница алгоритма
+      // /algorithms/:section — страница раздела
+      if (segs.length === 2) {
+        customLastLabel.value = segs[1] === 'adults' ? 'Взрослые' : segs[1] === 'pediatrics' ? 'Детские' : segs[1] === 'onmp-children' ? 'ОНМП Дети' : 'ОНМП'
+        customAlgoTrail.value = null
         return
       }
-      // /algorithms/:section/:category → страница категории по URL; /algorithms/:section/:category/:id → страница алгоритма
       if (segs.length >= 3 && !/^[a-f0-9]{24}$/i.test(segs[2] || '')) {
         const sectionSlug = segs[1]
         const sectionName = sectionSlug === 'adults' ? 'Взрослые' : sectionSlug === 'pediatrics' ? 'Детские' : sectionSlug === 'onmp-children' ? 'ОНМП Дети' : 'ОНМП'
@@ -72,10 +61,14 @@ async function resolveLastLabel() {
             categoryUrl,
             categoryName: category?.name || 'Категория'
           }
-          if (segs.length >= 4 && /^[a-f0-9]{24}$/i.test(segs[3] || '')) {
-            const algoRes: any = await $fetch(`/api/algorithms/${segs[3]}`)
+          // /algorithms/:section/:category/view/:id → страница алгоритма
+          if (segs.length >= 5 && segs[3] === 'view' && /^[a-f0-9]{24}$/i.test(segs[4] || '')) {
+            const algoRes: any = await $fetch(`/api/algorithms/${segs[4]}`)
             customLastLabel.value = algoRes?.item?.title || customLastLabel.value
             if (algoRes?.item?.title) (customAlgoTrail.value as any).algoTitle = algoRes.item.title
+          } else if (segs.length === 4 && /^[a-f0-9]{24}$/i.test(segs[3] || '')) {
+            // /algorithms/:section/:category/:id → список алгоритмов категории по ID
+            customLastLabel.value = category?.name || customLastLabel.value || categoryUrl
           }
           return
         } catch {}
@@ -89,8 +82,8 @@ async function resolveLastLabel() {
   customAlgoTrail.value = null
 }
 
-onMounted(resolveLastLabel)
-watch(() => route?.path, () => resolveLastLabel())
+onMounted(() => resolveLastLabel())
+watch([() => route?.path, () => route?.fullPath], () => resolveLastLabel())
 
 const items = computed<BreadcrumbItem[]>(() => {
   if (!route || !route.path) {
@@ -144,8 +137,61 @@ const items = computed<BreadcrumbItem[]>(() => {
     'emergency-medicine': 'Скорая медицинская помощь'
   }
 
+  // Явная ветка для /codifier
+  if (segments[0] === 'codifier') {
+    if (segments.length === 1) {
+      acc.push({ label: 'Кодификатор' })
+      return acc
+    }
+    // /codifier/:category...
+    acc.push({ label: 'Кодификатор', to: '/codifier' })
+    // Добавляем хвост (категория/диагноз)
+    let localPath = '/codifier'
+    segments.slice(1).forEach((seg, idx, rest) => {
+      localPath += `/${seg}`
+      const isLast = idx === rest.length - 1
+      const base = isLast && customLastLabel.value
+        ? customLastLabel.value
+        : (labelMap[seg] || decodeURIComponent(seg).replace(/[-_]+/g, ' '))
+      const label = base.charAt(0).toUpperCase() + base.slice(1)
+      acc.push({ label, to: isLast ? undefined : localPath })
+    })
+    return acc
+  }
+
+  // Явная ветка для /local-statuses
+  if (segments[0] === 'local-statuses') {
+    if (segments.length === 1) {
+      acc.push({ label: 'Локальные статусы' })
+      return acc
+    }
+    // /local-statuses/:category...
+    acc.push({ label: 'Локальные статусы', to: '/local-statuses' })
+    let localPath = '/local-statuses'
+    segments.slice(1).forEach((seg, idx, rest) => {
+      localPath += `/${seg}`
+      const isLast = idx === rest.length - 1
+      const base = isLast && customLastLabel.value
+        ? customLastLabel.value
+        : (labelMap[seg] || decodeURIComponent(seg).replace(/[-_]+/g, ' '))
+      const label = base.charAt(0).toUpperCase() + base.slice(1)
+      acc.push({ label, to: isLast ? undefined : localPath })
+    })
+    return acc
+  }
+
+  // Явная ветка для /algorithms/:section (строго 2 сегмента)
+  if (segments[0] === 'algorithms' && segments.length === 2) {
+    const sectionSlug = segments[1]
+    const sectionName = sectionSlug === 'adults' ? 'Взрослые' : sectionSlug === 'pediatrics' ? 'Детские' : sectionSlug === 'onmp-children' ? 'ОНМП Дети' : 'ОНМП'
+    acc.push({ label: 'Алгоритмы', to: '/algorithms' })
+    acc.push({ label: sectionName })
+    return acc
+  }
+
   // Специальная сборка для алгоритмов, чтобы показать: Алгоритмы > Раздел > Категория > Алгоритм
-  if (segments[0] === 'algorithms' && customAlgoTrail.value) {
+  // Используем customAlgoTrail ТОЛЬКО для путей глубже раздела (>= 3 сегментов)
+  if (segments[0] === 'algorithms' && segments.length >= 3 && customAlgoTrail.value) {
     acc.push({ label: 'Алгоритмы', to: '/algorithms' })
     acc.push({ label: customAlgoTrail.value.sectionName || 'Раздел', to: `/algorithms/${customAlgoTrail.value.sectionSlug}` })
     const categoryPath = customAlgoTrail.value.categoryUrl
@@ -162,7 +208,10 @@ const items = computed<BreadcrumbItem[]>(() => {
     path += `/${seg}`
     // Читаемый лейбл: для первого уровня используем карту, для остальных — человекочитаемый slug
     const isLast = idx === segments.length - 1
-    const base = isLast && customLastLabel.value
+    // Если мы на глубине раздела (segments.length === 2), то НЕ используем customLastLabel,
+    // иначе он может подтянуться из предыдущей страницы
+    const allowCustom = !(segments[0] === 'algorithms' && segments.length === 2)
+    const base = isLast && allowCustom && customLastLabel.value
       ? customLastLabel.value
       : (labelMap[seg] || decodeURIComponent(seg).replace(/[-_]+/g, ' '))
     const label = base.charAt(0).toUpperCase() + base.slice(1)

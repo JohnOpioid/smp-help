@@ -1,9 +1,9 @@
 <template>
   <div>
     <main class="flex-1">
-      <!-- Блок поиска отдельно -->
+      <!-- Поиск (реактивный) -->
       <div class="max-w-5xl w-full mx-auto px-4 pt-8">
-        <SearchBar />
+        <ReactiveSearch v-model="searchText" placeholder="Поиск препаратов..." @clear="clearSearch" :ai-enabled="true" />
       </div>
 
       <!-- Основной контент -->
@@ -33,11 +33,10 @@
 
           <ul class="grid grid-cols-1 md:grid-cols-2 gap-0">
             <li v-for="(drug, index) in filteredItems" :key="drug._id"
-              class="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer relative border-b border-slate-100 dark:border-slate-700"
+              class="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer relative border-b border-slate-100 dark:border-slate-700 last:border-b-0"
               :class="{
-                'md:border-r md:border-slate-100 dark:md:border-slate-700': (index % 2 === 0 && index < items.length - 1) || (index === items.length - 1 && items.length % 2 === 1),
-                'md:border-b-0': index >= items.length - 2 && items.length % 2 === 0,
-                'border-b-0': index === items.length - 1
+                'md:border-r md:border-slate-100 dark:md:border-slate-700': (index % 2 === 0 && index < filteredItems.length - 1) || (index === filteredItems.length - 1 && filteredItems.length % 2 === 1),
+                'md:border-b-0': index >= filteredItems.length - 2 && filteredItems.length % 2 === 0
               }" @click="openModal(drug)">
               <div class="flex items-center justify-between">
                 <div class="min-w-0">
@@ -834,7 +833,7 @@ onMounted(async () => {
         const found = items.value.find((d: any) => String(d._id) === String(openDrugId))
         if (found) {
           // Открываем модалку без изменения URL для предотвращения моргания
-          selected.value = found
+          selected.value = normalizeDrug(found)
           modalOpen.value = true
           updateIsBookmarked()
           dropdownOpen.value = false
@@ -844,7 +843,7 @@ onMounted(async () => {
           try {
             const response = await $fetch(`/api/drugs/${openDrugId}`)
             if (response.success && response.data) {
-              selected.value = response.data
+              selected.value = normalizeDrug(response.data)
               modalOpen.value = true
               updateIsBookmarked()
               dropdownOpen.value = false
@@ -887,15 +886,42 @@ onMounted(async () => {
     console.warn('Не удалось загрузить категории', e)
   }
 })
+function normalizeDrug(drug: any) {
+  const d = { ...(drug || {}) }
+  // Приводим категории к массиву объектов { _id, name }
+  const cats = Array.isArray(d.categories) ? d.categories : []
+  d.categories = cats.map((c: any) => {
+    const id = String(c?._id || c?.id || c?.value || '')
+    const name = String(c?.name || findCategoryNameById(id) || '').trim()
+    return { _id: id, name }
+  }).filter((c: any) => c._id)
+  return d
+}
+
+function findCategoryNameById(id: string): string | undefined {
+  if (!id) return undefined
+  const found = (categoryOptions.value || []).find(o => String(o.value) === String(id))
+  return found?.label
+}
+
 const filteredItems = computed(() => {
-  if (!selectedCategoryIds.value.length) return items.value
+  // Текстовый фильтр по поиску
+  const q = (searchText.value || '').toLowerCase().trim()
+  const byText = q
+    ? items.value.filter((d: any) => {
+        const text = [d.name, d.latinName, formatDrugForm(d.forms), ...(d.synonyms||[])].filter(Boolean).join(' ').toLowerCase()
+        return text.includes(q)
+      })
+    : items.value
+
+  if (!selectedCategoryIds.value.length) return byText
   const set = new Set<string>(selectedCategoryIds.value.map((v: string) => String(v)))
   const selectedNames = new Set<string>(
     categoryOptions.value
       .filter((o) => set.has(o.value))
       .map((o) => normalizeCategoryName(o.label))
   )
-  return items.value.filter((d: any) => {
+  return byText.filter((d: any) => {
     const cats = (d?.categories || [])
     const catIds = cats.map((c: any) => String(c?._id || c?.id || c?.value || ''))
     if (catIds.some((id: string) => set.has(id))) return true
@@ -904,6 +930,9 @@ const filteredItems = computed(() => {
     return catNames.some((n: string) => selectedNames.has(n))
   })
 })
+
+const searchText = ref('')
+function clearSearch() { searchText.value = '' }
 
 function normalizeCategoryName(name: string): string {
   const n = (name || '').toLowerCase().trim()

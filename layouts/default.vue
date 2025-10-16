@@ -100,6 +100,25 @@
     
     <!-- Панель поиска с чат-ботом -->
     <BottomSearchPanel :is-open="isBottomSearchOpen" @close="closeBottomSearch" />
+    
+    <!-- Глобальный индикатор предзагрузки -->
+    <PreloadIndicator />
+    
+    <!-- Тестовая кнопка для проверки предзагрузки (только в dev режиме) -->
+    <div v-if="isDev" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+      <button 
+        @click="testPreloader"
+        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium transition-colors"
+      >
+        Тест предзагрузки
+      </button>
+      <button 
+        @click="testCodifierPreload"
+        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium transition-colors"
+      >
+        Тест кодификатора
+      </button>
+    </div>
   </div>
 </template>
 
@@ -148,11 +167,27 @@ onMounted(() => {
   // capture:true чтобы опередить обработчики браузера
   window.addEventListener('keydown', handleGlobalHotkey, { passive: false, capture: true })
   
+  // Настраиваем автоматическую предзагрузку
+  const { setupAutoPreload } = useAutoPreload()
+  setupAutoPreload()
+  
   onUnmounted(() => {
     window.removeEventListener('openBottomSearch', handleOpenBottomSearch)
     window.removeEventListener('keydown', handleGlobalHotkey as any)
   })
 })
+
+// Тестовая функция для проверки предзагрузки
+const isDev = process.dev
+const testPreloader = async () => {
+  const { testPreloader: testFn } = await import('~/composables/usePreloader')
+  await testFn()
+}
+
+const testCodifierPreload = async () => {
+  const { preloadPage } = await import('~/composables/usePreloader')
+  await preloadPage.codifier('cardiology')
+}
 
 // Динамический класс контейнера - h-screen только для страницы substations
 const containerClass = computed(() => {

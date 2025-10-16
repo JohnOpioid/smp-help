@@ -97,6 +97,9 @@
 
     <!-- Панель поиска с чат-ботом -->
     <BottomSearchPanel :is-open="isBottomSearchOpen" @close="closeBottomSearch" />
+    
+    <!-- Глобальный индикатор предзагрузки -->
+    <PreloadIndicator />
   </div>
 </template>
 
@@ -133,6 +136,10 @@ onMounted(() => {
     if (!e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey && e.keyCode === 191) { e.preventDefault(); isBottomSearchOpen.value = true; window.dispatchEvent(new Event('openBottomSearch')) }
   }
   window.addEventListener('keydown', handleGlobalHotkey, { passive: false, capture: true })
+  
+  // Настраиваем автоматическую предзагрузку
+  const { setupAutoPreload } = useAutoPreload()
+  setupAutoPreload()
 
   onUnmounted(() => {
     window.removeEventListener('openBottomSearch', handleOpenBottomSearch)

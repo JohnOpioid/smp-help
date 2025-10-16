@@ -1,9 +1,9 @@
 <template>
   <div>
     <main class="flex-1">
-      <!-- Блок поиска отдельно -->
+      <!-- Поиск по текущей категории (реактивный) -->
       <div class="max-w-5xl w-full mx-auto px-4 pt-8">
-        <SearchBar />
+        <ReactiveSearch v-model="searchText" placeholder="Поиск в этой категории..." @clear="clearSearch" :ai-enabled="true" />
       </div>
 
       <!-- Основной контент -->
@@ -18,12 +18,12 @@
           </div>
 
           <ul class="grid grid-cols-1 md:grid-cols-2 gap-0">
-            <li v-for="(item, index) in items" :key="item._id"
+            <li v-for="(item, index) in filteredItems" :key="item._id"
               class="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer relative border-b border-slate-100 dark:border-slate-700"
               :class="{ 
-                'md:border-r md:border-slate-100 dark:md:border-slate-700': (index % 2 === 0 && index < items.length - 1) || (index === items.length - 1 && items.length % 2 === 1),
-                'md:border-b-0': index >= items.length - 2 && items.length % 2 === 0,
-                'border-b-0': index === items.length - 1
+                'md:border-r md:border-slate-100 dark:md:border-slate-700': (index % 2 === 0 && index < filteredItems.length - 1) || (index === filteredItems.length - 1 && filteredItems.length % 2 === 1),
+                'md:border-b-0': index >= filteredItems.length - 2 && filteredItems.length % 2 === 0,
+                'border-b-0': index === filteredItems.length - 1
               }"
               @click="openModal(item)">
               <div class="flex items-center justify-between">
@@ -52,10 +52,42 @@
             <!-- Триггер для ленивой загрузки -->
             <div ref="loadMoreTrigger" class="h-1 col-span-1 md:col-span-2"></div>
 
-            <li v-if="!isLoading && items.length === 0" class="col-span-1 md:col-span-2 p-6">
-              <p class="text-sm text-slate-600 dark:text-slate-300">Заболевания не найдены</p>
+            <li v-if="!isLoading && filteredItems.length === 0 && otherCategoryGroups.length === 0" class="col-span-1 md:col-span-2 p-6">
+              <div class="flex flex-col items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <span>В категории ничего не найдено</span>
+              </div>
             </li>
           </ul>
+
+          <!-- Если в категории не найдено, показать результаты из других категорий -->
+          <div v-if="!isLoading && searchText.trim() && filteredItems.length === 0 && otherCategoryGroups.length > 0" class="pb-4">
+            <div v-for="group in otherCategoryGroups" :key="group.categoryUrl">
+              <div class="relative my-4">
+                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200 dark:border-slate-600"></div></div>
+                <div class="relative flex justify-center text-sm">
+                  <span class="px-3 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-medium">В категории {{ group.categoryName }}</span>
+                </div>
+              </div>
+              <ul class="divide-y divide-slate-100 dark:divide-slate-700">
+                <li v-for="it in group.items" :key="it._id"
+                    class="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer relative border-b border-slate-100 dark:border-slate-700 last:border-b-0"
+                    @click="openDiagnosis(it)">
+                  <div class="flex items-center justify-between">
+                    <div class="min-w-0">
+                      <p class="text-slate-900 dark:text-white font-medium truncate">{{ it.name }}</p>
+                      <div class="flex items-center gap-2 mt-1 flex-wrap">
+                        <span class="text-xs px-2 py-1 rounded bg-slate-200 text-slate-600 font-mono">{{ it.mkbCode }}</span>
+                        <span v-if="it.stationCode" class="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 font-mono">{{ it.stationCode }}</span>
+                      </div>
+                      <p v-if="it.note" class="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">{{ it.note }}</p>
+                    </div>
+                    <svg class="w-4 h-4 text-slate-400 self-start" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
 
     <!-- Модалка с информацией о заболевании -->
@@ -328,6 +360,52 @@ onUnmounted(() => {
 
 // Computed для отображения элементов
 const items = computed(() => allItems.value)
+const searchText = ref('')
+const filteredItems = computed(() => {
+  const q = searchText.value.trim().toLowerCase()
+  if (!q) return items.value
+  return (items.value as any[]).filter((it) => {
+    const text = [it.name, it.mkbCode, it.stationCode, it.note].filter(Boolean).join(' ').toLowerCase()
+    return text.includes(q)
+  })
+})
+
+function clearSearch() { searchText.value = '' }
+
+// Поиск по всем категориям при пустой выдаче в текущей
+const allDiagnoses = ref<any[]>([])
+onMounted(async () => {
+  try {
+    const res: any = await $fetch('/api/mkb/all')
+    allDiagnoses.value = res?.items || []
+  } catch {}
+})
+
+const otherCategoryGroups = computed(() => {
+  const q = searchText.value.trim().toLowerCase()
+  if (!q) return []
+  const currentUrl = route.params.url as string
+  const matched = (allDiagnoses.value as any[]).filter((it) => {
+    const text = [it.name, it.mkbCode, it.stationCode, it.note].filter(Boolean).join(' ').toLowerCase()
+    const catUrl = String(it.category?.url || '')
+    return text.includes(q) && catUrl && catUrl !== currentUrl
+  }).slice(0, 200)
+  const groups: Record<string, any[]> = {}
+  for (const it of matched) {
+    const cu = String(it.category?.url)
+    ;(groups[cu] ||= []).push(it)
+  }
+  return Object.keys(groups).map((cu) => ({
+    categoryUrl: cu,
+    categoryName: String((groups[cu][0]?.category?.name) || 'Категория'),
+    items: groups[cu]
+  }))
+})
+
+function openDiagnosis(it: any) {
+  const url = String(it.category?.url || '')
+  if (url) navigateTo(`/codifier/${url}?open=${it._id}`)
+}
 
 const { isMobile } = useIsMobile()
 const modalOpen = ref(false)

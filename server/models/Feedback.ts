@@ -1,56 +1,76 @@
 import mongoose from 'mongoose'
 
 const feedbackSchema = new mongoose.Schema({
-  // Исходный вопрос пользователя
-  question: {
+  // Основная информация о запросе
+  originalQuery: {
     type: String,
     required: true,
-    trim: true
+    index: true
   },
   
-  // Ответ бота
-  answer: {
+  // Ответ ИИ, который получил дизлайк
+  aiResponse: {
     type: String,
     required: true
   },
   
-  // Тип оценки: positive (палец вверх) или negative (палец вниз)
-  rating: {
-    type: String,
-    enum: ['positive', 'negative'],
-    required: true
-  },
-  
-  // Комментарий пользователя (для негативных оценок)
-  userComment: {
-    type: String,
-    default: ''
-  },
-  
-  // Результаты поиска, которые были в ответе
+  // Результаты поиска, которые показал ИИ
   searchResults: [{
-    id: String,
-    title: String,
-    type: String,
-    description: String
+    type: mongoose.Schema.Types.Mixed
   }],
   
+  // Информация о пользователе
+  userIdentifier: {
+    type: String,
+    default: 'anonymous'
+  },
+  
+  // Обратная связь от пользователя
+  userFeedback: {
+    type: String,
+    required: true
+  },
+  
+  // Анализ обратной связи ИИ
+  aiAnalysis: {
+    issues: [String], // Проблемы, которые выявил ИИ
+    improvements: [String], // Предложения по улучшению
+    intent: String, // Правильное намерение пользователя
+    confidence: Number, // Уверенность в анализе
+    textAnalysis: String, // Текстовый анализ для обучения ИИ
+    medicalTerms: [String], // Медицинские термины
+    keywords: [String], // Ключевые слова
+    context: String // Медицинский контекст
+  },
+  
+  // Статус обработки
+  status: {
+    type: String,
+    enum: ['pending', 'analyzed', 'learned'],
+    default: 'pending'
+  },
+  
   // Метаданные
-  createdAt: {
+  timestamp: {
     type: Date,
     default: Date.now
   },
   
-  // IP или идентификатор пользователя (для аналитики)
-  userIdentifier: {
-    type: String,
-    default: ''
+  // Для обучения модели
+  learningData: {
+    correctIntent: String,
+    correctResults: [mongoose.Schema.Types.Mixed],
+    keywords: [String],
+    context: String
   }
+}, {
+  timestamps: true,
+  collection: 'feedbacks' // Явно указываем имя коллекции
 })
 
 // Индексы для быстрого поиска
-feedbackSchema.index({ question: 'text', answer: 'text', userComment: 'text' })
-feedbackSchema.index({ rating: 1 })
-feedbackSchema.index({ createdAt: -1 })
+feedbackSchema.index({ originalQuery: 1, timestamp: -1 })
+feedbackSchema.index({ status: 1 })
+feedbackSchema.index({ 'aiAnalysis.intent': 1 })
 
 export default mongoose.models.Feedback || mongoose.model('Feedback', feedbackSchema)

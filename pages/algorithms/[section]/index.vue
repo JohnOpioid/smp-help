@@ -151,6 +151,8 @@ function openAlgoFromIndex(id: string) {
   if (!activeCategoryUrl.value) return
   navigateTo(`/algorithms/${sectionToSlug(activeSection.value)}/${activeCategoryUrl.value}/view/${id}`)
 }
+
+// Поиск перенесен в лейаут algorithms.vue
 </script>
 
 

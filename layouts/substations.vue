@@ -8,11 +8,20 @@
           <slot />
         </main>
       </div>
+      
+      <!-- Глобальный индикатор предзагрузки -->
+      <PreloadIndicator />
   </UApp>
 </template>
 
 <script setup lang="ts">
 // Лайаут под список и карту
+
+// Настраиваем автоматическую предзагрузку
+onMounted(() => {
+  const { setupAutoPreload } = useAutoPreload()
+  setupAutoPreload()
+})
 </script>
 
 

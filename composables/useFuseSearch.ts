@@ -217,26 +217,58 @@ export const useFuseSearch = () => {
     
     const fuse = createFuseInstance(items)
     
+    // Генерируем варианты запроса с учётом частых опечаток (рус. суффикс -ческ-)
+    const generateQueryVariants = (q: string): string[] => {
+      const variants = new Set<string>()
+      const base = q.trim()
+      variants.add(base)
+      const rules: Array<[RegExp, string]> = [
+        [/чск/gi, 'ческ'],
+        [/ничск/gi, 'ническ'],
+        [/гипертонич(?!е)/gi, 'гипертоничес'],
+      ]
+      let produced = new Set<string>()
+      rules.forEach(([re, rep]) => {
+        if (re.test(base)) {
+          const v = base.replace(re, rep)
+          if (v !== base) { variants.add(v); produced.add(v) }
+        }
+      })
+      // Комбинированные замены на случай нескольких опечаток
+      let combo = base
+      rules.forEach(([re, rep]) => { combo = combo.replace(re, rep) })
+      if (combo !== base) variants.add(combo)
+      return Array.from(variants)
+    }
+
     // Выполняем поиск с разными стратегиями для максимальной гибкости
     let allResults: any[] = []
+    const queryVariants = generateQueryVariants(query)
     
-    // 1. Поиск по полному запросу
-    const fullQueryResults = fuse.search(query)
-    allResults.push(...fullQueryResults.map(r => ({ ...r, searchType: 'full' })))
+    // 1. Поиск по полному запросу (включая варианты)
+    queryVariants.forEach(qv => {
+      const fullQueryResults = fuse.search(qv)
+      allResults.push(...fullQueryResults.map(r => ({ ...r, searchType: 'full', queryVariant: qv })))
+    })
     
     // 2. Поиск по каждому слову отдельно (для гибкости к порядку)
     if (queryWords.length > 1) {
       queryWords.forEach(word => {
-        const wordResults = fuse.search(word)
-        allResults.push(...wordResults.map(r => ({ ...r, searchType: 'word', searchWord: word })))
+        const wordVariants = generateQueryVariants(word)
+        wordVariants.forEach(wv => {
+          const wordResults = fuse.search(wv)
+          allResults.push(...wordResults.map(r => ({ ...r, searchType: 'word', searchWord: wv })))
+        })
       })
     }
     
     // 3. Поиск по переставленным словам (если запрос из 2 слов)
     if (queryWords.length === 2) {
       const reversedQuery = `${queryWords[1]} ${queryWords[0]}`
-      const reversedResults = fuse.search(reversedQuery)
-      allResults.push(...reversedResults.map(r => ({ ...r, searchType: 'reversed' })))
+      generateQueryVariants(reversedQuery).forEach(rq => {
+        const reversedResults = fuse.search(rq)
+        allResults.push(...reversedResults.map(r => ({ ...r, searchType: 'reversed', queryVariant: rq })))
+      })
     }
     
     // 4. Специальный поиск для МКБ кодов (если запрос похож на код)

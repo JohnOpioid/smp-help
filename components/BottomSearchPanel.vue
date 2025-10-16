@@ -22,7 +22,7 @@
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-4">
                 <div class="flex items-center gap-2 bg-white dark:bg-slate-700 rounded-lg px-3 py-1.5">
-                  <span class="text-sm text-slate-600 dark:text-slate-300">ИИ</span>
+                  <span class="text-sm text-slate-600 dark:text-slate-300">Амби</span>
                   <USwitch :model-value="aiEnabled" @update:model-value="val => aiEnabled = val" size="sm" color="neutral" class="cursor-pointer" />
                   <span class="text-xs text-slate-500 dark:text-slate-400">{{ aiEnabled ? 'включен' : 'выключен' }}</span>
                 </div>
@@ -62,7 +62,7 @@
                 <div class="flex flex-col gap-2 max-w-2xl">
                   <div class="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
                     <p class="text-slate-900 dark:text-white mb-2" v-if="aiEnabled">
-                      Привет! Я <strong>Милена</strong> — ваш помощник СМП. Подскажу диагнозы по МКБ,
+                      Привет! Я <strong>Амби</strong> — ваш помощник в работе скорой медицинской помощи. Подскажу диагнозы по МКБ,
                       помогу подобрать препараты (с дозировками и аналогами), дам короткие пошаговые
                       инструкции и алгоритмы, а также найду ближайшие подстанции. Опишите задачу обычными
                       словами — я подберу точные материалы из базы и предложу быстрые действия.
@@ -99,11 +99,11 @@
                 <!-- Аватар -->
                 <div v-if="!message.isUser"
                   class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 sticky top-1 self-start z-10 overflow-hidden"
-                  :class="message.confirmClear ? 'bg-amber-500' : 'bg-indigo-600'">
+                  :class="message.confirmClear ? 'bg-amber-500' : (message.isAI || (message.isLoading && aiEnabled)) ? 'bg-indigo-600' : 'bg-slate-600'">
                   <svg v-if="message.confirmClear" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 4h.01M12 5a7 7 0 100 14 7 7 0 000-14z" />
                   </svg>
-                  <img v-else-if="message.isAI" src="/assets/img/AI-avatar.png" alt="AI" class="w-8 h-8 object-cover" />
+                  <img v-else-if="message.isAI || (message.isLoading && aiEnabled)" src="/assets/img/AI-avatar.png" alt="AI" class="w-8 h-8 object-cover" />
                   <svg v-else class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                   </svg>
@@ -116,7 +116,7 @@
                 <div class="max-w-2xl">
                   <UContextMenu :items="getContextMenuItems(message)">
                     <div class="rounded-lg p-2" :class="message.isUser ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800'">
-                      <div v-if="!message.isUser && message.isAI && !message.confirmClear" class="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1">Милена</div>
+                      <div v-if="!message.isUser && (message.isAI || (message.isLoading && aiEnabled)) && !message.confirmClear" class="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1">Милена</div>
 
                       <div v-if="message.isLoading" class="flex items-center gap-3">
                         <div class="flex space-x-1">
@@ -141,10 +141,12 @@
                         <div v-else>
                           <div class="max-w-none text-slate-900 dark:text-white leading-relaxed" :class="message.isUser ? 'text-white' : ''" v-html="renderMarkdown(message.text)"></div>
 
+                          
+
                           <!-- Секции результатов (МКБ / ЛС / Алгоритмы) -->
-                          <div v-if="message.results && message.results.length > 0" class="mt-4 space-y-4">
+                          <div v-if="message.results && message.results.length > 0 && (!message.isAI || isDetailsShown(message.id))" class="mt-4 space-y-4">
                             <!-- Диагнозы МКБ -->
-                            <template v-if="getSectionAll(message, 'mkb').length">
+                            <template v-if="getSectionAll(message, 'mkb').length && (!(message as any).intent || (message as any).intent === 'mkb')">
                               <div class="text-xs font-medium text-slate-500 dark:text-slate-400 px-1">Диагнозы МКБ</div>
                               <div class="space-y-3">
                                 <div v-for="result in getSectionVisible(message, 'mkb')" :key="result.id" class="bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
@@ -152,6 +154,9 @@
                                     <div class="flex items-start justify-between">
                                       <div class="flex-1">
                                         <h4 class="font-medium text-slate-900 dark:text-white">{{ result.title }}</h4>
+                                        <p v-if="(result.description || result.data?.note || result.data?.description)" class="text-sm text-slate-600 dark:text-slate-300 mt-1">
+                                          {{ truncateToApproximateLines(result.description || result.data?.note || result.data?.description, 5) }}
+                                        </p>
                                       </div>
                                     </div>
                                   </div>
@@ -187,7 +192,7 @@
                             </template>
 
                             <!-- Локальные статусы -->
-                            <template v-if="getSectionAll(message, 'ls').length">
+                            <template v-if="getSectionAll(message, 'ls').length && (!(message as any).intent || (message as any).intent === 'ls')">
                               <div class="text-xs font-medium text-slate-500 dark:text-slate-400 px-1">Локальные статусы</div>
                               <div class="space-y-3">
                                 <div v-for="result in getSectionVisible(message, 'ls')" :key="result.id" class="bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
@@ -195,7 +200,9 @@
                                     <div class="flex items-start justify-between">
                                       <div class="flex-1">
                                         <h4 class="font-medium text-slate-900 dark:text-white">{{ result.title }}</h4>
-                                        <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">{{ result.description }}</p>
+                                        <p v-if="(result.description || result.data?.description || result.data?.note)" class="text-sm text-slate-600 dark:text-slate-300 mt-1">
+                                          {{ truncateToApproximateLines(result.description || result.data?.description || result.data?.note, 5) }}
+                                        </p>
                                       </div>
                                     </div>
                                   </div>
@@ -224,7 +231,7 @@
                             </template>
 
                             <!-- Алгоритмы -->
-                            <template v-if="getSectionAll(message, 'algo').length">
+                            <template v-if="getSectionAll(message, 'algo').length && (!(message as any).intent || (message as any).intent === 'algorithm' || (message as any).intent === 'mkb')">
                               <div class="text-xs font-medium text-slate-500 dark:text-slate-400 px-1">Алгоритмы</div>
                               <div class="space-y-3">
                                 <div v-for="result in getSectionVisible(message, 'algo')" :key="result.id" class="bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
@@ -279,7 +286,7 @@
                             </template>
 
                             <!-- Препараты -->
-                            <template v-if="getSectionAll(message, 'drug').length">
+                            <template v-if="getSectionAll(message, 'drug').length && (!(message as any).intent || (message as any).intent === 'drug' || (message as any).intent === 'mkb')">
                               <div class="text-xs font-medium text-slate-500 dark:text-slate-400 px-1">Препараты</div>
                               <div class="space-y-3">
                                 <div v-for="result in getSectionVisible(message, 'drug')" :key="result.id" class="bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
@@ -288,10 +295,11 @@
                                       <div class="flex-1">
                                         <h4 class="font-medium text-slate-900 dark:text-white">{{ result.title }}</h4>
                                         <p v-if="result.data?.latinName" class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ result.data.latinName }}</p>
+                                        <p v-if="result.dosage" class="text-sm text-green-600 dark:text-green-400 mt-1 font-medium">{{ result.dosage }}</p>
                                         <p v-if="result.data?.synonyms && result.data.synonyms.length > 0" class="text-sm text-slate-600 dark:text-slate-300 mt-1">
                                           <span class="font-medium">Синонимы:</span> {{ result.data.synonyms.join(', ') }}
                                         </p>
-                                        <p v-if="result.description" class="text-sm text-slate-600 dark:text-slate-300 mt-1">{{ result.description }}</p>
+                                        <p v-if="result.description && result.description !== result.data?.latinName" class="text-sm text-slate-600 dark:text-slate-300 mt-1">{{ result.description }}</p>
                                       </div>
                                     </div>
                                   </div>
@@ -319,7 +327,7 @@
                             </template>
 
                             <!-- Подстанции -->
-                            <template v-if="getSectionAll(message, 'substation').length">
+                            <template v-if="getSectionAll(message, 'substation').length && (!(message as any).intent || (message as any).intent === 'substation')">
                               <div class="text-xs font-medium text-slate-500 dark:text-slate-400 px-1">Подстанции</div>
                               <div class="space-y-3">
                                 <div v-for="result in getSectionVisible(message, 'substation')" :key="result.id" class="bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
@@ -401,18 +409,22 @@
                             <div class="text-xs text-slate-400">{{ formatTime(message.timestamp) }}</div>
                             <div v-if="!message.isUser && !message.isLoading" class="flex items-center gap-2">
                               <button @click="rateBotResponse(message, 'positive')" :class="[
-                                'p-1 rounded-full transition-colors text-xs',
+                                'w-8 h-8 rounded-full transition-colors text-xs flex items-center justify-center cursor-pointer',
                                 message.userRating === 'positive'
                                   ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
-                                  : 'text-slate-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20'
+                                  : message.userRating === 'negative'
+                                    ? 'opacity-30'
+                                    : 'text-slate-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20'
                               ]" :disabled="!!message.userRating" title="Хороший ответ">
                                 <UIcon name="i-lucide-thumbs-up" class="w-4 h-4" />
                               </button>
                               <button @click="rateBotResponse(message, 'negative')" :class="[
-                                'p-1 rounded-full transition-colors text-xs',
+                                'w-8 h-8 rounded-full transition-colors text-xs flex items-center justify-center cursor-pointer',
                                 message.userRating === 'negative'
                                   ? 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400'
-                                  : 'text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20'
+                                  : message.userRating === 'positive'
+                                    ? 'opacity-30'
+                                    : 'text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20'
                               ]" :disabled="!!message.userRating" title="Плохой ответ">
                                 <UIcon name="i-lucide-thumbs-down" class="w-4 h-4" />
                               </button>
@@ -423,12 +435,102 @@
                     </div>
                   </UContextMenu>
 
-                  <!-- Быстрые ответы -->
-                  <div v-if="aiEnabled && message.quickReplies && message.quickReplies.length > 0" class="flex flex-wrap gap-2 mt-3 text-left">
+                  <!-- Быстрые ответы (не показывать на follow-up с forceExpand) -->
+                  <div v-if="aiEnabled && !('forceExpand' in (message as any)) && message.quickReplies && message.quickReplies.length > 0" class="flex flex-wrap gap-2 mt-3 text-left">
                     <button v-for="reply in message.quickReplies" :key="reply" @click="handleQuickReply(reply, message)"
-                      class="inline-flex items-center px-3 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-full text-sm hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors">
+                      class="inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors cursor-pointer">
                       {{ reply }}
                     </button>
+                  </div>
+
+                  <!-- Кнопки разделов по факту наличия данных (если quickReplies не пришли); скрыть для follow-up с forceExpand -->
+                  <div v-else-if="aiEnabled && !('forceExpand' in (message as any)) && Array.isArray((message as any).availableSections) && (message as any).availableSections.length > 0" class="flex flex-wrap gap-2 mt-3 text-left">
+                    <button v-if="(message as any).availableSections.includes('mkb')" @click="handleQuickReply('Показать кодификатор', message)" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors cursor-pointer">Показать кодификатор</button>
+                    <button v-if="(message as any).availableSections.includes('algo')" @click="handleQuickReply('Показать алгоритмы', message)" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors cursor-pointer">Показать алгоритмы</button>
+                    <button v-if="(message as any).availableSections.includes('ls')" @click="handleQuickReply('Показать локальные статусы', message)" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors cursor-pointer">Показать локальные статусы</button>
+                    <button v-if="(message as any).availableSections.includes('drug')" @click="handleQuickReply('Показать препараты', message)" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors cursor-pointer">Показать препараты</button>
+                  </div>
+
+                  <!-- Наводящие вопросы от ИИ (clarifyingQuestions) -->
+                  <div v-if="aiEnabled && Array.isArray((message as any).clarifyingQuestions) && (message as any).clarifyingQuestions.length > 0" class="flex flex-wrap gap-2 mt-3 text-left">
+                    <button v-for="q in (message as any).clarifyingQuestions" :key="q" @click="sendQuickMessage(q)"
+                      class="inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors cursor-pointer">
+                      {{ q }}
+                    </button>
+                  </div>
+
+                  <!-- Система обратной связи -->
+                  <div v-if="message.isFeedbackRequest" class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div class="flex items-start gap-3">
+                      <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-800 flex items-center justify-center flex-shrink-0">
+                        <UIcon name="i-lucide-message-circle" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div class="flex-1">
+                        <p class="text-sm text-blue-800 dark:text-blue-200 mb-3">{{ message.text }}</p>
+                        <div class="flex gap-2">
+                          <UInput 
+                            v-model="feedbackInputs[message.id]" 
+                            placeholder="Опишите, что не так..."
+                            class="flex-1"
+                            @keyup.enter="submitUserFeedback(message, feedbackInputs[message.id])"
+                          />
+                          <UButton 
+                            @click="submitUserFeedback(message, feedbackInputs[message.id])"
+                            :disabled="!feedbackInputs[message.id]?.trim()"
+                            size="sm"
+                            color="primary"
+                          >
+                            Отправить
+                          </UButton>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Ответ ИИ на обратную связь -->
+                  <div v-if="message.isAIResponse && message.analysis" class="mt-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                    <div class="flex items-start gap-3">
+                      <div class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-800 flex items-center justify-center flex-shrink-0">
+                        <UIcon name="i-lucide-brain" class="w-4 h-4 text-green-600 dark:text-green-400" />
+                      </div>
+                      <div class="flex-1">
+                        <div class="text-sm text-green-800 dark:text-green-200 mb-3" v-html="message.text"></div>
+                        
+                        <!-- Анализ проблем -->
+                        <div v-if="message.analysis.issues?.length" class="mb-3">
+                          <h4 class="text-xs font-semibold text-green-700 dark:text-green-300 mb-2">Выявленные проблемы:</h4>
+                          <ul class="text-xs text-green-600 dark:text-green-400 space-y-1">
+                            <li v-for="issue in message.analysis.issues" :key="issue" class="flex items-start gap-2">
+                              <UIcon name="i-lucide-alert-circle" class="w-3 h-3 mt-0.5 flex-shrink-0" />
+                              {{ issue }}
+                            </li>
+                          </ul>
+                        </div>
+
+                        <!-- Предложения по улучшению -->
+                        <div v-if="message.analysis.improvements?.length" class="mb-3">
+                          <h4 class="text-xs font-semibold text-green-700 dark:text-green-300 mb-2">Предложения по улучшению:</h4>
+                          <ul class="text-xs text-green-600 dark:text-green-400 space-y-1">
+                            <li v-for="improvement in message.analysis.improvements" :key="improvement" class="flex items-start gap-2">
+                              <UIcon name="i-lucide-lightbulb" class="w-3 h-3 mt-0.5 flex-shrink-0" />
+                              {{ improvement }}
+                            </li>
+                          </ul>
+                        </div>
+
+                        <!-- Кнопка завершения -->
+                        <div v-if="message.showLearnButton" class="flex justify-end">
+                          <UButton 
+                            @click="completeFeedback(message)"
+                            size="sm"
+                            color="success"
+                            variant="outline"
+                          >
+                            Понятно, спасибо! 👍
+                          </UButton>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   <!-- learning-note футер -->
@@ -633,13 +735,59 @@ interface ChatMessage {
   fullResults?: { mkb?: SearchResult[]; ls?: SearchResult[]; algo?: SearchResult[] }
   isAI?: boolean
   confirmClear?: boolean
+  
+  // Новые поля для системы обратной связи
+  feedbackId?: string
+  waitingForFeedback?: boolean
+  isFeedbackRequest?: boolean
+  originalMessageId?: string
+  isAIResponse?: boolean
+  analysis?: any
+  showLearnButton?: boolean
+  isCompleted?: boolean
 }
 
 const chatMessages = ref<ChatMessage[]>([])
 const currentChatMessage = ref('')
 const isChatProcessing = ref(false)
 const chatInput = ref<HTMLInputElement>()
+
+// Система обратной связи
+const feedbackInputs = ref<Record<string, string>>({})
 const contentContainer = ref<HTMLElement>()
+
+// Typewriter state per message
+const typingTimers = new Map<string, any>()
+function startTypewriter(messageId: string, fullText: string) {
+  stopTypewriter(messageId)
+  const speed = 12 // chars per tick
+  let idx = 0
+  const timer = setInterval(() => {
+    const msg = chatMessages.value.find(m => m.id === messageId)
+    if (!msg) { stopTypewriter(messageId); return }
+    idx = Math.min(idx + speed, fullText.length)
+    msg.text = fullText.slice(0, idx)
+    // автоскролл во время печати, если пользователь не прокрутил далеко вверх
+    try {
+      const el = contentContainer.value
+      if (el) {
+        const nearBottom = (el.scrollHeight - el.scrollTop - el.clientHeight) < 120
+        if (nearBottom) {
+          el.scrollTop = el.scrollHeight
+        }
+      }
+    } catch {}
+    if (idx >= fullText.length) {
+      stopTypewriter(messageId)
+      saveChatToStorage() // persist final text
+    }
+  }, 20)
+  typingTimers.set(messageId, timer)
+}
+function stopTypewriter(messageId: string) {
+  const t = typingTimers.get(messageId)
+  if (t) { clearInterval(t); typingTimers.delete(messageId) }
+}
 
 // Поиск (локальный, без режима UI поиска)
 const searchQuery = ref('')
@@ -830,12 +978,33 @@ const renderMarkdown = (text: string): string => {
   html = html.replace(/^###### (.*$)/gm, '<h6 class="text-sm font-medium text-slate-600 dark:text-slate-400 mt-1 mb-1">$1<\/h6>')
   html = html.replace(/^##### (.*$)/gm, '<h5 class="text-sm font-medium text-slate-600 dark:text-slate-400 mt-2 mb-1">$1<\/h5>')
   html = html.replace(/^#### (.*$)/gm, '<h4 class="text-base font-medium text-slate-700 dark:text-slate-300 mt-2 mb-1">$1<\/h4>')
-  html = html.replace(/^### (.*$)/gm, '<h3 class="text-lg font-semibold mt-3 mb-2">$1<\/h3>')
+  html = html.replace(/^### (.*$)/gm, '<h3 class="text-base font-semibold mt-3 mb-1">$1</h3>')
   html = html.replace(/^## (.*$)/gm, '<h2 class="text-xl font-semibold mt-3 mb-2">$1<\/h2>')
   html = html.replace(/^# (.*$)/gm, '<h1 class="text-2xl font-bold mt-3 mb-2">$1<\/h1>')
   html = html.replace(/`([^`]*)`/g, '<code class="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded text-sm font-mono">$1<\/code>')
-  html = html.replace(/\n\n/g, '<div class="mb-3"></div>')
-  html = html.replace(/\n/g, ' ')
+  // Сохраняем переводы строк до этапа сборки списков/абзацев
+
+  // Simple Markdown to HTML (very lightweight handling for headings and lists)
+  html = html
+    .replace(/^###\s+(.*)$/gim, '<h3 class="text-base font-semibold mt-3 mb-1">$1</h3>')
+    .replace(/^\*\*(.*?)\*\*:\s*(.*)$/gim, '<p><span class="font-semibold">$1:</span> $2</p>')
+    .replace(/^>\s*(.*)$/gim, '<blockquote class="border-l-4 pl-3 text-slate-600 dark:text-slate-300">$1</blockquote>')
+    // списки с возможными ведущими пробелами
+    .replace(/^\s*\-\s+(.*)$/gim, '<li class="flex items-start gap-2"><span class="inline-flex mt-0.5"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-green-600 dark:text-green-400"><path fill-rule="evenodd" d="M16.704 5.29a1 1 0 0 1 0 1.42l-7.5 7.5a1 1 0 0 1-1.414 0l-3-3a1 1 0 1 1 1.414-1.42L8.5 12.086l6.793-6.796a1 1 0 0 1 1.411 0z" clip-rule="evenodd"/></svg></span><span>$1</span></li>')
+
+  // Wrap consecutive <li> into <ul>
+  html = html.replace(/(<li[\s\S]*?<\/li>)(?=(?:\n<li|$))/gim, '$1')
+  if (/<li/.test(html)) {
+    html = html.replace(/(?:^|\n)(<li[\s\S]*?<\/li>(?:\n<li[\s\S]*?<\/li>)*)/gim, '<ul class="mt-1 space-y-1 text-slate-700 dark:text-slate-300">$1</ul>')
+  }
+
+  // Paragraphs: double newlines to <p>
+  html = html.split(/\n\n+/).map(block => {
+    if (/^\s*(<h3|<ul|<blockquote|<p|<table|<div|<pre|<code|<li)/.test(block)) return block
+    const safe = block.replace(/\n/g, '<br/>')
+    return `<p class="leading-relaxed">${safe}<\/p>`
+  }).join('\n')
+
   return html
 }
 
@@ -1465,28 +1634,170 @@ const generateNearbySubstationsResponse = (data: any): string => {
   return response
 }
 
-// Оценка ответа
+// Оценка ответа с интеллектуальной обратной связью
 const rateBotResponse = async (message: ChatMessage, rating: 'positive' | 'negative') => {
   if (message.userRating) return
+  
   try {
     if (rating === 'positive') {
-      await saveFeedback(message, rating)
+      // Для лайка анализируем весь чат до этого сообщения и сохраняем для обучения
+      await handlePositiveFeedback(message)
       message.userRating = rating
       saveChatToStorage()
     } else {
-      const userComment = prompt('Что именно не так в этом ответе? Ваш комментарий поможет улучшить качество ответов.')
-      if (userComment && userComment.trim()) {
-        await saveFeedback(message, rating, userComment.trim())
-        message.userRating = rating
-        saveChatToStorage()
-        const thankYouMessage: ChatMessage = { id: Date.now().toString(), text: 'Спасибо за обратную связь! Ваш комментарий поможет мне давать более точные ответы в будущем.', isUser: false, timestamp: new Date() }
-        chatMessages.value.push(thankYouMessage)
-        saveChatToStorage()
-      }
+      // Для дизлайка запускаем интеллектуальную систему обратной связи
+      await handleNegativeFeedback(message)
     }
   } catch (error) {
-    console.error('Ошибка сохранения оценки:', error)
-    alert('Ошибка сохранения оценки. Попробуйте еще раз.')
+    console.error('Ошибка обработки оценки:', error)
+    alert('Ошибка обработки оценки. Попробуйте еще раз.')
+  }
+}
+
+// Обработка позитивной обратной связи
+const handlePositiveFeedback = async (message: ChatMessage) => {
+  try {
+    // Находим индекс текущего сообщения в чате
+    const messageIndex = chatMessages.value.findIndex((m: ChatMessage) => m.id === message.id)
+    if (messageIndex === -1) return
+
+    // Берем все сообщения до этого (включительно)
+    const chatHistory = chatMessages.value.slice(0, messageIndex + 1)
+    
+    // Отправляем на анализ и сохранение для обучения
+    console.log('📤 Отправляем лайк:', {
+      messageId: message.id,
+      chatHistoryLength: chatHistory.length,
+      lastMessage: chatHistory[chatHistory.length - 1]
+    })
+    
+    const response = await $fetch('/api/feedback/handle', {
+      method: 'POST',
+      body: {
+        action: 'like',
+        messageId: message.id,
+        chatHistory: chatHistory,
+        userIdentifier: 'user'
+      }
+    })
+
+    if (response.success) {
+      console.log('✅ Положительная обратная связь сохранена для обучения')
+    }
+  } catch (error) {
+    console.error('Ошибка обработки положительной обратной связи:', error)
+  }
+}
+
+// Обработка негативной обратной связи
+const handleNegativeFeedback = async (message: ChatMessage) => {
+  try {
+    // Отправляем запрос на создание записи обратной связи
+    const response = await $fetch('/api/feedback/handle', {
+      method: 'POST',
+      body: {
+        action: 'dislike',
+        messageId: message.id,
+        originalQuery: message.originalQuestion || 'Неизвестный запрос',
+        aiResponse: message.text || 'Пустой ответ ИИ',
+        searchResults: message.results || [],
+        userIdentifier: 'user' // Можно получить из системы аутентификации
+      }
+    })
+
+    if (response.success) {
+      // Помечаем сообщение как ожидающее обратную связь
+      message.userRating = 'negative'
+      message.feedbackId = (response as any).feedbackId
+      message.waitingForFeedback = true
+      
+      // Добавляем сообщение ИИ с просьбой о обратной связи
+      const feedbackMessage: ChatMessage = {
+        id: `feedback-${Date.now()}`,
+        text: response.message,
+        isUser: false,
+        timestamp: new Date(),
+        isFeedbackRequest: true,
+        originalMessageId: message.id
+      }
+      
+      chatMessages.value.push(feedbackMessage)
+      saveChatToStorage()
+      
+      // Автоскролл к новому сообщению
+      await nextTick()
+      scrollToBottom()
+    }
+  } catch (error) {
+    console.error('Ошибка создания обратной связи:', error)
+    alert('Ошибка создания обратной связи. Попробуйте еще раз.')
+  }
+}
+
+// Отправка обратной связи пользователя
+const submitUserFeedback = async (feedbackMessage: ChatMessage, userFeedback: string) => {
+  try {
+    const response = await $fetch('/api/feedback/handle', {
+      method: 'POST',
+      body: {
+        action: 'submit_feedback',
+        messageId: feedbackMessage.originalMessageId,
+        userFeedback: userFeedback,
+        userIdentifier: 'user'
+      }
+    })
+
+    if (response.success) {
+      // Обновляем сообщение с ответом ИИ
+      feedbackMessage.text = response.message
+      feedbackMessage.isFeedbackRequest = false
+      feedbackMessage.isAIResponse = true
+      feedbackMessage.analysis = (response as any).analysis
+      
+      // Добавляем кнопку "Понятно" для завершения обратной связи
+      feedbackMessage.showLearnButton = true
+      
+      saveChatToStorage()
+      
+      // Автоскролл
+      await nextTick()
+      scrollToBottom()
+    }
+  } catch (error) {
+    console.error('Ошибка отправки обратной связи:', error)
+    alert('Ошибка отправки обратной связи. Попробуйте еще раз.')
+  }
+}
+
+// Завершение процесса обратной связи
+const completeFeedback = async (feedbackMessage: ChatMessage) => {
+  try {
+    const response = await $fetch('/api/feedback/handle', {
+      method: 'POST',
+      body: {
+        action: 'learn',
+        messageId: feedbackMessage.originalMessageId,
+        userIdentifier: 'user'
+      }
+    })
+
+    if (response.success) {
+      // Обновляем сообщение с финальным ответом
+      feedbackMessage.text = response.message
+      feedbackMessage.showLearnButton = false
+      feedbackMessage.isCompleted = true
+      
+      // Убираем флаг ожидания обратной связи с оригинального сообщения
+      const originalMessage = chatMessages.value.find(m => m.id === feedbackMessage.originalMessageId)
+      if (originalMessage) {
+        originalMessage.waitingForFeedback = false
+      }
+      
+      saveChatToStorage()
+    }
+  } catch (error) {
+    console.error('Ошибка завершения обратной связи:', error)
+    alert('Ошибка завершения обратной связи. Попробуйте еще раз.')
   }
 }
 
@@ -1923,7 +2234,13 @@ const sendChatMessage = async () => {
   try {
     let response: any
     if (aiEnabledRef.value) {
-      response = await $fetch('/api/chatbot/ai-search', { method: 'POST', body: { query: text } })
+      // Собираем краткую историю (последние 5 сообщений) с intent
+      const hist = chatMessages.value.slice(-5).map(m => ({
+        role: m.isUser ? 'user' : 'assistant',
+        text: m.text || '',
+        intent: (m as any).intent || undefined
+      }))
+      response = await $fetch('/api/chatbot/ai-search', { method: 'POST', body: { query: text, history: hist } })
     } else {
       // Выполняем поиск в реальном времени
       await performSearch(text)
@@ -1934,7 +2251,15 @@ const sendChatMessage = async () => {
       const drugAll = searchResults.value.filter(r => r.type === 'Препарат')
       const substationAll = searchResults.value.filter(r => r.type === 'Подстанция')
       
-      const limited = [...mkbAll.slice(0, 3), ...lsAll.slice(0, 3), ...algoAll.slice(0, 3), ...drugAll.slice(0, 3), ...substationAll.slice(0, 3)]
+      // Если есть точное совпадение по коду станции или МКБ, показываем больше результатов
+      const hasExactMatch = searchResults.value.some(r => 
+        r.codes?.stationCode === text || 
+        r.codes?.mkbCode === text ||
+        r.title?.toLowerCase().includes(text.toLowerCase())
+      )
+      
+      const limit = hasExactMatch ? 10 : 3
+      const limited = [...mkbAll.slice(0, limit), ...lsAll.slice(0, limit), ...algoAll.slice(0, limit), ...drugAll.slice(0, limit), ...substationAll.slice(0, limit)]
       response = { 
         message: (searchResults.value.length === 0) ? 'Ничего не найдено. Попробуйте изменить формулировку, использовать часть слова или другой термин.' : 'Результаты поиска', 
         results: limited, 
@@ -1945,8 +2270,62 @@ const sendChatMessage = async () => {
     const startTime = Date.now()
     await new Promise(resolve => { const elapsed = Date.now() - startTime; const remainingDelay = Math.max(0, minDelay - elapsed); setTimeout(resolve, remainingDelay) })
     chatMessages.value.pop()
-    const botResponse: ChatMessage = { id: Date.now().toString(), text: response.message || (aiEnabledRef.value ? 'Получен ответ' : 'Результаты поиска'), isUser: false, timestamp: new Date(), results: response.results || [], fullResults: response.fullResults || undefined, quickReplies: aiEnabledRef.value && (response as any).suggestions && (response as any).suggestions.length > 0 ? (response as any).suggestions : undefined, originalQuestion: originalQuestion, isAI: !!aiEnabledRef.value }
+    const botId = Date.now().toString()
+    const botResponse: ChatMessage = { id: botId, text: (response.message || ''), isUser: false, timestamp: new Date(), results: response.results || [], fullResults: response.fullResults || undefined, quickReplies: aiEnabledRef.value && (response as any).suggestions && (response as any).suggestions.length > 0 ? (response as any).suggestions : undefined, originalQuestion: originalQuestion, isAI: !!aiEnabledRef.value }
+    if ((response as any).forceExpand) { (botResponse as any).forceExpand = (response as any).forceExpand }
+    ;(botResponse as any).intent = (response as any).intent || null
     chatMessages.value.push(botResponse)
+    // если сервер вернул пустой текст (follow-up), не запускаем печать
+    const messageText = response.message || ''
+    if (messageText) startTypewriter(botId, messageText)
+    // If no quickReplies provided, infer from content
+    if (!botResponse.quickReplies || botResponse.quickReplies.length === 0) {
+      const qrs: string[] = []
+      const firstDrug = (response.results || []).find((r:any) => r.type === 'drug')
+      const data = firstDrug?.data || null
+      if ((botResponse as any).intent && (botResponse as any).intent !== 'drug') {
+        // секционные кнопки для не-препаратных intents
+        if ((response.fullResults?.mkb || []).length) qrs.push('Показать кодификатор')
+        if ((response.fullResults?.ls || []).length) qrs.push('Показать локальные статусы')
+        if ((response.fullResults?.algo || []).length) qrs.push('Показать алгоритмы')
+        if ((response.fullResults?.substation || []).length) qrs.push('Ближайшие подстанции')
+        // исключить текущий intent
+        const intent = (botResponse as any).intent
+        botResponse.quickReplies = qrs.filter(q => {
+          const l = q.toLowerCase()
+          if (intent === 'mkb' && l.startsWith('диагноз')) return false
+          if (intent === 'ls' && l.startsWith('локал')) return false
+          if (intent === 'algorithm' && l.startsWith('алгорит')) return false
+          if (intent === 'substation' && l.startsWith('подстанц')) return false
+          return true
+        })
+      } else if (data) {
+        const name = String(data.name || '')
+        const hasDosages = (Array.isArray(data.doses) && data.doses.length)
+          || (data.dosages && (Array.isArray(data.dosages?.doses) || Array.isArray(data.dosages?.mg_dosages?.doses) || Array.isArray(data.dosages?.variants)))
+          || (Array.isArray(data.pediatricDose) && data.pediatricDose.length)
+        if (hasDosages) qrs.push(`Дозировки ${name}`)
+        if (Array.isArray(data.mechanism) && data.mechanism.length) qrs.push(`Механизм действия ${name}`)
+        if (Array.isArray(data.contraindications) && data.contraindications.length) qrs.push(`Противопоказания ${name}`)
+        if (Array.isArray(data.indications) && data.indications.length) qrs.push(`Показания ${name}`)
+        if (Array.isArray(data.adverse) && data.adverse.length) qrs.push(`Побочные эффекты ${name}`)
+        if (Array.isArray(data.interactions) && data.interactions.length) qrs.push(`Взаимодействия ${name}`)
+        if (data.pharmacokinetics && (data.pharmacokinetics.onset || data.pharmacokinetics.duration || data.pharmacokinetics.half_life || data.pharmacokinetics.metabolism || data.pharmacokinetics.elimination)) qrs.push(`Фармакокинетика ${name}`)
+        // Исключить текущую тему из кнопок
+        const current = (response.message || '').toLowerCase()
+        botResponse.quickReplies = qrs.filter(q => {
+          const l = q.toLowerCase()
+          if (current.includes('### показания') && l.startsWith('показания')) return false
+          if (current.includes('### противопоказания') && l.startsWith('противопоказания')) return false
+          if (current.includes('### побочные эффекты') && l.startsWith('побочные')) return false
+          if (current.includes('### взаимодействия') && l.startsWith('взаимодейств')) return false
+          if (current.includes('### фармакокинетика') && l.startsWith('фармакокинетика')) return false
+          if (current.includes('### дозировки') && l.startsWith('дозировки')) return false
+          if (current.includes('### механизм действия') && l.startsWith('механизм')) return false
+          return true
+        })
+      }
+    }
     initializeMKBIcons(); setTimeout(() => { initializeMKBIcons() }, 100)
     saveChatToStorage()
   } catch (error) {
@@ -1980,6 +2359,20 @@ const handleQuickReply = async (reply: string, message: ChatMessage) => {
       sendQuickMessage(reply)
     }
   } else {
+    // Спец-обработчики для кнопок «Показать ...»: добавляем контекст исходного вопроса
+    const rq = (message as any)?.originalQuestion || ''
+    if (reply === 'Показать алгоритмы') {
+      const text = rq ? `Показать алгоритмы: ${rq}` : 'Показать алгоритмы'
+      return sendQuickMessage(text)
+    }
+    if (reply === 'Показать локальные статусы') {
+      const text = rq ? `Показать локальные статусы: ${rq}` : 'Показать локальные статусы'
+      return sendQuickMessage(text)
+    }
+    if (reply === 'Показать кодификатор') {
+      const text = rq ? `Показать кодификатор: ${rq}` : 'Показать кодификатор'
+      return sendQuickMessage(text)
+    }
     sendQuickMessage(reply)
   }
 }
@@ -2142,7 +2535,14 @@ const getSectionVisible = (message: any, section: 'mkb' | 'ls' | 'algo' | 'subst
 
 // Прелоад + навигация
 const preloadAndNavigate = async (to: string, preloadFn: () => Promise<void>) => {
-  try { isPreloading.value = true; await preloadFn(); await navigateTo(to); closePanel() } finally { isPreloading.value = false }
+  try { 
+    isPreloading.value = true
+    await preloadFn()
+    await navigateTo(to)
+    closePanel()
+  } finally { 
+    isPreloading.value = false 
+  }
 }
 
 // Slug секции алгоритма
@@ -2185,6 +2585,31 @@ watch(() => props.isOpen, (isOpen) => {
   }
 })
 onUnmounted(() => { unlockScroll() })
+
+const isDetailsShown = (messageId: string) => {
+  return expandedSections.value[messageId]?.details || false
+}
+
+const toggleDetails = (messageId: string) => {
+  const current = expandedSections.value[messageId] || {}
+  const next = { ...current, details: !current.details }
+  expandedSections.value[messageId] = next
+}
+
+// отключено: детальные карточки открываются только через кнопки ИИ (forceExpand)
+
+// Авто-раскрытие секции при приходе спец-ответа (forceExpand)
+watch(chatMessages, (msgs) => {
+  const last = msgs[msgs.length - 1] as any
+  const force = last?.forceExpand as ('mkb'|'ls'|'algo'|'drug'|'substation'|null)
+  if (force && last?.id) {
+    // Включаем детали, но не раскрываем секцию: покажутся первые 3 карточки
+    expandedSections.value[last.id] = { ...(expandedSections.value[last.id] || {}), details: true }
+    try { const el = contentContainer.value; if (el) el.scrollTop = el.scrollHeight } catch {}
+  }
+}, { deep: true })
+
+// Показ подробностей для AI-сообщений — реализовано через expandedSections
 </script>
 
 <style scoped>

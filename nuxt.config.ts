@@ -33,9 +33,6 @@ export default defineNuxtConfig({
     jwtSecret: process.env.JWT_SECRET || 'your-secret-key',
     mongodbUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/smp-help',
     adminSetupToken: process.env.ADMIN_SETUP_TOKEN || 'setup-token',
-    gigachatApiKey: process.env.GIGACHAT_API_KEY,
-    gigachatClientId: process.env.GIGACHAT_CLIENT_ID,
-    gigachatScope: process.env.GIGACHAT_SCOPE,
     public: {
       apiBase: '/api',
       yamapsApiKey: process.env.YAMAPS_API_KEY || '0cf3bb2c-e67f-4006-8a3e-c5df09b9da6c'

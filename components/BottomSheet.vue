@@ -1,6 +1,6 @@
 <template>
   <transition name="fade">
-    <div v-if="modelValue" class="fixed inset-0 z-50 sm:hidden">
+    <div v-if="modelValue" class="fixed inset-0 z-50 sm:hidden" :class="{ 'bottomsheet-active': modelValue }">
       <div class="absolute inset-0 bg-black/40" @click="close" />
       <div class="absolute inset-0 flex items-end p-2 sm:p-4">
         <div 
@@ -17,7 +17,7 @@
           <!-- Заголовок с ручкой для перетаскивания -->
           <div 
             ref="headerRef" 
-            class="py-2 px-3 border-b border-slate-200 dark:border-slate-600 flex-shrink-0 cursor-grab active:cursor-grabbing"
+            class="py-2 px-3 border-b border-slate-200 dark:border-slate-600 flex-shrink-0 cursor-grab active:cursor-grabbing touch-none"
             @touchstart="onDragStart"
             @touchmove="onDragMove"
             @touchend="onDragEnd"
@@ -74,6 +74,9 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
+// Глобальная проверка на дублирование BottomSheet
+const globalBottomSheetCount = ref(0)
+
 const sheetRef = ref<HTMLDivElement | null>(null)
 const headerRef = ref<HTMLDivElement | null>(null)
 const contentRef = ref<HTMLDivElement | null>(null)
@@ -86,6 +89,7 @@ const isExpanded = ref(false) // Флаг расширенного состоя�
 const isScrollDisabled = ref(false) // Флаг для отслеживания состояния скролла
 const savedScrollPosition = ref(0) // Сохраненная позиция скролла
 const isScrollingToTop = ref(false) // Флаг скролла наверх
+const isInitialized = ref(false) // Флаг инициализации
 
 // Вспомогательная функция для безопасного предотвращения события
 function safePreventDefault(e: TouchEvent | MouseEvent) {
@@ -99,6 +103,16 @@ function safePreventDefault(e: TouchEvent | MouseEvent) {
 }
 
 function close() {
+  // Проверяем, что это единственный активный BottomSheet
+  if (globalBottomSheetCount.value > 1) {
+    console.warn('Обнаружено дублирование BottomSheet, закрываем все')
+    // Закрываем все BottomSheet
+    document.querySelectorAll('.bottomsheet-active').forEach(el => {
+      el.remove()
+    })
+    globalBottomSheetCount.value = 0
+  }
+  
   emit('update:modelValue', false)
   emit('close')
   // Восстанавливаем скролл при закрытии
@@ -106,9 +120,15 @@ function close() {
 }
 
 function onDragStart(e: TouchEvent | MouseEvent) {
+  // Предотвращаем множественные события
+  if (isDragging.value) return
+  
   startY.value = 'touches' in e ? e.touches[0].clientY : e.clientY
   dragOffset.value = 0
   isDragging.value = true
+  
+  // Добавляем класс для предотвращения скролла страницы
+  document.body.classList.add('bottomsheet-dragging')
 }
 
 function onDragMove(e: TouchEvent | MouseEvent) {
@@ -162,6 +182,9 @@ function onDragMove(e: TouchEvent | MouseEvent) {
 function onDragEnd(e: TouchEvent | MouseEvent) {
   if (!isDragging.value) return
   
+  // Убираем класс для восстановления скролла страницы
+  document.body.classList.remove('bottomsheet-dragging')
+  
   const threshold = 100 // Порог в пикселях для закрытия
   const clientY = 'changedTouches' in e ? e.changedTouches[0].clientY : e.clientY
   const dy = clientY - startY.value
@@ -210,6 +233,9 @@ function onContentDragStart(e: TouchEvent | MouseEvent) {
   // Разрешаем перетаскивание только если не расширен
   if (isExpanded.value) return
   
+  // Предотвращаем множественные события
+  if (isDragging.value) return
+  
   // Проверяем, не скроллится ли контент
   const contentEl = contentRef.value
   if (contentEl && contentEl.scrollTop > 0) {
@@ -219,6 +245,9 @@ function onContentDragStart(e: TouchEvent | MouseEvent) {
   startY.value = 'touches' in e ? e.touches[0].clientY : e.clientY
   dragOffset.value = 0
   isDragging.value = true
+  
+  // Добавляем класс для предотвращения скролла страницы
+  document.body.classList.add('bottomsheet-dragging')
 }
 
 function onContentDragMove(e: TouchEvent | MouseEvent) {
@@ -303,6 +332,9 @@ function onContentDragMove(e: TouchEvent | MouseEvent) {
 
 function onContentDragEnd(e: TouchEvent | MouseEvent) {
   if (!isDragging.value) return
+  
+  // Убираем класс для восстановления скролла страницы
+  document.body.classList.remove('bottomsheet-dragging')
   
   const threshold = 100
   const clientY = 'changedTouches' in e ? e.changedTouches[0].clientY : e.clientY
@@ -428,6 +460,16 @@ defineExpose({
 // Функции для управления скроллом страницы
 function disableBodyScroll() {
   if (process.client && !isScrollDisabled.value) {
+    // Проверяем, нет ли уже активных BottomSheet
+    const activeSheets = document.querySelectorAll('.bottomsheet-active')
+    if (activeSheets.length > 1) {
+      console.warn('Обнаружено дублирование BottomSheet, закрываем лишние')
+      // Закрываем все кроме первого
+      for (let i = 1; i < activeSheets.length; i++) {
+        activeSheets[i].remove()
+      }
+    }
+    
     // Сохраняем текущую позицию скролла
     savedScrollPosition.value = window.scrollY
     
@@ -465,9 +507,17 @@ function enableBodyScroll() {
 // Следим за изменениями modelValue для обновления высоты
 watch(() => props.modelValue, (newValue) => {
   if (newValue) {
+    // Проверяем на дублирование перед открытием
+    const activeSheets = document.querySelectorAll('.bottomsheet-active')
+    if (activeSheets.length > 0) {
+      console.warn('Обнаружен активный BottomSheet, закрываем его перед открытием нового')
+      activeSheets.forEach(el => el.remove())
+    }
+    
     // Сбрасываем состояние при открытии
     isExpanded.value = false
     dragOffset.value = 0
+    isInitialized.value = true
     
     // Отключаем скролл страницы
     disableBodyScroll()
@@ -546,5 +596,18 @@ onMounted(() => {
 /* Отключаем анимацию во время перетаскивания */
 .transition-height.dragging {
   transition: none;
+}
+
+/* Предотвращаем скролл страницы во время перетаскивания */
+:global(.bottomsheet-dragging) {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Улучшаем touch события */
+.touch-none {
+  touch-action: none;
 }
 </style>

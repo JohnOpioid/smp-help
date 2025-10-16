@@ -14,6 +14,7 @@ const LocalStatusSchema = new Schema({
   localis: { type: String }
 }, { timestamps: true })
 
+LocalStatusSchema.index({ name: 'text', description: 'text', localis: 'text', note: 'text' })
 export default models.LocalStatus || model('LocalStatus', LocalStatusSchema)
 
 

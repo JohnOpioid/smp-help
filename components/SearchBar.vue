@@ -4,36 +4,15 @@
     <div v-if="isFocused" class="fixed inset-0 bg-slate-700/50 z-30" @click="blurSearch"></div>
     
     <div class="relative z-40" @click.prevent.stop="openPanelFromHeader">
-      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        <svg class="h-5 w-5 sm:h-6 sm:w-6 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
-      </div>
-      <input 
-        ref="searchInput"
+      <ReactiveSearch
         v-model="searchQuery"
-        type="text" 
-        placeholder="Введите запрос для поиска..." 
-        :class="[
-          'block w-full pl-10 pr-20 sm:pl-12 sm:pr-24 py-3 sm:py-4 text-base sm:text-base border border-slate-100 dark:border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:shadow-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 transition-all duration-200',
-          props.isHomePage ? 'rounded-lg' : 'rounded-lg'
-        ]"
-        @input="onSearch"
-        @keydown.enter="performSearch"
-        @focus="onFocus"
-        @blur="onBlur"
-      >
-      <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:pr-3">
-        <button 
-          @click="performSearch"
-          class="inline-flex items-center px-3 sm:px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
-        >
-          <span class="hidden sm:inline">Найти</span>
-          <svg class="w-4 h-4 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        </button>
-      </div>
+        placeholder="Введите запрос для поиска..."
+        :ai-enabled="true"
+        @clear="clearSearch"
+        @enter="performSearch"
+        @focus="handleSearchFocus"
+        @blur="handleSearchBlur"
+      />
     </div>
 
     <!-- Результаты поиска -->
@@ -572,6 +551,12 @@ const shareCalculatorResult = async (result: SearchResult) => {
 
 // Реф для input элемента
 const searchInput = ref<HTMLInputElement | null>(null)
+
+// Отслеживаем изменения поискового запроса
+watch(searchQuery, () => {
+  onSearch()
+})
+
 // Открытие полноэкранной панели из поисковой строки хедера
 function openPanelFromHeader() {
   // Сообщаем лейауту открыть панель поиска
@@ -854,6 +839,12 @@ function onSearch() {
   }, 300) // Задержка 300мс для дебаунса
 }
 
+function clearSearch() {
+  searchQuery.value = ''
+  showResults.value = false
+  isFocused.value = false
+}
+
 const { matchesNormalized } = useTextNormalization()
 
 function performSearch() {
@@ -935,6 +926,20 @@ function onFocus() {
 
 function onBlur() {
   // Задержка для обработки кликов по результатам
+  setTimeout(() => {
+    if (!showResults.value) {
+      isFocused.value = false
+    }
+  }, 150)
+}
+
+// Обработчики для ReactiveSearch
+function handleSearchFocus() {
+  isFocused.value = true
+  window.dispatchEvent(new CustomEvent('openBottomSearch'))
+}
+
+function handleSearchBlur() {
   setTimeout(() => {
     if (!showResults.value) {
       isFocused.value = false
