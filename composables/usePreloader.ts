@@ -1,12 +1,18 @@
 import { ref, nextTick } from 'vue'
 
-// Глобальное состояние предзагрузки
-const isPreloading = ref(false)
-const preloadProgress = ref(0)
-const preloadMessage = ref('')
+// Глобальное состояние предзагрузки - создаем один раз
+const globalPreloaderState = {
+  isPreloading: ref(false),
+  preloadProgress: ref(0),
+  preloadMessage: ref(''),
+  cache: new Map<string, any>()
+}
 
-// Кэш для предзагруженных данных
-const preloadCache = new Map<string, any>()
+// Экспортируем глобальные refs для прямого доступа
+export const isPreloading = globalPreloaderState.isPreloading
+export const preloadProgress = globalPreloaderState.preloadProgress
+export const preloadMessage = globalPreloaderState.preloadMessage
+export const preloadCache = globalPreloaderState.cache
 
 // Интерфейс для конфигурации предзагрузки
 interface PreloadConfig {
@@ -31,6 +37,9 @@ export const usePreloader = () => {
       
       console.log('📊 Устанавливаем состояние предзагрузки:', { isPreloading: isPreloading.value, progress: preloadProgress.value })
       
+      // Принудительно обновляем DOM
+      await nextTick()
+      
       // Показываем прогресс
       if (showProgress) {
         preloadProgress.value = 20
@@ -43,8 +52,10 @@ export const usePreloader = () => {
       // Если данные уже в кэше, все равно показываем прогресс
       if (cacheKey && preloadCache.has(cacheKey)) {
         preloadProgress.value = 80
+        await nextTick()
         await new Promise(resolve => setTimeout(resolve, 100))
         preloadProgress.value = 100
+        await nextTick()
         await new Promise(resolve => setTimeout(resolve, 200))
         await navigateTo(url)
         return
@@ -53,6 +64,7 @@ export const usePreloader = () => {
       // Выполняем предзагрузку
       if (preloadFn) {
         preloadProgress.value = 50
+        await nextTick()
         const data = await preloadFn()
         
         // Сохраняем в кэш
@@ -61,11 +73,13 @@ export const usePreloader = () => {
         }
         
         preloadProgress.value = 80
+        await nextTick()
         // Небольшая задержка для плавности
         await new Promise(resolve => setTimeout(resolve, 50))
       }
       
       preloadProgress.value = 100
+      await nextTick()
       
       // Небольшая задержка для показа завершения
       await new Promise(resolve => setTimeout(resolve, 200))
@@ -110,9 +124,9 @@ export const usePreloader = () => {
   const getCacheSize = () => preloadCache.size
   
   return {
-    isPreloading: readonly(isPreloading),
-    preloadProgress: readonly(preloadProgress),
-    preloadMessage: readonly(preloadMessage),
+    isPreloading,
+    preloadProgress,
+    preloadMessage,
     startPreload,
     preloadData,
     clearCache,
@@ -122,17 +136,76 @@ export const usePreloader = () => {
 
 // Глобальные функции для удобного использования
 export const preloadAndNavigate = async (url: string, preloadFn?: () => Promise<any>, options?: Partial<PreloadConfig>) => {
-  const { startPreload } = usePreloader()
-  
-  console.log('🎯 preloadAndNavigate вызвана для:', url, 'с опциями:', options)
-  
-  await startPreload({
+  const { url: finalUrl, preloadFn: finalPreloadFn, cacheKey, showProgress = true, message = 'Загрузка...' } = {
     url,
     preloadFn,
     showProgress: true,
     message: 'Загрузка...',
     ...options
-  })
+  }
+
+  try {
+    isPreloading.value = true
+    preloadProgress.value = 0
+    preloadMessage.value = message
+    
+    // Принудительно обновляем DOM
+    await nextTick()
+    
+    // Показываем прогресс
+    if (showProgress) {
+      preloadProgress.value = 20
+      await nextTick()
+      // Минимальная задержка для показа прогресса
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
+
+    // Если данные уже в кэше, все равно показываем прогресс
+    if (cacheKey && preloadCache.has(cacheKey)) {
+      preloadProgress.value = 80
+      await nextTick()
+      await new Promise(resolve => setTimeout(resolve, 300))
+      preloadProgress.value = 100
+      await nextTick()
+      await new Promise(resolve => setTimeout(resolve, 500))
+      await navigateTo(finalUrl)
+      return
+    }
+
+    // Выполняем предзагрузку
+    if (finalPreloadFn) {
+      preloadProgress.value = 50
+      await nextTick()
+      const data = await finalPreloadFn()
+
+      // Сохраняем в кэш
+      if (cacheKey) {
+        preloadCache.set(cacheKey, data)
+      }
+
+      preloadProgress.value = 80
+      await nextTick()
+      await new Promise(resolve => setTimeout(resolve, 200))
+    }
+
+    preloadProgress.value = 100
+    await nextTick()
+
+    // Увеличиваем задержку для показа завершения
+    await new Promise(resolve => setTimeout(resolve, 400))
+    
+    // Переходим на страницу
+    await navigateTo(finalUrl)
+
+  } catch (error) {
+    console.error('Ошибка предзагрузки:', error)
+    // В случае ошибки все равно переходим
+    await navigateTo(finalUrl)
+  } finally {
+    isPreloading.value = false
+    preloadProgress.value = 0
+    preloadMessage.value = ''
+  }
 }
 
 // Предзагрузка для конкретных типов страниц
@@ -223,40 +296,77 @@ export const useAutoPreload = () => {
   const setupAutoPreload = () => {
     if (process.client) {
       let preloadTimeout: NodeJS.Timeout | null = null
+      let lastPreloadUrl: string | null = null
+      let preloadInProgress = false
       
       // Функция для выполнения предзагрузки
       const performPreload = async (href: string) => {
         try {
-          console.log('🚀 Начинаем предзагрузку для:', href)
-          
+          // Проверяем, не выполняется ли уже предзагрузка для этого URL
+          if (preloadInProgress && lastPreloadUrl === href) {
+            return
+          }
+
+          preloadInProgress = true
+          lastPreloadUrl = href
+
+          // Извлекаем путь из полного URL
+          const url = new URL(href)
+          const pathname = url.pathname
+
+          let shouldPreload = false
+
           // Определяем тип страницы по URL
-          if (href.includes('/algorithms/')) {
-            const match = href.match(/\/algorithms\/([^/]+)\/([^/]+)(?:\/([^/?]+))?/)
+          if (pathname.includes('/algorithms/')) {
+            const match = pathname.match(/\/algorithms\/([^/]+)(?:\/([^/?]+))?(?:\/([^/?]+))?/)
             if (match) {
               const [, section, category, algorithmId] = match
-              await preloadPage.algorithm(section, category, algorithmId)
+              // Для главных страниц разделов (без категории) не делаем предзагрузку
+              if (category && category !== 'undefined') {
+                await preloadPage.algorithm(section, category, algorithmId)
+                shouldPreload = true
+              }
             }
-          } else if (href.includes('/codifier/')) {
-            const match = href.match(/\/codifier\/([^/?]+)/)
+          } else if (pathname.includes('/codifier/')) {
+            const match = pathname.match(/\/codifier\/([^/?]+)/)
             if (match) {
               const [, categoryUrl] = match
               await preloadPage.codifier(categoryUrl)
+              shouldPreload = true
             }
-          } else if (href.includes('/local-statuses/')) {
-            const match = href.match(/\/local-statuses\/([^/?]+)/)
+          } else if (pathname.includes('/local-statuses/')) {
+            const match = pathname.match(/\/local-statuses\/([^/?]+)/)
             if (match) {
               const [, categoryUrl] = match
               await preloadPage.localStatus(categoryUrl)
+              shouldPreload = true
             }
-          } else if (href.includes('/drugs')) {
+          } else if (pathname.includes('/drugs')) {
             await preloadPage.drug()
-          } else if (href.includes('/substations')) {
+            shouldPreload = true
+          } else if (pathname.includes('/substations')) {
             await preloadPage.substation()
-          } else if (href.includes('/instructions')) {
+            shouldPreload = true
+          } else if (pathname.includes('/instructions')) {
             await preloadPage.instruction()
+            shouldPreload = true
+          }
+
+          // Если предзагрузка не выполнялась, показываем прогресс-бар и переходим на страницу
+          if (!shouldPreload) {
+            // Показываем прогресс-бар даже для страниц без предзагрузки
+            await preloadAndNavigate(pathname, undefined, {
+              showProgress: true,
+              message: 'Переход на страницу...'
+            })
           }
         } catch (error) {
-          console.error('❌ Ошибка в performPreload:', error)
+          console.error('Ошибка предзагрузки:', error)
+          // В случае ошибки все равно переходим на страницу
+          const url = new URL(href)
+          await navigateTo(url.pathname)
+        } finally {
+          preloadInProgress = false
         }
       }
       
@@ -269,21 +379,19 @@ export const useAutoPreload = () => {
           if (target && typeof target.closest === 'function') {
             const link = target.closest('a[href]') as HTMLAnchorElement
             
-            if (link && link.href && !link.href.startsWith('http')) {
-              const href = link.href
-              
-              console.log('🖱️ Наведение на ссылку:', href)
-              
-              // Очищаем предыдущий таймер
-              if (preloadTimeout) {
-                clearTimeout(preloadTimeout)
-              }
-              
-              // Добавляем небольшую задержку перед предзагрузкой
-              preloadTimeout = setTimeout(async () => {
-                await performPreload(href)
-              }, 300) // 300ms задержка
+          if (link && link.href && (!link.href.startsWith('http') || link.href.includes(window.location.hostname))) {
+            const href = link.href
+            
+            // Очищаем предыдущий таймер
+            if (preloadTimeout) {
+              clearTimeout(preloadTimeout)
             }
+            
+            // Добавляем небольшую задержку перед предзагрузкой
+            preloadTimeout = setTimeout(async () => {
+              await performPreload(href)
+            }, 300) // 300ms задержка
+          }
           }
         } catch (error) {
           console.error('❌ Ошибка в обработчике наведения:', error)
@@ -293,16 +401,28 @@ export const useAutoPreload = () => {
       // Предзагрузка при клике на ссылки (сразу, без задержки)
       document.addEventListener('click', async (e) => {
         try {
+          // Предотвращаем множественные обработки одного клика
+          if (e.defaultPrevented) {
+            return
+          }
+          
           const target = e.target as HTMLElement
           
           // Проверяем, что target является элементом и имеет метод closest
           if (target && typeof target.closest === 'function') {
             const link = target.closest('a[href]') as HTMLAnchorElement
             
-            if (link && link.href && !link.href.startsWith('http')) {
+            if (link && link.href && (!link.href.startsWith('http') || link.href.includes(window.location.hostname))) {
               const href = link.href
               
-              console.log('🖱️ Клик по ссылке:', href)
+              // Проверяем, не выполняется ли уже предзагрузка для этого URL
+              if (preloadInProgress && lastPreloadUrl === href) {
+                return
+              }
+              
+              // Предотвращаем дальнейшую обработку события
+              e.preventDefault()
+              e.stopPropagation()
               
               // Очищаем таймер наведения
               if (preloadTimeout) {
@@ -316,7 +436,7 @@ export const useAutoPreload = () => {
         } catch (error) {
           console.error('❌ Ошибка в обработчике клика:', error)
         }
-      }, { passive: true })
+      }, { passive: false, capture: true })
     }
   }
   
@@ -325,28 +445,8 @@ export const useAutoPreload = () => {
   }
 }
 
-// Тестовая функция для проверки прогресс-бара
-export const testPreloader = async () => {
-  const { startPreload } = usePreloader()
-  
-  await startPreload({
-    url: '/',
-    preloadFn: async () => {
-      // Имитируем загрузку
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      return { test: 'data' }
-    },
-    message: 'Тестовая загрузка...',
-    showProgress: true
-  })
-}
-
 // Глобальная функция для тестирования в консоли браузера
 if (process.client) {
-  (window as any).testPreloader = testPreloader
-  (window as any).testCodifierPreload = async () => {
-    await preloadPage.codifier('cardiology')
-  }
   (window as any).checkPreloaderState = () => {
     console.log('📊 Состояние предзагрузки:', {
       isPreloading: isPreloading.value,
@@ -354,5 +454,42 @@ if (process.client) {
       message: preloadMessage.value,
       cacheSize: preloadCache.size
     })
+  }
+  
+  // Функция для принудительного тестирования прогресс-бара
+  (window as any).testProgressBar = async () => {
+    console.log('🧪 Тестируем прогресс-бар...')
+    console.log('🎯 ПРИНУДИТЕЛЬНО ПОКАЗЫВАЕМ ПРОГРЕСС-БАР!')
+    
+    isPreloading.value = true
+    preloadProgress.value = 0
+    preloadMessage.value = 'Тестовая загрузка...'
+    
+    console.log('📊 Установлено состояние:', { isPreloading: isPreloading.value, progress: preloadProgress.value })
+    
+    // Принудительно обновляем DOM
+    await nextTick()
+    
+    for (let i = 0; i <= 100; i += 10) {
+      preloadProgress.value = i
+      console.log(`📈 Прогресс: ${i}%`)
+      await nextTick()
+      await new Promise(resolve => setTimeout(resolve, 200))
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    isPreloading.value = false
+    preloadProgress.value = 0
+    preloadMessage.value = ''
+    
+    console.log('✅ Тест прогресс-бара завершен')
+  }
+  
+  // Функция для проверки настроек автоматической предзагрузки
+  (window as any).checkAutoPreloadSetup = () => {
+    console.log('🔧 Проверяем настройки автоматической предзагрузки...')
+    console.log('📊 Количество обработчиков клика:', document.querySelectorAll('a[href]').length)
+    console.log('📊 Примеры ссылок:', Array.from(document.querySelectorAll('a[href]')).slice(0, 5).map(a => a.href))
   }
 }

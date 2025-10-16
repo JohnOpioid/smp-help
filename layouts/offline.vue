@@ -10,6 +10,8 @@
 </template>
 
 <script setup lang="ts">
+import PreloadIndicator from '~/components/PreloadIndicator.vue'
+
 // Специальный лайаут для страницы offline без шапки и футера
 
 // Настраиваем автоматическую предзагрузку

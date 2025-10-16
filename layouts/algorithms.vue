@@ -237,6 +237,8 @@
 </template>
 
 <script setup lang="ts">
+import PreloadIndicator from '~/components/PreloadIndicator.vue'
+
 const route = useRoute()
 const headerTitle = computed(() => (route.meta as any)?.headerTitle || 'Справочник СМП')
 

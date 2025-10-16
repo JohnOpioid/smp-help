@@ -30,7 +30,10 @@
       <!-- Info popover -->
       <transition name="fade" appear>
         <div v-if="aiEnabled && showInfo" class="absolute right-full mr-3 top-1/2 -translate-y-1/2 z-50">
-          <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 shadow-sm rounded-lg px-4 py-3 w-72">
+          <div 
+            @click="dismissInfo"
+            class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 shadow-sm rounded-lg px-4 py-3 w-72 cursor-pointer hover:shadow-md transition-shadow duration-200"
+          >
             <div class="flex items-start gap-2">
               <div class="min-w-0">
                 <p class="text-sm font-semibold text-slate-900 dark:text-white leading-snug">{{ aiName }}</p>
@@ -46,9 +49,9 @@
         v-if="aiEnabled"
         type="button"
         @click="openAiPanel"
-        @mouseenter="startInfo()"
+        @mouseenter="onMouseEnter"
         @mouseleave="stopInfo()"
-        @focus="startInfo()"
+        @focus="onAvatarFocus"
         @blur="stopInfo()"
         class="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full border border-slate-100 dark:border-slate-600 bg-white dark:bg-slate-800 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-300"
         aria-label="Открыть панель поиска"
@@ -84,6 +87,7 @@ const showClear = computed(() => Boolean((props.modelValue || '').trim()))
 const aiName = 'Амби'
 const aiRole = 'Ваш помощник по справочнику СМП'
 const showInfo = ref(false)
+const { userDismissed } = useAmbiPopup() // Используем глобальный флаг
 const route = useRoute()
 const currentSummary = computed(() => {
   const path = route.path
@@ -113,6 +117,9 @@ function pickMessage() {
   return arr[idx]
 }
 function startInfo() {
+  // Не показываем, если пользователь закрыл попап
+  if (userDismissed.value) return
+  
   showInfo.value = true
   try { clearInterval(infoTimer) } catch {}
   infoMessage.value = pickMessage() || currentSummary.value
@@ -122,15 +129,40 @@ function stopInfo() {
   try { clearInterval(infoTimer) } catch {}
   infoTimer = null
 }
-onMounted(() => {
-  // Автоматически показать на короткое время при первом рендере
+function dismissInfo() {
+  // Помечаем, что пользователь закрыл попап
+  userDismissed.value = true
+  stopInfo()
+}
+function onMouseEnter() {
+  // Сбрасываем флаг при наведении, чтобы пользователь мог снова увидеть попап
+  userDismissed.value = false
   startInfo()
-  setTimeout(() => { stopInfo() }, 12000)
+}
+function onAvatarFocus() {
+  // Сбрасываем флаг при фокусе, чтобы пользователь мог снова увидеть попап
+  userDismissed.value = false
+  startInfo()
+}
+function startInfoForced() {
+  // Принудительный показ без проверки флага (для автоматических показов)
+  showInfo.value = true
+  try { clearInterval(infoTimer) } catch {}
+  infoMessage.value = pickMessage() || currentSummary.value
+}
+onMounted(() => {
+  // Автоматически показать на короткое время при первом рендере только если не было закрыто
+  if (!userDismissed.value) {
+    startInfoForced()
+    setTimeout(() => { stopInfo() }, 12000)
+  }
 })
 watch(() => route.path, () => {
-  // Короткая подсказка при смене контекста страницы
-  startInfo()
-  setTimeout(() => { stopInfo() }, 12000)
+  // Короткая подсказка при смене контекста страницы только если не было закрыто
+  if (!userDismissed.value) {
+    startInfoForced()
+    setTimeout(() => { stopInfo() }, 12000)
+  }
 })
 onUnmounted(() => { try { clearInterval(infoTimer) } catch {} })
 

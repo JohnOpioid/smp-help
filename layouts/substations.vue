@@ -15,6 +15,8 @@
 </template>
 
 <script setup lang="ts">
+import PreloadIndicator from '~/components/PreloadIndicator.vue'
+
 // Лайаут под список и карту
 
 // Настраиваем автоматическую предзагрузку

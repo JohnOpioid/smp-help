@@ -1,9 +1,9 @@
 <template>
-  <div v-if="isPreloading" class="fixed top-0 left-0 right-0 z-50">
+  <div v-if="isPreloading" class="fixed top-0 left-0 right-0 z-[9999]">
     <!-- Прогресс-бар -->
-    <div class="h-1 w-full bg-transparent">
+    <div class="h-2 w-full bg-slate-200 dark:bg-slate-700 shadow-lg">
       <div 
-        class="h-1 bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-300 ease-out"
+        class="h-2 bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-500 ease-out shadow-sm"
         :style="{ width: `${preloadProgress}%` }"
       />
     </div>
@@ -17,15 +17,15 @@
         </div>
       </div>
     </div>
-    
-    <!-- Отладочная информация (только в dev режиме) -->
-    <div v-if="isDev" class="bg-red-100 dark:bg-red-900 px-2 py-1 text-xs text-red-800 dark:text-red-200">
-      DEBUG: {{ preloadProgress }}% - {{ preloadMessage }}
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-const { isPreloading, preloadProgress, preloadMessage } = usePreloader()
-const isDev = process.dev
+// Используем глобальные refs напрямую
+import { isPreloading, preloadProgress, preloadMessage } from '~/composables/usePreloader'
+
+// Принудительно обновляем компонент при изменении состояния
+watch([isPreloading, preloadProgress, preloadMessage], () => {
+  // Компонент обновляется автоматически
+}, { immediate: true })
 </script>
