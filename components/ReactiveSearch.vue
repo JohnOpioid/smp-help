@@ -48,7 +48,7 @@
       <button
         v-if="aiEnabled"
         type="button"
-        @click="openAiPanel"
+        @click="openAiPanel($event)"
         @mouseenter="onMouseEnter"
         @mouseleave="stopInfo()"
         @focus="onAvatarFocus"
@@ -178,8 +178,11 @@ function onEnter() { emit('enter') }
 function onFocus() { emit('focus') }
 function onBlur() { emit('blur') }
 
-function openAiPanel() {
+function openAiPanel(event?: Event) {
   try {
+    if (event) {
+      event.stopPropagation()
+    }
     window.dispatchEvent(new Event('openBottomSearch'))
   } catch {}
 }

@@ -3,7 +3,7 @@
     <!-- Темный фон при фокусе -->
     <div v-if="isFocused" class="fixed inset-0 bg-slate-700/50 z-30" @click="blurSearch"></div>
     
-    <div class="relative z-40" @click.prevent.stop="openPanelFromHeader">
+    <div class="relative z-40" @click="handleSearchBarClick">
       <ReactiveSearch
         v-model="searchQuery"
         placeholder="Введите запрос для поиска..."
@@ -561,6 +561,15 @@ watch(searchQuery, () => {
 function openPanelFromHeader() {
   // Сообщаем лейауту открыть панель поиска
   window.dispatchEvent(new Event('openBottomSearch'))
+}
+
+// Обработчик клика по SearchBar - открываем панель только если клик не по аватару
+function handleSearchBarClick(event: Event) {
+  const target = event.target as HTMLElement
+  // Проверяем, что клик не по аватару (кнопке с изображением)
+  if (!target.closest('button[aria-label="Открыть панель поиска"]')) {
+    openPanelFromHeader()
+  }
 }
 
 // Данные для поиска
