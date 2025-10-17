@@ -97,7 +97,17 @@ generate_password() {
 # Функция для генерации JWT секрета
 generate_jwt_secret() {
     # Используем hex вместо base64 чтобы избежать проблем с многострочными значениями
+    # Генерируем 64-символьный hex ключ для безопасности
     openssl rand -hex 32
+}
+
+# Функция проверки JWT секрета
+validate_jwt_secret() {
+    local secret="$1"
+    if [ -z "$secret" ] || [ "$secret" = "your-secret-key" ] || [ ${#secret} -lt 32 ]; then
+        return 1
+    fi
+    return 0
 }
 
 # Заголовок
@@ -161,7 +171,7 @@ if [[ "$INSTALL_MODE" == "quick-update" || "$INSTALL_MODE" == "full-update" ]]; 
         JWT_SECRET=$(grep "JWT_SECRET:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | sed "s/.*JWT_SECRET: '\(.*\)'.*/\1/" | head -1)
         
         # Если JWT_SECRET не найден или пустой, генерируем новый
-        if [ -z "$JWT_SECRET" ] || [ "$JWT_SECRET" = "your-secret-key" ]; then
+        if ! validate_jwt_secret "$JWT_SECRET"; then
             JWT_SECRET=$(generate_jwt_secret)
             log "⚠️ JWT_SECRET не найден или имеет значение по умолчанию, генерируем новый"
         else
@@ -726,6 +736,37 @@ copy_files() {
         rm -f "/tmp/ecosystem.config.cjs.backup"
     fi
     
+    # Создаем/обновляем файл .env в рабочей директории
+    log "⚙️ Создаем/обновляем файл .env..."
+    cat > "$WORK_DIR/.env" << EOF
+# Local Environment Variables
+NODE_ENV=production
+NUXT_PUBLIC_API_BASE_URL=https://$DOMAIN/api
+NUXT_PUBLIC_APP_URL=https://$DOMAIN
+PORT=3000
+
+# MongoDB
+MONGODB_URI=mongodb://$MONGO_USER:$MONGO_PASS@localhost:27017/$MONGO_DB
+
+# JWT Secret
+JWT_SECRET=$JWT_SECRET
+
+# AI Configuration
+GIGACHAT_API_KEY=$GIGACHAT_API_KEY
+GIGACHAT_CLIENT_ID=$GIGACHAT_CLIENT_ID
+GIGACHAT_SCOPE=$GIGACHAT_SCOPE
+GIGACHAT_API_URL=https://gigachat.devices.sberbank.ru/api/v1
+
+# Email Configuration
+SMTP_HOST=$SMTP_HOST
+SMTP_PORT=$SMTP_PORT
+SMTP_USER=$SMTP_USER
+SMTP_PASS=$SMTP_PASS
+
+# Yandex Maps
+YAMAPS_API_KEY=$YAMAPS_API_KEY
+EOF
+    
     # Создаем манифест PWA
     create_pwa_manifest
     
@@ -882,6 +923,14 @@ setup_pm2() {
     if [ -f "$WORK_DIR/ecosystem.config.cjs" ]; then
         log "✅ Конфигурация PM2 уже существует, используем её"
         log "Если нужно пересоздать конфигурацию, удалите файл вручную"
+        
+        # Проверяем JWT_SECRET в существующей конфигурации
+        EXISTING_JWT_SECRET=$(grep "JWT_SECRET:" "$WORK_DIR/ecosystem.config.cjs" | sed "s/.*JWT_SECRET: '\(.*\)'.*/\1/" | head -1)
+        if ! validate_jwt_secret "$EXISTING_JWT_SECRET"; then
+            log "⚠️ JWT_SECRET в конфигурации PM2 некорректен, обновляем..."
+            sed -i "s|JWT_SECRET: '.*'|JWT_SECRET: '$JWT_SECRET'|g" "$WORK_DIR/ecosystem.config.cjs"
+            log "✅ JWT_SECRET обновлен в конфигурации PM2"
+        fi
     else
         log "Создаём новую конфигурацию PM2..."
         
@@ -1431,9 +1480,26 @@ check_status() {
             log "✅ Сайт доступен (HTTP $HTTP_CODE)"
         else
             error "❌ Сайт недоступен (HTTP $HTTP_CODE)"
+            log "📋 Проверьте логи Nginx: tail -f /var/log/nginx/$DOMAIN.error.log"
+            log "📋 Проверьте логи PM2: pm2 logs $PROJECT_NAME"
         fi
     else
         warn "⚠️ curl не найден, проверьте сайт вручную: http://$DOMAIN"
+    fi
+    
+    # Проверяем JWT_SECRET в конфигурации
+    log "🔍 Проверяем JWT_SECRET в конфигурации..."
+    if [ -f "$WORK_DIR/ecosystem.config.cjs" ]; then
+        JWT_SECRET_CHECK=$(grep "JWT_SECRET:" "$WORK_DIR/ecosystem.config.cjs" | sed "s/.*JWT_SECRET: '\(.*\)'.*/\1/" | head -1)
+        if validate_jwt_secret "$JWT_SECRET_CHECK"; then
+            log "✅ JWT_SECRET настроен корректно"
+        else
+            error "❌ JWT_SECRET не настроен или имеет значение по умолчанию"
+            log "📋 Исправьте JWT_SECRET в файле: $WORK_DIR/ecosystem.config.cjs"
+            log "📋 Сгенерируйте новый JWT_SECRET: openssl rand -hex 32"
+        fi
+    else
+        error "❌ Конфигурация PM2 не найдена: $WORK_DIR/ecosystem.config.cjs"
     fi
 }
 
@@ -1470,10 +1536,23 @@ main() {
                 exit 1
             fi
             
-            # Сохраняем конфигурацию PM2
+            # Сохраняем конфигурацию PM2 и извлекаем JWT_SECRET
             log "Сохраняем конфигурацию PM2..."
             if [ -f "$WORK_DIR/ecosystem.config.cjs" ]; then
                 cp "$WORK_DIR/ecosystem.config.cjs" "/tmp/ecosystem.config.cjs.backup"
+                
+                # Извлекаем JWT_SECRET из существующей конфигурации
+                EXISTING_JWT_SECRET=$(grep "JWT_SECRET:" "$WORK_DIR/ecosystem.config.cjs" | sed "s/.*JWT_SECRET: '\(.*\)'.*/\1/" | head -1)
+                if validate_jwt_secret "$EXISTING_JWT_SECRET"; then
+                    JWT_SECRET="$EXISTING_JWT_SECRET"
+                    log "✅ Используем существующий JWT_SECRET"
+                else
+                    JWT_SECRET=$(generate_jwt_secret)
+                    log "⚠️ JWT_SECRET не найден или имеет значение по умолчанию, генерируем новый"
+                fi
+            else
+                JWT_SECRET=$(generate_jwt_secret)
+                log "⚠️ Конфигурация PM2 не найдена, генерируем новый JWT_SECRET"
             fi
             
             # Обновляем репозиторий
@@ -1496,6 +1575,37 @@ main() {
                 cp "/tmp/ecosystem.config.cjs.backup" "$WORK_DIR/ecosystem.config.cjs"
                 log "Конфигурация PM2 восстановлена"
             fi
+            
+            # Создаем/обновляем файл .env с правильным JWT_SECRET
+            log "⚙️ Создаем/обновляем файл .env..."
+            cat > "$WORK_DIR/.env" << EOF
+# Local Environment Variables
+NODE_ENV=production
+NUXT_PUBLIC_API_BASE_URL=https://$DOMAIN/api
+NUXT_PUBLIC_APP_URL=https://$DOMAIN
+PORT=3000
+
+# MongoDB
+MONGODB_URI=mongodb://$MONGO_USER:$MONGO_PASS@localhost:27017/$MONGO_DB
+
+# JWT Secret
+JWT_SECRET=$JWT_SECRET
+
+# AI Configuration
+GIGACHAT_API_KEY=$GIGACHAT_API_KEY
+GIGACHAT_CLIENT_ID=$GIGACHAT_CLIENT_ID
+GIGACHAT_SCOPE=$GIGACHAT_SCOPE
+GIGACHAT_API_URL=https://gigachat.devices.sberbank.ru/api/v1
+
+# Email Configuration
+SMTP_HOST=$SMTP_HOST
+SMTP_PORT=$SMTP_PORT
+SMTP_USER=$SMTP_USER
+SMTP_PASS=$SMTP_PASS
+
+# Yandex Maps
+YAMAPS_API_KEY=$YAMAPS_API_KEY
+EOF
             
             # Перезапускаем PM2
             log "Перезапускаем приложение..."
@@ -1617,6 +1727,12 @@ main() {
     if [ -n "$USER_PASSWORD" ]; then
         log "  - Пароль пользователя $PROJECT_USER: [установлен]"
     fi
+    log ""
+    log "⚠️ ВАЖНО: Если возникают проблемы с авторизацией:"
+    log "  1. Проверьте JWT_SECRET в файле: $WORK_DIR/ecosystem.config.cjs"
+    log "  2. Убедитесь, что JWT_SECRET не равен 'your-secret-key'"
+    log "  3. Перезапустите приложение: pm2 restart $PROJECT_NAME"
+    log "  4. Проверьте логи: pm2 logs $PROJECT_NAME"
 }
 
 # Запускаем основную функцию
