@@ -770,11 +770,20 @@ EOF
     # Создаем манифест PWA
     create_pwa_manifest
     
+    # Создаем символическую ссылку для правильного пути к manifest
+    log "🔗 Создаем символическую ссылку для manifest.webmanifest..."
+    if [ ! -d "/var/www/html/public" ]; then
+        mkdir -p /var/www/html/public
+    fi
+    ln -sf "$WORK_DIR/manifest.webmanifest" /var/www/html/public/manifest.webmanifest
+    log "✅ Символическая ссылка создана"
+    
     # Устанавливаем права
     if [ "$PROJECT_USER" != "root" ]; then
         chown -R $PROJECT_USER:$PROJECT_USER $WORK_DIR
     fi
     chmod -R 755 $WORK_DIR
+    chown www-data:www-data /var/www/html/public/manifest.webmanifest
     
     # Проверяем, что index.mjs существует
     if [ -f "$WORK_DIR/index.mjs" ]; then
