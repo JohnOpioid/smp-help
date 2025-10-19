@@ -1041,7 +1041,7 @@ function styleTables() {
     }
     // Стили только для содержимого таблицы, без внешнего бордера
     table.classList.remove('border', 'border-slate-100', 'dark:border-slate-700', 'rounded-lg', 'rounded-md', 'overflow-hidden')
-    table.classList.add('w-full', 'table-fixed', 'my-0', 'border-0', 'bg-transparent')
+    table.classList.add('w-full', 'table-fixed', 'border-0', 'bg-transparent')
     table.style.tableLayout = 'fixed'
     const thead = table.querySelector('thead')
     const tbody = table.querySelector('tbody')
