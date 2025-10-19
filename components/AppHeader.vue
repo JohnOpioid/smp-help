@@ -853,10 +853,9 @@ const clearSearch = () => {
     window.dispatchEvent(new CustomEvent('substations-search', { 
       detail: { query: '' } 
     }))
-    return
   }
   
-  // Обычная логика для других страниц
+  // Всегда деактивируем поиск для скрытия панели результатов
   deactivateSearch()
 }
 
