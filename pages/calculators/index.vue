@@ -1,14 +1,9 @@
 <template>
   <div class="flex-1">
-    <!-- Блок поиска отдельно -->
-    <div class="max-w-5xl w-full mx-auto px-4 pt-8">
-      <SearchBar />
-    </div>
-
     <!-- Основной контент -->
     <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
 
-      <div v-for="section in sections" :key="section.title" class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 rounded-lg mb-6 last:mb-0">
+      <div v-for="section in sections" :key="section.title" class="bg-white dark:bg-slate-800 rounded-lg mb-6 last:mb-0">
         <div class="p-4 border-b border-slate-100 dark:border-slate-700">
           <p class="text-sm text-slate-600 dark:text-slate-300">{{ section.title }}</p>
         </div>
