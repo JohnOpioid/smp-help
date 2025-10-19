@@ -68,7 +68,7 @@
                   <p class="text-sm text-slate-500 dark:text-slate-400">{{ card.subtitle }}</p>
                 </div>
               </div>
-              <p class="text-base text-slate-600 dark:text-slate-300 mb-4 sm:mb-6 flex-grow text-center sm:text-left">
+              <p class="text-base text-slate-600 dark:text-slate-300 mb-4 sm:mb-6 flex-grow text-center sm:text-left hidden sm:block">
                 {{ card.description }}
               </p>
               <NuxtLink :to="card.link" role="button"
