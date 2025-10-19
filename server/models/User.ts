@@ -6,6 +6,8 @@ export interface IUser extends Document {
   password: string
   firstName: string
   lastName: string
+  city?: string
+  substation?: string
   role: 'admin' | 'user'
   bookmarks?: Array<{
     _id: string

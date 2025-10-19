@@ -2,7 +2,7 @@
   <div v-if="isMounted" class="fixed bottom-20 left-4 right-4 md:bottom-4 md:left-auto md:right-auto md:w-auto z-50 space-y-2">
     <!-- Кнопка сохранения приложения (только на мобильных) -->
     <button
-      v-if="!isCaching && !isCached && !updateAvailable && !showSuccessMessage"
+      v-if="false && !isCaching && !isCached && !updateAvailable && !showSuccessMessage"
       @click="precacheSite"
       :disabled="isCaching"
       class="w-full md:hidden inline-flex justify-center items-center px-4 sm:px-6 py-3 border-2 border-blue-300 dark:border-blue-600 text-base font-medium rounded-md text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer shadow-lg"

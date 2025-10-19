@@ -9,7 +9,7 @@ export default defineEventHandler(async () => {
   const categories = await LocalStatusCategory.find({}).lean()
 
   const categoriesWithCounts = await Promise.all(
-    categories.map(async (category) => {
+    categories.map(async (category: any) => {
       const count = await LocalStatus.countDocuments({ category: category._id })
       return {
         ...category,

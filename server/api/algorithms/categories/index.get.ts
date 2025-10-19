@@ -34,7 +34,7 @@ export default defineEventHandler(async () => {
       
       // Заполняем секции вручную
       const populatedSections = (category.sections || [])
-        .map(sectionId => sectionsMap.get(String(sectionId)))
+        .map((sectionId: any) => sectionsMap.get(String(sectionId)))
         .filter(Boolean)
       
       return {

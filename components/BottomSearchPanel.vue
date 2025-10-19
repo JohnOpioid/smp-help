@@ -789,10 +789,9 @@ function stopTypewriter(messageId: string) {
   if (t) { clearInterval(t); typingTimers.delete(messageId) }
 }
 
-// Поиск (локальный, без режима UI поиска)
-const searchQuery = ref('')
+// Поиск (используем глобальное состояние)
+const { searchQuery, searchResults: globalSearchResults, isSearching } = useGlobalSearch()
 const isPreloading = ref(false)
-const searchResults = ref<SearchResult[]>([])
 const isLoadingSearch = ref(false)
 
 // Fuse.js поиск
@@ -2093,11 +2092,11 @@ const performSearch = async (query: string) => {
       })))
     }
     
-    searchResults.value = sortedResults
+    globalSearchResults.value = sortedResults
     
-    console.log('📋 Финальное состояние searchResults.value:', searchResults.value.length, 'элементов')
-    if (searchResults.value.length > 0) {
-      console.log('📋 Первые элементы searchResults.value:', searchResults.value.slice(0, 3))
+    console.log('📋 Финальное состояние globalSearchResults.value:', globalSearchResults.value.length, 'элементов')
+    if (globalSearchResults.value.length > 0) {
+      console.log('📋 Первые элементы globalSearchResults.value:', globalSearchResults.value.slice(0, 3))
     }
     
     // Инициализируем мобильную логику для таблиц после обновления результатов
@@ -2111,7 +2110,7 @@ const performSearch = async (query: string) => {
     
   } catch (error) {
     console.error('❌ Ошибка поиска:', error)
-    searchResults.value = []
+    globalSearchResults.value = []
   } finally {
     isLoadingSearch.value = false
   }
@@ -2245,14 +2244,14 @@ const sendChatMessage = async () => {
       // Выполняем поиск в реальном времени
       await performSearch(text)
       
-      const mkbAll = searchResults.value.filter(r => r.type === 'МКБ')
-      const lsAll = searchResults.value.filter(r => r.type === 'Локальный статус')
-      const algoAll = searchResults.value.filter(r => r.type === 'Алгоритм')
-      const drugAll = searchResults.value.filter(r => r.type === 'Препарат')
-      const substationAll = searchResults.value.filter(r => r.type === 'Подстанция')
+      const mkbAll = globalSearchResults.value.filter(r => r.type === 'МКБ')
+      const lsAll = globalSearchResults.value.filter(r => r.type === 'Локальный статус')
+      const algoAll = globalSearchResults.value.filter(r => r.type === 'Алгоритм')
+      const drugAll = globalSearchResults.value.filter(r => r.type === 'Препарат')
+      const substationAll = globalSearchResults.value.filter(r => r.type === 'Подстанция')
       
       // Если есть точное совпадение по коду станции или МКБ, показываем больше результатов
-      const hasExactMatch = searchResults.value.some(r => 
+      const hasExactMatch = globalSearchResults.value.some(r => 
         r.codes?.stationCode === text || 
         r.codes?.mkbCode === text ||
         r.title?.toLowerCase().includes(text.toLowerCase())
@@ -2261,7 +2260,7 @@ const sendChatMessage = async () => {
       const limit = hasExactMatch ? 10 : 3
       const limited = [...mkbAll.slice(0, limit), ...lsAll.slice(0, limit), ...algoAll.slice(0, limit), ...drugAll.slice(0, limit), ...substationAll.slice(0, limit)]
       response = { 
-        message: (searchResults.value.length === 0) ? 'Ничего не найдено. Попробуйте изменить формулировку, использовать часть слова или другой термин.' : 'Результаты поиска', 
+        message: (globalSearchResults.value.length === 0) ? 'Ничего не найдено. Попробуйте изменить формулировку, использовать часть слова или другой термин.' : 'Результаты поиска', 
         results: limited, 
         fullResults: { mkb: mkbAll, ls: lsAll, algo: algoAll, drug: drugAll, substation: substationAll } 
       }

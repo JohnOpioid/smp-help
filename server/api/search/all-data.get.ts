@@ -12,11 +12,11 @@ export default defineEventHandler(async (event) => {
     
     // Получаем все данные из всех коллекций параллельно
     const [localStatuses, mkbCodes, algorithms, drugs, substations] = await Promise.all([
-      LocalStatus.find({}).populate('category', 'name url').lean().catch(err => {
+      LocalStatus.find({}).populate('category', 'name url').lean().catch((err: any) => {
         console.error('❌ API: Ошибка загрузки LocalStatus:', err)
         return []
       }),
-      MKB.find({}).populate('category', 'name url').lean().catch(err => {
+      MKB.find({}).populate('category', 'name url').lean().catch((err: any) => {
         console.error('❌ API: Ошибка загрузки MKB:', err)
         return []
       }),
@@ -24,11 +24,11 @@ export default defineEventHandler(async (event) => {
         console.error('❌ API: Ошибка загрузки Algorithm:', err)
         return []
       }),
-      Drug.find({}).populate('categories', 'name url').lean().catch(err => {
+      Drug.find({}).populate('categories', 'name url').lean().catch((err: any) => {
         console.error('❌ API: Ошибка загрузки Drug:', err)
         return []
       }),
-      Substation.find({}).populate('region', 'name').lean().catch(err => {
+      Substation.find({}).populate('region', 'name').lean().catch((err: any) => {
         console.error('❌ API: Ошибка загрузки Substation:', err)
         return []
       })

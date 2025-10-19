@@ -1,9 +1,6 @@
 <template>
 
   <main class="flex-1">
-    <div class="max-w-5xl w-full mx-auto px-4 pt-8">
-      <ReactiveSearch v-model="searchText" placeholder="Поиск в этой категории..." @clear="clearSearch" :ai-enabled="true" />
-    </div>
     <!-- Контентная область отдельно от поиска -->
     <div class="md:px-4 max-w-5xl mx-auto py-8">
       <div v-if="error" class="text-center py-8">

@@ -64,7 +64,7 @@ export default defineEventHandler(async (event) => {
     ])
 
     // Добавляем расчет времени доезда между подстанциями
-    const substationsWithTravelTime = nearbySubstations.map(substation => {
+    const substationsWithTravelTime = nearbySubstations.map((substation: any) => {
       const distanceKm = substation.distance / 1000
       // Примерная скорость между подстанциями: 50 км/ч
       const estimatedTravelTimeMinutes = Math.round((distanceKm / 50) * 60)

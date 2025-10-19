@@ -30,7 +30,7 @@
             
             <UButton 
               @click="triggerWelcome"
-              color="green"
+              color="success"
               variant="solid"
             >
               Приветствие
@@ -38,7 +38,7 @@
             
             <UButton 
               @click="triggerHelp"
-              color="blue"
+              color="primary"
               variant="solid"
             >
               Помощь
@@ -46,7 +46,7 @@
             
             <UButton 
               @click="triggerEncouragement"
-              color="purple"
+              color="secondary"
               variant="solid"
             >
               Поддержка
@@ -179,21 +179,21 @@
           <UButton 
             @click="mascotType = 'advanced'"
             :variant="mascotType === 'advanced' ? 'solid' : 'outline'"
-            color="green"
+            color="success"
           >
             Продвинутый
           </UButton>
           <UButton 
             @click="mascotType = 'animated'"
             :variant="mascotType === 'animated' ? 'solid' : 'outline'"
-            color="purple"
+            color="secondary"
           >
             Анимированный
           </UButton>
           <UButton 
             @click="mascotType = 'lottie'"
             :variant="mascotType === 'lottie' ? 'solid' : 'outline'"
-            color="orange"
+              color="warning"
           >
             Lottie
           </UButton>
@@ -279,7 +279,7 @@ const triggerRandomPhrase = () => {
 }
 
 const triggerWelcome = () => {
-  const mascot = getCurrentMascot()
+  const mascot: any = getCurrentMascot()
   if (mascot) {
     mascot.speakPhrase('Добро пожаловать! Я рада вас видеть! 😊')
     stats.value.phrases++
@@ -288,7 +288,7 @@ const triggerWelcome = () => {
 }
 
 const triggerHelp = () => {
-  const mascot = getCurrentMascot()
+  const mascot: any = getCurrentMascot()
   if (mascot) {
     mascot.speakPhrase('Нужна помощь? Я всегда готова ответить на ваши вопросы! 💙')
     stats.value.phrases++
@@ -297,7 +297,7 @@ const triggerHelp = () => {
 }
 
 const triggerEncouragement = () => {
-  const mascot = getCurrentMascot()
+  const mascot: any = getCurrentMascot()
   if (mascot) {
     mascot.speakPhrase('Вы делаете отличную работу! Продолжайте в том же духе! ✨')
     stats.value.phrases++

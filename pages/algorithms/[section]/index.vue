@@ -34,7 +34,7 @@
             <div v-else-if="algosByCategory.length === 0" class="text-xs text-slate-500">Нет алгоритмов</div>
             <ul v-else class="mt-1 space-y-1">
               <li v-for="a in algosByCategory" :key="a._id">
-                <NuxtLink :to="`/algorithms/${sectionToSlug(activeSection)}/${activeCategoryUrl}/view/${a._id}`" class="text-sm text-primary hover:underline cursor-pointer">{{ a.title }}</NuxtLink>
+                <NuxtLink :to="`/algorithms/${sectionToSlug(activeSection)}/${activeCategoryUrl}/${a._id}`" class="text-sm text-primary hover:underline cursor-pointer">{{ a.title }}</NuxtLink>
               </li>
             </ul>
           </div>
@@ -149,7 +149,7 @@ watch(activeCategoryUrl, async (url) => {
 // В списке подкатегории добавим переход на просмотр с query section
 function openAlgoFromIndex(id: string) {
   if (!activeCategoryUrl.value) return
-  navigateTo(`/algorithms/${sectionToSlug(activeSection.value)}/${activeCategoryUrl.value}/view/${id}`)
+  navigateTo(`/algorithms/${sectionToSlug(activeSection.value)}/${activeCategoryUrl.value}/${id}`)
 }
 
 // Поиск перенесен в лейаут algorithms.vue

@@ -12,7 +12,7 @@ export default defineEventHandler(async () => {
     .lean()
   
   // Получаем уникальные ID регионов
-  const regionIds = [...new Set(substations.map(s => s.region).filter(Boolean))]
+  const regionIds = [...new Set(substations.map((s: any) => s.region).filter(Boolean))]
   
   // Получаем регионы
   const regions = await Region.find({ _id: { $in: regionIds } })
@@ -20,10 +20,10 @@ export default defineEventHandler(async () => {
     .lean()
   
   // Создаём Map для быстрого поиска
-  const regionsMap = new Map(regions.map(r => [String(r._id), r]))
+  const regionsMap = new Map(regions.map((r: any) => [String(r._id), r]))
   
   // Собираем данные
-  const items = substations.map(substation => ({
+  const items = substations.map((substation: any) => ({
     ...substation,
     region: substation.region ? regionsMap.get(String(substation.region)) || null : null
   }))

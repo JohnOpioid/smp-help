@@ -400,7 +400,7 @@ ${JSON.stringify(analysis, null, 2)}
   }
 
   private mapToResult(item: any, type: string): any {
-    const base = {
+    const base: any = {
       id: String(item._id || item.id || Math.random()),
       title: item.title || item.name || '',
       description: item.description || item.note || '',

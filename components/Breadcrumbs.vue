@@ -1,6 +1,18 @@
 <template>
   <div v-if="route.path !== '/' && route.path !== '/substations'" class="px-4 max-w-5xl mx-auto">
+    <!-- Хлебные крошки -->
     <UBreadcrumb :items="items" />
+    
+    <!-- Кнопка "Назад" только на мобильных -->
+    <div class="mt-4 md:hidden">
+      <button @click="goBack"
+        class="inline-flex items-center px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors duration-200 cursor-pointer">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        Назад
+      </button>
+    </div>
   </div>
 </template>
 
@@ -8,6 +20,10 @@
 import type { BreadcrumbItem } from '@nuxt/ui'
 
 const route = useRoute()
+
+// Функция для кнопки "Назад"
+const goBack = () => history.length > 1 ? history.back() : navigateTo('/')
+
 const customLastLabel = ref<string>('')
 const customAlgoTrail = ref<{ sectionSlug: string; sectionName: string; categoryId?: string; categoryUrl?: string; categoryName: string; algoTitle?: string } | null>(null)
 
@@ -61,9 +77,9 @@ async function resolveLastLabel() {
             categoryUrl,
             categoryName: category?.name || 'Категория'
           }
-          // /algorithms/:section/:category/view/:id → страница алгоритма
-          if (segs.length >= 5 && segs[3] === 'view' && /^[a-f0-9]{24}$/i.test(segs[4] || '')) {
-            const algoRes: any = await $fetch(`/api/algorithms/${segs[4]}`)
+          // /algorithms/:section/:category/:id → страница алгоритма
+          if (segs.length >= 4 && /^[a-f0-9]{24}$/i.test(segs[3] || '')) {
+            const algoRes: any = await $fetch(`/api/algorithms/${segs[3]}`)
             customLastLabel.value = algoRes?.item?.title || customLastLabel.value
             if (algoRes?.item?.title) (customAlgoTrail.value as any).algoTitle = algoRes.item.title
           } else if (segs.length === 4 && /^[a-f0-9]{24}$/i.test(segs[3] || '')) {

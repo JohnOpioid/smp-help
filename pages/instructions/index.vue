@@ -1,10 +1,6 @@
 <template>
   <div>
     <main class="flex-1">
-      <!-- Поиск (реактивный) -->
-      <div class="max-w-5xl w-full mx-auto px-4 pt-8">
-        <ReactiveSearch v-model="searchText" placeholder="Поиск инструкций..." @clear="clearSearch" :ai-enabled="true" />
-      </div>
 
       <!-- Основной контент или результаты поиска -->
       <div class="max-w-5xl mx-auto px-0 md:px-4 py-8">

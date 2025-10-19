@@ -263,8 +263,8 @@ function parseDateInput() {
 
 
 
-function formatDate(date: CalendarDate) {
-  return date.toLocaleDateString('ru-RU', {
+function formatDate(date: any) {
+  return new Date(date.year, date.month - 1, date.day).toLocaleDateString('ru-RU', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
@@ -305,7 +305,7 @@ const dueDate = computed(() => {
 const dueDateFormatted = computed(() => {
   if (!dueDate.value) return ''
   
-  return dueDate.value.toLocaleDateString('ru-RU', {
+  return new Date((dueDate.value as any).year, (dueDate.value as any).month - 1, (dueDate.value as any).day).toLocaleDateString('ru-RU', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'

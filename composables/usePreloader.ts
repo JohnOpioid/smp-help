@@ -217,9 +217,15 @@ export const preloadPage = {
       : `/algorithms/${section}/${category}`
     
     await preloadAndNavigate(url, async () => {
-      await $fetch(`/api/algorithms/${section}/${category}`)
+      if (algorithmId) {
+        // Если есть ID алгоритма, загружаем конкретный алгоритм
+        await $fetch(`/api/algorithms/${algorithmId}`)
+      } else {
+        // Если нет ID, загружаем список алгоритмов категории
+        await $fetch(`/api/algorithms/${section}/${category}`)
+      }
     }, {
-      cacheKey: `algo-${section}-${category}`,
+      cacheKey: algorithmId ? `algo-${algorithmId}` : `algo-${section}-${category}`,
       message: 'Загрузка алгоритма...'
     })
   },
@@ -380,6 +386,11 @@ export const useAutoPreload = () => {
             const link = target.closest('a[href]') as HTMLAnchorElement
             
           if (link && link.href && (!link.href.startsWith('http') || link.href.includes(window.location.hostname))) {
+            // ИСКЛЮЧАЕМ ссылки на препараты из предзагрузки при наведении
+            if (link.hasAttribute('data-drug-name') || link.hasAttribute('data-drug-id')) {
+              return
+            }
+            
             const href = link.href
             
             // Очищаем предыдущий таймер
@@ -413,6 +424,12 @@ export const useAutoPreload = () => {
             const link = target.closest('a[href]') as HTMLAnchorElement
             
             if (link && link.href && (!link.href.startsWith('http') || link.href.includes(window.location.hostname))) {
+              // ИСКЛЮЧАЕМ ссылки на препараты из предзагрузки
+              if (link.hasAttribute('data-drug-name') || link.hasAttribute('data-drug-id')) {
+                console.log('🚫 Пропускаем предзагрузку для ссылки на препарат:', link.getAttribute('data-drug-name'))
+                return
+              }
+              
               const href = link.href
               
               // Проверяем, не выполняется ли уже предзагрузка для этого URL
@@ -490,6 +507,6 @@ if (process.client) {
   (window as any).checkAutoPreloadSetup = () => {
     console.log('🔧 Проверяем настройки автоматической предзагрузки...')
     console.log('📊 Количество обработчиков клика:', document.querySelectorAll('a[href]').length)
-    console.log('📊 Примеры ссылок:', Array.from(document.querySelectorAll('a[href]')).slice(0, 5).map(a => a.href))
+    console.log('📊 Примеры ссылок:', Array.from(document.querySelectorAll('a[href]')).slice(0, 5).map(a => (a as HTMLAnchorElement).href))
   }
 }

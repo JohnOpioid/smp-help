@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
         ]
       }).populate('category').limit(3)
 
-      mkbResults.forEach(item => {
+      mkbResults.forEach((item: any) => {
         results.push({
           id: item._id.toString(),
           title: item.name,
@@ -62,7 +62,7 @@ export default defineEventHandler(async (event) => {
         ]
       }).limit(3)
 
-      drugResults.forEach(item => {
+      drugResults.forEach((item: any) => {
         results.push({
           id: item._id.toString(),
           title: item.name,
@@ -109,7 +109,7 @@ export default defineEventHandler(async (event) => {
         ]
       }).populate('category').limit(2)
 
-      localStatusResults.forEach(item => {
+      localStatusResults.forEach((item: any) => {
         results.push({
           id: item._id.toString(),
           title: item.name,

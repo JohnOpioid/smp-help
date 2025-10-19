@@ -27,7 +27,7 @@
             <p class="text-sm text-slate-500 dark:text-slate-400">Подстанции</p>
             <p class="text-2xl font-semibold text-slate-900 dark:text-white">
               <USkeleton v-if="pendingStats" class="h-7 w-24" />
-              <span v-else>{{ stats.substations.total }}</span>
+              <span v-else>{{ (stats as any).substations?.total || 0 }}</span>
             </p>
           </div>
 
@@ -39,14 +39,14 @@
                   <p class="text-xs text-slate-500">Категории</p>
                   <p class="text-xl font-semibold">
                     <USkeleton v-if="pendingStats" class="h-6 w-16" />
-                    <span v-else>{{ stats.codifier.categories }}</span>
+                    <span v-else>{{ (stats as any).codifier?.categories || 0 }}</span>
                   </p>
                 </div>
                 <div>
                   <p class="text-xs text-slate-500">Диагнозы (МКБ)</p>
                   <p class="text-xl font-semibold">
                     <USkeleton v-if="pendingStats" class="h-6 w-16" />
-                    <span v-else>{{ stats.codifier.mkb }}</span>
+                    <span v-else>{{ (stats as any).codifier?.mkb || 0 }}</span>
                   </p>
                 </div>
               </div>
@@ -61,14 +61,14 @@
                   <p class="text-xs text-slate-500">Категории</p>
                   <p class="text-xl font-semibold">
                     <USkeleton v-if="pendingStats" class="h-6 w-16" />
-                    <span v-else>{{ stats.localStatuses.categories }}</span>
+                    <span v-else>{{ (stats as any).localStatuses?.categories || 0 }}</span>
                   </p>
                 </div>
                 <div>
                   <p class="text-xs text-slate-500">Статусы</p>
                   <p class="text-xl font-semibold">
                     <USkeleton v-if="pendingStats" class="h-6 w-16" />
-                    <span v-else>{{ stats.localStatuses.items }}</span>
+                    <span v-else>{{ (stats as any).localStatuses?.items || 0 }}</span>
                   </p>
                 </div>
               </div>

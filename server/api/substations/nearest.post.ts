@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
     ])
 
     // Добавляем расчет времени доезда (примерная оценка)
-    const substationsWithTravelTime = nearestSubstations.map(substation => {
+    const substationsWithTravelTime = nearestSubstations.map((substation: any) => {
       const distanceKm = substation.distance / 1000
       // Примерная скорость скорой помощи в городе: 40 км/ч
       const estimatedTravelTimeMinutes = Math.round((distanceKm / 40) * 60)

@@ -206,7 +206,7 @@ const onSubmit = async () => {
   success.value = ''
 
   try {
-    const result = await register({
+    const result: any = await register({
       firstName: form.firstName,
       lastName: form.lastName,
       email: form.email,

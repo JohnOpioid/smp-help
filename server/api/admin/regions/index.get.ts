@@ -14,6 +14,6 @@ export default defineEventHandler(async (event) => {
   return { 
     success: true, 
     regions,
-    phoneNames: phoneNames.map(p => p.name)
+    phoneNames: phoneNames.map((p: any) => p.name)
   }
 })

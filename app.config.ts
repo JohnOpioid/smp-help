@@ -24,7 +24,11 @@ export default defineAppConfig({
       base: 'animate-pulse rounded-md bg-elevated'
     },
     input: {
-      ring: 'ring ring-inset ring-accented focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary'
+      variants: {
+        default: {
+          base: 'ring ring-inset ring-accented focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary'
+        }
+      }
     }
   }
 })

@@ -1,20 +1,39 @@
 <template>
   <div :class="containerClass">
     <AppHeader v-if="!isInitialLoading" :title="headerTitle" />
-    <div v-else class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-4">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-          <USkeleton class="h-8 w-8 rounded" />
-          <USkeleton class="h-6 w-48" />
+    <header v-else class="transition-colors duration-300 relative z-50">
+      <div class="w-full max-w-5xl mx-auto px-4 py-6">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2 min-w-0">
+            <!-- Крутящийся логотип только при принудительном обновлении -->
+            <img 
+              src="/_nuxt/assets/svg/logo.svg" 
+              alt="Логотип" 
+              class="h-9 w-9 animate-spin"
+            />
+          </div>
+          
+          <!-- Поиск между логотипом и аватаром -->
+          <div class="relative flex-1">
+            <USkeleton class="h-10 w-full rounded-lg bg-slate-200 dark:bg-slate-700" />
+          </div>
+          
+          <div class="flex items-center space-x-3 sm:space-x-4 relative">
+            <USkeleton class="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700" />
+          </div>
         </div>
-        <USkeleton class="h-8 w-8 rounded-full" />
       </div>
-    </div>
+    </header>
     <div class="flex-1 flex flex-col min-h-0">
-      <div v-if="showBreadcrumbs" class="pt-6">
-        <Breadcrumbs v-if="!isInitialLoading && !isContentLoading" />
-        <BreadcrumbsSkeleton v-else />
-      </div>
+      <!-- Результаты поиска -->
+      <SearchResults v-if="!isInitialLoading" />
+      
+      <!-- Основной контент -->
+      <div v-if="!isSearchActive">
+        <div v-if="showBreadcrumbs">
+          <Breadcrumbs v-if="!isInitialLoading && !isContentLoading" />
+          <BreadcrumbsSkeleton v-else />
+        </div>
 
       <!-- Навигация по профилю (вне всех блоков) -->
        <div v-if="!isInitialLoading" class="px-4 max-w-5xl mx-auto pt-8 w-full">
@@ -86,12 +105,12 @@
           </Suspense>
         </div>
       </div>
-
+      </div>
     </div>
 
     <!-- Футер сайта -->
     <AppFooter v-if="!isInitialLoading" />
-    <AppFooterSkeleton v-else />
+    <AppFooterSkeleton v-else-if="isInitialLoading" />
 
     <MobileNav v-if="!isInitialLoading" />
 
@@ -105,6 +124,9 @@
 
 <script setup lang="ts">
 import PreloadIndicator from '~/components/PreloadIndicator.vue'
+
+// Глобальное состояние поиска
+const { isSearchActive } = useGlobalSearch()
 
 const route = useRoute()
 const headerTitle = computed(() => (route.meta as any)?.headerTitle || 'Профиль')
@@ -151,7 +173,7 @@ onMounted(() => {
 
 // Динамический класс контейнера
 const containerClass = computed(() => {
-  return 'flex flex-col min-h-screen'
+  return 'transition-colors duration-300 flex flex-col min-h-screen'
 })
 
 const showBreadcrumbs = computed(() => true)

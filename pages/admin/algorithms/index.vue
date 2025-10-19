@@ -35,7 +35,7 @@
               <UButton 
                 v-if="filteredSections.length > 3" 
                 variant="soft" 
-                color="gray" 
+                color="neutral" 
                 @click="showAllSections = !showAllSections"
                 class="cursor-pointer"
               >
@@ -82,7 +82,7 @@
               <UButton 
                 v-if="filteredCats.length > 3" 
                 variant="soft" 
-                color="gray" 
+                color="neutral" 
                 @click="showAllCategories = !showAllCategories"
                 class="cursor-pointer"
               >
@@ -131,7 +131,7 @@
                   <UButton :disabled="algoPage <= 1" @click="algoPage = algoPage - 1" size="sm" variant="ghost">Предыдущая</UButton>
                   <div class="flex items-center gap-1">
                     <template v-for="pageNum in visibleAlgoPages" :key="pageNum">
-                      <UButton v-if="pageNum !== '...'" :variant="pageNum === algoPage ? 'solid' : 'ghost'" :color="pageNum === algoPage ? 'primary' : 'gray'" @click="algoPage = pageNum as number" size="sm">{{ pageNum }}</UButton>
+                      <UButton v-if="pageNum !== '...'" :variant="pageNum === algoPage ? 'solid' : 'ghost'" :color="pageNum === algoPage ? 'primary' : 'neutral'" @click="algoPage = pageNum as number" size="sm">{{ pageNum }}</UButton>
                       <span v-else class="px-2 text-slate-400">...</span>
                     </template>
                   </div>
@@ -176,7 +176,7 @@
                 <UFormField label="Разделы" required>
                   <USelect 
                     v-model="catForm.sections" 
-                    :items="sectionsList.map(s => ({ label: s.name, value: s._id }))" 
+                    :items="sectionsList.map((s: any) => ({ label: s.name, value: s._id }))" 
                     placeholder="Выберите разделы" 
                     multiple 
                     class="w-full" 
@@ -205,10 +205,10 @@
             <UForm :state="algoForm" @submit.prevent="onSubmitAlgorithm">
               <div class="space-y-3 w-full">
                 <UFormField label="Категория" required>
-                  <USelect v-model="algoForm.category" :items="cats.map(c => c.name)" placeholder="Выберите категорию" class="w-full" :disabled="cats.length===0" />
+                  <USelect v-model="algoForm.category" :items="cats.map((c: any) => c.name)" placeholder="Выберите категорию" class="w-full" :disabled="cats.length===0" />
                 </UFormField>
                 <UFormField label="Раздел" required>
-                  <USelect v-model="algoForm.section" :items="sectionsList.map(s => ({ label: s.name, value: s._id }))" placeholder="Выберите раздел" class="w-full" />
+                  <USelect v-model="algoForm.section" :items="sectionsList.map((s: any) => ({ label: s.name, value: String(s._id) }))" placeholder="Выберите раздел" class="w-full" />
                 </UFormField>
                 <UFormField label="Название" required>
                   <UInput v-model="algoForm.title" placeholder="Название алгоритма" class="w-full" />
@@ -221,7 +221,7 @@
                     <div class="flex items-center gap-2">
                       <UInput v-model="algoMkbSearch" placeholder="Начните вводить МКБ, станцию, название или диапазон (A00-A02, A00-)" class="flex-1 min-w-[200px]" @keyup.enter.prevent="addAlgoMkbFromInput" @input="onAlgoSearchMKB" />
                       <UButton size="sm" color="primary" variant="soft" @click="addAlgoMkbFromInput" class="shrink-0">Добавить</UButton>
-                      <UButton v-if="algoForm.mkb.length" size="sm" color="gray" variant="soft" @click="clearAlgoMkb" class="shrink-0">
+                      <UButton v-if="algoForm.mkb.length" size="sm" color="neutral" variant="soft" @click="clearAlgoMkb" class="shrink-0">
                         <UIcon name="i-heroicons-x-mark" />
                       </UButton>
                     </div>
@@ -285,7 +285,7 @@ const sectionsPerPage = 100
 const sectionsTotal = ref(0)
 const showAllSections = ref(false)
 const { data: sectionsData, refresh: refreshSections, pending: fetchingSections, error: sectionsError } = await useFetch('/api/algorithms/sections', { server: false })
-const sectionsList = computed(() => sectionsData.value?.items || [])
+const sectionsList = computed(() => (sectionsData.value as any)?.items || [])
 const filteredSections = computed(() => {
   const all = sectionsList.value
   if (!sectionsSearch.value.trim()) return all

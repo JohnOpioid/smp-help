@@ -55,7 +55,7 @@
               <UButton 
                 v-if="filteredCategories.length > 3" 
                 variant="soft" 
-                color="gray" 
+                color="neutral" 
                 @click="showAllCategories = !showAllCategories"
                 class="cursor-pointer"
               >
@@ -147,8 +147,8 @@
                       <UButton 
                         v-if="pageNum !== '...'"
                         :variant="pageNum === mkbPage ? 'solid' : 'ghost'"
-                        :color="pageNum === mkbPage ? 'primary' : 'gray'"
-                        @click="mkbPage = pageNum"
+                        :color="pageNum === mkbPage ? 'primary' : 'neutral'"
+                        @click="mkbPage = pageNum as number"
                         size="sm"
                       >
                         {{ pageNum }}
@@ -417,13 +417,13 @@ const { data: mkbData, refresh: refreshMKB, pending: fetchingMKB, error: mkbErro
   server: false
 })
 
-const mkbItems = computed(() => mkbData.value?.items || [])
+const mkbItems = computed(() => (mkbData.value as any)?.items || [])
 const mkbPaginated = computed(() => mkbItems.value)
 
 watch(mkbData, (newData) => {
   if (newData) {
-    mkbTotal.value = newData.total || 0
-    mkbTotalPages.value = newData.totalPages || 0
+    mkbTotal.value = (newData as any).total || 0
+    mkbTotalPages.value = (newData as any).totalPages || 0
   }
 })
 
@@ -526,7 +526,7 @@ const onDeleteCategory = async (item: any) => {
   if (!confirm('Удалить категорию?')) return
   pendingCategories.value = true
   try {
-    const res: any = await $fetch(`/api/categories/${item._id}`, { method: 'DELETE' })
+    const res: any = await $fetch(`/api/categories/${item._id}`, { method: 'PATCH' })
     if (res?.success) await refreshCategories()
   } finally {
     pendingCategories.value = false
@@ -590,7 +590,7 @@ const onDeleteMKB = async (item: any) => {
   if (!confirm('Удалить МКБ код?')) return
   pendingMKB.value = true
   try {
-    const res: any = await $fetch(`/api/mkb/${item._id}`, { method: 'DELETE' })
+    const res: any = await $fetch(`/api/mkb/${item._id}`, { method: 'PATCH' })
     if (res?.success) await refreshMKB()
   } finally {
     pendingMKB.value = false

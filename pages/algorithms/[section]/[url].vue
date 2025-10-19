@@ -75,7 +75,7 @@ const { data: listData, pending: pendingAlgos } = await useFetch('/api/algorithm
 const algos = computed(() => listData.value?.items || [])
 
 function openAlgo(id: string) {
-  navigateTo(`/algorithms/${section.value}/${categoryUrl.value}/view/${id}`)
+  navigateTo(`/algorithms/${section.value}/${categoryUrl.value}/${id}`)
 }
 
 // Название категории

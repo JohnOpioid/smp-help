@@ -12,9 +12,13 @@ export function getChromaClient() {
 export async function getOrCreateCollection(name: string) {
   const c = getChromaClient()
   try {
-    return await c.getCollection({ name })
+    return await c.getCollection({ name, embeddingFunction: undefined as any })
   } catch {
-    return await c.createCollection({ name, metadata: { source: 'smp-help' } })
+    return await c.createCollection({ 
+      name, 
+      metadata: { source: 'smp-help' },
+      embeddingFunction: undefined
+    })
   }
 }
 

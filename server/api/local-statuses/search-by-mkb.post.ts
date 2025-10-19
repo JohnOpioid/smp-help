@@ -20,8 +20,8 @@ export default defineEventHandler(async (event) => {
     return {
       success: true,
       localStatuses,
-      foundCodes: localStatuses.map(ls => ls.code),
-      notFoundCodes: mkbCodes.filter(code => !localStatuses.some(ls => ls.code === code))
+      foundCodes: localStatuses.map((ls: any) => ls.code),
+      notFoundCodes: mkbCodes.filter(code => !localStatuses.some((ls: any) => ls.code === code))
     }
   } catch (error) {
     console.error('Ошибка при поиске локальных статусов:', error)

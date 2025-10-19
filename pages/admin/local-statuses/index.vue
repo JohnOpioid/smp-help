@@ -51,7 +51,7 @@
               <UButton 
                 v-if="filteredCategories.length > 3" 
                 variant="soft" 
-                color="gray" 
+                color="neutral" 
                 @click="showAllCategories = !showAllCategories"
                 class="cursor-pointer"
               >
@@ -124,7 +124,7 @@
                   <UButton :disabled="lsPage <= 1" @click="lsPage = lsPage - 1" size="sm" variant="ghost">Предыдущая</UButton>
                   <div class="flex items-center gap-1">
                     <template v-for="pageNum in visiblePages" :key="pageNum">
-                      <UButton v-if="pageNum !== '...'" :variant="pageNum === lsPage ? 'solid' : 'ghost'" :color="pageNum === lsPage ? 'primary' : 'gray'" @click="lsPage = pageNum as number" size="sm">
+                      <UButton v-if="pageNum !== '...'" :variant="pageNum === lsPage ? 'solid' : 'ghost'" :color="pageNum === lsPage ? 'primary' : 'neutral'" @click="lsPage = pageNum as number" size="sm">
                         {{ pageNum }}
                       </UButton>
                       <span v-else class="px-2 text-slate-400">...</span>
@@ -169,7 +169,7 @@
                   <div class="relative" ref="mkbDropdownRef">
                     <div class="flex gap-2">
                       <UInput v-model="mkbSearch" placeholder="Начните вводить МКБ, станцию или название" class="w-full" @input="onSearchMKB" />
-                      <UButton v-if="lsForm.code || lsForm.stationCode" size="sm" color="gray" variant="soft" @click="clearCoding" class="shrink-0">
+                      <UButton v-if="lsForm.code || lsForm.stationCode" size="sm" color="neutral" variant="soft" @click="clearCoding" class="shrink-0">
                         <UIcon name="i-heroicons-x-mark" />
                       </UButton>
                     </div>
@@ -345,7 +345,18 @@ const onDeleteCategory = async (item: any) => {
 const lsSlideoverOpen = ref(false)
 const isEditLS = ref(false)
 const currentLSId = ref<string | null>(null)
-const lsForm = reactive({ category: '', stationCode: '', code: '', mkbCode: '', name: '', note: '', complaints: '', anamnesis: '', localis: '', description: '' })
+const lsForm = reactive<{
+  category: string
+  stationCode: string
+  code: string
+  mkbCode: string
+  name: string
+  note: string
+  complaints: string
+  anamnesis: string
+  localis: string
+  description: string
+}>({ category: '', stationCode: '', code: '', mkbCode: '', name: '', note: '', complaints: '', anamnesis: '', localis: '', description: '' })
 const pendingLSForm = ref(false)
 const pendingLS = ref(false)
 
@@ -359,10 +370,10 @@ const { data: lsData, refresh: refreshLS, pending: fetchingLS, error: lsError } 
   query: computed(() => ({ page: lsPage.value, limit: lsPerPage, search: lsSearchQuery.value })),
   server: false
 })
-const lsItems = computed(() => lsData.value?.items || [])
+const lsItems = computed(() => (lsData.value as any)?.items || [])
 const lsPaginated = computed(() => lsItems.value)
 
-watch(lsData, (n) => { if (n) { lsTotal.value = n.total || 0; lsTotalPages.value = n.totalPages || 0 } })
+watch(lsData, (n) => { if (n) { lsTotal.value = (n as any).total || 0; lsTotalPages.value = (n as any).totalPages || 0 } })
 watch(fetchingLS, v => { pendingLS.value = !!v })
 watch(lsPage, () => { refreshLS() })
 watch(lsSearchQuery, () => { lsPage.value = 1 })

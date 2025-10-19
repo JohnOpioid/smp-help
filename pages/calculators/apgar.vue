@@ -51,7 +51,7 @@
                 ]"
                 :color="'neutral'"
                 variant="ghost"
-                @click="selectedSkinColor = opt.value"
+                @click="selectedSkinColor = Number(opt.value) as any"
               >
                 <span class="w-full inline-flex items-center justify-between gap-2 text-left">
                   <span class="text-left text-sm" :class="selectedSkinColor === opt.value ? skinColorTextClass : ''">{{ opt.text }}</span>
@@ -78,7 +78,7 @@
                 ]"
                 :color="'neutral'"
                 variant="ghost"
-                @click="selectedHeartRate = opt.value"
+                @click="selectedHeartRate = opt.value as any"
               >
                 <span class="w-full inline-flex items-center justify-between gap-2 text-left">
                   <span class="text-left text-sm" :class="selectedHeartRate === opt.value ? heartRateTextClass : ''">{{ opt.text }}</span>
@@ -105,7 +105,7 @@
                 ]"
                 :color="'neutral'"
                 variant="ghost"
-                @click="selectedReflex = opt.value"
+                @click="selectedReflex = opt.value as any"
               >
                 <span class="w-full inline-flex items-center justify-between gap-2 text-left">
                   <span class="text-left text-sm" :class="selectedReflex === opt.value ? reflexTextClass : ''">{{ opt.text }}</span>
@@ -132,7 +132,7 @@
                 ]"
                 :color="'neutral'"
                 variant="ghost"
-                @click="selectedMuscleTone = opt.value"
+                @click="selectedMuscleTone = opt.value as any"
               >
                 <span class="w-full inline-flex items-center justify-between gap-2 text-left">
                   <span class="text-left text-sm" :class="selectedMuscleTone === opt.value ? muscleToneTextClass : ''">{{ opt.text }}</span>
@@ -159,7 +159,7 @@
                 ]"
                 :color="'neutral'"
                 variant="ghost"
-                @click="selectedBreathing = opt.value"
+                @click="selectedBreathing = opt.value as any"
               >
                 <span class="w-full inline-flex items-center justify-between gap-2 text-left">
                   <span class="text-left text-sm" :class="selectedBreathing === opt.value ? breathingTextClass : ''">{{ opt.text }}</span>

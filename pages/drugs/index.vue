@@ -1,10 +1,6 @@
 <template>
   <div>
     <main class="flex-1">
-      <!-- Поиск (реактивный) -->
-      <div class="max-w-5xl w-full mx-auto px-4 pt-8">
-        <ReactiveSearch v-model="searchText" placeholder="Поиск препаратов..." @clear="clearSearch" :ai-enabled="true" />
-      </div>
 
       <!-- Основной контент -->
       <div class="max-w-5xl mx-auto px-0 md:px-4 py-8">
@@ -827,33 +823,47 @@ onMounted(async () => {
   const openDrugId = route.query.id
   
   if (openDrugId) {
+    console.log('Найден openDrugId в URL:', openDrugId)
+    // Проверяем, не был ли модалка только что закрыта пользователем
+    // Если в sessionStorage есть флаг о том, что модалка была закрыта, не открываем её автоматически
+    const wasModalClosedByUser = sessionStorage.getItem('drugModalClosedByUser')
+    console.log('Флаг drugModalClosedByUser:', wasModalClosedByUser)
+    if (wasModalClosedByUser) {
+      console.log('Модалка была закрыта пользователем, не открываем автоматически')
+      // Очищаем флаг и URL параметр
+      sessionStorage.removeItem('drugModalClosedByUser')
+      const newUrl = new URL(window.location.href)
+      newUrl.searchParams.delete('id')
+      window.history.replaceState({}, '', newUrl.toString())
+      return
+    }
+    
     // Ждем загрузки данных и открываем нужный препарат
     const checkAndOpenDrug = async () => {
-      if (!initialLoading.value && items.value.length > 0) {
-        const found = items.value.find((d: any) => String(d._id) === String(openDrugId))
-        if (found) {
-          // Открываем модалку без изменения URL для предотвращения моргания
-          selected.value = normalizeDrug(found)
-          modalOpen.value = true
-          updateIsBookmarked()
-          dropdownOpen.value = false
-        } else {
-          
-          // Загружаем препарат напрямую по ID
-          try {
-            const response = await $fetch(`/api/drugs/${openDrugId}`)
-            if (response.success && response.data) {
-              selected.value = normalizeDrug(response.data)
-              modalOpen.value = true
-              updateIsBookmarked()
-              dropdownOpen.value = false
-            } else {
-            }
-          } catch (error) {
+      if (!initialLoading.value) {
+        if (items.value.length > 0) {
+          const found = items.value.find((d: any) => String(d._id) === String(openDrugId))
+          if (found) {
+            // Открываем модалку без изменения URL для предотвращения моргания
+            selected.value = normalizeDrug(found)
+            modalOpen.value = true
+            updateIsBookmarked()
+            dropdownOpen.value = false
+            return
           }
         }
-      } else if (!initialLoading.value) {
-        // Данные загружены, но препарат не найден
+
+        // Если не нашли в уже загруженных или список пуст — пробуем догрузить по ID
+        try {
+          const response: any = await $fetch(`/api/drugs/${openDrugId}`)
+          const data = response?.data ?? response?.item ?? response
+          if (data && (data._id || data.id)) {
+            selected.value = normalizeDrug(data)
+            modalOpen.value = true
+            updateIsBookmarked()
+            dropdownOpen.value = false
+          }
+        } catch (error) {}
       } else {
         // Данные еще загружаются, повторяем через 100мс
         setTimeout(checkAndOpenDrug, 100)
@@ -1193,6 +1203,9 @@ watch(modalOpen, (newValue, oldValue) => {
   
   // Если модалка закрылась (была открыта, стала закрыта)
   if (oldValue === true && newValue === false) {
+    // Устанавливаем флаг о том, что модалка была закрыта пользователем
+    sessionStorage.setItem('drugModalClosedByUser', 'true')
+    
     // Очищаем query параметры используя прямое изменение истории браузера
     const newUrl = new URL(window.location.href)
     newUrl.searchParams.delete('id')
@@ -1200,20 +1213,28 @@ watch(modalOpen, (newValue, oldValue) => {
   }
 })
 
-// Добавляем обработчик клика вне элемента
-onMounted(() => {
-  // Обработчик события от поиска
-  const handleOpenDrugModal = (event: CustomEvent) => {
-    const drugId = event.detail.drugId
-    const found = items.value.find((d: any) => String(d._id) === String(drugId))
-    if (found) openModal(found)
+// Обработчик события от поиска - выносим из onMounted для глобальной доступности
+const handleOpenDrugModal = (event: CustomEvent) => {
+  console.log('Получено событие openDrugModal:', event.detail)
+  const drugId = event.detail.drugId
+  
+  // Очищаем флаг о закрытии модалки, так как пользователь явно хочет её открыть
+  sessionStorage.removeItem('drugModalClosedByUser')
+  
+  const found = items.value.find((d: any) => String(d._id) === String(drugId))
+  if (found) {
+    console.log('Найден препарат для открытия:', found.name)
+    openModal(found)
+  } else {
+    console.log('Препарат не найден в списке, ID:', drugId)
   }
+}
 
-  window.addEventListener('openDrugModal', handleOpenDrugModal as EventListener)
+// Добавляем обработчик события глобально
+window.addEventListener('openDrugModal', handleOpenDrugModal as EventListener)
 
-  onUnmounted(() => {
-    window.removeEventListener('openDrugModal', handleOpenDrugModal as EventListener)
-  })
+onUnmounted(() => {
+  window.removeEventListener('openDrugModal', handleOpenDrugModal as EventListener)
 })
 
 onUnmounted(() => {

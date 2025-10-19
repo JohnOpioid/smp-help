@@ -126,7 +126,15 @@ import { h, resolveComponent } from 'vue'
 definePageMeta({ middleware: 'admin', headerTitle: 'Лекарства' })
 
 const { data, refresh, pending } = await useFetch('/api/drugs')
-const rows = computed(() => data.value?.items || [])
+const rows = computed(() => (data.value as any)?.items || [])
+
+// Заглушка для категорий - нужно будет добавить API для получения категорий
+const categoryOptions = ref([
+  { label: 'Кардиология', value: 'cardiology' },
+  { label: 'Неврология', value: 'neurology' },
+  { label: 'Анестезиология', value: 'anesthesiology' },
+  { label: 'Педиатрия', value: 'pediatrics' }
+])
 
 const columns = [
   { accessorKey: 'name', header: 'Название' },

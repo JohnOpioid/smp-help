@@ -1,13 +1,6 @@
 <template>
   <div class="max-w-5xl mx-auto px-4 pt-8">
     
-    <NuxtLink :to="`/algorithms/${route.params.section}/${route.params.category}`" class="inline-flex items-center px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors duration-200">
-      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-      </svg>
-      Назад
-    </NuxtLink>
-    
     <!-- Общий скелетон для всей страницы при загрузке -->
     <template v-if="pending">
       <div class="space-y-6">
@@ -253,25 +246,14 @@
 
   <!-- Блок локального статуса -->
   <ClientOnly>
-    <div class="max-w-5xl mx-auto md:px-4">
+    <div v-if="localStatuses.length > 0" class="max-w-5xl mx-auto md:px-4">
       <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 md:rounded-lg">
         <div class="p-4 border-b border-slate-100 dark:border-slate-700">
           <p class="text-sm text-slate-600 dark:text-slate-300">Локальный статус</p>
         </div>
         
-        
-        <!-- Локальный скелетон для статусов -->
-        <div v-if="!algo" class="p-4">
-          <div class="space-y-3">
-            <USkeleton class="h-4 w-3/4" />
-            <USkeleton class="h-4 w-1/2" />
-            <USkeleton class="h-4 w-2/3" />
-            <USkeleton class="h-4 w-5/6" />
-          </div>
-        </div>
-        
         <!-- Найденные локальные статусы -->
-        <div v-else-if="localStatuses.length > 0" class="space-y-0">
+        <div class="space-y-0">
           <div v-for="(status, index) in localStatuses" :key="status._id" 
                class="p-4 border-b border-slate-100 dark:border-slate-700"
                :class="{ 'border-b-0': index === localStatuses.length - 1 }">
@@ -306,30 +288,8 @@
           </div>
         </div>
         
-        <!-- Заглушка при отсутствии локальных статусов -->
-        <div v-else-if="algo && localStatuses.length === 0" class="p-8 text-center">
-          <div class="flex flex-col items-center space-y-4">
-            <!-- Большая иконка -->
-            <div class="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center">
-              <UIcon name="i-heroicons-document-text" class="w-8 h-8 text-slate-400 dark:text-slate-500" />
-            </div>
-            
-            <!-- Текст -->
-            <p class="text-sm text-slate-600 dark:text-slate-300">Локальные статусы не найдены</p>
-            
-            <!-- Кнопка -->
-            <NuxtLink 
-              to="/local-statuses"
-              class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-md transition-colors duration-200"
-            >
-              <UIcon name="i-heroicons-document-text" class="w-4 h-4 mr-2" />
-              Локальные статусы
-            </NuxtLink>
-          </div>
-        </div>
-        
         <!-- Футер с ссылкой на локальный статус -->
-        <div v-if="localStatuses.length > 0" class="p-4 border-t border-slate-100 dark:border-slate-700 dark:bg-slate-800">
+        <div class="p-4 border-t border-slate-100 dark:border-slate-700 dark:bg-slate-800">
           <div class="flex items-center justify-between">
             <div class="text-sm text-slate-600 dark:text-slate-300">
               Найдено локальных статусов: {{ localStatuses.length }}
@@ -417,14 +377,26 @@ thead {
 
 /* Стили для ссылок старого формата внутри контента алгоритма */
 :deep(a.algocclink) {
-  color: #2563eb; /* tailwind blue-600 */
-  background-color: #e0f2fe; /* tailwind blue-50 */
-  padding: .1rem .2rem;
-  border-radius: .2rem;
+  color: #2563eb !important; /* tailwind blue-600 */
+  background-color: #e0f2fe !important; /* tailwind blue-50 */
+  padding: .1rem .2rem !important;
+  border-radius: .2rem !important;
+  text-decoration: none !important;
+  display: inline-block !important;
 }
 :deep(a.algocclink:hover) {
-  color: #1d4ed8; /* tailwind blue-700 */
-  background-color: #bfdbfe; /* tailwind blue-100 */
+  color: #1d4ed8 !important; /* tailwind blue-700 */
+  background-color: #bfdbfe !important; /* tailwind blue-100 */
+  text-decoration: none !important;
+}
+
+/* Дополнительные стили для надежного закругления углов */
+:deep(a.algocclink) {
+  border-top-left-radius: .2rem !important;
+  border-top-right-radius: .2rem !important;
+  border-bottom-left-radius: .2rem !important;
+  border-bottom-right-radius: .2rem !important;
+  border-radius: .2rem !important;
 }
 
 /* Перенос слов в таблицах */
@@ -458,8 +430,90 @@ const isMobileDevice = ref(false)
 const drugsOpen = ref(false)
 const drugsQuery = ref<string>('')
 
+// Переменные для защиты от повторных кликов
+const lastClickTime = ref(0)
+const lastClickDrugId = ref('')
+const isProcessingClick = ref(false)
+
 // Переменная для кэширования списка препаратов
 const drugsList = ref<string[]>([])
+// Карта препаратов с ID для быстрого поиска
+const drugsMap = ref<Map<string, { id: string; name: string; variants: string[] }>>(new Map())
+
+// Константы для localStorage
+const DRUGS_CACHE_KEY = 'smp-help-drugs-cache'
+const DRUGS_CACHE_VERSION = '1.0'
+const DRUGS_CACHE_EXPIRY = 24 * 60 * 60 * 1000 // 24 часа в миллисекундах
+
+// Функции для работы с кэшем препаратов
+function saveDrugsToCache(drugsList: string[], drugsMap: Map<string, { id: string; name: string; variants: string[] }>) {
+  if (!process.client) return
+  
+  try {
+    const cacheData = {
+      version: DRUGS_CACHE_VERSION,
+      timestamp: Date.now(),
+      drugsList,
+      drugsMap: Array.from(drugsMap.entries())
+    }
+    localStorage.setItem(DRUGS_CACHE_KEY, JSON.stringify(cacheData))
+    console.log('💾 Сохранили список препаратов в localStorage:', drugsList.length, 'препаратов')
+  } catch (error) {
+    console.warn('⚠️ Не удалось сохранить кэш препаратов:', error)
+  }
+}
+
+function loadDrugsFromCache(): { drugsList: string[]; drugsMap: Map<string, { id: string; name: string; variants: string[] }> } | null {
+  if (!process.client) return null
+  
+  try {
+    const cached = localStorage.getItem(DRUGS_CACHE_KEY)
+    if (!cached) return null
+    
+    const cacheData = JSON.parse(cached)
+    
+    // Проверяем версию кэша
+    if (cacheData.version !== DRUGS_CACHE_VERSION) {
+      console.log('🔄 Версия кэша устарела, очищаем кэш')
+      localStorage.removeItem(DRUGS_CACHE_KEY)
+      return null
+    }
+    
+    // Проверяем срок действия кэша
+    const now = Date.now()
+    if (now - cacheData.timestamp > DRUGS_CACHE_EXPIRY) {
+      console.log('⏰ Кэш препаратов устарел, очищаем кэш')
+      localStorage.removeItem(DRUGS_CACHE_KEY)
+      return null
+    }
+    
+    // Восстанавливаем данные
+    const drugsMap = new Map(cacheData.drugsMap as Array<[string, { id: string; name: string; variants: string[] }]>)
+    console.log('📦 Загрузили список препаратов из кэша:', cacheData.drugsList.length, 'препаратов')
+    console.log('📦 Карта препаратов из кэша:', drugsMap.size, 'записей')
+    
+    return {
+      drugsList: cacheData.drugsList,
+      drugsMap
+    }
+  } catch (error) {
+    console.warn('⚠️ Ошибка при загрузке кэша препаратов:', error)
+    localStorage.removeItem(DRUGS_CACHE_KEY)
+    return null
+  }
+}
+
+// Функция для очистки кэша препаратов (полезна для отладки)
+function clearDrugsCache() {
+  if (!process.client) return
+  
+  try {
+    localStorage.removeItem(DRUGS_CACHE_KEY)
+    console.log('🗑️ Очистили кэш препаратов')
+  } catch (error) {
+    console.warn('⚠️ Не удалось очистить кэш препаратов:', error)
+  }
+}
 
 const updateMobileStatus = () => {
   if (process.client) {
@@ -471,8 +525,23 @@ onMounted(async () => {
   updateMobileStatus()
   window.addEventListener('resize', updateMobileStatus)
   
+  // Добавляем глобальную функцию для очистки кэша (для отладки)
+  if (process.client) {
+    (window as any).clearDrugsCache = clearDrugsCache
+    console.log('🔧 Для очистки кэша препаратов используйте: clearDrugsCache()')
+  console.log('🔧 Версия файла: 2.0 - делегирование событий')
+  }
+  
   // Загружаем список препаратов для выделения
   await loadDrugsList()
+  
+  // После загрузки списка препаратов обрабатываем ссылки
+  await nextTick()
+  enhanceContentLinks()
+  enhanceTableLinks()
+  
+  // Удаляем глобальный обработчик - используем только делегированный
+  console.log('🔄 Используем только делегированный обработчик событий')
 })
 
 onBeforeUnmount(() => {
@@ -491,26 +560,74 @@ type AlgorithmItem = {
   mkbExclusions?: string[]
 }
 type AlgorithmResponse = { success: true; item: AlgorithmItem } | { success: false; message: string }
-const { data, pending } = await useFetch<AlgorithmResponse>(`/api/algorithms/${id}`)
+const { data, pending, error } = await useFetch<AlgorithmResponse>(`/api/algorithms/${id}`)
+
+// Отладочная информация
+watchEffect(() => {
+  console.log('🔍 Состояние загрузки алгоритма:', {
+    pending: pending.value,
+    hasData: !!data.value,
+    data: data.value,
+    error: error.value,
+    id: id
+  })
+})
 function isSuccess(resp: AlgorithmResponse | null | undefined): resp is { success: true; item: AlgorithmItem } {
   return !!resp && (resp as any).success === true && 'item' in (resp as any)
 }
-const algo = computed<AlgorithmItem | undefined>(() => isSuccess(data.value) ? data.value!.item : undefined)
+const algo = computed<AlgorithmItem | undefined>(() => {
+  const result = isSuccess(data.value) ? data.value!.item : undefined
+  console.log('🔍 Computed algo:', result)
+  return result
+})
 // Принудительное обновление для перепарсинга при загрузке препаратов
 const forceUpdate = ref(0)
 
-const rendered = computed(() => {
-  // Используем forceUpdate для принудительного пересчета
-  forceUpdate.value
+// Простой подход: обработанный контент
+const processedContent = ref<string>('')
   
+const rendered = computed(() => {
   const raw = (algo.value?.content || '') as string
-  try { 
-    const html = marked.parse(raw) as string
-    return parseDrugsInContent(html)
-  } catch { 
-    return parseDrugsInContent(raw)
+  
+  // Если контент уже обработан, возвращаем его
+  if (processedContent.value) {
+    return processedContent.value
   }
+  
+  // Парсим markdown
+  let html: string
+  try { 
+    html = marked.parse(raw) as string
+  } catch { 
+    html = raw
+  }
+  
+  return html
 })
+
+// Простой watcher: обрабатываем контент только один раз при загрузке препаратов
+watch([drugsList, drugsMap], ([newDrugsList, newDrugsMap]) => {
+  if (newDrugsList && newDrugsList.length > 0 && newDrugsMap && newDrugsMap.size > 0) {
+    console.log('🔄 Препараты загружены, обрабатываем контент...')
+    
+    const raw = (algo.value?.content || '') as string
+    if (!raw) return
+    
+    // Парсим markdown
+    let html: string
+    try { 
+      html = marked.parse(raw) as string
+    } catch { 
+      html = raw
+    }
+    
+    // Обрабатываем препараты
+    const processedHtml = parseDrugsInContent(html)
+    processedContent.value = processedHtml
+    
+    console.log('✅ Контент обработан с препаратами')
+  }
+}, { immediate: true })
 
 // Отображение кодов МКБ:
 // - Явные диапазоны (A00–A02) — как есть
@@ -616,7 +733,7 @@ watch(algo, async (val: AlgorithmItem | undefined) => {
       || list.find(a => (a.title || '').toLowerCase().startsWith(base.toLowerCase()))
       || list[0]
     if (candidate && candidate._id && candidate._id !== val._id) {
-      await navigateTo(`/algorithms/view/${candidate._id}`)
+      await navigateTo(`/algorithms/${route.params.section}/${route.params.category}/${candidate._id}`)
     }
   } catch (e) {
     console.warn('Не удалось переключить раздел просмотра алгоритма:', e)
@@ -961,12 +1078,14 @@ function styleTables() {
     // Мобильный режим: показывать 2 колонки, первая + переключаемая (2/3) свайпом
     setupMobileTwoColumn(table)
   }
-  // После стилизации таблиц также усилим поведение ссылок внутри контента
-  enhanceContentLinks()
 }
 
 onMounted(() => nextTick(styleTables))
-watch(rendered, async () => { await nextTick(); styleTables() })
+watch(rendered, async () => { 
+  await nextTick()
+  // Стилизуем таблицы
+  styleTables() 
+})
 
 // ===== Мобильная логика двух колонок и свайпа =====
 function isMobile() {
@@ -1221,23 +1340,59 @@ function mapSectionSlug(slug: string): 'Взрослые'|'Детские'|'ОН
   return undefined
 }
 async function navigateOldAlgoLink(href: string, anchorText: string) {
+  console.log('🚀 navigateOldAlgoLink ВЫЗВАНА!', href, 'текст:', anchorText)
   try {
     const url = new URL(href, window.location.origin)
     const parts = url.pathname.split('/').filter(Boolean)
+    console.log('🔍 Части URL:', parts)
     // Ожидаемый формат: /algorithms/:section/:categoryFolder[/ :algoFile]
     if (parts[0] !== 'algorithms') return
     const sectionSlug = parts[1]
     const sectionName = mapSectionSlug(sectionSlug)
+    console.log('🔍 Секция:', sectionSlug, '->', sectionName)
     if (!sectionName) return
     const categoryUrl = stripNumberPrefix(parts[2] || '')
+    console.log('🔍 Категория URL:', categoryUrl)
     if (!categoryUrl) return
 
     // Если указан файл алгоритма, попробуем найти по тексту ссылки (в скобках) внутри категории
     const hasAlgo = parts.length >= 4
     if (hasAlgo) {
-      // Текст может быть в скобках — извлечём
+      // Если есть ID алгоритма в URL (последний сегмент), используем его напрямую
+      const algorithmId = parts[parts.length - 1]
+      console.log('🔍 ID алгоритма из URL:', algorithmId)
+      
+      if (algorithmId && algorithmId.length === 24) { // MongoDB ObjectId имеет 24 символа
+        console.log('🔍 Переходим напрямую по ID:', algorithmId)
+        // Строим правильный путь без /view/
+        const targetUrl = `/algorithms/${sectionSlug}/${categoryUrl}/${algorithmId}`
+        console.log('🔍 Целевой URL:', targetUrl)
+        await navigateTo(targetUrl)
+        return
+      }
+      
+      // Если ID невалидный, но есть /view/ в пути, попробуем извлечь ID из предыдущего сегмента
+      if (href.includes('/view/')) {
+        const viewIndex = parts.indexOf('view')
+        console.log('🔍 Индекс view в частях URL:', viewIndex, 'части:', parts)
+        if (viewIndex !== -1 && viewIndex + 1 < parts.length) {
+          const realId = parts[viewIndex + 1]
+          console.log('🔍 Найден ID после /view/:', realId)
+          if (realId && realId.length === 24) {
+            console.log('🔍 Переходим по ID после /view/:', realId)
+            const targetUrl = `/algorithms/${sectionSlug}/${categoryUrl}/${realId}`
+            console.log('🔍 Целевой URL:', targetUrl)
+            await navigateTo(targetUrl)
+            return
+          }
+        }
+      }
+      
+      // Если ID нет или он неверный, ищем по названию
       const m = anchorText.match(/\(([^)]+)\)/)
       const title = (m ? m[1] : anchorText).trim()
+      console.log('🔍 Ищем алгоритм по названию:', title)
+      
       // Сначала получим категорию
       const catRes: any = await $fetch(`/api/algorithms/categories/by-url/${categoryUrl}`)
       const catId = catRes?.item?._id
@@ -1249,7 +1404,7 @@ async function navigateOldAlgoLink(href: string, anchorText: string) {
         const found = list.find(a => String(a.title || '').toLowerCase() === title.toLowerCase())
           || list.find(a => String(a.title || '').toLowerCase().includes(title.toLowerCase()))
         if (found && found._id) {
-          await navigateTo(`/algorithms/${sectionSlug}/${categoryUrl}/view/${found._id}`)
+          await navigateTo(`/algorithms/${sectionSlug}/${categoryUrl}/${found._id}`)
           return
         }
       }
@@ -1264,28 +1419,204 @@ function enhanceContentLinks() {
   const root = contentRef.value
   if (!root) return
   
-  // Обработка ссылок на алгоритмы
-  const anchors = Array.from(root.querySelectorAll('a[href^="/algorithms/"]')) as HTMLAnchorElement[]
-  for (const a of anchors) {
-    a.addEventListener('click', (ev) => {
-      ev.preventDefault()
-      ev.stopPropagation()
-      void navigateOldAlgoLink(a.getAttribute('href') || '', a.textContent || '')
-    }, { passive: false })
+  // Сначала заменяем все ссылки с /view/ на правильные ссылки (НЕЗАВИСИМО от загрузки препаратов)
+  const allLinks = Array.from(root.querySelectorAll('a[href*="/view/"]')) as HTMLAnchorElement[]
+  console.log('🔍 Найдено ссылок с /view/:', allLinks.length)
+  
+  for (const link of allLinks) {
+    const href = link.getAttribute('href') || ''
+    if (href.includes('/view/')) {
+      const newHref = href.replace('/view/', '/')
+      link.setAttribute('href', newHref)
+      console.log('🔄 Заменили ссылку:', href, '→', newHref)
+    }
   }
   
-  // Обработка ссылок на препараты
-  const drugLinks = Array.from(root.querySelectorAll('a.algocclink[data-drug-name]')) as HTMLAnchorElement[]
-  for (const link of drugLinks) {
-    link.addEventListener('click', (ev) => {
-      ev.preventDefault()
-      ev.stopPropagation()
-      const drugName = link.getAttribute('data-drug-name')
-      if (drugName) {
-        drugsQuery.value = drugName
-        drugsOpen.value = true
+  // Дополнительно заменяем /view/ в текстовом содержимом HTML
+  const htmlContent = root.innerHTML
+  if (htmlContent.includes('/view/')) {
+    const newHtmlContent = htmlContent.replace(/\/view\//g, '/')
+    root.innerHTML = newHtmlContent
+    console.log('🔄 Заменили /view/ в HTML содержимом')
+    
+    // После замены HTML содержимого, еще раз проверим ссылки
+    const updatedLinks = Array.from(root.querySelectorAll('a[href*="/view/"]')) as HTMLAnchorElement[]
+    console.log('🔍 После замены HTML найдено ссылок с /view/:', updatedLinks.length)
+    
+    for (const link of updatedLinks) {
+      const href = link.getAttribute('href') || ''
+      if (href.includes('/view/')) {
+        const newHref = href.replace('/view/', '/')
+        link.setAttribute('href', newHref)
+        console.log('🔄 Дополнительно заменили ссылку:', href, '→', newHref)
       }
-    }, { passive: false })
+    }
+  }
+  
+  // Если список препаратов еще не загружен, не обрабатываем остальные ссылки
+  if (!drugsList.value || drugsList.value.length === 0) {
+    console.log('Список препаратов еще не загружен, пропускаем обработку остальных ссылок')
+    return
+  }
+  
+  // Используем делегирование событий для ссылок на препараты
+  const drugLinks = Array.from(root.querySelectorAll('a.algocclink[data-drug-name]')) as HTMLAnchorElement[]
+  console.log('🔍 Найдено ссылок на препараты:', drugLinks.length)
+  
+  // Удаляем старые обработчики если они есть
+  if (root.hasAttribute('data-drug-handler-added')) {
+    console.log('🔄 Удаляем старый обработчик событий')
+    root.removeAttribute('data-drug-handler-added')
+  }
+  
+  // Добавляем один обработчик на контейнер для всех ссылок на препараты
+  console.log('🔄 Добавляем делегированный обработчик клика для ссылок на препараты')
+    
+    root.addEventListener('click', (ev) => {
+      
+      const target = ev.target as HTMLElement
+      console.log('🖱️ Клик по элементу:', target.tagName, target.className)
+      const link = target.closest('a.algocclink[data-drug-name]') as HTMLAnchorElement
+      
+      if (link) {
+        console.log('🖱️ Делегированный обработчик клика сработал для препарата:', link.getAttribute('data-drug-name'))
+        console.log('🖱️ Версия обработчика: 2.0 - делегирование событий')
+        
+        // Останавливаем событие сразу
+        ev.preventDefault()
+        ev.stopPropagation()
+        ev.stopImmediatePropagation()
+        
+        const drugId = link.getAttribute('data-drug-id')
+      const drugName = link.getAttribute('data-drug-name')
+        console.log('🖱️ Клик по ссылке на препарат:', drugName, 'ID:', drugId)
+        
+        if (drugId) {
+          const currentTime = Date.now()
+          
+          console.log('🔍 Состояние перед обработкой клика:', {
+            drugId,
+            currentTime,
+            lastClickTime: lastClickTime.value,
+            lastClickDrugId: lastClickDrugId.value,
+            drugsOpen: drugsOpen.value,
+            drugsQuery: drugsQuery.value
+          })
+          
+          // Проверяем, не слишком ли быстро повторный клик (менее 100мс)
+          if (currentTime - lastClickTime.value < 100 && lastClickDrugId.value === drugId) {
+            console.log('⚠️ Слишком быстрый повторный клик, игнорируем')
+            return
+          }
+          
+          // Проверяем, не открыта ли уже модалка с этим препаратом
+          if (drugsOpen.value && drugsQuery.value === drugId) {
+            console.log('⚠️ Модалка уже открыта с этим препаратом, игнорируем клик')
+            return
+          }
+          
+          // Если модалка закрыта, но query еще не очищен, очищаем его
+          if (!drugsOpen.value && drugsQuery.value) {
+            console.log('🔄 Очищаем старый query при закрытой модалке')
+            drugsQuery.value = ''
+          }
+          
+          // Обновляем время и ID последнего клика
+          lastClickTime.value = currentTime
+          lastClickDrugId.value = drugId
+          
+          // Устанавливаем состояние модалки
+          drugsQuery.value = drugId
+          drugsOpen.value = true
+          console.log('🔄 Открываем модалку с препаратом по ID:', drugId)
+          console.log('🔍 Состояние после установки:', {
+            drugsOpen: drugsOpen.value,
+            drugsQuery: drugsQuery.value
+          })
+        }
+      }
+    }, { passive: false, capture: true })
+    
+    root.setAttribute('data-drug-handler-added', 'true')
+    console.log('🔄 Добавили делегированный обработчик для ссылок на препараты (версия 2.0)')
+  
+  // Обработка ссылок на алгоритмы (включая те, что имеют класс algocclink, но являются ссылками на алгоритмы)
+  const algorithmLinks = Array.from(root.querySelectorAll('a[href*="/algorithms/"]')) as HTMLAnchorElement[]
+  console.log('Найдено ссылок на алгоритмы:', algorithmLinks.length)
+  
+  for (const link of algorithmLinks) {
+    const href = link.getAttribute('href') || ''
+    const hrefParts = href.split('/').filter(Boolean)
+    
+    console.log('Обрабатываем ссылку:', href, 'сегменты:', hrefParts)
+    
+    // Проверяем, является ли это ссылкой на препарат (имеет класс algocclink и data-drug-name)
+    const isDrugLink = link.classList.contains('algocclink') && link.hasAttribute('data-drug-name')
+    
+    // Проверяем, является ли это ссылкой на конкретный алгоритм (4+ сегментов и НЕ ссылка на препарат)
+    const isAlgorithmLink = hrefParts.length >= 4 && hrefParts[0] === 'algorithms' && !isDrugLink
+    
+    console.log('isAlgorithmLink:', isAlgorithmLink, 'isDrugLink:', isDrugLink)
+    console.log('Класс ссылки:', link.className)
+    console.log('data-drug-name:', link.getAttribute('data-drug-name'))
+    
+    if (isDrugLink) {
+      console.log('Ссылка на препарат уже обработана выше:', href)
+    } else if (isAlgorithmLink) {
+      console.log('Добавляем обработчик для ссылки на алгоритм:', href)
+      
+      // Добавляем стили algocclink для ссылок на алгоритмы
+      if (!link.classList.contains('algocclink')) {
+        link.classList.add('algocclink', 'cursor-pointer')
+        console.log('🎨 Добавили стили algocclink для ссылки на алгоритм:', href)
+      }
+      
+      link.addEventListener('click', (ev) => {
+        console.log('🖱️ Клик по ссылке на алгоритм!', href)
+        ev.preventDefault()
+        ev.stopPropagation()
+        console.log('🖱️ Вызываем navigateOldAlgoLink...')
+        void navigateOldAlgoLink(href, link.textContent || '')
+      }, { passive: false, capture: true })
+    }
+  }
+}
+
+// Функция для обработки ссылок в таблицах
+function enhanceTableLinks() {
+  const root = contentRef.value
+  if (!root) return
+  
+  // Находим все ссылки в таблицах
+  const tableLinks = Array.from(root.querySelectorAll('table a[href*="/algorithms/"]')) as HTMLAnchorElement[]
+  console.log('🔍 Найдено ссылок в таблицах:', tableLinks.length)
+  
+  for (const link of tableLinks) {
+    const href = link.getAttribute('href') || ''
+    console.log('🔍 Обрабатываем ссылку в таблице:', href)
+    
+    // Заменяем /view/ если есть
+    if (href.includes('/view/')) {
+      const newHref = href.replace('/view/', '/')
+      link.setAttribute('href', newHref)
+      console.log('🔄 Заменили ссылку в таблице:', href, '→', newHref)
+    }
+    
+    // Добавляем стили для ссылок на алгоритмы (как у препаратов)
+    if (href.includes('/algorithms/') && !link.classList.contains('algocclink')) {
+      link.classList.add('algocclink', 'cursor-pointer')
+      console.log('🎨 Добавили стили algocclink для ссылки на алгоритм в таблице:', href)
+    }
+    
+    // Добавляем обработчик клика для ссылок на алгоритмы
+    if (href.includes('/algorithms/') && !link.hasAttribute('data-drug-name')) {
+      link.addEventListener('click', (ev) => {
+        console.log('🖱️ Клик по ссылке на алгоритм в таблице!', href)
+        ev.preventDefault()
+        ev.stopPropagation()
+        void navigateOldAlgoLink(href, link.textContent || '')
+      }, { passive: false, capture: true })
+    }
   }
 }
 
@@ -1293,130 +1624,346 @@ function enhanceContentLinks() {
 async function loadDrugsList() {
   if (drugsList.value.length > 0) return // Уже загружено
   
+  // Сначала пытаемся загрузить из кэша
+  const cachedData = loadDrugsFromCache()
+  if (cachedData) {
+    drugsList.value = cachedData.drugsList
+    drugsMap.value = cachedData.drugsMap
+    
+    console.log('✅ Использовали кэшированные данные препаратов')
+    return
+  }
+  
+  console.log('Загружаем список препаратов с сервера...')
   try {
   const response: any = await $fetch('/api/drugs', { 
     query: { page: 1, limit: 1000 } 
   })
+  console.log('Ответ API препаратов:', response)
     
     if (response?.items && Array.isArray(response.items)) {
       const drugNames: string[] = []
+      const newDrugsMap = new Map<string, { id: string; name: string; variants: string[] }>()
       
-      // Собираем все возможные названия препаратов
+      // Простая загрузка препаратов без создания множества вариантов
       for (const drug of response.items) {
-        // Основное название
-        if (drug.name) drugNames.push(drug.name)
+        const drugId = drug._id
+        const drugName = drug.name
+        
+        if (!drugName) continue
+        
+        // Собираем все названия препарата
+        const allNames: string[] = [drugName]
         
         // Латинское название
-        if (drug.latinName) drugNames.push(drug.latinName)
+        if (drug.latinName) {
+          allNames.push(drug.latinName)
+        }
         
         // Синонимы
         if (drug.synonyms && Array.isArray(drug.synonyms)) {
-          drugNames.push(...drug.synonyms.filter(Boolean))
+          const synonyms = drug.synonyms.filter(Boolean)
+          allNames.push(...synonyms)
         }
         
         // Аналоги
         if (drug.analogs && Array.isArray(drug.analogs)) {
-          drugNames.push(...drug.analogs.filter(Boolean))
+          const analogs = drug.analogs.filter(Boolean)
+          allNames.push(...analogs)
+          if (analogs.length > 0) {
+            console.log(`🔍 Препарат "${drugName}" имеет аналоги:`, analogs)
+          }
         }
+        
+        // Убираем дубликаты
+        const uniqueNames = Array.from(new Set(allNames))
+        
+        // Добавляем в карту все названия препарата
+        for (const name of uniqueNames) {
+          newDrugsMap.set(name.toLowerCase(), {
+            id: drugId,
+            name: drugName,
+            variants: uniqueNames
+          })
+        }
+        
+        // Добавляем в список только основное название
+        drugNames.push(drugName)
       }
       
-      // Удаляем дубликаты и сортируем по длине
-      drugsList.value = Array.from(new Set(drugNames))
-        .filter(name => name && name.length > 2) // Исключаем слишком короткие названия
-        .sort((a, b) => b.length - a.length) // Длинные названия первыми
+      // Создаем список препаратов (только основные названия)
+      drugsList.value = drugNames
+        .filter(name => name && name.length > 2)
+        .sort((a, b) => b.length - a.length)
+      
+      // Сохраняем карту препаратов
+      drugsMap.value = newDrugsMap
+      
+      console.log('✅ Список препаратов загружен:', drugsList.value.length, 'препаратов')
+      console.log('✅ Карта препаратов создана:', drugsMap.value.size, 'записей')
+      
+      // Отладка карты препаратов (только первые 3 записи)
+      console.log('🔍 Примеры записей в карте:')
+      const sampleKeys = Array.from(drugsMap.value.keys()).slice(0, 3)
+      for (const key of sampleKeys) {
+        const drugInfo = drugsMap.value.get(key)
+        console.log(`  "${key}" → ID: ${drugInfo?.id}, Name: ${drugInfo?.name}`)
+      }
+      
+      // Сохраняем в кэш
+      saveDrugsToCache(drugsList.value, drugsMap.value)
+      
+      console.log('✅ Список препаратов загружен')
       
     } else {
       console.warn('❌ Некорректный ответ API препаратов')
     }
   } catch (error) {
     console.warn('❌ Не удалось загрузить список препаратов:', error)
+    console.log('Продолжаем без списка препаратов...')
   }
 }
 
-// Функция для парсинга препаратов в контенте
+// Простая функция для парсинга препаратов в контенте
 function parseDrugsInContent(html: string): string {
   if (!html) return html
   
-  // Если список препаратов еще не загружен, возвращаем исходный HTML
-  if (!drugsList.value || drugsList.value.length === 0) {
-    return html
-  }
+  console.log('🔄 Начинаем парсинг препаратов в контенте...')
+  console.log('🔍 Список препаратов:', drugsList.value.length, 'препаратов')
+  console.log('🔍 Первые 10 препаратов:', drugsList.value.slice(0, 10))
   
-  // Создаем временный DOM элемент для безопасного парсинга
+  // Создаем временный DOM элемент для работы с HTML
   const tempDiv = document.createElement('div')
   tempDiv.innerHTML = html
   
-  // Сортируем препараты по длине (длинные названия первыми)
-  const sortedDrugs = [...drugsList.value].sort((a, b) => b.length - a.length)
+  // Находим все таблицы
+  const tables = tempDiv.querySelectorAll('table')
+  console.log('🔍 Найдено таблиц:', tables.length)
   
-  // Функция для рекурсивного обхода DOM и замены текста
-  function replaceTextInNode(node: Node) {
-    if (node.nodeType === Node.TEXT_NODE) {
-      let text = node.textContent || ''
+  // Обрабатываем каждую таблицу
+  tables.forEach((table, tableIndex) => {
+    console.log(`🔄 Обрабатываем таблицу ${tableIndex + 1}`)
+    
+    // Находим все строки в tbody (исключаем заголовки)
+    const rows = table.querySelectorAll('tbody tr')
+    console.log(`🔍 Найдено строк в таблице ${tableIndex + 1}:`, rows.length)
+    
+    rows.forEach((row, rowIndex) => {
+      // Получаем все ячейки в строке
+      const cells = row.querySelectorAll('td')
       
-      for (const drug of sortedDrugs) {
-        // Используем простую замену без регулярных выражений
-        const drugLower = drug.toLowerCase()
-        const textLower = text.toLowerCase()
+      // Проверяем, что есть минимум 2 столбца
+      if (cells.length >= 2) {
+        // Обрабатываем только второй столбец (индекс 1)
+        const secondCell = cells[1]
+        console.log(`🔍 Обрабатываем строку ${rowIndex + 1}, столбец 2 в таблице ${tableIndex + 1}`)
         
-        let index = textLower.indexOf(drugLower)
-        while (index !== -1) {
-          // Проверяем границы слова (пробелы, знаки препинания)
-          const beforeChar = index > 0 ? text[index - 1] : ' '
-          const afterChar = index + drug.length < text.length ? text[index + drug.length] : ' '
-          
-          const isWordBoundary = /[\s\.,;:!?()[\]{}"'«»]/.test(beforeChar) && /[\s\.,;:!?()[\]{}"'«»]/.test(afterChar)
-          
-          if (isWordBoundary) {
-            const beforeText = text.substring(0, index)
-            const drugText = text.substring(index, index + drug.length)
-            const afterText = text.substring(index + drug.length)
-            
-            // Создаем ссылку
-            const link = document.createElement('a')
-            link.href = '#'
-            link.className = 'algocclink cursor-pointer'
-            link.setAttribute('data-drug-name', drug)
-            link.textContent = drugText
-            
-            // Заменяем текст на ссылку
-            const fragment = document.createDocumentFragment()
-            if (beforeText) {
-              fragment.appendChild(document.createTextNode(beforeText))
-            }
-            fragment.appendChild(link)
-            if (afterText) {
-              fragment.appendChild(document.createTextNode(afterText))
-            }
-            
-            // Заменяем узел
-            node.parentNode?.replaceChild(fragment, node)
-            return // Выходим из функции, так как узел заменен
-          }
-          
-          // Ищем следующее вхождение
-          index = textLower.indexOf(drugLower, index + 1)
+        // Парсим препараты только во втором столбце
+        const processedContent = parseDrugsInText(secondCell.innerHTML)
+        secondCell.innerHTML = processedContent
+      }
+    })
+  })
+  
+  // Также обрабатываем препараты в тексте вне таблиц
+  const nonTableContent = tempDiv.cloneNode(true) as HTMLElement
+  
+  // Удаляем все таблицы из копии
+  nonTableContent.querySelectorAll('table').forEach(table => table.remove())
+  
+  // Обрабатываем оставшийся контент
+  const processedNonTableContent = parseDrugsInText(nonTableContent.innerHTML)
+  nonTableContent.innerHTML = processedNonTableContent
+  
+  // Возвращаем обработанный HTML
+  const result = tempDiv.innerHTML
+  console.log('✅ Парсинг препаратов завершен')
+  return result
+}
+
+// Функция для парсинга препаратов в тексте
+function parseDrugsInText(text: string): string {
+  if (!text) return text
+  
+  let result = text
+  
+  // Получаем все уникальные варианты названий из карты препаратов
+  const allDrugVariants = new Set<string>()
+  
+  // Собираем все варианты названий из карты (включая аналоги и синонимы)
+  drugsMap.value.forEach((drugInfo, key) => {
+    // Добавляем все варианты названий для этого препарата
+    if (drugInfo.variants) {
+      drugInfo.variants.forEach(variant => {
+        if (variant && variant.trim()) {
+          allDrugVariants.add(variant)
         }
-      }
-    } else if (node.nodeType === Node.ELEMENT_NODE) {
-      // Не обрабатываем уже существующие ссылки
-      if (node.nodeName.toLowerCase() === 'a') {
-        return
-      }
+      })
+    }
+  })
+  
+  // Преобразуем в массив и сортируем по длине (длинные названия первыми)
+  const sortedVariants = Array.from(allDrugVariants).sort((a, b) => b.length - a.length)
+  
+  console.log('🔍 Всего вариантов названий для поиска:', sortedVariants.length)
+  console.log('🔍 Первые 10 вариантов:', sortedVariants.slice(0, 10))
       
-      // Рекурсивно обрабатываем дочерние узлы
-      const children = Array.from(node.childNodes)
-      for (const child of children) {
-        replaceTextInNode(child)
+  for (const variant of sortedVariants) {
+    // Получаем информацию о препарате из карты
+    const drugInfo = drugsMap.value.get(variant.toLowerCase())
+    if (!drugInfo) continue
+    
+    // Создаем регулярное выражение для поиска варианта названия
+    const escapedVariant = variant.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const regex = new RegExp(escapedVariant, 'gi')
+    
+    // Проверяем, есть ли совпадения
+    const matches = result.match(regex)
+    if (matches && matches.length > 0) {
+      console.log(`🔍 Найдено совпадений для "${variant}" (ID: ${drugInfo.id}): ${matches.length} шт`)
+      
+      // Заменяем найденные совпадения на ссылки
+      result = result.replace(regex, (match) => {
+        console.log(`🔄 Создаем ссылку для "${variant}" ID: ${drugInfo.id} для текста: "${match}"`)
+        return `<a href="#" class="algocclink cursor-pointer" data-drug-id="${drugInfo.id}" data-drug-name="${drugInfo.name}">${match}</a>`
+      })
+    }
+  }
+  
+  return result
+}
+
+// Функция для нормализации названий препаратов (убираем падежи и окончания)
+function normalizeDrugName(name: string): string {
+  if (!name) return ''
+  
+  let normalized = name.toLowerCase().trim()
+  
+  // Убираем общие окончания для разных падежей
+  const endings = [
+    // Родительный падеж (кого? чего?)
+    'а', 'я', 'ы', 'и',
+    // Дательный падеж (кому? чему?)
+    'у', 'ю',
+    // Винительный падеж (кого? что?)
+    'а', 'я', 'у', 'ю',
+    // Творительный падеж (кем? чем?)
+    'ом', 'ем', 'ой', 'ей',
+    // Предложный падеж (о ком? о чём?)
+    'е', 'и'
+  ]
+  
+  // Сортируем окончания по длине (длинные первыми)
+  endings.sort((a, b) => b.length - a.length)
+  
+  // Убираем окончания
+  for (const ending of endings) {
+    if (normalized.endsWith(ending) && normalized.length > ending.length + 2) {
+      normalized = normalized.slice(0, -ending.length)
+      break // Убираем только одно окончание
+    }
+  }
+  
+  return normalized
+}
+
+// Функция для создания альтернативных вариантов названий препаратов
+function createDrugVariants(name: string): string[] {
+  if (!name) return []
+  
+  const variants = [name]
+  const normalized = normalizeDrugName(name)
+  
+  // Добавляем нормализованный вариант только если он отличается
+  if (normalized !== name.toLowerCase()) {
+    variants.push(normalized)
+  }
+  
+  // Добавляем варианты с падежами только для основных препаратов
+  const lowerName = name.toLowerCase()
+  
+  // Для магния сульфат
+  if (lowerName.includes('магния сульфат') && !lowerName.includes('sol')) {
+    variants.push('магния сульфата', 'магния сульфатом')
+  }
+  
+  // Для натрия хлорид
+  if (lowerName.includes('натрия хлорид') && !lowerName.includes('sol')) {
+    variants.push('натрия хлорида', 'натрия хлоридом')
+  }
+  
+  // Для латинских названий добавляем русские варианты
+  if (lowerName.includes('sol. natrii cloridi')) {
+    variants.push('натрия хлорид', 'натрия хлорида')
+  }
+  
+  if (lowerName.includes('sol magnesii sulfas')) {
+    variants.push('магния сульфат', 'магния сульфата')
+  }
+  
+  // Убираем дубликаты и возвращаем уникальные варианты
+  return Array.from(new Set(variants))
+}
+
+// Функция для проверки совпадения названий препаратов
+function matchesDrugName(text: string, drugName: string): boolean {
+  if (!text || !drugName) return false
+  
+  // Ищем препарат в карте
+  const drugInfo = drugsMap.value.get(drugName.toLowerCase())
+  if (!drugInfo) return false
+  
+  const textLower = text.toLowerCase()
+  
+  // Проверяем все варианты названий препарата
+  for (const variant of drugInfo.variants) {
+    const variantLower = variant.toLowerCase()
+    
+    // Точное совпадение
+    if (textLower === variantLower) {
+      return true
+    }
+    
+    // Содержит название препарата
+    if (textLower.includes(variantLower) || variantLower.includes(textLower)) {
+      return true
+    }
+  }
+  
+  return false
+}
+
+// Функция для поиска препарата в тексте
+function findDrugInText(text: string, drugName: string): { found: boolean; startIndex: number; endIndex: number; matchedText: string; drugId: string } {
+  if (!text || !drugName) return { found: false, startIndex: -1, endIndex: -1, matchedText: '', drugId: '' }
+  
+  // Ищем препарат в карте по названию
+  const drugInfo = drugsMap.value.get(drugName.toLowerCase())
+  if (!drugInfo) {
+    return { found: false, startIndex: -1, endIndex: -1, matchedText: '', drugId: '' }
+  }
+  
+  const textLower = text.toLowerCase()
+  
+  // Ищем по всем вариантам названий препарата
+  for (const variant of drugInfo.variants) {
+    const variantLower = variant.toLowerCase()
+    const index = textLower.indexOf(variantLower)
+    
+    if (index !== -1) {
+      return {
+        found: true,
+        startIndex: index,
+        endIndex: index + variant.length,
+        matchedText: text.substring(index, index + variant.length),
+        drugId: drugInfo.id
       }
     }
   }
   
-  // Обрабатываем все узлы
-  replaceTextInNode(tempDiv)
-  
-  return tempDiv.innerHTML
+  return { found: false, startIndex: -1, endIndex: -1, matchedText: '', drugId: '' }
 }
+
 
 // Реактивный поиск локальных статусов при изменении алгоритма
 watch(() => algo.value?.mkbCodes, () => {
@@ -1425,16 +1972,19 @@ watch(() => algo.value?.mkbCodes, () => {
   }
 }, { immediate: true })
 
-// Перепарсинг контента при загрузке списка препаратов
-watch(drugsList, () => {
-  if (drugsList.value.length > 0 && algo.value?.content) {
-    // Принудительно обновляем rendered computed
-    forceUpdate.value++
-    nextTick(() => {
-      styleTables()
-    })
+// Очищаем query при закрытии модалки препаратов
+watch(drugsOpen, (isOpen) => {
+  if (!isOpen) {
+    // Небольшая задержка для корректной работы с модалкой
+    setTimeout(() => {
+      if (!drugsOpen.value) {
+        drugsQuery.value = ''
+        console.log('🔄 Очистили query при закрытии модалки')
+      }
+    }, 100)
   }
-}, { immediate: true })
+})
+
 
 onBeforeUnmount(() => {
   const root = contentRef.value as any

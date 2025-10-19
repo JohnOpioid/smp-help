@@ -217,7 +217,7 @@ export class DatabaseAnalyzer {
         }).limit(10).lean()
         
         // Объединяем данные из алгоритмов с данными из БД
-        results.push(...foundDrugs.map(drug => {
+        results.push(...foundDrugs.map((drug: any) => {
           const extractedDrug = extractedDrugs.find(ed => 
             ed.name.toLowerCase() === drug.name.toLowerCase()
           )
@@ -463,7 +463,7 @@ export class DatabaseAnalyzer {
     // Рекомендации
     if (recommendations.length > 0) {
       response += `💡 **Рекомендации:**\n`
-      recommendations.forEach(rec => {
+      recommendations.forEach((rec: any) => {
         response += `${rec}\n`
       })
       response += '\n'

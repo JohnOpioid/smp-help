@@ -526,6 +526,15 @@ const props = defineProps<{ open: boolean; queryName?: string }>()
 const emit = defineEmits<{ (e: 'update:open', v: boolean): void }>()
 const openLocal = computed({ get: () => props.open, set: (v: boolean) => emit('update:open', v) })
 
+// Отладочная информация
+watch(() => props.open, (isOpen) => {
+  console.log('🔍 SDrugsModal: Изменение состояния open:', isOpen)
+})
+
+watch(() => props.queryName, (query) => {
+  console.log('🔍 SDrugsModal: Изменение queryName:', query)
+})
+
 const { isMobile } = useIsMobile()
 
 const selectedDrug = ref<any | null>(null)
@@ -549,25 +558,92 @@ function isAntidoteCategory(name?: string): boolean {
   return n.includes('антидот')
 }
 
-watch(() => props.queryName, async (name) => {
-  if (!name) return
-  await fetchByName(name)
+watch(() => props.queryName, async (query) => {
+  if (!query) return
+  
+  // Проверяем, является ли query ID (24 символа MongoDB ObjectId)
+  if (query.length === 24 && /^[0-9a-fA-F]{24}$/.test(query)) {
+    console.log('🔍 SDrugsModal: Получаем препарат по ID:', query)
+    await fetchById(query)
+  } else {
+    console.log('🔍 SDrugsModal: Ищем препарат по названию:', query)
+    await fetchByName(query)
+  }
 }, { immediate: true })
+
+async function fetchById(id: string) {
+  try {
+    console.log('🔍 SDrugsModal: Получаем препарат по ID:', id)
+    console.log('🔍 SDrugsModal: URL запроса:', `/api/drugs/${id}`)
+    const res: any = await $fetch(`/api/drugs/${id}`)
+    console.log('🔍 SDrugsModal: Ответ API по ID:', res)
+    
+    if (res?.success && res.item) {
+      selectedDrug.value = res.item
+      console.log('✅ SDrugsModal: Препарат получен по ID:', res.item.name, 'ID:', res.item._id)
+    } else {
+      console.log('❌ SDrugsModal: Препарат не найден по ID:', id, 'Ответ:', res)
+    }
+  } catch (error) {
+    console.error('❌ SDrugsModal: Ошибка получения препарата по ID:', error)
+    console.error('❌ SDrugsModal: Детали ошибки:', (error as Error).message)
+  }
+}
 
 async function fetchByName(name: string) {
   try {
     const q = String(name || '').trim()
+    console.log('🔍 SDrugsModal: Ищем препарат по названию:', q)
     if (!q) return
-    const res: any = await $fetch('/api/drugs/search', { params: { name: q } })
-    const list: any[] = Array.isArray(res?.items) ? res.items : []
-    if (list.length === 0) return
-    let it = list.find(d => String(d?.name || '').trim().toLowerCase() === q.toLowerCase())
-    if (!it) it = list.find(d => String(d?.latinName || '').trim().toLowerCase() === q.toLowerCase())
-    if (!it) it = list.find(d => (Array.isArray(d?.synonyms) ? d.synonyms : []).some((s: any) => String(s||'').trim().toLowerCase() === q.toLowerCase()))
-    if (!it) it = list.find(d => d?.dosages && Object.keys(d.dosages || {}).length)
-    if (!it) it = list[0]
-    selectedDrug.value = it
-  } catch {}
+    
+    // Создаем варианты поиска
+    const searchVariants = [q]
+    
+    // Для "Натрия хлорида" добавляем "Натрия хлорид"
+    if (q.toLowerCase().includes('натрия хлорида')) {
+      searchVariants.push('Натрия хлорид', 'Sol. Natrii Cloridi 0,9% - 250 ml')
+    }
+    
+    // Для "Sol. Natrii Cloridi" добавляем короткие варианты
+    if (q.toLowerCase().includes('sol. natrii cloridi')) {
+      searchVariants.push('Натрия хлорид', 'Натрия хлорида')
+    }
+    
+    console.log('🔍 SDrugsModal: Варианты поиска:', searchVariants)
+    
+    // Пробуем найти по каждому варианту
+    let foundDrug = null
+    for (const variant of searchVariants) {
+      const res: any = await $fetch('/api/drugs/search', { params: { name: variant } })
+      console.log(`🔍 SDrugsModal: Поиск по "${variant}":`, res)
+      const list: any[] = Array.isArray(res?.items) ? res.items : []
+      
+      if (list.length > 0) {
+        // Ищем точное совпадение
+        let it = list.find(d => String(d?.name || '').trim().toLowerCase() === variant.toLowerCase())
+        if (!it) it = list.find(d => String(d?.latinName || '').trim().toLowerCase() === variant.toLowerCase())
+        if (!it) it = list.find(d => (Array.isArray(d?.synonyms) ? d.synonyms : []).some((s: any) => String(s||'').trim().toLowerCase() === variant.toLowerCase()))
+        if (!it) it = list.find(d => d?.dosages && Object.keys(d.dosages || {}).length)
+        if (!it) it = list[0]
+        
+        if (it) {
+          foundDrug = it
+          console.log(`✅ SDrugsModal: Найден препарат по "${variant}":`, it?.name)
+          break
+        }
+      }
+    }
+    
+    if (!foundDrug) {
+      console.log('❌ SDrugsModal: Препарат не найден по всем вариантам:', searchVariants)
+      return
+    }
+    
+    console.log('✅ SDrugsModal: Выбран препарат:', foundDrug?.name || 'не найден')
+    selectedDrug.value = foundDrug
+  } catch (error) {
+    console.error('❌ SDrugsModal: Ошибка поиска препарата:', error)
+  }
 }
 
 // ====== калькуляторы (как на /drugs) ======

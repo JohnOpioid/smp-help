@@ -1,8 +1,9 @@
 <template>
   <div class="px-4 max-w-5xl mx-auto">
+    <!-- Скелетон хлебных крошек -->
     <div class="flex items-center space-x-2">
       <!-- Скелетон для "Главная" -->
-      <USkeleton class="h-4 w-16" />
+      <USkeleton class="h-4 w-16 bg-slate-200 dark:bg-slate-700" />
       
       <!-- Скелетон для разделителя -->
       <div class="text-slate-300 dark:text-slate-600">
@@ -12,7 +13,12 @@
       </div>
       
       <!-- Скелетон для текущей страницы -->
-      <USkeleton class="h-4 w-24" />
+      <USkeleton class="h-4 w-24 bg-slate-200 dark:bg-slate-700" />
+    </div>
+    
+    <!-- Скелетон кнопки "Назад" только на мобильных -->
+    <div class="mt-4 md:hidden">
+      <USkeleton class="h-10 w-20 rounded-lg bg-slate-200 dark:bg-slate-700" />
     </div>
   </div>
 </template>

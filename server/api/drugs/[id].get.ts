@@ -1,39 +1,27 @@
+import { defineEventHandler, getRouterParam } from 'h3'
+import connectDB from '~/server/utils/mongodb'
 import Drug from '~/server/models/Drug'
 
 export default defineEventHandler(async (event) => {
+  await connectDB()
+  const id = getRouterParam(event, 'id')
+  
+  if (!id) {
+    return { success: false, message: 'ID препарата не указан' }
+  }
+
   try {
-    const id = getRouterParam(event, 'id')
-    
-    if (!id) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Drug ID is required'
-      })
-    }
-
     const drug = await Drug.findById(id)
-    
+      .populate('categories', 'name url')
+      .lean()
+
     if (!drug) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Drug not found'
-      })
+      return { success: false, message: 'Препарат не найден' }
     }
 
-    return {
-      success: true,
-      data: drug
-    }
-  } catch (error: any) {
-    console.error('Error fetching drug:', error)
-    
-    if (error.statusCode) {
-      throw error
-    }
-    
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Internal server error'
-    })
+    return { success: true, item: drug }
+  } catch (error) {
+    console.error('Ошибка при получении препарата по ID:', error)
+    return { success: false, message: 'Ошибка при получении препарата' }
   }
 })

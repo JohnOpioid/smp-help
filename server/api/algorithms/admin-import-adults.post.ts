@@ -35,7 +35,7 @@ export default defineEventHandler(async () => {
       // Убедимся, что раздел «Взрослые» присутствует в категории
       const set = new Set<string>([...(categoryDoc as any).sections || []])
       if (!set.has(section)) {
-        await AlgorithmCategory.updateOne({ _id: categoryDoc._id }, { $addToSet: { sections: section } })
+        await AlgorithmCategory.updateOne({ _id: (categoryDoc as any)._id }, { $addToSet: { sections: section } })
       }
     }
 

@@ -1,118 +1,103 @@
 <template>
-    <NuxtLayout name="substations">
-      <template #sidebar>
-        <div>
-          <div class="bg-slate-200 dark:bg-slate-700 sticky top-0 p-2 md:p-4 z-50">
-            <div class="relative">
-              <UInput v-model="search" placeholder="Поиск подстанции по названию, адресу или телефону" size="xl" class="w-full" :input-class="'px-4 py-6 pr-10'" />
-              <button 
-                v-if="search" 
-                @click="search = ''" 
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-                type="button"
-              >
-                <UIcon name="i-heroicons-x-mark" class="size-5" />
-              </button>
+  <UApp>
+    <!-- Результаты поиска -->
+    <SearchResults />
+    
+    <!-- Основной контент -->
+    <div v-if="!isSearchActive" class="absolute inset-0 overflow-hidden">
+      <!-- Карта на весь экран -->
+            <div class="absolute inset-0 w-full h-full z-0">
+              <ClientOnly>
+                <YMap ref="mapRef" v-if="placemarks.length" :center="mapCenter" :zoom="10" :placemarks="placemarks" @balloon-close="handleBalloonClose" @balloon-close-button-click="handleBalloonCloseButtonClick" @placemark-click="selectSubstationFromMap" />
+              </ClientOnly>
             </div>
-          </div>
-          <div class="space-y-4">
-            <div v-for="(group, groupIndex) in groupedItems" :key="groupIndex" class="overflow-hidden">
+      
+      <!-- Контентная область с сайдбаром -->
+      <div class="relative z-10 max-w-5xl mx-auto px-4 h-full pointer-events-none">
+        <!-- Сайдбар слева -->
+        <div class="absolute left-4 right-4 sm:right-auto sm:w-80 top-1/2 -translate-y-1/2 h-[calc(100vh-200px)] bg-white dark:bg-slate-800 rounded-lg shadow-lg pointer-events-auto">
+          <!-- Список подстанций -->
+          <div ref="sidebarRef" class="h-full p-4 space-y-4 overflow-y-auto custom-scroll">
+            <div v-for="(group, groupIndex) in groupedItems" :key="groupIndex">
               <!-- Заголовок группы -->
-                <div class="bg-slate-100 dark:bg-slate-700 px-4 py-3 flex items-start justify-between">
-                <div class="flex flex-col">
-                  <h3 class="font-semibold text-slate-900 dark:text-white">
-                    Региональное объединение №{{ group.regionName }}
-                  </h3>
-                  <p v-if="group.regionData?.district" class="text-sm text-slate-400 dark:text-slate-300 mt-1">
-                    <span class="font-bold">{{ group.regionData.district }}</span>
-                  </p>
-                  <p v-else class="text-sm text-slate-600 dark:text-slate-300 mt-1">
-                    <span class="font-bold italic">не указан</span>
-                  </p>
-                </div>
-                <UPopover>
-                  <UButton variant="ghost" size="sm" icon="i-heroicons-ellipsis-horizontal" class="cursor-pointer" />
-                  <template #content>
-                    <div class="p-3 min-w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg">
-                      <div class="text-sm font-medium text-slate-600 dark:text-slate-300">
-                        Руководитель
-                      </div>
-                      <div v-if="group.regionData?.manager" class="text-sm text-slate-600 dark:text-slate-300 mb-2">
-                        {{ group.regionData.manager }}
-                      </div>
-                      <div v-if="group.regionData?.manager && group.regionData?.phones?.length" class="border-t border-slate-200 dark:border-slate-600 my-2"></div>
-                      <div v-if="group.regionData?.phones?.length" class="space-y-1">
-                        <div v-for="phone in group.regionData.phones" :key="phone.number" class="flex items-center gap-2 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded cursor-pointer">
-                          <UIcon name="i-heroicons-phone" class="size-4 text-dimmed" />
-                          <div class="flex flex-col text-left">
-                            <span class="text-sm font-medium">{{ phone.number }}</span>
-                            <span class="text-xs text-dimmed">{{ phone.name }}</span>
+              <div class="bg-slate-100 dark:bg-slate-700 px-3 py-2 rounded-lg mb-2 sticky top-0 z-10">
+                <div class="flex items-start justify-between">
+                  <div class="flex flex-col">
+                    <h3 class="font-semibold text-slate-900 dark:text-white text-sm">
+                      Региональное объединение №{{ group.regionName }}
+                    </h3>
+                    <p v-if="group.regionData?.district" class="text-xs text-slate-400 dark:text-slate-300 mt-1">
+                      <span class="font-bold">{{ group.regionData.district }}</span>
+                    </p>
+                    <p v-else class="text-xs text-slate-600 dark:text-slate-300 mt-1">
+                      <span class="font-bold italic">не указан</span>
+                    </p>
+                  </div>
+                  <UPopover>
+                    <UButton variant="ghost" size="xs" icon="i-heroicons-ellipsis-horizontal" class="cursor-pointer" />
+                    <template #content>
+                      <div class="p-3 min-w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg">
+                        <div class="text-sm font-medium text-slate-600 dark:text-slate-300">
+                          Руководитель
+                        </div>
+                        <div v-if="group.regionData?.manager" class="text-sm text-slate-600 dark:text-slate-300 mb-2">
+                          {{ group.regionData.manager }}
+                        </div>
+                        <div v-if="group.regionData?.manager && group.regionData?.phones?.length" class="border-t border-slate-200 dark:border-slate-600 my-2"></div>
+                        <div v-if="group.regionData?.phones?.length" class="space-y-1">
+                          <div v-for="phone in group.regionData.phones" :key="phone.number" class="flex items-center gap-2 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded cursor-pointer">
+                            <UIcon name="i-heroicons-phone" class="size-4 text-dimmed" />
+                            <div class="flex flex-col text-left">
+                              <span class="text-sm font-medium">{{ phone.number }}</span>
+                              <span class="text-xs text-dimmed">{{ phone.name }}</span>
+                            </div>
                           </div>
                         </div>
+                        <div v-else class="text-sm text-slate-500">
+                          Телефоны не указаны
+                        </div>
                       </div>
-                      <div v-else class="text-sm text-slate-500">
-                        Телефоны не указаны
-                      </div>
-                    </div>
-                  </template>
-                </UPopover>
+                    </template>
+                  </UPopover>
+                </div>
               </div>
               
               <!-- Подстанции в группе -->
-              <ul class="divide-y divide-slate-100 dark:divide-slate-700">
-                <li
+              <div class="space-y-1">
+                <div
                   v-for="item in group.items"
                   :key="item._id"
-                  class="py-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/40 px-4"
-                  @click="select(item)"
+                  :data-substation-id="item._id"
+                  class="p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/40 rounded-lg transition-colors"
+                  :class="{ 'bg-slate-50 dark:bg-slate-700/40': selectedId === item._id }"
+                  @click="toggleSelect(item)"
                 >
-                  <p class="font-medium text-slate-900 dark:text-white">{{ item.name }}</p>
-                  <p class="text-sm text-slate-600 dark:text-slate-300">{{ item.address }}</p>
+                  <p class="font-medium text-slate-900 dark:text-white text-sm">{{ item.name }}</p>
+                  <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ item.address }}</p>
                   <p v-if="item.phones?.length" class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ item.phones.join(', ') }}</p>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- Мобильная карта: bottom sheet -->
-          <BottomSheet 
-            v-model="showMobileMap"
-            :title="selectedName"
-            :subtitle="selectedItem?.address"
-            @close="closeMobileMap"
-          >
-            <!-- Информация о подстанции -->
-            <div v-if="selectedItem?.phones?.length" class="px-4 py-3 border-b border-slate-200 dark:border-slate-600">
-              <h4 class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Телефоны:</h4>
-              <div class="space-y-2">
-                <div v-for="phone in selectedItem.phones" :key="phone" class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-phone" class="size-4 text-slate-500 dark:text-slate-400" />
-                  <a :href="`tel:${phone}`" class="text-sm text-slate-700 dark:text-slate-300 hover:text-primary">{{ phone }}</a>
                 </div>
               </div>
             </div>
-            
-            <!-- Карта внутри BottomSheet -->
-            <div class="flex-1 min-h-0" style="height: 400px;">
-              <ClientOnly>
-                <YMap v-if="mobileCenter" :center="mobileCenter!" :zoom="12" :placemarks="mobilePlacemarks as any" />
-              </ClientOnly>
-            </div>
-          </BottomSheet>
+          </div>
         </div>
-      </template>
-      <div class="w-full h-full">
-        <ClientOnly>
-          <YMap ref="mapRef" v-if="placemarks.length" :center="mapCenter" :zoom="10" :placemarks="placemarks" />
-        </ClientOnly>
       </div>
-    </NuxtLayout>
+    </div>
+    
+    <!-- Глобальный индикатор предзагрузки -->
+    <PreloadIndicator />
+  </UApp>
 </template>
 
 <script setup lang="ts">
+import SearchResults from '~/components/SearchResults.vue'
+import PreloadIndicator from '~/components/PreloadIndicator.vue'
+
 definePageMeta({
   middleware: 'auth'
 })
+
+// Глобальное состояние поиска
+const { isSearchActive } = useGlobalSearch()
 
 const { data } = await useFetch<{ success: boolean; items: any[] }>(
   '/api/substations',
@@ -122,12 +107,43 @@ const items = computed(() => data.value?.items || [])
 const search = ref('')
 const filteredItems = computed(() => {
   const q = search.value.trim().toLowerCase()
-  if (!q) return items.value
-  return (items.value as any[]).filter((s: any) =>
-    s.name?.toLowerCase().includes(q) ||
-    s.address?.toLowerCase().includes(q) ||
-    (s.phones || []).some((p: string) => p.toLowerCase().includes(q))
-  )
+  
+  if (!q) {
+    return items.value
+  }
+  
+  const filtered = (items.value as any[]).filter((s: any) => {
+    // Нормализуем название подстанции для поиска
+    const normalizedName = s.name?.toLowerCase()
+      .replace(/№/g, '') // убираем символ №
+      .replace(/\s+/g, ' ') // заменяем множественные пробелы на одинарные
+      .trim() || ''
+    
+    // Нормализуем адрес
+    const normalizedAddress = s.address?.toLowerCase() || ''
+    
+    // Нормализуем телефоны
+    const normalizedPhones = (s.phones || []).map((p: string) => p.toLowerCase())
+    
+    // Нормализуем поисковый запрос
+    const normalizedQuery = q
+      .replace(/№/g, '') // убираем символ №
+      .replace(/\s+/g, ' ') // заменяем множественные пробелы на одинарные
+      .trim()
+    
+    // Проверяем различные варианты поиска
+    const nameMatch = normalizedName.includes(normalizedQuery)
+    const addressMatch = normalizedAddress.includes(normalizedQuery)
+    const phoneMatch = normalizedPhones.some((p: string) => p.includes(normalizedQuery))
+    
+    // Дополнительная проверка для номеров подстанций
+    const numberMatch = normalizedName.match(/\d+/) && normalizedQuery.match(/\d+/) && 
+                       normalizedName.match(/\d+/)?.[0] === normalizedQuery.match(/\d+/)?.[0]
+    
+    return nameMatch || addressMatch || phoneMatch || numberMatch
+  })
+  
+  return filtered
 })
 
 // Группировка подстанций по регионам
@@ -173,11 +189,30 @@ const groupedItems = computed(() => {
 
 const selectedId = ref<string | null>(null)
 const mapRef = ref<any>(null)
+const sidebarRef = ref<HTMLDivElement | null>(null)
+const balloonClosedByUser = ref(false)
 const placemarks = computed(() => (items.value || []).map((s: any) => ({
   id: s._id,
   coords: [s.location.coordinates[1], s.location.coordinates[0]] as [number, number],
   hint: s.name,
-  balloon: `<strong>${s.name}</strong><br/>${s.address}${(s.phones && s.phones.length) ? `<br/>${s.phones.map((phone: string) => `<a href="tel:${phone}" style="color: #2563eb; text-decoration: none;">${phone}</a>`).join(', ')}` : ''}`
+  balloon: `
+    <div class="balloon-header">
+      <div class="balloon-title">${s.name}</div>
+      <div class="balloon-subtitle">${s.address}</div>
+    </div>
+    <div class="balloon-body">
+      ${(s.phones && s.phones.length) ? 
+        s.phones.map((phone: string) => `
+          <div class="phone-item" onclick="window.open('tel:${phone}', '_self')">
+            <svg class="phone-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+            </svg>
+            <span class="phone-text">${phone}</span>
+          </div>
+        `).join('') : 
+        '<div style="text-align: center; color: #64748b; font-size: 12px; padding: 8px;">Телефоны не указаны</div>'
+      }
+    </div>`
 })))
 
 const mapCenter = computed<[number, number]>(() => {
@@ -199,37 +234,110 @@ const mapCenter = computed<[number, number]>(() => {
   return first ? [first.location.coordinates[1], first.location.coordinates[0]] : [55.751244, 37.618423]
 })
 
+function handleBalloonCloseButtonClick() {
+  // Устанавливаем флаг, что балун был закрыт пользователем
+  balloonClosedByUser.value = true
+  
+  // Сбрасываем выделение
+  clearSelection()
+}
+
+function handleBalloonClose() {
+  // Не сбрасываем выделение автоматически при закрытии балуна
+  // Выделение сбрасывается только при явном клике на уже выделенную подстанцию
+}
+
+function toggleSelect(item: any) {
+  // Если кликаем на уже выделенную подстанцию - сбрасываем выделение
+  if (selectedId.value === item._id) {
+    selectedId.value = null
+    // Возвращаем карту в изначальное положение
+    if (process.client && mapRef.value) {
+      const route = useRoute()
+      const urlLat = route.query.lat as string
+      const urlLon = route.query.lon as string
+      
+      if (urlLat && urlLon) {
+        const lat = parseFloat(urlLat)
+        const lon = parseFloat(urlLon)
+        if (!isNaN(lat) && !isNaN(lon)) {
+          mapRef.value.setCenter([lat, lon], 10)
+        }
+      } else {
+        // Если нет URL параметров, центрируем на первой подстанции
+        const first = items.value?.[0]
+        if (first) {
+          mapRef.value.setCenter([first.location.coordinates[1], first.location.coordinates[0]], 10)
+        }
+      }
+    }
+  } else {
+    // Выделяем новую подстанцию
+    selectedId.value = item._id
+    if (process.client) {
+      const coords: [number, number] = [item.location.coordinates[1], item.location.coordinates[0]]
+      setTimeout(() => {
+        mapRef.value?.focusTo?.(coords, 18)
+        mapRef.value?.openBalloon?.(item._id)
+      }, 50)
+    }
+  }
+}
+
 function select(item: any) {
   selectedId.value = item._id
-  // На мобильных показываем карту после выбора
-  showMobileMap.value = true
-  // На больших экранах фокусируемся на метке
-  if (process.client && window.innerWidth >= 640) {
+  // Фокусируемся на метке
+  if (process.client) {
     const coords: [number, number] = [item.location.coordinates[1], item.location.coordinates[0]]
     // небольшая задержка, чтобы карта успела смонтироваться
     setTimeout(() => {
       mapRef.value?.focusTo?.(coords, 14)
+      mapRef.value?.openBalloon?.(item._id)
     }, 50)
   }
 }
 
-const showMobileMap = ref(false)
-const selectedItem = computed<any>(() => (items.value || []).find((s: any) => s._id === selectedId.value))
-const mobileCenter = computed<[number, number] | null>(() => {
-  const s = selectedItem.value
-  return s ? [s.location.coordinates[1], s.location.coordinates[0]] : null
-})
-const selectedName = computed(() => selectedItem.value?.name || '')
-const mobilePlacemarks = computed(() => selectedItem.value ? [{
-  id: selectedItem.value._id,
-  coords: [selectedItem.value.location.coordinates[1], selectedItem.value.location.coordinates[0]] as [number, number],
-  hint: selectedItem.value.name,
-  balloon: `<strong>${selectedItem.value.name}</strong><br/>${selectedItem.value.address}${(selectedItem.value.phones && selectedItem.value.phones.length) ? `<br/>${selectedItem.value.phones.map((phone: string) => `<a href="tel:${phone}" style="color: #2563eb; text-decoration: none;">${phone}</a>`).join(', ')}` : ''}`
-}] : [])
-
-function closeMobileMap() {
-  showMobileMap.value = false
+function scrollToSelectedSubstation() {
+  if (process.client && sidebarRef.value && selectedId.value) {
+    // Находим элемент выбранной подстанции
+    const selectedElement = sidebarRef.value.querySelector(`[data-substation-id="${selectedId.value}"]`)
+    if (selectedElement) {
+      // Прокручиваем к элементу с небольшим отступом сверху
+      selectedElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      })
+    }
+  }
 }
+
+function selectSubstationFromMap(substationId: string) {
+  selectedId.value = substationId
+  
+  // Приближаем карту к выбранной подстанции
+  if (process.client && mapRef.value) {
+    const substation = items.value?.find((s: any) => s._id === substationId)
+    if (substation && substation.location?.coordinates) {
+      mapRef.value.setCenter([substation.location.coordinates[1], substation.location.coordinates[0]], 18)
+    }
+  }
+  
+  // Прокручиваем сайдбар к выбранной подстанции
+  setTimeout(() => {
+    scrollToSelectedSubstation()
+  }, 100)
+}
+
+function clearSelection() {
+  // Сбрасываем выделение только если балун был закрыт пользователем
+  if (balloonClosedByUser.value) {
+    selectedId.value = null
+    balloonClosedByUser.value = false
+  }
+  // Если балун был закрыт программно (при переключении между подстанциями), не сбрасываем выделение
+}
+
+const selectedItem = computed<any>(() => (items.value || []).find((s: any) => s._id === selectedId.value))
 
 
 // Автоматический выбор подстанции по параметрам URL
@@ -278,6 +386,25 @@ onMounted(() => {
       }
     }
   }
+})
+
+// Обработчик поиска из шапки
+const handleHeaderSearch = (event: CustomEvent) => {
+  search.value = event.detail.query
+}
+
+// Настраиваем автоматическую предзагрузку
+onMounted(() => {
+  const { setupAutoPreload } = useAutoPreload()
+  setupAutoPreload()
+  
+  // Добавляем обработчик поиска из шапки
+  window.addEventListener('substations-search', handleHeaderSearch as EventListener)
+})
+
+onUnmounted(() => {
+  // Убираем обработчик при размонтировании
+  window.removeEventListener('substations-search', handleHeaderSearch as EventListener)
 })
 </script>
 

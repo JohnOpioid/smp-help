@@ -63,7 +63,7 @@ const { data: listData, pending: pendingAlgos } = await useFetch('/api/algorithm
   server: false
 })
 const algos = computed(() => listData.value?.items || [])
-function openAlgo(id: string) { navigateTo(`/algorithms/${section.value}/${categoryId.value}/view/${id}`) }
+function openAlgo(id: string) { navigateTo(`/algorithms/${section.value}/${categoryId.value}/${id}`) }
 
 // Название категории
 const { data: catsData } = await useFetch('/api/algorithms/categories', { server: false })

@@ -24,6 +24,8 @@ const DrugSchema = new Schema({
   name: { type: String, required: true, trim: true },
   latinName: { type: String, trim: true },
   synonyms: [{ type: String, trim: true }],
+  analogs: [{ type: String, trim: true }],
+  groups: [{ type: String, trim: true }],
   mechanism: [{ type: String, trim: true }],
   forms: {
     doseValue: { type: Number }, // числовая дозировка (например, 1)

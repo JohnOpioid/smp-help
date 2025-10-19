@@ -4,12 +4,12 @@
       <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
         <!-- Левая часть - скелетон копирайта -->
         <div class="flex items-center">
-          <USkeleton class="h-4 w-48" />
+          <USkeleton class="h-4 w-48 bg-slate-200 dark:bg-slate-700" />
         </div>
         
         <!-- Правая часть - скелетон ссылок -->
         <div class="flex items-center gap-4">
-          <USkeleton v-for="i in 4" :key="i" class="h-4 w-20" />
+          <USkeleton v-for="i in 4" :key="i" class="h-4 w-20 bg-slate-200 dark:bg-slate-700" />
         </div>
       </div>
     </div>

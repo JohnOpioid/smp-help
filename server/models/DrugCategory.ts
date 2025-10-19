@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import { slugifyForUrl } from '~/server/utils/textNormalization'
 
-const { Schema, model, models } = mongoose as any
+const { Schema, model, models } = mongoose
 
 const DrugCategorySchema = new Schema({
   name: { type: String, required: true, trim: true, minlength: 1 },

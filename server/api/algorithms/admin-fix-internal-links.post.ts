@@ -56,7 +56,7 @@ export default defineEventHandler(async () => {
               const list = await Algorithm.find({ category: catId, section: sectionName }, { _id: 1, title: 1 }).lean()
               const found = list.find((x: any) => String(x.title || '').toLowerCase() === title.toLowerCase())
                 || list.find((x: any) => String(x.title || '').toLowerCase().includes(title.toLowerCase()))
-              if (found?._id) newHref = `/algorithms/${sectionSlug}/${categoryUrl}/view/${found._id}`
+              if (found?._id) newHref = `/algorithms/${sectionSlug}/${categoryUrl}/${found._id}`
             }
           }
         }

@@ -205,7 +205,7 @@ const onSubmit = async () => {
       return
     }
 
-    const result = await login(cleanForm)
+    const result: any = await login(cleanForm)
     
     if (result.success) {
       success.value = result.message

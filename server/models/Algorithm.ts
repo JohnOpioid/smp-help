@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose'
 
 export interface IAlgorithm extends Document {
-  category: string // ref to AlgorithmCategory
+  category: mongoose.Types.ObjectId // ref to AlgorithmCategory
   section: mongoose.Types.ObjectId // ref to AlgorithmSection
   title: string
   order?: number

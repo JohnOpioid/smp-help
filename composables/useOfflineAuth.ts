@@ -74,7 +74,7 @@ export const useOfflineAuth = () => {
     
     try {
       // Проверяем токен на сервере
-      const response = await $fetch('/api/auth/me', {
+      const response = await ($fetch as any)('/api/auth/me', {
         headers: {
           Authorization: `Bearer ${token}`
         }
