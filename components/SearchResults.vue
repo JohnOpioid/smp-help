@@ -815,21 +815,23 @@ const renderAlgorithmTable = (content: string): string => {
   // Берем первую таблицу и стилизуем её
   let table = tableMatch[0]
   
-  // Добавляем colgroup для фиксированной ширины колонок (равномерно 33.3333%)
-  table = table.replace(/<table([^>]*)>/gi, '<table$1 class="w-full table-fixed my-0 border-0 bg-transparent"><colgroup><col style="width: 33.3333%"><col style="width: 33.3333%"><col style="width: 33.3333%"></colgroup>')
+  // Полностью заменяем стили таблицы
+  table = table.replace(/<table[^>]*>/gi, '<table class="w-full table-fixed my-0 border-0 bg-transparent"><colgroup><col style="width: 33.3333%"><col style="width: 33.3333%"><col style="width: 33.3333%"></colgroup>')
   
-  // Стили для заголовков (xs на мобильных, sm на остальных устройствах)
-  table = table.replace(/<th([^>]*)>/gi, '<th$1 class="px-3 py-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 text-center font-medium whitespace-normal break-words align-middle sticky top-0 z-20 bg-slate-50/25 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-600">')
+  // Полностью заменяем стили thead
+  table = table.replace(/<thead[^>]*>/gi, '<thead class="bg-slate-100 dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700 sticky top-0 z-20">')
   
-  // Стили для ячеек (xs на мобильных, sm на остальных устройствах)
-  table = table.replace(/<td([^>]*)>/gi, '<td$1 class="p-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300 whitespace-normal break-words align-top bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700">')
+  // Полностью заменяем стили tbody
+  table = table.replace(/<tbody[^>]*>/gi, '<tbody class="divide-y divide-slate-100 dark:divide-slate-700">')
   
-  // Добавляем стили для thead и tbody
-  table = table.replace(/<thead>/gi, '<thead class="bg-slate-100 dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700 sticky top-0 z-20">')
-  table = table.replace(/<tbody>/gi, '<tbody class="divide-y divide-slate-100 dark:divide-slate-700">')
+  // Полностью заменяем стили заголовков
+  table = table.replace(/<th[^>]*>/gi, '<th class="px-3 py-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 text-center font-medium whitespace-normal break-words align-middle sticky top-0 z-20 bg-slate-50/25 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-600">')
   
-  // Добавляем hover эффекты для строк
-  table = table.replace(/<tr([^>]*)>/gi, '<tr$1 class="hover:bg-slate-50/60 dark:hover:bg-slate-700/40">')
+  // Полностью заменяем стили ячеек
+  table = table.replace(/<td[^>]*>/gi, '<td class="p-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300 whitespace-normal break-words align-top bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700">')
+  
+  // Полностью заменяем стили строк
+  table = table.replace(/<tr[^>]*>/gi, '<tr class="hover:bg-slate-50/60 dark:hover:bg-slate-700/40">')
   
   return table
 }
