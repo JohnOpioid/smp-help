@@ -1,6 +1,6 @@
 <template>
   <header class="transition-colors duration-300 relative z-50">
-    <div class="w-full max-w-5xl mx-auto px-2 md:px-4 py-6">
+    <div class="w-full max-w-5xl mx-auto px-2 md:px-4 py-4 mdpy-6">
       <div class="flex items-center justify-between gap-3">
         <div class="flex items-center gap-2 min-w-0">
           <div class="relative">
@@ -511,7 +511,16 @@ const onSearchFocus = () => {
   const q = searchQuery.value.trim()
   // Если уже активен поиск и результаты есть, не запускаем поиск повторно по клику
   if (!q) return
-  const totalResults = groupedResults.value.mkb.length + groupedResults.value.ls.length + groupedResults.value.algorithm.length + groupedResults.value.drug.length + groupedResults.value.substation.length
+  
+  // Проверяем, что groupedResults существует
+  if (!groupedResults.value) return
+  
+  const totalResults = (groupedResults.value.mkb?.length || 0) + 
+                      (groupedResults.value.ls?.length || 0) + 
+                      (groupedResults.value.algorithm?.length || 0) + 
+                      (groupedResults.value.drug?.length || 0) + 
+                      (groupedResults.value.substation?.length || 0)
+  
   if (!isSearchActive.value || totalResults === 0) {
     activateSearch(q)
     performSearch()
