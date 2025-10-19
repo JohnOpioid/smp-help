@@ -449,6 +449,7 @@ const {
 
 // Локальная переменная для поля ввода
 const searchQuery = ref('')
+const lastSearchValue = ref('')
 
 // Проверяем, находимся ли на странице подстанций
 const isSubstationsPage = computed(() => route.path === '/substations')
@@ -526,6 +527,7 @@ const onSearchEnter = () => {
 }
 
 const onSearchInput = () => {
+  lastSearchValue.value = searchQuery.value
   handleSearchInput()
 }
 
@@ -534,7 +536,13 @@ const onSearchKeyup = () => {
 }
 
 const onSearchChange = () => {
-  handleSearchInput()
+  // Проверяем, действительно ли изменилось значение
+  // Событие change может срабатывать при снятии фокуса даже без изменения значения
+  const currentValue = searchQuery.value
+  if (currentValue !== lastSearchValue.value) {
+    lastSearchValue.value = currentValue
+    handleSearchInput()
+  }
 }
 
 const handleSearchInput = () => {
