@@ -573,6 +573,94 @@ const handleSearchInput = () => {
   }
 }
 
+// Простой реактивный поиск
+const performSimpleSearch = (allItems: any[], query: string) => {
+  const queryLower = query.toLowerCase().trim()
+  const queryWords = queryLower.split(/\s+/).filter(word => word.length >= 2)
+  
+  console.log('🔍 Simple search for:', queryLower)
+  console.log('🔍 Query words:', queryWords)
+  
+  const results: any[] = []
+  
+  allItems.forEach(item => {
+    const title = (item.title || item.name || '').toLowerCase()
+    const description = (item.description || item.note || '').toLowerCase()
+    const latinName = (item.latinName || '').toLowerCase()
+    const synonyms = (item.synonyms || []).join(' ').toLowerCase()
+    const content = (item.content || '').toLowerCase()
+    
+    // Проверяем точное совпадение в названии
+    if (title.includes(queryLower)) {
+      results.push({ ...item, score: 0.1, searchType: 'exact-title' })
+      return
+    }
+    
+    // Проверяем совпадение в латинском названии
+    if (latinName.includes(queryLower)) {
+      results.push({ ...item, score: 0.2, searchType: 'latin-name' })
+      return
+    }
+    
+    // Проверяем совпадение в синонимах
+    if (synonyms.includes(queryLower)) {
+      results.push({ ...item, score: 0.3, searchType: 'synonyms' })
+      return
+    }
+    
+    // Проверяем совпадение всех слов запроса
+    const allWordsMatch = queryWords.every(word => 
+      title.includes(word) || 
+      description.includes(word) || 
+      latinName.includes(word) || 
+      synonyms.includes(word) ||
+      content.includes(word)
+    )
+    
+    if (allWordsMatch) {
+      // Подсчитываем количество совпавших слов
+      const matchedWords = queryWords.filter(word => 
+        title.includes(word) || 
+        description.includes(word) || 
+        latinName.includes(word) || 
+        synonyms.includes(word) ||
+        content.includes(word)
+      )
+      
+      const score = 0.4 + (matchedWords.length / queryWords.length) * 0.3
+      results.push({ ...item, score, searchType: 'word-match' })
+    } else {
+      // Для препаратов проверяем частичные совпадения
+      if (item.type === 'drug') {
+        const hasPartialMatch = queryWords.some(word => 
+          title.includes(word) || 
+          description.includes(word) || 
+          latinName.includes(word) || 
+          synonyms.includes(word)
+        )
+        
+        if (hasPartialMatch) {
+          const matchedWords = queryWords.filter(word => 
+            title.includes(word) || 
+            description.includes(word) || 
+            latinName.includes(word) || 
+            synonyms.includes(word)
+          )
+          
+          const score = 0.6 + (matchedWords.length / queryWords.length) * 0.2
+          results.push({ ...item, score, searchType: 'partial-match' })
+        }
+      }
+    }
+  })
+  
+  // Сортируем по score
+  results.sort((a, b) => a.score - b.score)
+  
+  console.log('✅ Simple search results:', results.length)
+  return results
+}
+
 // Выполняем поиск
 const performSearch = async () => {
   const query = searchQuery.value.trim()
@@ -622,10 +710,22 @@ const performSearch = async () => {
     
     console.log('📋 Total items for search:', allItems.length)
     
-    // Используем Fuse.js для поиска
-    const { search } = useFuseSearch()
-    const fuseResults = search(allItems, query)
-    console.log('🔍 Fuse results:', fuseResults.length)
+    // Сначала пробуем простой поиск
+    const simpleResults = performSimpleSearch(allItems, query)
+    
+    let finalResults: any[] = []
+    
+    if (simpleResults.length > 0) {
+      console.log('✅ Using simple search results:', simpleResults.length)
+      finalResults = simpleResults
+    } else {
+      console.log('🔍 Simple search found nothing, trying Fuse.js...')
+      // Если простой поиск ничего не нашел, используем Fuse.js
+      const { search } = useFuseSearch()
+      const fuseResults = search(allItems, query)
+      console.log('🔍 Fuse results:', fuseResults.length)
+      finalResults = fuseResults
+    }
     
     // Группируем результаты по типам
     const grouped: Record<string, any[]> = {
@@ -636,14 +736,14 @@ const performSearch = async () => {
       substation: []
     }
     
-    fuseResults.forEach(result => {
+    finalResults.forEach(result => {
       if (grouped[result.type]) {
         grouped[result.type].push(result)
       }
     })
     
     console.log('📊 Grouped results:', grouped)
-    updateSearchResults(fuseResults, grouped)
+    updateSearchResults(finalResults, grouped)
     console.log('✅ Search completed, results updated')
     
   } catch (error) {
