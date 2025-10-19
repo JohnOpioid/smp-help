@@ -815,6 +815,9 @@ const renderAlgorithmTable = (content: string): string => {
   // Берем первую таблицу и стилизуем её
   let table = tableMatch[0]
   
+  // Удаляем лишние теги, которые могут появиться из-за неправильной обработки
+  table = table.replace(/<tr><th[^>]*><\/th><\/tr>/gi, '')
+  
   // Полностью заменяем стили таблицы
   table = table.replace(/<table[^>]*>/gi, '<table class="w-full table-fixed my-0 border-0 bg-transparent"><colgroup><col style="width: 33.3333%"><col style="width: 33.3333%"><col style="width: 33.3333%"></colgroup>')
   
@@ -824,10 +827,10 @@ const renderAlgorithmTable = (content: string): string => {
   // Полностью заменяем стили tbody
   table = table.replace(/<tbody[^>]*>/gi, '<tbody class="divide-y divide-slate-100 dark:divide-slate-700">')
   
-  // Полностью заменяем стили заголовков
+  // Полностью заменяем стили заголовков (только открывающие теги)
   table = table.replace(/<th[^>]*>/gi, '<th class="px-3 py-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 text-center font-medium whitespace-normal break-words align-middle sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700 sm:whitespace-normal whitespace-nowrap">')
   
-  // Полностью заменяем стили ячеек (без border-b, только divide-y у tbody)
+  // Полностью заменяем стили ячеек (только открывающие теги, без border-b, только divide-y у tbody)
   table = table.replace(/<td[^>]*>/gi, '<td class="p-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300 whitespace-normal break-words align-top bg-white dark:bg-slate-800">')
   
   // Полностью заменяем стили строк
