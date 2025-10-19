@@ -88,8 +88,8 @@
             size="lg"
             color="primary"
             class="w-full shadow-lg"
-            icon="i-heroicons-list-bullet"
           >
+            <span class="iconify i-lucide:building-2 ms-0.5 mt-0.5 w-4 h-4 text-slate-500" aria-hidden="true"></span>
             Список подстанций
           </UButton>
         </div>
@@ -158,7 +158,7 @@
                   <p v-if="item.phones?.length" class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ item.phones.join(', ') }}</p>
               </div>
             </div>
-          </div>
+            </div>
         </div>
       </div>
     </BottomSheet>
