@@ -14,8 +14,8 @@
       
       <!-- Контентная область с сайдбаром -->
       <div class="relative z-10 max-w-5xl mx-auto px-4 h-full pointer-events-none">
-        <!-- Сайдбар слева -->
-        <div class="absolute left-4 right-4 sm:right-auto sm:w-80 top-1/2 -translate-y-1/2 h-[calc(100vh-200px)] bg-white dark:bg-slate-800 rounded-lg shadow-lg pointer-events-auto">
+        <!-- Сайдбар слева (только на десктопе) -->
+        <div v-if="!isMobile" class="absolute left-4 right-4 sm:right-auto sm:w-80 top-1/2 -translate-y-1/2 h-[calc(100vh-200px)] bg-white dark:bg-slate-800 rounded-lg shadow-lg pointer-events-auto">
           <!-- Список подстанций -->
           <div ref="sidebarRef" class="h-full p-4 space-y-4 overflow-y-auto custom-scroll">
             <div v-for="(group, groupIndex) in groupedItems" :key="groupIndex">
@@ -80,8 +80,102 @@
             </div>
           </div>
         </div>
+        
+        <!-- Кнопка для открытия bottom sheet на мобильных -->
+        <div v-if="isMobile" class="absolute bottom-4 left-4 right-4 pointer-events-auto">
+          <UButton 
+            @click="isBottomSheetOpen = true"
+            size="lg"
+            color="primary"
+            class="w-full shadow-lg"
+            icon="i-heroicons-list-bullet"
+          >
+            Список подстанций
+          </UButton>
+        </div>
       </div>
     </div>
+    
+    <!-- Bottom Sheet для мобильных устройств -->
+    <USlideover v-model="isBottomSheetOpen" side="bottom">
+      <UCard class="h-[80vh] flex flex-col">
+        <template #header>
+          <div class="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Подстанции</h3>
+            <UButton 
+              @click="isBottomSheetOpen = false"
+              variant="ghost" 
+              size="sm" 
+              icon="i-heroicons-x-mark"
+            />
+          </div>
+        </template>
+        
+        <!-- Список подстанций в bottom sheet -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-4">
+          <div v-for="(group, groupIndex) in groupedItems" :key="groupIndex">
+            <!-- Заголовок группы -->
+            <div class="bg-slate-100 dark:bg-slate-700 px-3 py-2 rounded-lg mb-2 sticky top-0 z-10">
+              <div class="flex items-start justify-between">
+                <div class="flex flex-col">
+                  <h3 class="font-semibold text-slate-900 dark:text-white text-sm">
+                    Региональное объединение №{{ group.regionName }}
+                  </h3>
+                  <p v-if="group.regionData?.district" class="text-xs text-slate-400 dark:text-slate-300 mt-1">
+                    <span class="font-bold">{{ group.regionData.district }}</span>
+                  </p>
+                  <p v-else class="text-xs text-slate-600 dark:text-slate-300 mt-1">
+                    <span class="font-bold italic">не указан</span>
+                  </p>
+                </div>
+                <UPopover>
+                  <UButton variant="ghost" size="xs" icon="i-heroicons-ellipsis-horizontal" class="cursor-pointer" />
+                  <template #content>
+                    <div class="p-3 min-w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg">
+                      <div class="text-sm font-medium text-slate-600 dark:text-slate-300">
+                        Руководитель
+                      </div>
+                      <div v-if="group.regionData?.manager" class="text-sm text-slate-600 dark:text-slate-300 mb-2">
+                        {{ group.regionData.manager }}
+                      </div>
+                      <div v-if="group.regionData?.manager && group.regionData?.phones?.length" class="border-t border-slate-200 dark:border-slate-600 my-2"></div>
+                      <div v-if="group.regionData?.phones?.length" class="space-y-1">
+                        <div v-for="phone in group.regionData.phones" :key="phone.number" class="flex items-center gap-2 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded cursor-pointer">
+                          <UIcon name="i-heroicons-phone" class="size-4 text-dimmed" />
+                          <div class="flex flex-col text-left">
+                            <span class="text-sm font-medium">{{ phone.number }}</span>
+                            <span class="text-xs text-dimmed">{{ phone.name }}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div v-else class="text-sm text-slate-500">
+                        Телефоны не указаны
+                      </div>
+                    </div>
+                  </template>
+                </UPopover>
+              </div>
+            </div>
+            
+            <!-- Подстанции в группе -->
+            <div class="space-y-1">
+              <div
+                v-for="item in group.items"
+                :key="item._id"
+                :data-substation-id="item._id"
+                class="p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/40 rounded-lg transition-colors"
+                :class="{ 'bg-slate-50 dark:bg-slate-700/40': selectedId === item._id }"
+                @click="toggleSelect(item); isBottomSheetOpen = false"
+              >
+                <p class="font-medium text-slate-900 dark:text-white text-sm">{{ item.name }}</p>
+                <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ item.address }}</p>
+                <p v-if="item.phones?.length" class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ item.phones.join(', ') }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </UCard>
+    </USlideover>
     
     <!-- Глобальный индикатор предзагрузки -->
     <PreloadIndicator />
@@ -98,6 +192,62 @@ definePageMeta({
 
 // Глобальное состояние поиска
 const { isSearchActive } = useGlobalSearch()
+
+// Состояние bottom sheet для мобильных устройств
+const isBottomSheetOpen = ref(false)
+const isMobile = ref(false)
+
+// Проверяем размер экрана
+const checkScreenSize = () => {
+  isMobile.value = window.innerWidth <= 768
+}
+
+// Объединяем все onMounted хуки
+onMounted(() => {
+  // Проверяем размер экрана
+  checkScreenSize()
+  window.addEventListener('resize', checkScreenSize)
+  
+  // Автоматический выбор подстанции по параметрам URL
+  const route = useRoute()
+  const urlLat = route.query.lat as string
+  const urlLon = route.query.lon as string
+  const urlName = route.query.name as string
+  
+  if (urlLat && urlLon && urlName) {
+    const lat = parseFloat(urlLat)
+    const lon = parseFloat(urlLon)
+    
+    if (!isNaN(lat) && !isNaN(lon)) {
+      // Находим подстанцию по координатам
+      const substation = items.value.find((s: any) => {
+        const coords = s.location?.coordinates
+        if (!coords || coords.length !== 2) return false
+        
+        const [lon, lat] = coords
+        const distance = Math.sqrt(Math.pow(lon - parseFloat(urlLon), 2) + Math.pow(lat - parseFloat(urlLat), 2))
+        return distance < 0.001 // Примерно 100 метров
+      })
+      
+      if (substation) {
+        selectedId.value = substation._id
+        mapRef.value?.setCenter([substation.location.coordinates[0], substation.location.coordinates[1]], 18)
+      }
+    }
+  }
+  
+  // Настраиваем автоматическую предзагрузку
+  const { setupAutoPreload } = useAutoPreload()
+  setupAutoPreload()
+  
+  // Добавляем обработчик поиска из шапки
+  window.addEventListener('substations-search', handleHeaderSearch as EventListener)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkScreenSize)
+  window.removeEventListener('substations-search', handleHeaderSearch as EventListener)
+})
 
 const { data } = await useFetch<{ success: boolean; items: any[] }>(
   '/api/substations',
@@ -339,73 +489,10 @@ function clearSelection() {
 
 const selectedItem = computed<any>(() => (items.value || []).find((s: any) => s._id === selectedId.value))
 
-
-// Автоматический выбор подстанции по параметрам URL
-onMounted(() => {
-  const route = useRoute()
-  const urlLat = route.query.lat as string
-  const urlLon = route.query.lon as string
-  const urlName = route.query.name as string
-  
-  if (urlLat && urlLon && urlName) {
-    const lat = parseFloat(urlLat)
-    const lon = parseFloat(urlLon)
-    
-    if (!isNaN(lat) && !isNaN(lon)) {
-      // Ищем подстанцию по координатам или названию
-      const targetSubstation = items.value.find((item: any) => {
-        // Сначала пробуем найти по близости координат (более точно)
-        if (item.location?.coordinates) {
-          const itemLat = item.location.coordinates[1]
-          const itemLon = item.location.coordinates[0]
-          const distance = Math.sqrt(Math.pow(lat - itemLat, 2) + Math.pow(lon - itemLon, 2))
-          if (distance < 0.0001) { // примерно 10 метров - очень точное совпадение
-            return true
-          }
-        }
-        
-        // Если точного совпадения по координатам нет, ищем по названию
-        const decodedName = decodeURIComponent(urlName)
-        if (item.name === decodedName) {
-          return true
-        }
-        
-        // Также проверяем частичное совпадение названия (убираем лишние символы)
-        const cleanItemName = item.name.replace(/[^\w\s\d]/gi, '').toLowerCase()
-        const cleanUrlName = decodedName.replace(/[^\w\s\d]/gi, '').toLowerCase()
-        if (cleanItemName === cleanUrlName) {
-          return true
-        }
-        
-        return false
-      })
-      
-      if (targetSubstation) {
-        console.log('Автоматически выбрана подстанция:', targetSubstation.name)
-        select(targetSubstation)
-      }
-    }
-  }
-})
-
 // Обработчик поиска из шапки
 const handleHeaderSearch = (event: CustomEvent) => {
   search.value = event.detail.query
 }
-
-// Настраиваем автоматическую предзагрузку
-onMounted(() => {
-  const { setupAutoPreload } = useAutoPreload()
-  setupAutoPreload()
-  
-  // Добавляем обработчик поиска из шапки
-  window.addEventListener('substations-search', handleHeaderSearch as EventListener)
-})
-
-onUnmounted(() => {
-  // Убираем обработчик при размонтировании
-  window.removeEventListener('substations-search', handleHeaderSearch as EventListener)
-})
 </script>
 
 
