@@ -106,7 +106,9 @@
             @input="onSearchInput"
             @focus="onSearchFocus"
             @blur="onSearchBlur"
-            @keydown.enter.prevent="onSearchEnter">
+            @keydown.enter.prevent="onSearchEnter"
+            @keyup="onSearchKeyup"
+            @change="onSearchChange">
           
           <!-- Панель поиска теперь отображается в основной области контента -->
           
@@ -524,6 +526,18 @@ const onSearchEnter = () => {
 }
 
 const onSearchInput = () => {
+  handleSearchInput()
+}
+
+const onSearchKeyup = () => {
+  handleSearchInput()
+}
+
+const onSearchChange = () => {
+  handleSearchInput()
+}
+
+const handleSearchInput = () => {
   // Если мы на странице подстанций, отправляем событие для локального поиска
   if (isSubstationsPage.value) {
     // Отправляем событие на страницу подстанций для фильтрации
@@ -543,10 +557,20 @@ const onSearchInput = () => {
     return
   }
   
-  searchTimeout = setTimeout(() => {
+  // На мобильных устройствах делаем поиск быстрее
+  const isMobile = window.innerWidth <= 768
+  const delay = isMobile ? 100 : 300
+  
+  // Для мобильных устройств и коротких запросов делаем поиск почти мгновенно
+  if (isMobile && searchQuery.value.trim().length <= 4) {
     activateSearch(searchQuery.value)
     performSearch()
-  }, 300)
+  } else {
+    searchTimeout = setTimeout(() => {
+      activateSearch(searchQuery.value)
+      performSearch()
+    }, delay)
+  }
 }
 
 // Выполняем поиск
