@@ -812,21 +812,41 @@ const performSearch = async () => {
     
     console.log('📋 Total items for search:', allItems.length)
     
-    // Сначала пробуем простой поиск
-    const simpleResults = performSimpleSearch(allItems, query)
+    // Отладочная информация о типах данных
+    const typeCounts = allItems.reduce((acc, item) => {
+      acc[item.type] = (acc[item.type] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+    console.log('📊 Items by type:', typeCounts)
     
-    let finalResults: any[] = []
+    // Показываем примеры каждого типа
+    Object.keys(typeCounts).forEach(type => {
+      const sample = allItems.find(item => item.type === type)
+      if (sample) {
+        console.log(`📝 Sample ${type}:`, {
+          title: sample.title || sample.name,
+          description: sample.description || sample.note,
+          _id: sample._id
+        })
+      }
+    })
     
-    if (simpleResults.length > 0) {
-      console.log('✅ Using simple search results:', simpleResults.length)
-      finalResults = simpleResults
-    } else {
-      console.log('🔍 Simple search found nothing, trying Fuse.js...')
-      // Если простой поиск ничего не нашел, используем Fuse.js
-      const { search } = useFuseSearch()
-      const fuseResults = search(allItems, query)
-      console.log('🔍 Fuse results:', fuseResults.length)
-      finalResults = fuseResults
+    // Всегда используем Fuse.js для более точного поиска
+    console.log('🔍 Using Fuse.js for search...')
+    const { search } = useFuseSearch()
+    const fuseResults = search(allItems, query)
+    console.log('🔍 Fuse results:', fuseResults.length)
+    
+    let finalResults: any[] = fuseResults
+    
+    // Если Fuse.js ничего не нашел, пробуем простой поиск как fallback
+    if (fuseResults.length === 0) {
+      console.log('🔍 Fuse.js found nothing, trying simple search...')
+      const simpleResults = performSimpleSearch(allItems, query)
+      if (simpleResults.length > 0) {
+        console.log('✅ Using simple search results:', simpleResults.length)
+        finalResults = simpleResults
+      }
     }
     
     // Группируем результаты по типам
