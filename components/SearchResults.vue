@@ -1222,40 +1222,114 @@ const openSubstationModal = (result: any) => {
 <style scoped>
 /* Стили для таблиц в результатах поиска - точно как на странице алгоритмов */
 :deep(table) {
-  @apply w-full table-fixed border-0 bg-transparent;
+  width: 100%;
+  table-layout: fixed;
   margin-top: 0;
   margin-bottom: 0;
-  table-layout: fixed;
+  border: 0;
+  background-color: transparent;
 }
 
 :deep(thead) {
-  @apply bg-slate-100 dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700 sticky top-0 z-20;
+  background-color: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.dark :deep(thead) {
+  background-color: #1e293b;
+  border-bottom-color: #475569;
 }
 
 :deep(tbody) {
-  @apply divide-y divide-slate-100 dark:divide-slate-700;
+  border-top-width: 0;
+}
+
+:deep(tbody tr) {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.dark :deep(tbody tr) {
+  border-bottom-color: #475569;
 }
 
 :deep(th) {
-  @apply px-4 py-3 text-sm text-slate-600 dark:text-slate-300 text-center font-medium whitespace-normal break-words align-middle sticky top-0 z-20 bg-slate-200 dark:bg-slate-800;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #475569;
+  text-align: center;
+  font-weight: 500;
+  white-space: normal;
+  word-break: break-word;
+  vertical-align: middle;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: #e2e8f0;
+}
+
+.dark :deep(th) {
+  color: #cbd5e1;
+  background-color: #1e293b;
 }
 
 :deep(td) {
-  @apply p-4 text-sm text-slate-600 dark:text-slate-300 whitespace-normal break-words align-top bg-white dark:bg-slate-800;
+  padding: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #475569;
+  white-space: normal;
+  word-break: break-word;
+  vertical-align: top;
+  background-color: #ffffff;
 }
 
-:deep(tr) {
-  @apply hover:bg-slate-50/60 dark:hover:bg-slate-700/40;
+.dark :deep(td) {
+  color: #cbd5e1;
+  background-color: #1e293b;
+}
+
+:deep(tr:hover) {
+  background-color: rgba(248, 250, 252, 0.6);
+}
+
+.dark :deep(tr:hover) {
+  background-color: rgba(51, 65, 85, 0.4);
 }
 
 /* Границы между колонками */
 :deep(thead tr th:first-child),
 :deep(tbody tr td:first-child) {
-  @apply border-r border-slate-100 dark:border-slate-700;
+  border-right: 1px solid #e2e8f0;
+}
+
+.dark :deep(thead tr th:first-child),
+.dark :deep(tbody tr td:first-child) {
+  border-right-color: #475569;
 }
 
 :deep(thead tr th:nth-child(2)),
 :deep(tbody tr td:nth-child(2)) {
-  @apply border-l border-slate-100 dark:border-slate-700 md:border-r md:border-slate-100 md:dark:border-slate-700;
+  border-left: 1px solid #e2e8f0;
+}
+
+.dark :deep(thead tr th:nth-child(2)),
+.dark :deep(tbody tr td:nth-child(2)) {
+  border-left-color: #475569;
+}
+
+@media (min-width: 768px) {
+  :deep(thead tr th:nth-child(2)),
+  :deep(tbody tr td:nth-child(2)) {
+    border-right: 1px solid #e2e8f0;
+  }
+  
+  .dark :deep(thead tr th:nth-child(2)),
+  .dark :deep(tbody tr td:nth-child(2)) {
+    border-right-color: #475569;
+  }
 }
 </style>
