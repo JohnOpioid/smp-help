@@ -856,20 +856,32 @@ const addTableColumnBorders = (table: HTMLTableElement) => {
   // Бордеры для заголовков: у первой колонки справа, у второй слева и справа на md+ экранах
   table.querySelectorAll('thead tr').forEach(tr => {
     const cells = Array.from(tr.children) as HTMLElement[]
-    if (cells[0]) cells[0].classList.add('border-r', 'border-slate-100', 'dark:border-slate-700')
+    if (cells[0] && !cells[0].classList.contains('border-r')) {
+      cells[0].classList.add('border-r', 'border-slate-100', 'dark:border-slate-700')
+    }
     if (cells[1]) {
-      cells[1].classList.add('border-l', 'border-slate-100', 'dark:border-slate-700')
-      cells[1].classList.add('md:border-r', 'md:border-slate-100', 'md:dark:border-slate-700')
+      if (!cells[1].classList.contains('border-l')) {
+        cells[1].classList.add('border-l', 'border-slate-100', 'dark:border-slate-700')
+      }
+      if (!cells[1].classList.contains('md:border-r')) {
+        cells[1].classList.add('md:border-r', 'md:border-slate-100', 'md:dark:border-slate-700')
+      }
     }
   })
   
   // Бордеры для ячеек: у первой колонки справа, у второй слева и справа на md+ экранах
   table.querySelectorAll('tbody tr').forEach(tr => {
     const cells = Array.from(tr.children) as HTMLElement[]
-    if (cells[0]) cells[0].classList.add('border-r', 'border-slate-100', 'dark:border-slate-700')
+    if (cells[0] && !cells[0].classList.contains('border-r')) {
+      cells[0].classList.add('border-r', 'border-slate-100', 'dark:border-slate-700')
+    }
     if (cells[1]) {
-      cells[1].classList.add('border-l', 'border-slate-100', 'dark:border-slate-700')
-      cells[1].classList.add('md:border-r', 'md:border-slate-100', 'md:dark:border-slate-700')
+      if (!cells[1].classList.contains('border-l')) {
+        cells[1].classList.add('border-l', 'border-slate-100', 'dark:border-slate-700')
+      }
+      if (!cells[1].classList.contains('md:border-r')) {
+        cells[1].classList.add('md:border-r', 'md:border-slate-100', 'md:dark:border-slate-700')
+      }
     }
   })
 }
