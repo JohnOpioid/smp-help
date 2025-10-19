@@ -1222,7 +1222,9 @@ const openSubstationModal = (result: any) => {
 <style scoped>
 /* Стили для таблиц в результатах поиска - точно как на странице алгоритмов */
 :deep(table) {
-  @apply w-full table-fixed my-0 border-0 bg-transparent;
+  @apply w-full table-fixed border-0 bg-transparent;
+  margin-top: 0;
+  margin-bottom: 0;
   table-layout: fixed;
 }
 
