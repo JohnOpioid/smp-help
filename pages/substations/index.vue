@@ -82,7 +82,7 @@
         </div>
         
         <!-- Кнопка для открытия bottom sheet на мобильных -->
-        <div v-if="isMobile" class="absolute bottom-4 left-4 right-4 pointer-events-auto">
+        <div v-if="isMobile" class="absolute bottom-20 left-4 right-4 pointer-events-auto">
           <UButton 
             @click="isBottomSheetOpen = true"
             size="lg"
