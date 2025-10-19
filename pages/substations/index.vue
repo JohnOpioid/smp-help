@@ -100,65 +100,65 @@
     <BottomSheet v-model="isBottomSheetOpen" title="Подстанции">
       <!-- Список подстанций в bottom sheet (дублирует логику сайдбара) -->
       <div class="p-4 space-y-4">
-          <div v-for="(group, groupIndex) in groupedItems" :key="groupIndex">
-              <!-- Заголовок группы -->
-            <div class="bg-slate-100 dark:bg-slate-700 px-3 py-2 rounded-lg mb-2 sticky top-0 z-10">
-              <div class="flex items-start justify-between">
-                <div class="flex flex-col">
-                  <h3 class="font-semibold text-slate-900 dark:text-white text-sm">
-                    Региональное объединение №{{ group.regionName }}
-                  </h3>
-                  <p v-if="group.regionData?.district" class="text-xs text-slate-400 dark:text-slate-300 mt-1">
-                    <span class="font-bold">{{ group.regionData.district }}</span>
-                  </p>
-                  <p v-else class="text-xs text-slate-600 dark:text-slate-300 mt-1">
-                    <span class="font-bold italic">не указан</span>
-                  </p>
-                </div>
-                <UPopover>
-                  <UButton variant="ghost" size="xs" icon="i-heroicons-ellipsis-horizontal" class="cursor-pointer" />
-                  <template #content>
-                    <div class="p-3 min-w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg">
-                      <div class="text-sm font-medium text-slate-600 dark:text-slate-300">
-                        Руководитель
-                      </div>
-                      <div v-if="group.regionData?.manager" class="text-sm text-slate-600 dark:text-slate-300 mb-2">
-                        {{ group.regionData.manager }}
-                      </div>
-                      <div v-if="group.regionData?.manager && group.regionData?.phones?.length" class="border-t border-slate-200 dark:border-slate-600 my-2"></div>
-                      <div v-if="group.regionData?.phones?.length" class="space-y-1">
-                        <div v-for="phone in group.regionData.phones" :key="phone.number" class="flex items-center gap-2 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded cursor-pointer">
-                          <UIcon name="i-heroicons-phone" class="size-4 text-dimmed" />
-                          <div class="flex flex-col text-left">
-                            <span class="text-sm font-medium">{{ phone.number }}</span>
-                            <span class="text-xs text-dimmed">{{ phone.name }}</span>
-                          </div>
+        <div v-for="(group, groupIndex) in groupedItems" :key="groupIndex">
+          <!-- Заголовок группы -->
+          <div class="bg-slate-100 dark:bg-slate-700 px-3 py-2 rounded-lg mb-2 sticky top-0 z-10">
+            <div class="flex items-start justify-between">
+              <div class="flex flex-col">
+                <h3 class="font-semibold text-slate-900 dark:text-white text-sm">
+                  Региональное объединение №{{ group.regionName }}
+                </h3>
+                <p v-if="group.regionData?.district" class="text-xs text-slate-400 dark:text-slate-300 mt-1">
+                  <span class="font-bold">{{ group.regionData.district }}</span>
+                </p>
+                <p v-else class="text-xs text-slate-600 dark:text-slate-300 mt-1">
+                  <span class="font-bold italic">не указан</span>
+                </p>
+              </div>
+              <UPopover>
+                <UButton variant="ghost" size="xs" icon="i-heroicons-ellipsis-horizontal" class="cursor-pointer" />
+                <template #content>
+                  <div class="p-3 min-w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg">
+                    <div class="text-sm font-medium text-slate-600 dark:text-slate-300">
+                      Руководитель
+                    </div>
+                    <div v-if="group.regionData?.manager" class="text-sm text-slate-600 dark:text-slate-300 mb-2">
+                      {{ group.regionData.manager }}
+                    </div>
+                    <div v-if="group.regionData?.manager && group.regionData?.phones?.length" class="border-t border-slate-200 dark:border-slate-600 my-2"></div>
+                    <div v-if="group.regionData?.phones?.length" class="space-y-1">
+                      <div v-for="phone in group.regionData.phones" :key="phone.number" class="flex items-center gap-2 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded cursor-pointer">
+                        <UIcon name="i-heroicons-phone" class="size-4 text-dimmed" />
+                        <div class="flex flex-col text-left">
+                          <span class="text-sm font-medium">{{ phone.number }}</span>
+                          <span class="text-xs text-dimmed">{{ phone.name }}</span>
                         </div>
                       </div>
-                      <div v-else class="text-sm text-slate-500">
-                        Телефоны не указаны
-                      </div>
                     </div>
-                  </template>
-                </UPopover>
-              </div>
-              
-              <!-- Подстанции в группе -->
-              <div class="space-y-1">
-                <div
-                  v-for="item in group.items"
-                  :key="item._id"
-                  :data-substation-id="item._id"
-                  class="p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/40 rounded-lg transition-colors"
-                  :class="{ 'bg-slate-50 dark:bg-slate-700/40': selectedId === item._id }"
-                  @click="toggleSelect(item); isBottomSheetOpen = false"
-                >
-                  <p class="font-medium text-slate-900 dark:text-white text-sm">{{ item.name }}</p>
-                  <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ item.address }}</p>
-                  <p v-if="item.phones?.length" class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ item.phones.join(', ') }}</p>
-              </div>
+                    <div v-else class="text-sm text-slate-500">
+                      Телефоны не указаны
+                    </div>
+                  </div>
+                </template>
+              </UPopover>
             </div>
+          </div>
+          
+          <!-- Подстанции в группе -->
+          <div class="space-y-1">
+            <div
+              v-for="item in group.items"
+              :key="item._id"
+              :data-substation-id="item._id"
+              class="p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/40 rounded-lg transition-colors"
+              :class="{ 'bg-slate-50 dark:bg-slate-700/40': selectedId === item._id }"
+              @click="toggleSelect(item); isBottomSheetOpen = false"
+            >
+              <p class="font-medium text-slate-900 dark:text-white text-sm">{{ item.name }}</p>
+              <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ item.address }}</p>
+              <p v-if="item.phones?.length" class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ item.phones.join(', ') }}</p>
             </div>
+          </div>
         </div>
       </div>
     </BottomSheet>
