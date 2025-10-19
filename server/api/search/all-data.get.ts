@@ -149,7 +149,7 @@ export default defineEventHandler(async (event) => {
           total: substations.length
         }
       },
-      totalItems: localStatuses.length + mkbCodes.length + algorithms.length + drugs.length + substations.length
+      totalItems: totalItems
     }
   } catch (error) {
     console.error('❌ API: Ошибка при получении данных для поиска:', error)

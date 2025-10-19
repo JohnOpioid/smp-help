@@ -773,8 +773,34 @@ const performSearch = async () => {
   
   try {
     // Загружаем данные для поиска
-    const response = await $fetch('/api/search/all-data')
-    console.log('📡 API response:', response)
+    let response
+    try {
+      response = await $fetch('/api/search/all-data')
+      console.log('📡 API response:', response)
+    } catch (apiError) {
+      console.error('❌ Main API failed, trying fallback endpoints:', apiError)
+      
+      // Fallback: используем отдельные API endpoints
+      const [mkbData, lsResults, algoResults, drugResults, substationResults] = await Promise.all([
+        $fetch('/api/mkb/all').catch(() => ({ success: true, items: [] })),
+        $fetch('/api/local-statuses/all').catch(() => ({ success: true, items: [] })),
+        $fetch('/api/algorithms/all').catch(() => ({ success: true, items: [] })),
+        $fetch('/api/drugs/all').catch(() => ({ success: true, items: [] })),
+        $fetch('/api/substations/all').catch(() => ({ success: true, items: [] }))
+      ])
+      
+      response = {
+        success: true,
+        data: {
+          mkbCodes: mkbData,
+          localStatuses: lsResults,
+          algorithms: algoResults,
+          drugs: drugResults,
+          substations: substationResults
+        }
+      }
+      console.log('📡 Fallback API response:', response)
+    }
     
     if (!response.success) {
       console.error('❌ API returned error:', response)
