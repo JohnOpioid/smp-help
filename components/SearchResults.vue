@@ -801,7 +801,7 @@ const renderMarkdown = (text: string) => {
   return DOMPurify.sanitize(html)
 }
 
-// Функция для рендеринга таблиц алгоритмов с мобильной поддержкой
+// Функция для рендеринга таблиц алгоритмов с мобильной поддержкой (точно как на странице алгоритмов)
 const renderAlgorithmTable = (content: string): string => {
   if (!content) return ''
   
@@ -818,25 +818,59 @@ const renderAlgorithmTable = (content: string): string => {
   // Удаляем лишние теги, которые могут появиться из-за неправильной обработки
   table = table.replace(/<tr><th[^>]*><\/th><\/tr>/gi, '')
   
-  // Полностью заменяем стили таблицы
-  table = table.replace(/<table[^>]*>/gi, '<table class="w-full table-fixed my-0 border-0 bg-transparent"><colgroup><col style="width: 33.3333%"><col style="width: 33.3333%"><col style="width: 33.3333%"></colgroup>')
+  // Создаем временный DOM элемент для работы с таблицей
+  const tempDiv = document.createElement('div')
+  tempDiv.innerHTML = table
+  const tableElement = tempDiv.querySelector('table') as HTMLTableElement
   
-  // Полностью заменяем стили thead
-  table = table.replace(/<thead[^>]*>/gi, '<thead class="bg-slate-100 dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700 sticky top-0 z-20">')
+  if (!tableElement) return table
   
-  // Полностью заменяем стили tbody
-  table = table.replace(/<tbody[^>]*>/gi, '<tbody class="divide-y divide-slate-100 dark:divide-slate-700">')
+  // Применяем стили точно как на странице алгоритмов
+  // Стили только для содержимого таблицы, без внешнего бордера
+  tableElement.classList.remove('border', 'border-slate-100', 'dark:border-slate-700', 'rounded-lg', 'rounded-md', 'overflow-hidden')
+  tableElement.classList.add('w-full', 'table-fixed', 'my-0', 'border-0', 'bg-transparent')
+  tableElement.style.tableLayout = 'fixed'
   
-  // Полностью заменяем стили заголовков (точно как на странице алгоритмов)
-  table = table.replace(/<th[^>]*>/gi, '<th class="px-4 py-3 text-sm text-slate-600 dark:text-slate-300 text-center font-medium whitespace-normal break-words align-middle sticky top-0 z-20 bg-slate-200 dark:bg-slate-800">')
+  const thead = tableElement.querySelector('thead')
+  const tbody = tableElement.querySelector('tbody')
+  if (thead) thead.classList.add('bg-slate-100', 'dark:bg-slate-800', 'border-b', 'border-slate-100', 'dark:border-slate-700', 'sticky', 'top-0', 'z-20')
+  if (tbody) tbody.classList.add('divide-y', 'divide-slate-100', 'dark:divide-slate-700')
   
-  // Полностью заменяем стили ячеек (точно как на странице алгоритмов)
-  table = table.replace(/<td[^>]*>/gi, '<td class="p-4 text-sm text-slate-600 dark:text-slate-300 whitespace-normal break-words align-top bg-white dark:bg-slate-800">')
+  // Равномерное распределение 3 колонок + перенос текста
+  tableElement.querySelectorAll('colgroup col').forEach(col => (col as HTMLElement).style.width = '33.3333%')
   
-  // Полностью заменяем стили строк
-  table = table.replace(/<tr[^>]*>/gi, '<tr class="hover:bg-slate-50/60 dark:hover:bg-slate-700/40">')
+  tableElement.querySelectorAll('th').forEach(th => {
+    th.classList.remove('text-left', 'align-top', 'h-[85px]')
+    th.classList.add('px-4', 'py-3', 'text-sm', 'text-slate-600', 'dark:text-slate-300', 'text-center', 'font-medium', 'whitespace-normal', 'break-words', 'align-middle', 'sticky', 'top-0', 'z-20', 'bg-slate-200', 'dark:bg-slate-800')
+  })
   
-  return table
+  tableElement.querySelectorAll('td').forEach(td => {
+    td.classList.add('p-4', 'text-sm', 'text-slate-600', 'dark:text-slate-300', 'whitespace-normal', 'break-words', 'align-top', 'bg-white', 'dark:bg-slate-800')
+  })
+  
+  tableElement.querySelectorAll('tr').forEach(tr => tr.classList.add('hover:bg-slate-50/60', 'dark:hover:bg-slate-700/40'))
+  
+  // Бордеры: у первой колонки справа, у второй слева и справа на md+ экранах
+  tableElement.querySelectorAll('thead tr').forEach(tr => {
+    const cells = Array.from(tr.children) as HTMLElement[]
+    if (cells[0]) cells[0].classList.add('border-r', 'border-slate-100', 'dark:border-slate-700')
+    if (cells[1]) {
+      cells[1].classList.add('border-l', 'border-slate-100', 'dark:border-slate-700')
+      cells[1].classList.add('md:border-r', 'md:border-slate-100', 'md:dark:border-slate-700')
+    }
+  })
+  
+  tableElement.querySelectorAll('tbody tr').forEach(tr => {
+    const cells = Array.from(tr.children) as HTMLElement[]
+    if (cells[0]) cells[0].classList.add('border-r', 'border-slate-100', 'dark:border-slate-700')
+    if (cells[1]) {
+      cells[1].classList.add('border-l', 'border-slate-100', 'dark:border-slate-700')
+      cells[1].classList.add('md:border-r', 'md:border-slate-100', 'md:dark:border-slate-700')
+    }
+  })
+  
+  // Возвращаем HTML строку
+  return tableElement.outerHTML
 }
 
 // Функция для настройки мобильной логики таблиц
@@ -846,64 +880,10 @@ const setupMobileTableLogic = () => {
     tables.forEach(table => {
       const wrapper = table.closest('[data-styled-table-wrapper]') as HTMLElement
       if (wrapper && !wrapper.hasAttribute('data-mobile-init')) {
-        // Добавляем внутренние border'ы между колонками
-        addTableColumnBorders(table as HTMLTableElement)
+        // Границы уже добавлены в renderAlgorithmTable, только настраиваем мобильную логику
         setupMobileTwoColumn(table as HTMLTableElement)
       }
     })
-  })
-}
-
-// Функция для добавления границ между колонками таблицы (как на странице алгоритмов)
-const addTableColumnBorders = (table: HTMLTableElement) => {
-  console.log('🔧 addTableColumnBorders called for table:', table)
-  
-  // Бордеры для заголовков: у первой колонки справа, у второй слева и справа на md+ экранах
-  const theadRows = table.querySelectorAll('thead tr')
-  console.log('🔧 Found thead rows:', theadRows.length)
-  
-  theadRows.forEach((tr, index) => {
-    const cells = Array.from(tr.children) as HTMLElement[]
-    console.log(`🔧 Row ${index} has ${cells.length} cells`)
-    
-    if (cells[0] && !cells[0].classList.contains('border-r')) {
-      cells[0].classList.add('border-r', 'border-slate-100', 'dark:border-slate-700')
-      console.log('🔧 Added border-r to first cell')
-    }
-    if (cells[1]) {
-      if (!cells[1].classList.contains('border-l')) {
-        cells[1].classList.add('border-l', 'border-slate-100', 'dark:border-slate-700')
-        console.log('🔧 Added border-l to second cell')
-      }
-      if (!cells[1].classList.contains('md:border-r')) {
-        cells[1].classList.add('md:border-r', 'md:border-slate-100', 'md:dark:border-slate-700')
-        console.log('🔧 Added md:border-r to second cell')
-      }
-    }
-  })
-  
-  // Бордеры для ячеек: у первой колонки справа, у второй слева и справа на md+ экранах
-  const tbodyRows = table.querySelectorAll('tbody tr')
-  console.log('🔧 Found tbody rows:', tbodyRows.length)
-  
-  tbodyRows.forEach((tr, index) => {
-    const cells = Array.from(tr.children) as HTMLElement[]
-    console.log(`🔧 Tbody row ${index} has ${cells.length} cells`)
-    
-    if (cells[0] && !cells[0].classList.contains('border-r')) {
-      cells[0].classList.add('border-r', 'border-slate-100', 'dark:border-slate-700')
-      console.log('🔧 Added border-r to first tbody cell')
-    }
-    if (cells[1]) {
-      if (!cells[1].classList.contains('border-l')) {
-        cells[1].classList.add('border-l', 'border-slate-100', 'dark:border-slate-700')
-        console.log('🔧 Added border-l to second tbody cell')
-      }
-      if (!cells[1].classList.contains('md:border-r')) {
-        cells[1].classList.add('md:border-r', 'md:border-slate-100', 'md:dark:border-slate-700')
-        console.log('🔧 Added md:border-r to second tbody cell')
-      }
-    }
   })
 }
 
