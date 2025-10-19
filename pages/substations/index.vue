@@ -184,6 +184,13 @@ const { isSearchActive } = useGlobalSearch()
 const isBottomSheetOpen = ref(false)
 const isMobile = ref(false)
 
+// Сбрасываем выделение при закрытии bottom sheet
+watch(isBottomSheetOpen, (newValue) => {
+  if (!newValue) {
+    selectedId.value = null
+  }
+})
+
 // Проверяем размер экрана
 const checkScreenSize = () => {
   isMobile.value = window.innerWidth <= 768
