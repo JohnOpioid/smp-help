@@ -8,31 +8,49 @@ import Substation from '~/server/models/Substation'
 
 export default defineEventHandler(async (event) => {
   try {
+    console.log('🔍 API: Подключаемся к базе данных...')
     await connectDB()
+    console.log('✅ API: Подключение к БД успешно')
     
-    // Получаем все данные из всех коллекций параллельно
-    const [localStatuses, mkbCodes, algorithms, drugs, substations] = await Promise.all([
-      LocalStatus.find({}).populate('category', 'name url').lean().catch((err: any) => {
-        console.error('❌ API: Ошибка загрузки LocalStatus:', err)
-        return []
-      }),
-      MKB.find({}).populate('category', 'name url').lean().catch((err: any) => {
-        console.error('❌ API: Ошибка загрузки MKB:', err)
-        return []
-      }),
-      Algorithm.find({}).populate('category', 'name url').populate('section', 'name url').lean().catch(err => {
-        console.error('❌ API: Ошибка загрузки Algorithm:', err)
-        return []
-      }),
-      Drug.find({}).populate('categories', 'name url').lean().catch((err: any) => {
-        console.error('❌ API: Ошибка загрузки Drug:', err)
-        return []
-      }),
-      Substation.find({}).populate('region', 'name').lean().catch((err: any) => {
-        console.error('❌ API: Ошибка загрузки Substation:', err)
-        return []
-      })
-    ])
+    console.log('🔍 API: Начинаем загрузку данных для поиска...')
+    
+    // Получаем данные из каждой коллекции отдельно для диагностики
+    console.log('🔍 API: Загружаем LocalStatus...')
+    const localStatuses = await LocalStatus.find({}).populate('category', 'name url').lean().catch((err: any) => {
+      console.error('❌ API: Ошибка загрузки LocalStatus:', err)
+      return []
+    })
+    
+    console.log('🔍 API: Загружаем MKB...')
+    const mkbCodes = await MKB.find({}).populate('category', 'name url').lean().catch((err: any) => {
+      console.error('❌ API: Ошибка загрузки MKB:', err)
+      return []
+    })
+    
+    console.log('🔍 API: Загружаем Algorithm...')
+    const algorithms = await Algorithm.find({}).populate('category', 'name url').populate('section', 'name url').lean().catch(err => {
+      console.error('❌ API: Ошибка загрузки Algorithm:', err)
+      return []
+    })
+    
+    console.log('🔍 API: Загружаем Drug...')
+    const drugs = await Drug.find({}).populate('categories', 'name url').lean().catch((err: any) => {
+      console.error('❌ API: Ошибка загрузки Drug:', err)
+      return []
+    })
+    
+    console.log('🔍 API: Загружаем Substation...')
+    const substations = await Substation.find({}).populate('region', 'name').lean().catch((err: any) => {
+      console.error('❌ API: Ошибка загрузки Substation:', err)
+      return []
+    })
+    
+    console.log('📊 API: Результаты загрузки:')
+    console.log(`  - LocalStatus: ${localStatuses.length}`)
+    console.log(`  - MKB: ${mkbCodes.length}`)
+    console.log(`  - Algorithm: ${algorithms.length}`)
+    console.log(`  - Drug: ${drugs.length}`)
+    console.log(`  - Substation: ${substations.length}`)
     
     // Проверяем, что хотя бы одна коллекция не пустая
     const totalItems = localStatuses.length + mkbCodes.length + algorithms.length + drugs.length + substations.length
