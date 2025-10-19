@@ -12,6 +12,20 @@ export default defineEventHandler(async (event) => {
     await connectDB()
     console.log('✅ API: Подключение к БД успешно')
     
+    // Проверяем подключение к базе данных
+    const db = await connectDB()
+    if (!db) {
+      console.error('❌ API: Нет подключения к базе данных')
+      return {
+        success: false,
+        message: 'Ошибка подключения к базе данных',
+        data: null,
+        totalItems: 0
+      }
+    }
+    
+    console.log('✅ API: База данных доступна')
+    
     console.log('🔍 API: Начинаем загрузку данных для поиска...')
     
     // Получаем данные из каждой коллекции отдельно для диагностики
@@ -51,6 +65,48 @@ export default defineEventHandler(async (event) => {
     console.log(`  - Algorithm: ${algorithms.length}`)
     console.log(`  - Drug: ${drugs.length}`)
     console.log(`  - Substation: ${substations.length}`)
+    
+    // Детальная диагностика каждой коллекции
+    if (localStatuses.length > 0) {
+      console.log('📝 LocalStatus sample:', {
+        _id: localStatuses[0]._id,
+        title: localStatuses[0].title,
+        category: localStatuses[0].category
+      })
+    }
+    
+    if (mkbCodes.length > 0) {
+      console.log('📝 MKB sample:', {
+        _id: mkbCodes[0]._id,
+        title: mkbCodes[0].title,
+        category: mkbCodes[0].category
+      })
+    }
+    
+    if (algorithms.length > 0) {
+      console.log('📝 Algorithm sample:', {
+        _id: algorithms[0]._id,
+        title: algorithms[0].title,
+        category: algorithms[0].category,
+        section: algorithms[0].section
+      })
+    }
+    
+    if (drugs.length > 0) {
+      console.log('📝 Drug sample:', {
+        _id: drugs[0]._id,
+        name: drugs[0].name,
+        categories: drugs[0].categories
+      })
+    }
+    
+    if (substations.length > 0) {
+      console.log('📝 Substation sample:', {
+        _id: substations[0]._id,
+        name: substations[0].name,
+        region: substations[0].region
+      })
+    }
     
     // Проверяем, что хотя бы одна коллекция не пустая
     const totalItems = localStatuses.length + mkbCodes.length + algorithms.length + drugs.length + substations.length

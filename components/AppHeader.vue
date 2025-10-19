@@ -108,10 +108,13 @@
             @blur="onSearchBlur"
             @keydown.enter.prevent="onSearchEnter"
             @keyup="onSearchKeyup"
+            @keydown="onSearchKeydown"
             @change="onSearchChange"
             @paste="onSearchPaste"
             @compositionstart="onSearchCompositionStart"
-            @compositionend="onSearchCompositionEnd">
+            @compositionend="onSearchCompositionEnd"
+            @touchstart="onSearchTouchStart"
+            @touchend="onSearchTouchEnd">
           
           <!-- Панель поиска теперь отображается в основной области контента -->
           
@@ -510,6 +513,12 @@ const getTypeLabel = (type: string) => {
 const onSearchFocus = () => {
   const q = searchQuery.value.trim()
   
+  // На странице подстанций не активируем глобальный поиск
+  if (isSubstationsPage.value) {
+    console.log('🔍 На странице подстанций - поиск только локальный')
+    return
+  }
+  
   // Активируем поиск при фокусе, даже если запрос пустой
   if (!isSearchActive.value) {
     activateSearch(q)
@@ -540,6 +549,12 @@ const onSearchFocus = () => {
 }
 
 const onSearchBlur = () => {
+  // На странице подстанций не деактивируем поиск
+  if (isSubstationsPage.value) {
+    console.log('🔍 На странице подстанций - не деактивируем поиск')
+    return
+  }
+  
   // Небольшая задержка, чтобы пользователь мог кликнуть по результатам
   setTimeout(() => {
     // Проверяем, что фокус действительно ушел с поля поиска
@@ -981,6 +996,31 @@ const clearSearch = () => {
   deactivateSearch()
 }
 
+// Дополнительные обработчики для мобильных устройств
+const onSearchKeydown = () => {
+  // Обрабатываем нажатия клавиш для мобильных устройств
+  if (!isComposing.value) {
+    handleSearchInput()
+  }
+}
+
+const onSearchTouchStart = () => {
+  // Начало касания на мобильных устройствах
+  console.log('🔍 Touch start on search input')
+}
+
+const onSearchTouchEnd = () => {
+  // Конец касания на мобильных устройствах
+  console.log('🔍 Touch end on search input')
+  // Небольшая задержка для обработки изменений
+  setTimeout(() => {
+    if (lastSearchValue.value !== searchQuery.value) {
+      lastSearchValue.value = searchQuery.value
+      handleSearchInput()
+    }
+  }, 100)
+}
+
 // Экспортируем переменные и функции для использования в template
 defineExpose({
   searchQuery,
@@ -996,6 +1036,14 @@ defineExpose({
   onSearchFocus,
   onSearchBlur,
   onSearchEnter,
-  onSearchInput
+  onSearchInput,
+  onSearchKeyup,
+  onSearchKeydown,
+  onSearchChange,
+  onSearchPaste,
+  onSearchCompositionStart,
+  onSearchCompositionEnd,
+  onSearchTouchStart,
+  onSearchTouchEnd
 })
 </script>
