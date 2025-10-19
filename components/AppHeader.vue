@@ -663,6 +663,17 @@ const performSimpleSearch = (allItems: any[], query: string) => {
     const synonyms = (item.synonyms || []).join(' ').toLowerCase()
     const content = (item.content || '').toLowerCase()
     
+    // Отладочная информация для первых нескольких элементов каждого типа
+    if (results.length < 5) {
+      console.log(`🔍 Searching in ${item.type}:`, {
+        title: title.substring(0, 50),
+        description: description.substring(0, 50),
+        latinName: latinName.substring(0, 50),
+        synonyms: synonyms.substring(0, 50),
+        query: queryLower
+      })
+    }
+    
     // Проверяем точное совпадение в названии
     if (title.includes(queryLower)) {
       results.push({ ...item, score: 0.1, searchType: 'exact-title' })
@@ -758,27 +769,42 @@ const performSearch = async () => {
     
     // Добавляем алгоритмы
     if (data.algorithms?.items && Array.isArray(data.algorithms.items)) {
+      console.log('🔍 Adding algorithms:', data.algorithms.items.length)
       allItems.push(...data.algorithms.items.map((item: any) => ({ ...item, type: 'algorithm' })))
+    } else {
+      console.log('⚠️ No algorithms data:', data.algorithms)
     }
     
     // Добавляем МКБ коды
     if (data.mkbCodes?.items && Array.isArray(data.mkbCodes.items)) {
+      console.log('🔍 Adding MKB codes:', data.mkbCodes.items.length)
       allItems.push(...data.mkbCodes.items.map((item: any) => ({ ...item, type: 'mkb' })))
+    } else {
+      console.log('⚠️ No MKB data:', data.mkbCodes)
     }
     
     // Добавляем локальные статусы
     if (data.localStatuses?.items && Array.isArray(data.localStatuses.items)) {
+      console.log('🔍 Adding local statuses:', data.localStatuses.items.length)
       allItems.push(...data.localStatuses.items.map((item: any) => ({ ...item, type: 'ls' })))
+    } else {
+      console.log('⚠️ No local statuses data:', data.localStatuses)
     }
     
     // Добавляем препараты
     if (data.drugs?.items && Array.isArray(data.drugs.items)) {
+      console.log('🔍 Adding drugs:', data.drugs.items.length)
       allItems.push(...data.drugs.items.map((item: any) => ({ ...item, type: 'drug' })))
+    } else {
+      console.log('⚠️ No drugs data:', data.drugs)
     }
     
     // Добавляем подстанции
     if (data.substations?.items && Array.isArray(data.substations.items)) {
+      console.log('🔍 Adding substations:', data.substations.items.length)
       allItems.push(...data.substations.items.map((item: any) => ({ ...item, type: 'substation' })))
+    } else {
+      console.log('⚠️ No substations data:', data.substations)
     }
     
     console.log('📋 Total items for search:', allItems.length)
