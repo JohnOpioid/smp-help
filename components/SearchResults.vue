@@ -819,10 +819,10 @@ const renderAlgorithmTable = (content: string): string => {
   table = table.replace(/<table([^>]*)>/gi, '<table$1 class="w-full table-fixed my-0 border-0 bg-transparent"><colgroup><col style="width: 33.3333%"><col style="width: 33.3333%"><col style="width: 33.3333%"></colgroup>')
   
   // Стили для заголовков (xs на мобильных, sm на остальных устройствах)
-  table = table.replace(/<th([^>]*)>/gi, '<th$1 class="px-3 py-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 text-center font-medium whitespace-normal break-words align-middle sticky top-0 z-20 bg-slate-50/25 dark:bg-slate-800">')
+  table = table.replace(/<th([^>]*)>/gi, '<th$1 class="px-3 py-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 text-center font-medium whitespace-normal break-words align-middle sticky top-0 z-20 bg-slate-50/25 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-600">')
   
   // Стили для ячеек (xs на мобильных, sm на остальных устройствах)
-  table = table.replace(/<td([^>]*)>/gi, '<td$1 class="p-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300 whitespace-normal break-words align-top bg-white dark:bg-slate-800">')
+  table = table.replace(/<td([^>]*)>/gi, '<td$1 class="p-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300 whitespace-normal break-words align-top bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700">')
   
   // Добавляем стили для thead и tbody
   table = table.replace(/<thead>/gi, '<thead class="bg-slate-100 dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700 sticky top-0 z-20">')
@@ -857,9 +857,11 @@ const addTableColumnBorders = (table: HTMLTableElement) => {
     cells.forEach((cell, index) => {
       if (index > 0) {
         const cellEl = cell as HTMLElement
-        cellEl.style.borderLeft = '1px solid rgb(241 245 249)'
+        // Светлая тема: более контрастная граница
+        cellEl.style.borderLeft = '1px solid rgb(226 232 240)' // slate-200
         if (document.documentElement.classList.contains('dark')) {
-          cellEl.style.borderLeftColor = 'rgb(51 65 85)'
+          // Темная тема: более контрастная граница
+          cellEl.style.borderLeftColor = 'rgb(71 85 105)' // slate-600
         }
       }
     })
