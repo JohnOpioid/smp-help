@@ -77,12 +77,18 @@ export const useGlobalSearch = () => {
   }
 
   const activateSearch = (query: string = '') => {
+    // Проверяем, что мы на клиенте
+    if (!process.client) return
+    
     updatePageContext() // Обновляем контекст при активации поиска
     globalState.isSearchActive.value = true
     globalState.searchQuery.value = query
   }
 
   const deactivateSearch = () => {
+    // Проверяем, что мы на клиенте
+    if (!process.client) return
+    
     globalState.isSearchActive.value = false
     globalState.searchQuery.value = ''
     globalState.searchResults.value = []
@@ -97,6 +103,9 @@ export const useGlobalSearch = () => {
   }
 
   const updateSearchResults = (results: any[], grouped: Record<string, any[]>) => {
+    // Проверяем, что мы на клиенте
+    if (!process.client) return
+    
     globalState.searchResults.value = results
     // Применяем приоритизацию к сгруппированным результатам
     globalState.groupedResults.value = prioritizeResults(grouped)

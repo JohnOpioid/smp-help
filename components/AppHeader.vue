@@ -747,6 +747,9 @@ const performSimpleSearch = (allItems: any[], query: string) => {
 
 // Выполняем поиск
 const performSearch = async () => {
+  // Проверяем, что мы на клиенте
+  if (!process.client) return
+  
   const query = searchQuery.value.trim()
   if (!query) return
   

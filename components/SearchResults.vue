@@ -1,5 +1,6 @@
 <template>
-  <div v-if="isSearchActive" class="flex-1">
+  <ClientOnly>
+    <div v-if="isSearchActive" class="flex-1">
     <div class="max-w-5xl mx-auto px-4 py-8">
       <div class="text-center mb-8">
         <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-700 dark:text-white mb-2 sm:mb-4">
@@ -441,6 +442,7 @@
       </div>
     </div>
   </div>
+  </ClientOnly>
 </template>
 
 <script setup lang="ts">
