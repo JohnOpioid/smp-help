@@ -88,8 +88,8 @@
             size="lg"
             color="primary"
             class="w-full shadow-lg"
+            icon="i-lucide-building-2"
           >
-            <span class="iconify i-lucide:building-2 ms-0.5 mt-0.5 w-4 h-4 text-slate-500" aria-hidden="true"></span>
             Список подстанций
           </UButton>
         </div>
