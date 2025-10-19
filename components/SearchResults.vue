@@ -446,7 +446,7 @@
 <script setup lang="ts">
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
-import { nextTick } from 'vue'
+import { nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useGlobalSearch } from '~/composables/useGlobalSearch'
 
 const { isSearchActive, isSearching, searchResults, groupedResults, selectSearchResult, deactivateSearch, currentPageContext } = useGlobalSearch()
@@ -880,11 +880,147 @@ const setupMobileTableLogic = () => {
     tables.forEach(table => {
       const wrapper = table.closest('[data-styled-table-wrapper]') as HTMLElement
       if (wrapper && !wrapper.hasAttribute('data-mobile-init')) {
-        // Границы уже добавлены в renderAlgorithmTable, только настраиваем мобильную логику
+        // Применяем стили темной темы после рендеринга
+        applyDarkThemeStyles(table as HTMLTableElement)
+        // Настраиваем мобильную логику
         setupMobileTwoColumn(table as HTMLTableElement)
       }
     })
   })
+}
+
+// Функция для применения стилей темной темы к таблице
+const applyDarkThemeStyles = (table: HTMLTableElement) => {
+  // Проверяем, активна ли темная тема
+  const isDark = document.documentElement.classList.contains('dark')
+  
+  if (isDark) {
+    // Применяем стили для темной темы
+    const thead = table.querySelector('thead')
+    if (thead) {
+      thead.style.backgroundColor = '#1e293b'
+      thead.style.borderBottomColor = '#475569'
+    }
+    
+    const tbody = table.querySelector('tbody')
+    if (tbody) {
+      tbody.style.borderTopWidth = '0'
+    }
+    
+    // Стили для заголовков
+    table.querySelectorAll('th').forEach(th => {
+      th.style.color = '#cbd5e1'
+      th.style.backgroundColor = '#1e293b'
+    })
+    
+    // Стили для ячеек
+    table.querySelectorAll('td').forEach(td => {
+      td.style.color = '#cbd5e1'
+      td.style.backgroundColor = '#1e293b'
+    })
+    
+    // Границы между колонками
+    table.querySelectorAll('thead tr th:first-child, tbody tr td:first-child').forEach(cell => {
+      (cell as HTMLElement).style.borderRightColor = '#475569'
+    })
+    
+    table.querySelectorAll('thead tr th:nth-child(2), tbody tr td:nth-child(2)').forEach(cell => {
+      (cell as HTMLElement).style.borderLeftColor = '#475569'
+      if (window.innerWidth >= 768) {
+        (cell as HTMLElement).style.borderRightColor = '#475569'
+      }
+    })
+    
+    // Границы между строками
+    table.querySelectorAll('tbody tr').forEach(tr => {
+      (tr as HTMLElement).style.borderBottomColor = '#475569'
+    })
+    
+    // Добавляем hover эффекты для темной темы
+    table.querySelectorAll('tr').forEach(tr => {
+      tr.addEventListener('mouseenter', () => {
+        (tr as HTMLElement).style.backgroundColor = 'rgba(51, 65, 85, 0.4)'
+      })
+      tr.addEventListener('mouseleave', () => {
+        (tr as HTMLElement).style.backgroundColor = ''
+      })
+    })
+  } else {
+    // Применяем стили для светлой темы
+    const thead = table.querySelector('thead')
+    if (thead) {
+      thead.style.backgroundColor = '#f1f5f9'
+      thead.style.borderBottomColor = '#e2e8f0'
+    }
+    
+    const tbody = table.querySelector('tbody')
+    if (tbody) {
+      tbody.style.borderTopWidth = '0'
+    }
+    
+    // Стили для заголовков
+    table.querySelectorAll('th').forEach(th => {
+      th.style.color = '#475569'
+      th.style.backgroundColor = '#e2e8f0'
+    })
+    
+    // Стили для ячеек
+    table.querySelectorAll('td').forEach(td => {
+      td.style.color = '#475569'
+      td.style.backgroundColor = '#ffffff'
+    })
+    
+    // Границы между колонками
+    table.querySelectorAll('thead tr th:first-child, tbody tr td:first-child').forEach(cell => {
+      (cell as HTMLElement).style.borderRightColor = '#e2e8f0'
+    })
+    
+    table.querySelectorAll('thead tr th:nth-child(2), tbody tr td:nth-child(2)').forEach(cell => {
+      (cell as HTMLElement).style.borderLeftColor = '#e2e8f0'
+      if (window.innerWidth >= 768) {
+        (cell as HTMLElement).style.borderRightColor = '#e2e8f0'
+      }
+    })
+    
+    // Границы между строками
+    table.querySelectorAll('tbody tr').forEach(tr => {
+      (tr as HTMLElement).style.borderBottomColor = '#e2e8f0'
+    })
+    
+    // Добавляем hover эффекты для светлой темы
+    table.querySelectorAll('tr').forEach(tr => {
+      tr.addEventListener('mouseenter', () => {
+        (tr as HTMLElement).style.backgroundColor = 'rgba(248, 250, 252, 0.6)'
+      })
+      tr.addEventListener('mouseleave', () => {
+        (tr as HTMLElement).style.backgroundColor = ''
+      })
+    })
+  }
+}
+
+// Наблюдатель за изменением темы
+const setupThemeObserver = () => {
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+        // Тема изменилась, обновляем стили всех таблиц
+        nextTick(() => {
+          const tables = document.querySelectorAll('[data-styled-table-wrapper] table')
+          tables.forEach(table => {
+            applyDarkThemeStyles(table as HTMLTableElement)
+          })
+        })
+      }
+    })
+  })
+  
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class']
+  })
+  
+  return observer
 }
 
 // Функция для настройки мобильного отображения таблицы в две колонки
@@ -923,39 +1059,37 @@ const setupMobileTwoColumn = (table: HTMLTableElement) => {
     const t = e.touches[0]
     const dx = t.clientX - touchStartX
     const dy = t.clientY - touchStartY
-    if (Math.abs(dy) > Math.abs(dx)) return
-    if (Math.abs(dx) < 10) return
+    // Только горизонтальный доминирующий жест
+    if (Math.abs(dx) <= Math.abs(dy) * 1.2) return
     lastDx = dx
   }, { passive: true })
+
   wrapper.addEventListener('touchend', (e: TouchEvent) => {
-    if (!isMobile() || !isDragging) return
-    isDragging = false
+    if (!isMobile()) return
     if (!e.changedTouches || e.changedTouches.length === 0) return
     const t = e.changedTouches[0]
     const dx = t.clientX - touchStartX
     const dy = t.clientY - touchStartY
     const dt = Date.now() - touchStartTs
-    const maxDuration = 600
+    // Условия для валидного горизонтального свайпа
+    const maxDuration = 600 // мс
     const horizontalDominance = Math.abs(dx) > Math.abs(dy) * 1.5
     const shouldSwitch = Math.abs(dx) >= minDistance && horizontalDominance && dt <= maxDuration
-    if (!shouldSwitch) return
-    const currentCol = parseInt(wrapper.getAttribute('data-mobile-col') || '2')
-    if (dx < 0) {
-      // Свайп влево -> показываем 3-ю колонку
-      wrapper.setAttribute('data-mobile-col', '3')
-      applyMobileTwoColumnView(wrapper, table)
-    } else {
-      // Свайп вправо -> возвращаемся ко 2-й
-      wrapper.setAttribute('data-mobile-col', '2')
+    
+    if (shouldSwitch) {
+      if (dx < 0) wrapper.setAttribute('data-mobile-col', '3')
+      else wrapper.setAttribute('data-mobile-col', '2')
+      
       applyMobileTwoColumnView(wrapper, table)
     }
+    isDragging = false
   }, { passive: true })
 
-  // На ресайз синхронизируем вид
+  // На ресайз восстанавливаем/применяем вид
   const onResize = () => applyMobileTwoColumnView(wrapper, table)
   window.addEventListener('resize', onResize)
 
-  // Применяем начальное состояние
+  // Начальная отрисовка
   applyMobileTwoColumnView(wrapper, table)
 }
 
@@ -1002,62 +1136,115 @@ const applyMobileTwoColumnView = (wrapper: HTMLElement, table: HTMLTableElement)
       }
     }
 
-    // Скрываем/показываем колонки на мобилках
-    rows.forEach(row => {
-      const cells = row.querySelectorAll('th, td')
-      cells.forEach((cell, index) => {
-        const cellElement = cell as HTMLElement
-        if (index === 0) {
-          cellElement.style.display = ''
-        } else if (index === mobileTarget - 1) {
-          cellElement.style.display = ''
-        } else {
-          cellElement.style.display = 'none'
-        }
-      })
+    // На мобильных: 2 колонки (первая 35% + выбранная 65%), фиксированная раскладка
+    table.style.tableLayout = 'fixed'
+    cols.forEach((c, idx) => {
+      // ширины колонок на мобилках
+      if (idx === 0) c.style.width = '35%'
+      if (idx === 1) {
+        c.style.width = '65%'
+        c.style.display = mobileTarget === 2 ? '' : 'none'
+      }
+      if (idx === 2) {
+        c.style.width = '65%'
+        c.style.display = mobileTarget === 3 ? '' : 'none'
+      }
     })
 
-    // Обновляем ширину колонок в colgroup (2 видимые колонки)
-    if (cols.length >= 3) {
-      const visibleCols = mobileTarget
-      const colWidth = 100 / visibleCols
-      cols.forEach((col, index) => {
-        if (index === 0 || index === mobileTarget - 1) {
-          col.style.width = `${colWidth}%`
-          col.style.display = ''
-        } else {
-          col.style.width = '0%'
-          col.style.display = 'none'
+    rows.forEach((tr, rowIndex) => {
+      const cells = Array.from(tr.children) as HTMLElement[]
+      const isHead = !!(tr.parentElement && tr.parentElement.tagName.toLowerCase() === 'thead')
+      
+      if (cells[0]) {
+        cells[0].classList.remove('hidden', 'w-0', 'p-0')
+        cells[0].style.width = '35%'
+        cells[0].style.maxWidth = '35%'
+        
+        // Для заголовков добавляем стили обрезки текста
+        if (isHead && cells[0].tagName === 'TH') {
+          cells[0].classList.add('whitespace-nowrap', 'overflow-hidden', 'text-ellipsis')
         }
-      })
-    };
+      }
+      
+      if (cells[1]) {
+        const hide = mobileTarget !== 2
+        cells[1].classList.toggle('hidden', hide)
+        cells[1].classList.toggle('w-0', hide)
+        cells[1].classList.toggle('p-0', hide)
+        cells[1].style.width = hide ? '' : '65%'
+        cells[1].style.maxWidth = hide ? '' : '65%'
+        
+        // Для заголовков добавляем стили обрезки текста
+        if (isHead && cells[1].tagName === 'TH') {
+          cells[1].classList.add('whitespace-nowrap', 'overflow-hidden', 'text-ellipsis')
+        }
+      }
+      
+      if (cells[2]) {
+        const hide = mobileTarget !== 3
+        cells[2].classList.toggle('hidden', hide)
+        cells[2].classList.toggle('w-0', hide)
+        cells[2].classList.toggle('p-0', hide)
+        cells[2].style.width = hide ? '' : '65%'
+        cells[2].style.maxWidth = hide ? '' : '65%'
+        
+        // Для заголовков добавляем стили обрезки текста
+        if (isHead && cells[2].tagName === 'TH') {
+          cells[2].classList.add('whitespace-nowrap', 'overflow-hidden', 'text-ellipsis')
+        }
+      }
+    })
   } else {
-    // Десктоп: показываем все 3 колонки, убираем индикаторы
+    // Десктоп: возвращаем 3 колонки и фиксированную ширину
+    table.style.tableLayout = 'fixed'
+    if (cols.length === 3) {
+      cols.forEach((c, idx) => {
+        c.style.display = ''
+        // Первая колонка фикс 30%, остальные — авто
+        if (idx === 0) c.style.width = '30%'
+        else c.style.width = ''
+      })
+    }
+    
+    // Убираем индикаторы точек на десктопе
     const thead = table.querySelector('thead')
     if (thead) {
       const dotsContainer = thead.querySelector('[data-mobile-dots-container]') as HTMLElement | null
       if (dotsContainer) dotsContainer.remove()
     }
-
-    // Возвращаем отображение всех ячеек
-    rows.forEach(row => {
-      const cells = row.querySelectorAll('th, td')
-      cells.forEach((cell) => {
-        const cellElement = cell as HTMLElement
-        cellElement.style.display = ''
-        cellElement.style.width = ''
-        cellElement.style.maxWidth = ''
-      })
+    rows.forEach((tr) => {
+      const cells = Array.from(tr.children) as HTMLElement[]
+      const isHead = !!(tr.parentElement && tr.parentElement.tagName.toLowerCase() === 'thead')
+      
+      if (cells[0]) { 
+        cells[0].classList.remove('hidden', 'w-0', 'p-0'); 
+        // Фиксированная ширина первой колонки на десктопе
+        cells[0].style.width = '30%'
+        cells[0].style.maxWidth = '30%'
+        // Убираем стили обрезки текста для десктопа
+        if (isHead && cells[0].tagName === 'TH') {
+          cells[0].classList.remove('whitespace-nowrap', 'overflow-hidden', 'text-ellipsis')
+        }
+      }
+      if (cells[1]) {
+        cells[1].classList.remove('hidden', 'w-0', 'p-0'); 
+        cells[1].style.width = ''
+        // Убираем стили обрезки текста и индикаторы для десктопа
+        if (isHead && cells[1].tagName === 'TH') {
+          cells[1].classList.remove('whitespace-nowrap', 'overflow-hidden', 'text-ellipsis', 'relative')
+          const dots = cells[1].querySelector('[data-mobile-dots]') as HTMLElement | null
+          if (dots) dots.remove()
+        }
+      }
+      if (cells[2]) {
+        cells[2].classList.remove('hidden', 'w-0', 'p-0'); 
+        cells[2].style.width = ''
+        // Убираем стили обрезки текста для десктопа
+        if (isHead && cells[2].tagName === 'TH') {
+          cells[2].classList.remove('whitespace-nowrap', 'overflow-hidden', 'text-ellipsis')
+        }
+      }
     })
-
-    // Ширины колонок: 3 колонки (первая фикс 30%, остальные авто)
-    if (cols.length === 3) {
-      cols.forEach((col, index) => {
-        col.style.display = ''
-        if (index === 0) col.style.width = '30%'
-        else col.style.width = ''
-      })
-    }
   }
 }
 
@@ -1217,6 +1404,22 @@ const openSubstationModal = (result: any) => {
   }
 }
 
+// Инициализация наблюдателя темы
+let themeObserver: MutationObserver | null = null
+
+onMounted(() => {
+  // Настраиваем наблюдатель за изменением темы
+  themeObserver = setupThemeObserver()
+})
+
+onBeforeUnmount(() => {
+  // Очищаем наблюдатель при размонтировании
+  if (themeObserver) {
+    themeObserver.disconnect()
+    themeObserver = null
+  }
+})
+
 </script>
 
 <style scoped>
@@ -1330,6 +1533,37 @@ const openSubstationModal = (result: any) => {
   .dark :deep(thead tr th:nth-child(2)),
   .dark :deep(tbody tr td:nth-child(2)) {
     border-right-color: #475569;
+  }
+}
+
+/* Стили для индикаторов точек в контейнере таблицы */
+[data-mobile-dots-container] {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  border-radius: 8px;
+  padding: 4px 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+[data-mobile-dots-container] span {
+  transition: background-color 200ms ease-in-out;
+}
+
+/* Темная тема для индикаторов */
+.dark [data-mobile-dots-container] {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(148, 163, 184, 0.3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Обрезка текста в шапке таблицы на мобильной версии */
+@media (max-width: 767px) {
+  :deep(thead th) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
 }
 </style>
