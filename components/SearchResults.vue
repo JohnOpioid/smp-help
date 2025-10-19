@@ -856,34 +856,52 @@ const setupMobileTableLogic = () => {
 
 // Функция для добавления границ между колонками таблицы (как на странице алгоритмов)
 const addTableColumnBorders = (table: HTMLTableElement) => {
+  console.log('🔧 addTableColumnBorders called for table:', table)
+  
   // Бордеры для заголовков: у первой колонки справа, у второй слева и справа на md+ экранах
-  table.querySelectorAll('thead tr').forEach(tr => {
+  const theadRows = table.querySelectorAll('thead tr')
+  console.log('🔧 Found thead rows:', theadRows.length)
+  
+  theadRows.forEach((tr, index) => {
     const cells = Array.from(tr.children) as HTMLElement[]
+    console.log(`🔧 Row ${index} has ${cells.length} cells`)
+    
     if (cells[0] && !cells[0].classList.contains('border-r')) {
       cells[0].classList.add('border-r', 'border-slate-100', 'dark:border-slate-700')
+      console.log('🔧 Added border-r to first cell')
     }
     if (cells[1]) {
       if (!cells[1].classList.contains('border-l')) {
         cells[1].classList.add('border-l', 'border-slate-100', 'dark:border-slate-700')
+        console.log('🔧 Added border-l to second cell')
       }
       if (!cells[1].classList.contains('md:border-r')) {
         cells[1].classList.add('md:border-r', 'md:border-slate-100', 'md:dark:border-slate-700')
+        console.log('🔧 Added md:border-r to second cell')
       }
     }
   })
   
   // Бордеры для ячеек: у первой колонки справа, у второй слева и справа на md+ экранах
-  table.querySelectorAll('tbody tr').forEach(tr => {
+  const tbodyRows = table.querySelectorAll('tbody tr')
+  console.log('🔧 Found tbody rows:', tbodyRows.length)
+  
+  tbodyRows.forEach((tr, index) => {
     const cells = Array.from(tr.children) as HTMLElement[]
+    console.log(`🔧 Tbody row ${index} has ${cells.length} cells`)
+    
     if (cells[0] && !cells[0].classList.contains('border-r')) {
       cells[0].classList.add('border-r', 'border-slate-100', 'dark:border-slate-700')
+      console.log('🔧 Added border-r to first tbody cell')
     }
     if (cells[1]) {
       if (!cells[1].classList.contains('border-l')) {
         cells[1].classList.add('border-l', 'border-slate-100', 'dark:border-slate-700')
+        console.log('🔧 Added border-l to second tbody cell')
       }
       if (!cells[1].classList.contains('md:border-r')) {
         cells[1].classList.add('md:border-r', 'md:border-slate-100', 'md:dark:border-slate-700')
+        console.log('🔧 Added md:border-r to second tbody cell')
       }
     }
   })
