@@ -7,7 +7,7 @@
           <div class="flex items-center gap-2 min-w-0">
             <!-- Крутящийся логотип только при принудительном обновлении -->
             <img 
-              src="/_nuxt/assets/svg/logo.svg" 
+              src="/logo.svg" 
               alt="Логотип" 
               class="h-9 w-9 animate-spin"
             />
