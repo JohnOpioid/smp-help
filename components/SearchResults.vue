@@ -851,22 +851,26 @@ const setupMobileTableLogic = () => {
   })
 }
 
-// Функция для добавления границ между колонками таблицы
+// Функция для добавления границ между колонками таблицы (как на странице алгоритмов)
 const addTableColumnBorders = (table: HTMLTableElement) => {
-  const rows = table.querySelectorAll('thead tr, tbody tr')
-  rows.forEach(row => {
-    const cells = row.querySelectorAll('th, td')
-    cells.forEach((cell, index) => {
-      if (index > 0) {
-        const cellEl = cell as HTMLElement
-        // Светлая тема: более контрастная граница
-        cellEl.style.borderLeft = '1px solid rgb(226 232 240)' // slate-200
-        if (document.documentElement.classList.contains('dark')) {
-          // Темная тема: более контрастная граница
-          cellEl.style.borderLeftColor = 'rgb(71 85 105)' // slate-600
-        }
-      }
-    })
+  // Бордеры для заголовков: у первой колонки справа, у второй слева и справа на md+ экранах
+  table.querySelectorAll('thead tr').forEach(tr => {
+    const cells = Array.from(tr.children) as HTMLElement[]
+    if (cells[0]) cells[0].classList.add('border-r', 'border-slate-100', 'dark:border-slate-700')
+    if (cells[1]) {
+      cells[1].classList.add('border-l', 'border-slate-100', 'dark:border-slate-700')
+      cells[1].classList.add('md:border-r', 'md:border-slate-100', 'md:dark:border-slate-700')
+    }
+  })
+  
+  // Бордеры для ячеек: у первой колонки справа, у второй слева и справа на md+ экранах
+  table.querySelectorAll('tbody tr').forEach(tr => {
+    const cells = Array.from(tr.children) as HTMLElement[]
+    if (cells[0]) cells[0].classList.add('border-r', 'border-slate-100', 'dark:border-slate-700')
+    if (cells[1]) {
+      cells[1].classList.add('border-l', 'border-slate-100', 'dark:border-slate-700')
+      cells[1].classList.add('md:border-r', 'md:border-slate-100', 'md:dark:border-slate-700')
+    }
   })
 }
 
