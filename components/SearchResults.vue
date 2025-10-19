@@ -160,7 +160,7 @@
                   <div :class="isTableExpanded(String(result._id || result.id)) ? 'max-h-none' : 'max-h-32 overflow-hidden'">
                     <!-- Обертка таблицы без внешнего бордера -->
                     <div class="bg-white dark:bg-slate-800 rounded-none overflow-x-hidden relative sticky-container" data-styled-table-wrapper>
-                      <div v-html="renderAlgorithmTable(result.content)" class="text-xs sm:text-sm" @vue:mounted="setupMobileTableLogic"></div>
+                      <div v-html="renderAlgorithmTable(result.content)" @vue:mounted="setupMobileTableLogic"></div>
                     </div>
                   </div>
                   <!-- Градиент для визуального эффекта исчезновения (только когда таблица свернута) -->
@@ -1220,7 +1220,43 @@ const openSubstationModal = (result: any) => {
 </script>
 
 <style scoped>
-/* Стили для таблиц в markdown */
+/* Стили для таблиц в результатах поиска - точно как на странице алгоритмов */
+:deep(table) {
+  @apply w-full table-fixed my-0 border-0 bg-transparent;
+  table-layout: fixed;
+}
+
+:deep(thead) {
+  @apply bg-slate-100 dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700 sticky top-0 z-20;
+}
+
+:deep(tbody) {
+  @apply divide-y divide-slate-100 dark:divide-slate-700;
+}
+
+:deep(th) {
+  @apply px-4 py-3 text-sm text-slate-600 dark:text-slate-300 text-center font-medium whitespace-normal break-words align-middle sticky top-0 z-20 bg-slate-200 dark:bg-slate-800;
+}
+
+:deep(td) {
+  @apply p-4 text-sm text-slate-600 dark:text-slate-300 whitespace-normal break-words align-top bg-white dark:bg-slate-800;
+}
+
+:deep(tr) {
+  @apply hover:bg-slate-50/60 dark:hover:bg-slate-700/40;
+}
+
+/* Границы между колонками */
+:deep(thead tr th:first-child),
+:deep(tbody tr td:first-child) {
+  @apply border-r border-slate-100 dark:border-slate-700;
+}
+
+:deep(thead tr th:nth-child(2)),
+:deep(tbody tr td:nth-child(2)) {
+  @apply border-l border-slate-100 dark:border-slate-700 md:border-r md:border-slate-100 md:dark:border-slate-700;
+}
+</style>
 :deep(table) {
   width: 100%;
   border-collapse: collapse;
