@@ -158,8 +158,15 @@ const moreActive = computed(() => moreItems.value.some(item => isActive(item.to)
 const onDocClickMore = (e: MouseEvent) => {
   if (!moreOpen.value) return
   const el = moreRef.value
-  if (el && !el.contains(e.target as Node)) moreOpen.value = false
+  if (el && !el.contains(e.target as Node)) {
+    moreOpen.value = false
+  }
 }
+
+// Закрываем меню при изменении маршрута
+watch(() => route.path, () => {
+  moreOpen.value = false
+})
 
 onMounted(() => document.addEventListener('click', onDocClickMore))
 onBeforeUnmount(() => document.removeEventListener('click', onDocClickMore))
