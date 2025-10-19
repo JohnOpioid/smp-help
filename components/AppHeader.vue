@@ -108,7 +108,10 @@
             @blur="onSearchBlur"
             @keydown.enter.prevent="onSearchEnter"
             @keyup="onSearchKeyup"
-            @change="onSearchChange">
+            @change="onSearchChange"
+            @paste="onSearchPaste"
+            @compositionstart="onSearchCompositionStart"
+            @compositionend="onSearchCompositionEnd">
           
           <!-- Панель поиска теперь отображается в основной области контента -->
           
@@ -450,6 +453,7 @@ const {
 // Локальная переменная для поля ввода
 const searchQuery = ref('')
 const lastSearchValue = ref('')
+const isComposing = ref(false)
 
 // Проверяем, находимся ли на странице подстанций
 const isSubstationsPage = computed(() => route.path === '/substations')
@@ -528,7 +532,10 @@ const onSearchEnter = () => {
 
 const onSearchInput = () => {
   lastSearchValue.value = searchQuery.value
-  handleSearchInput()
+  // Не выполняем поиск во время композиции (IME ввод)
+  if (!isComposing.value) {
+    handleSearchInput()
+  }
 }
 
 const onSearchKeyup = () => {
@@ -543,6 +550,26 @@ const onSearchChange = () => {
     lastSearchValue.value = currentValue
     handleSearchInput()
   }
+}
+
+const onSearchPaste = () => {
+  // При вставке текста делаем поиск сразу
+  setTimeout(() => {
+    lastSearchValue.value = searchQuery.value
+    handleSearchInput()
+  }, 10)
+}
+
+const onSearchCompositionStart = () => {
+  // Начало ввода с помощью IME (для мобильных устройств)
+  isComposing.value = true
+}
+
+const onSearchCompositionEnd = () => {
+  // Конец ввода с помощью IME
+  isComposing.value = false
+  lastSearchValue.value = searchQuery.value
+  handleSearchInput()
 }
 
 const handleSearchInput = () => {
@@ -567,13 +594,15 @@ const handleSearchInput = () => {
   
   // На мобильных устройствах делаем поиск быстрее
   const isMobile = window.innerWidth <= 768
-  const delay = isMobile ? 100 : 300
   
-  // Для мобильных устройств и коротких запросов делаем поиск почти мгновенно
-  if (isMobile && searchQuery.value.trim().length <= 4) {
+  // Для мобильных устройств делаем поиск почти мгновенно
+  if (isMobile) {
+    // На мобильных устройствах делаем поиск сразу, без задержки
     activateSearch(searchQuery.value)
     performSearch()
   } else {
+    // На десктопе используем задержку
+    const delay = 300
     searchTimeout = setTimeout(() => {
       activateSearch(searchQuery.value)
       performSearch()
