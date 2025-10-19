@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="bg-white dark:bg-slate-800 border-y border-slate-100 dark:border-slate-600 md:border rounded-lg overflow-hidden">
+    <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden">
       <div class="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <button 

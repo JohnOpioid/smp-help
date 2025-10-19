@@ -247,7 +247,7 @@
   <!-- Блок локального статуса -->
   <ClientOnly>
     <div v-if="localStatuses.length > 0" class="max-w-5xl mx-auto md:px-4">
-      <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 rounded-lg">
+      <div class="bg-white dark:bg-slate-800 rounded-lg">
         <div class="p-4 border-b border-slate-100 dark:border-slate-700">
           <p class="text-sm text-slate-600 dark:text-slate-300">Локальный статус</p>
         </div>
@@ -309,7 +309,7 @@
     <template #fallback>
       <!-- Fallback для SSR - показываем только заголовок -->
       <div class="max-w-5xl mx-auto px-2 md:px-4 pb-8 mt-8">
-        <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 rounded-lg">
+        <div class="bg-white dark:bg-slate-800 rounded-lg">
           <div class="p-4 border-b border-slate-100 dark:border-slate-700">
             <p class="text-sm text-slate-600 dark:text-slate-300">Локальный статус</p>
           </div>

@@ -2,7 +2,7 @@
   <div :class="containerClass">
     <AppHeader v-if="!isInitialLoading" :title="headerTitle" />
     <header v-else class="transition-colors duration-300 relative z-50">
-      <div class="w-full max-w-5xl mx-auto px-4 py-6">
+      <div class="w-full max-w-5xl mx-auto px-2 md:px-4 py-6">
         <div class="flex items-center justify-between gap-3">
           <div class="flex items-center gap-2 min-w-0">
             <!-- Крутящийся логотип только при принудительном обновлении -->
@@ -36,7 +36,7 @@
         </div>
 
       <!-- Навигация по профилю (вне всех блоков) -->
-       <div v-if="!isInitialLoading" class="px-4 max-w-5xl mx-auto pt-8 w-full">
+       <div v-if="!isInitialLoading" class="px-2 md:px-4 max-w-5xl mx-auto pt-8 w-full">
          <nav class="flex space-x-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 w-full justify-start items-start text-left overflow-x-auto hide-scrollbar">
           <NuxtLink to="/profile" class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap"
             exact-active-class="bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
@@ -62,7 +62,7 @@
       </div>
 
       <!-- Скелетон контента при первичной загрузке -->
-      <div v-if="isInitialLoading" class="px-4 max-w-5xl mx-auto py-8 space-y-4">
+      <div v-if="isInitialLoading" class="px-2 md:px-4 max-w-5xl mx-auto py-8 space-y-4">
         <USkeleton class="h-6 w-1/3" />
         <USkeleton class="h-4 w-2/3" />
         <div class="space-y-2">
@@ -73,7 +73,7 @@
       </div>
 
       <!-- Скелетон контента при навигации -->
-      <div v-else-if="isContentLoading" class="px-4 max-w-5xl mx-auto py-8 space-y-4">
+      <div v-else-if="isContentLoading" class="px-2 md:px-4 max-w-5xl mx-auto py-8 space-y-4">
         <USkeleton class="h-6 w-1/3" />
         <USkeleton class="h-4 w-2/3" />
         <div class="space-y-2">
@@ -85,7 +85,7 @@
 
       <!-- Основной контент -->
       <div v-else>
-        <div class="px-2 md:px-4 max-w-5xl mx-auto py-8">
+        <div class="px-2 md:px-2 md:px-4 max-w-5xl mx-auto py-8">
           <!-- Контент страницы -->
           <Suspense>
             <template #default>

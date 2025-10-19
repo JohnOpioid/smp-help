@@ -4,7 +4,7 @@
 
       <!-- Основной контент -->
       <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
-        <div class="bg-white dark:bg-slate-800 border-y border-slate-100 dark:border-slate-600 md:border rounded-lg">
+        <div class="bg-white dark:bg-slate-800 rounded-lg">
 
           <div class="p-4 border-b border-slate-100 dark:border-slate-700">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

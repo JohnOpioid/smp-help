@@ -19,7 +19,7 @@
             </UInput>
           </div>
 
-          <div class="bg-white dark:bg-slate-800 border-y border-slate-100 dark:border-slate-600 md:border rounded-lg overflow-hidden">
+          <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden">
             <UTable :data="sectionsVisible" :columns="sectionsColumns" :loading="pendingSections" sticky="header" class="w-full">
               <template #empty>
                 <div class="p-6 text-sm text-slate-600 dark:text-slate-300">
@@ -66,7 +66,7 @@
             </UInput>
           </div>
 
-          <div class="bg-white dark:bg-slate-800 border-y border-slate-100 dark:border-slate-600 md:border rounded-lg overflow-hidden">
+          <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden">
             <UTable :data="catsVisible" :columns="catColumns" :loading="pendingCats" sticky="header" class="w-full">
               <template #empty>
                 <div class="p-6 text-sm text-slate-600 dark:text-slate-300">
@@ -113,7 +113,7 @@
             </UInput>
           </div>
 
-          <div class="bg-white dark:bg-slate-800 border-y border-slate-100 dark:border-slate-600 md:border rounded-lg overflow-hidden">
+          <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden">
             <UTable :data="algoPaginated" :columns="algoColumns" :loading="pendingAlgos" sticky="header" class="w-full">
               <template #empty>
                 <div class="p-6 text-sm text-slate-600 dark:text-slate-300">

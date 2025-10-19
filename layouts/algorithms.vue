@@ -2,7 +2,7 @@
   <div :class="containerClass">
     <AppHeader v-if="!isInitialLoading" :title="headerTitle" />
     <header v-else class="transition-colors duration-300 relative z-50">
-      <div class="w-full max-w-5xl mx-auto px-4 py-6">
+      <div class="w-full max-w-5xl mx-auto px-2 md:px-4 py-6">
         <div class="flex items-center justify-between gap-3">
           <div class="flex items-center gap-2 min-w-0">
             <!-- Крутящийся логотип только при принудительном обновлении -->
@@ -36,7 +36,7 @@
         </div>
 
       <!-- Всегда видимая верхняя область (с поиском и вкладками) -->
-      <div v-if="showTopArea" class="max-w-5xl w-full mx-auto px-4 pt-8">
+      <div v-if="showTopArea" class="max-w-5xl w-full mx-auto px-2 md:px-4 pt-8">
 
 
         <!-- Вкладки разделов: скелетоны на загрузке -->

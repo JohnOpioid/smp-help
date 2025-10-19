@@ -23,7 +23,7 @@
 
     <div v-else class="space-y-6">
       <template v-for="section in groupedBookmarks" :key="section.type">
-        <div class="bg-white dark:bg-slate-800 border-y border-slate-100 dark:border-slate-600 md:border rounded-lg overflow-hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden">
           <div class="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-2">
             <UIcon :name="section.icon" class="w-4 h-4 text-slate-500" />
             <p class="text-sm text-slate-600 dark:text-slate-300">{{ section.label }}</p>

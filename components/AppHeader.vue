@@ -1,6 +1,6 @@
 <template>
   <header class="transition-colors duration-300 relative z-50">
-    <div class="w-full max-w-5xl mx-auto px-4 py-6">
+    <div class="w-full max-w-5xl mx-auto px-2 md:px-4 py-6">
       <div class="flex items-center justify-between gap-3">
         <div class="flex items-center gap-2 min-w-0">
           <div class="relative">

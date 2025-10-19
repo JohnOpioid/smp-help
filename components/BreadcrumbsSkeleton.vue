@@ -1,5 +1,5 @@
 <template>
-  <div class="px-4 max-w-5xl mx-auto">
+  <div class="px-2 md:px-4 max-w-5xl mx-auto">
     <!-- Скелетон хлебных крошек -->
     <div class="flex items-center space-x-2">
       <!-- Скелетон для "Главная" -->

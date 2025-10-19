@@ -5,7 +5,7 @@
         <AdminSubnav title="Админка" />
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-          <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 rounded-lg p-4">
+          <div class="bg-white dark:bg-slate-800 rounded-lg p-4">
             <p class="text-sm text-slate-500 dark:text-slate-400">Пользователи</p>
             <p class="text-2xl font-semibold text-slate-900 dark:text-white">
               <USkeleton v-if="pendingStats" class="h-7 w-24" />
@@ -23,7 +23,7 @@
             </div>
           </div>
 
-          <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 rounded-lg p-4">
+          <div class="bg-white dark:bg-slate-800 rounded-lg p-4">
             <p class="text-sm text-slate-500 dark:text-slate-400">Подстанции</p>
             <p class="text-2xl font-semibold text-slate-900 dark:text-white">
               <USkeleton v-if="pendingStats" class="h-7 w-24" />
@@ -31,7 +31,7 @@
             </p>
           </div>
 
-          <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 rounded-lg p-4">
+          <div class="bg-white dark:bg-slate-800 rounded-lg p-4">
             <p class="text-sm text-slate-500 dark:text-slate-400">Кодификатор</p>
             <div class="mt-1 text-sm text-slate-600 dark:text-slate-300">
               <div class="flex items-center gap-6">
@@ -53,7 +53,7 @@
             </div>
           </div>
 
-          <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 rounded-lg p-4">
+          <div class="bg-white dark:bg-slate-800 rounded-lg p-4">
             <p class="text-sm text-slate-500 dark:text-slate-400">Локальные статусы</p>
             <div class="mt-1 text-sm text-slate-600 dark:text-slate-300">
               <div class="flex items-center gap-6">
@@ -75,7 +75,7 @@
             </div>
           </div>
 
-          <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 rounded-lg p-4">
+          <div class="bg-white dark:bg-slate-800 rounded-lg p-4">
             <p class="text-sm text-slate-500 dark:text-slate-400">Инструкции</p>
             <p class="text-2xl font-semibold text-slate-900 dark:text-white">
               <USkeleton v-if="pendingStats" class="h-7 w-24" />
@@ -85,7 +85,7 @@
         </div>
 
         <!-- Топ подстанций по количеству пользователей -->
-        <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 rounded-lg mt-6">
+        <div class="bg-white dark:bg-slate-800 rounded-lg mt-6">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
             <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Пользователи по подстанциям (топ-10)</h3>
           </div>

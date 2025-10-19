@@ -8,7 +8,7 @@
           <p class="text-red-600 dark:text-red-400">Ошибка загрузки данных</p>
         </div>
 
-        <div v-else class="bg-white dark:bg-slate-800 border-y border-slate-100 dark:border-slate-600 md:border rounded-lg">
+        <div v-else class="bg-white dark:bg-slate-800 rounded-lg">
           <div class="p-4 border-b border-slate-100 dark:border-slate-700">
             <p class="text-sm text-slate-600 dark:text-slate-300">Заболевания категории "{{ category?.name }}"</p>
           </div>
