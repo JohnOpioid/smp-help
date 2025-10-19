@@ -509,28 +509,47 @@ const getTypeLabel = (type: string) => {
 // Обработчики поиска
 const onSearchFocus = () => {
   const q = searchQuery.value.trim()
-  // Если уже активен поиск и результаты есть, не запускаем поиск повторно по клику
-  if (!q) return
   
-  // Проверяем, что groupedResults существует
-  if (!groupedResults.value) return
-  
-  const totalResults = (groupedResults.value.mkb?.length || 0) + 
-                      (groupedResults.value.ls?.length || 0) + 
-                      (groupedResults.value.algorithm?.length || 0) + 
-                      (groupedResults.value.drug?.length || 0) + 
-                      (groupedResults.value.substation?.length || 0)
-  
-  if (!isSearchActive.value || totalResults === 0) {
+  // Активируем поиск при фокусе, даже если запрос пустой
+  if (!isSearchActive.value) {
     activateSearch(q)
-    performSearch()
-  } else {
-    activateSearch(q) // только показать уже найденное
+    // Если есть запрос, выполняем поиск
+    if (q) {
+      performSearch()
+    }
+    return
+  }
+  
+  // Если поиск уже активен и есть запрос, проверяем результаты
+  if (q) {
+    // Проверяем, что groupedResults существует
+    if (!groupedResults.value) return
+    
+    const totalResults = (groupedResults.value.mkb?.length || 0) + 
+                        (groupedResults.value.ls?.length || 0) + 
+                        (groupedResults.value.algorithm?.length || 0) + 
+                        (groupedResults.value.drug?.length || 0) + 
+                        (groupedResults.value.substation?.length || 0)
+    
+    if (totalResults === 0) {
+      performSearch()
+    } else {
+      activateSearch(q) // только показать уже найденное
+    }
   }
 }
 
 const onSearchBlur = () => {
-  // Не закрываем поиск при потере фокуса, чтобы пользователь мог кликать по результатам
+  // Небольшая задержка, чтобы пользователь мог кликнуть по результатам
+  setTimeout(() => {
+    // Проверяем, что фокус действительно ушел с поля поиска
+    if (document.activeElement !== searchInput.value) {
+      // Если нет запроса, закрываем поиск
+      if (!searchQuery.value.trim()) {
+        deactivateSearch()
+      }
+    }
+  }, 200)
 }
 
 const onSearchEnter = () => {
@@ -597,7 +616,15 @@ const handleSearchInput = () => {
   }
   
   if (searchQuery.value.trim().length < 2) {
-    deactivateSearch()
+    // Не деактивируем поиск, просто очищаем результаты
+    searchResults.value = []
+    groupedResults.value = {
+      mkb: [],
+      ls: [],
+      algorithm: [],
+      drug: [],
+      substation: []
+    }
     return
   }
   

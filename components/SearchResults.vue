@@ -3,10 +3,10 @@
     <div class="max-w-5xl mx-auto px-4 py-8">
       <div class="text-center mb-8">
         <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-700 dark:text-white mb-2 sm:mb-4">
-          Результаты поиска
+          {{ searchResults.length > 0 ? 'Результаты поиска' : 'Поиск' }}
         </h2>
         <p class="text-base sm:text-lg lg:text-xl text-slate-600 dark:text-slate-300">
-          Найдено {{ searchResults.length }} результатов
+          {{ searchResults.length > 0 ? `Найдено ${searchResults.length} результатов` : 'Введите запрос для поиска' }}
         </p>
       </div>
 
@@ -429,14 +429,14 @@
         </template>
       </div>
 
-      <!-- Нет результатов -->
+      <!-- Пустое состояние -->
       <div v-else class="text-center py-12">
         <div class="text-slate-400 dark:text-slate-500">
           <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
-          <p class="text-lg font-medium mb-2">Ничего не найдено</p>
-          <p class="text-sm">Попробуйте изменить запрос или использовать другие ключевые слова</p>
+          <p class="text-lg font-medium mb-2">{{ searchQuery ? 'Ничего не найдено' : 'Начните поиск' }}</p>
+          <p class="text-sm">{{ searchQuery ? 'Попробуйте изменить запрос или использовать другие ключевые слова' : 'Введите запрос в поле поиска выше' }}</p>
         </div>
       </div>
     </div>
@@ -449,7 +449,7 @@ import DOMPurify from 'dompurify'
 import { nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useGlobalSearch } from '~/composables/useGlobalSearch'
 
-const { isSearchActive, isSearching, searchResults, groupedResults, selectSearchResult, deactivateSearch, currentPageContext } = useGlobalSearch()
+const { isSearchActive, isSearching, searchResults, groupedResults, selectSearchResult, deactivateSearch, currentPageContext, searchQuery } = useGlobalSearch()
 
 // Определяем порядок отображения групп в зависимости от контекста страницы
 const groupDisplayOrder = computed(() => {
