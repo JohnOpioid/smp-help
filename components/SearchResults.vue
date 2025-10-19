@@ -828,7 +828,7 @@ const renderAlgorithmTable = (content: string): string => {
   // Применяем стили точно как на странице алгоритмов
   // Стили только для содержимого таблицы, без внешнего бордера
   tableElement.classList.remove('border', 'border-slate-100', 'dark:border-slate-700', 'rounded-lg', 'rounded-md', 'overflow-hidden')
-  tableElement.classList.add('w-full', 'table-fixed', 'my-0', 'border-0', 'bg-transparent')
+  tableElement.classList.add('w-full', 'table-fixed', 'border-0', 'bg-transparent')
   tableElement.style.tableLayout = 'fixed'
   
   const thead = tableElement.querySelector('thead')
