@@ -1,5 +1,5 @@
 <template>
-  <nav class="sticky bottom-4 left-4 right-4 z-40 md:hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur rounded-2xl shadow-lg">
+  <nav class="sticky bottom-2 left-2 right-2 z-40 md:hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur rounded-2xl shadow-lg">
     <ul class="grid grid-cols-5 text-[10px] text-slate-500 dark:text-slate-300">
       <!-- Основные пункты -->
       <li v-for="item in primaryItems" :key="item.to">
