@@ -184,9 +184,10 @@ const { isSearchActive } = useGlobalSearch()
 const isBottomSheetOpen = ref(false)
 const isMobile = ref(false)
 
-// Сбрасываем выделение при закрытии bottom sheet
+// Сбрасываем выделение при открытии/закрытии bottom sheet
 watch(isBottomSheetOpen, (newValue) => {
-  if (!newValue) {
+  if (newValue) {
+    // При открытии сбрасываем выделение
     selectedId.value = null
   }
 })
