@@ -13,7 +13,7 @@
     </div>
 
     <!-- Основной контент -->
-    <div class="max-w-5xl mx-auto px-0 md:px-4 py-8 space-y-6">
+    <div class="max-w-5xl mx-auto px-2 md:px-4 py-8 space-y-6">
 
       <!-- Список значений RASS -->
       <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">

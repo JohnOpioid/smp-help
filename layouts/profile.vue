@@ -85,7 +85,7 @@
 
       <!-- Основной контент -->
       <div v-else>
-        <div class="md:px-4 max-w-5xl mx-auto py-8">
+        <div class="px-2 md:px-4 max-w-5xl mx-auto py-8">
           <!-- Контент страницы -->
           <Suspense>
             <template #default>

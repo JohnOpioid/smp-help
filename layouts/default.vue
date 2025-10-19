@@ -47,7 +47,7 @@
       </div>
 
       <!-- Скелетон контента при навигации -->
-      <div v-else-if="isContentLoading" class="max-w-5xl mx-auto px-0 md:px-4 py-8 space-y-4">
+      <div v-else-if="isContentLoading" class="max-w-5xl mx-auto px-2 md:px-4 py-8 space-y-4">
         <USkeleton class="h-6 w-1/3" />
         <USkeleton class="h-4 w-2/3" />
         <div class="space-y-2">
@@ -276,7 +276,7 @@
             <slot />
           </template>
           <template #fallback>
-            <div class="max-w-5xl mx-auto px-0 md:px-4 py-8 space-y-4">
+            <div class="max-w-5xl mx-auto px-2 md:px-4 py-8 space-y-4">
               <USkeleton class="h-6 w-1/3" />
               <USkeleton class="h-4 w-2/3" />
               <div class="space-y-2">

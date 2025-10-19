@@ -3,8 +3,8 @@
     <main class="flex-1">
 
       <!-- Основной контент или результаты поиска -->
-      <div class="max-w-5xl mx-auto px-0 md:px-4 py-8">
-        <div v-if="showSearchResults" class="bg-white dark:bg-slate-800 border-y border-slate-100 dark:border-slate-600 md:border md:rounded-lg">
+      <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
+        <div v-if="showSearchResults" class="bg-white dark:bg-slate-800 border-y border-slate-100 dark:border-slate-600 md:border rounded-lg">
           <div class="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
             <p class="text-sm text-slate-600 dark:text-slate-300">Найдено: {{ filtered.length }}</p>
             <div class="text-xs text-slate-500 dark:text-slate-400">Инструкции</div>
@@ -29,7 +29,7 @@
             </li>
           </ul>
         </div>
-        <div v-else class="bg-white dark:bg-slate-800 border-y border-slate-100 dark:border-slate-600 md:border md:rounded-lg">
+        <div v-else class="bg-white dark:bg-slate-800 border-y border-slate-100 dark:border-slate-600 md:border rounded-lg">
           <div class="p-4 border-b border-slate-100 dark:border-slate-700">
             <p class="text-sm text-slate-600 dark:text-slate-300">Список доступных инструкций</p>
           </div>

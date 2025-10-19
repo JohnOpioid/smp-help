@@ -1,8 +1,8 @@
 <template>
-  <div class="max-w-5xl mx-auto px-0 md:px-4 py-8">
+  <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
     <h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-6">Контакты</h1>
     
-    <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 md:rounded-lg p-6">
+    <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 rounded-lg p-6">
         <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-4">Свяжитесь с нами</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

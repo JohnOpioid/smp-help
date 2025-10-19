@@ -134,7 +134,7 @@
       </template>
     </ClientOnly>
   </div>
-  <div class="max-w-5xl mx-auto md:px-4 pb-8">
+  <div class="max-w-5xl mx-auto px-2 md:px-4 pb-8">
     <template v-if="!algo">
       <div class="space-y-4">
         <USkeleton class="h-4 w-full" />
@@ -247,7 +247,7 @@
   <!-- Блок локального статуса -->
   <ClientOnly>
     <div v-if="localStatuses.length > 0" class="max-w-5xl mx-auto md:px-4">
-      <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 md:rounded-lg">
+      <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 rounded-lg">
         <div class="p-4 border-b border-slate-100 dark:border-slate-700">
           <p class="text-sm text-slate-600 dark:text-slate-300">Локальный статус</p>
         </div>
@@ -308,8 +308,8 @@
     
     <template #fallback>
       <!-- Fallback для SSR - показываем только заголовок -->
-      <div class="max-w-5xl mx-auto md:px-4 pb-8 mt-8">
-        <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 md:rounded-lg">
+      <div class="max-w-5xl mx-auto px-2 md:px-4 pb-8 mt-8">
+        <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 rounded-lg">
           <div class="p-4 border-b border-slate-100 dark:border-slate-700">
             <p class="text-sm text-slate-600 dark:text-slate-300">Локальный статус</p>
           </div>
@@ -1035,7 +1035,7 @@ function styleTables() {
     if (!alreadyWrapped) {
       const wrapper = document.createElement('div')
       wrapper.setAttribute('data-styled-table-wrapper', '')
-      wrapper.classList.add('my-3', 'bg-white', 'dark:bg-slate-800', 'border', 'border-slate-100', 'dark:border-slate-700', 'rounded-none', 'md:rounded-lg', 'overflow-x-hidden', 'relative', 'sticky-container')
+      wrapper.classList.add('my-3', 'bg-white', 'dark:bg-slate-800', 'border', 'border-slate-100', 'dark:border-slate-700', 'rounded-lg', 'overflow-x-hidden', 'relative', 'sticky-container')
       table.parentElement?.insertBefore(wrapper, table)
       wrapper.appendChild(table)
     }
@@ -1051,7 +1051,7 @@ function styleTables() {
     table.querySelectorAll('colgroup col').forEach(col => (col as HTMLElement).style.width = '33.3333%')
     table.querySelectorAll('th').forEach(th => {
       th.classList.remove('text-left', 'align-top', 'h-[85px]')
-      th.classList.add('px-4', 'py-3', 'text-sm', 'text-slate-600', 'dark:text-slate-300', 'text-center', 'font-medium', 'whitespace-normal', 'break-words', 'align-middle', 'sticky', 'top-0', 'z-20', 'bg-slate-50/25', 'dark:bg-slate-800')
+      th.classList.add('px-4', 'py-3', 'text-sm', 'text-slate-600', 'dark:text-slate-300', 'text-center', 'font-medium', 'whitespace-normal', 'break-words', 'align-middle', 'sticky', 'top-0', 'z-20', 'bg-slate-200', 'dark:bg-slate-800')
     })
     table.querySelectorAll('td').forEach(td => {
       td.classList.add('p-4', 'text-sm', 'text-slate-600', 'dark:text-slate-300', 'whitespace-normal', 'break-words', 'align-top', 'bg-white', 'dark:bg-slate-800')

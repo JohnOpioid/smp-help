@@ -31,7 +31,7 @@
     </div>
 
     <!-- Основной контент -->
-    <div class="max-w-5xl mx-auto px-0 md:px-4 py-8 space-y-6">
+    <div class="max-w-5xl mx-auto px-2 md:px-4 py-8 space-y-6">
 
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-2">

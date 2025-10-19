@@ -1,7 +1,7 @@
 <template>
-  <div class="md:px-4 max-w-5xl mx-auto py-8">
+  <div class="px-2 md:px-4 max-w-5xl mx-auto py-8">
     <!-- Список алгоритмов категории (как список категорий) -->
-    <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 md:rounded-lg">
+    <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 rounded-lg">
       <div class="p-4 border-b border-slate-100 dark:border-slate-700">
         <div class="flex items-center gap-2">
           <NuxtLink :to="`/algorithms/${section}`" title="Назад к разделу"

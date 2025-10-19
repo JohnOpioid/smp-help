@@ -2,12 +2,12 @@
 
   <main class="flex-1">
     <!-- Контентная область отдельно от поиска -->
-    <div class="md:px-4 max-w-5xl mx-auto py-8">
+    <div class="px-2 md:px-4 max-w-5xl mx-auto py-8">
       <div v-if="error" class="text-center py-8">
         <p class="text-red-600 dark:text-red-400">Ошибка загрузки данных</p>
       </div>
 
-      <div v-else class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 md:rounded-lg">
+      <div v-else class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 rounded-lg">
         <div class="p-4 border-b border-slate-100 dark:border-slate-700">
           <p class="text-sm text-slate-600 dark:text-slate-300">Локальные статусы категории "{{ category?.name }}"</p>
         </div>

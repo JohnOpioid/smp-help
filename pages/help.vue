@@ -1,10 +1,10 @@
 <template>
-  <div class="max-w-5xl mx-auto px-0 md:px-4 py-8">
+  <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
     <h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-6">Помощь</h1>
     
     <div class="space-y-6">
         <!-- Поиск -->
-        <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 md:rounded-lg p-6">
+        <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 rounded-lg p-6">
           <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-4 flex items-center">
             <UIcon name="i-lucide-search" class="mr-2" />
             Поиск по сайту
@@ -22,7 +22,7 @@
         </div>
 
         <!-- Навигация -->
-        <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 md:rounded-lg p-6">
+        <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 rounded-lg p-6">
           <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-4 flex items-center">
             <UIcon name="i-lucide-navigation" class="mr-2" />
             Навигация по сайту
@@ -49,7 +49,7 @@
         </div>
 
         <!-- Калькуляторы -->
-        <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 md:rounded-lg p-6">
+        <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 rounded-lg p-6">
           <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-4 flex items-center">
             <UIcon name="i-lucide-calculator" class="mr-2" />
             Калькуляторы дозировок
@@ -68,7 +68,7 @@
         </div>
 
         <!-- Часто задаваемые вопросы -->
-        <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 md:rounded-lg p-6">
+        <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 rounded-lg p-6">
           <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-4 flex items-center">
             <UIcon name="i-lucide-help-circle" class="mr-2" />
             Часто задаваемые вопросы

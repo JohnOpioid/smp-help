@@ -24,7 +24,7 @@
       </div>
 
       <!-- Разделы -->
-      <div class="max-w-5xl mx-auto px-4">
+      <div class="max-w-5xl mx-auto px-2 md:px-4">
         <!-- Скелетоны контента при первичной загрузке -->
         <div v-if="isInitialLoading" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           <div v-for="n in 6" :key="n" class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg">

@@ -1,7 +1,7 @@
 <template>
   <div>
     <main class="flex-1">
-      <div class="max-w-5xl mx-auto px-0 md:px-4 py-8">
+      <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
         <AdminSubnav title="Кодификатор" />
 
         <!-- Таблица категорий -->
@@ -28,7 +28,7 @@
             </UInput>
           </div>
 
-          <div class="bg-white dark:bg-slate-800 border-y border-slate-100 dark:border-slate-600 md:border md:rounded-lg overflow-hidden">
+          <div class="bg-white dark:bg-slate-800 border-y border-slate-100 dark:border-slate-600 md:border rounded-lg overflow-hidden">
             <UTable :data="categoriesTableData" :columns="categoryColumns" :loading="pendingCategories" sticky="header" class="w-full">
               <template #empty>
                 <div class="p-6 text-sm text-slate-600 dark:text-slate-300">
@@ -100,7 +100,7 @@
             </UInput>
           </div>
 
-          <div class="bg-white dark:bg-slate-800 border-y border-slate-100 dark:border-slate-600 md:border md:rounded-lg overflow-hidden">
+          <div class="bg-white dark:bg-slate-800 border-y border-slate-100 dark:border-slate-600 md:border rounded-lg overflow-hidden">
             <UTable :data="mkbPaginated" :columns="mkbColumns" :loading="pendingMKB" sticky="header" class="w-full">
               <template #empty>
                 <div class="p-6 text-sm text-slate-600 dark:text-slate-300">
