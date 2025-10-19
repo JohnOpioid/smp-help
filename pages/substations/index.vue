@@ -144,18 +144,18 @@
               </div>
               
               <!-- Подстанции в группе -->
-            <div class="space-y-1">
-              <div
+              <div class="space-y-1">
+                <div
                   v-for="item in group.items"
                   :key="item._id"
-                :data-substation-id="item._id"
-                class="p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/40 rounded-lg transition-colors"
-                :class="{ 'bg-slate-50 dark:bg-slate-700/40': selectedId === item._id }"
-                @click="toggleSelect(item); isBottomSheetOpen = false"
-              >
-                <p class="font-medium text-slate-900 dark:text-white text-sm">{{ item.name }}</p>
-                <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ item.address }}</p>
-                <p v-if="item.phones?.length" class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ item.phones.join(', ') }}</p>
+                  :data-substation-id="item._id"
+                  class="p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/40 rounded-lg transition-colors"
+                  :class="{ 'bg-slate-50 dark:bg-slate-700/40': selectedId === item._id }"
+                  @click="toggleSelect(item); isBottomSheetOpen = false"
+                >
+                  <p class="font-medium text-slate-900 dark:text-white text-sm">{{ item.name }}</p>
+                  <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ item.address }}</p>
+                  <p v-if="item.phones?.length" class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ item.phones.join(', ') }}</p>
               </div>
             </div>
           </div>
