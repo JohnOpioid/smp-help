@@ -102,7 +102,7 @@
       <div class="p-4 space-y-4">
         <div v-for="(group, groupIndex) in groupedItems" :key="groupIndex">
           <!-- Заголовок группы -->
-          <div class="bg-slate-100 dark:bg-slate-700 px-3 py-2 rounded-lg mb-2 sticky top-0 z-10">
+          <div class="bg-slate-100 dark:bg-slate-700 px-3 py-2 rounded-lg mb-2 sticky top-2 z-10">
             <div class="flex items-start justify-between">
               <div class="flex flex-col">
                 <h3 class="font-semibold text-slate-900 dark:text-white text-sm">
