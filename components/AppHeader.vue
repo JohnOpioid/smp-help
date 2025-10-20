@@ -3,7 +3,7 @@
     <div class="w-full max-w-5xl mx-auto px-2 md:px-4 py-4 mdpy-6">
       <div class="flex items-center justify-between gap-3">
         <div class="flex items-center gap-2 min-w-0 transition-all duration-700 ease-in-out"
-             :class="{ 'hidden md:flex': isSearchExpanded }">
+             :class="{ 'hidden md:flex': isSearchExpanded || isSearchActive }">
           <div class="relative">
             <!-- Логотип (крутится при реактивной навигации) -->
             <img ref="logoRef" :src="logoUrl" alt="Логотип"
@@ -90,51 +90,62 @@
         </div>
 
         <!-- Поиск между логотипом и аватаром -->
-        <div class="relative flex-1">
-          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <svg class="h-6 w-6 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor"
-              viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
-          </div>
-          <input 
-            ref="searchInput"
-            v-model="searchQuery"
-            type="text" 
-            placeholder="Введите запрос для поиска..."
-            :class="[
-              'block w-full pl-11 pr-11 py-4 outline-none focus:outline-none focus:ring-0 focus:border-slate-300 dark:focus:border-slate-500 hover:shadow-sm focus:shadow-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 transition-all duration-700 ease-in-out rounded-lg'
-            ]"
-            @input="onSearchInput"
-            @focus="onSearchFocus"
-            @blur="onSearchBlur"
-            @keydown.enter.prevent="onSearchEnter"
-            @keyup="onSearchKeyup"
-            @keydown="onSearchKeydown"
-            @change="onSearchChange"
-            @paste="onSearchPaste"
-            @compositionstart="onSearchCompositionStart"
-            @compositionend="onSearchCompositionEnd"
-            @touchstart="onSearchTouchStart"
-            @touchend="onSearchTouchEnd">
-          
-          <!-- Панель поиска теперь отображается в основной области контента -->
-          
-          <div class="absolute inset-y-0 right-0 flex items-center pr-2">
-            <button v-if="searchQuery || isSearchActive"
-              @click="clearSearch"
-              class="inline-flex items-center justify-center h-8 w-8 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-300 transition-colors duration-200 cursor-pointer"
-              aria-label="Очистить поиск">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        <div class="flex-1 flex items-center gap-2">
+          <div class="relative flex-1">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <svg class="h-6 w-6 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
               </svg>
-            </button>
+            </div>
+            <input 
+              ref="searchInput"
+              v-model="searchQuery"
+              type="text" 
+              placeholder="Введите запрос для поиска..."
+              :class="[
+                'block w-full pl-11 pr-11 py-4 outline-none focus:outline-none focus:ring-0 focus:border-slate-300 dark:focus:border-slate-500 hover:shadow-sm focus:shadow-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 transition-all duration-700 ease-in-out rounded-lg'
+              ]"
+              @input="onSearchInput"
+              @focus="onSearchFocus"
+              @blur="onSearchBlur"
+              @keydown.enter.prevent="onSearchEnter"
+              @keyup="onSearchKeyup"
+              @keydown="onSearchKeydown"
+              @change="onSearchChange"
+              @paste="onSearchPaste"
+              @compositionstart="onSearchCompositionStart"
+              @compositionend="onSearchCompositionEnd"
+              @touchstart="onSearchTouchStart"
+              @touchend="onSearchTouchEnd">
+            
+            <!-- Кнопка очистки внутри инпута -->
+            <div class="absolute inset-y-0 right-0 flex items-center pr-2">
+              <button v-if="searchQuery || isSearchActive"
+                @click="clearSearch"
+                class="inline-flex items-center justify-center h-8 w-8 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-300 transition-colors duration-200 cursor-pointer"
+                aria-label="Очистить поиск">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
           </div>
+          
+          <!-- Кнопка поиска на мобильных - за пределами инпута -->
+          <button v-if="isMobile && isSearchExpanded"
+            @click="performSearch"
+            class="inline-flex items-center justify-center px-4 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            aria-label="Выполнить поиск">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </button>
         </div>
 
         <div class="flex items-center space-x-3 sm:space-x-4 relative transition-all duration-700 ease-in-out"
-             :class="{ 'hidden md:flex': isSearchExpanded }">
+             :class="{ 'hidden md:flex': isSearchExpanded || isSearchActive }">
 
           <!-- Профиль: выпадающее меню (мобайл + десктоп) -->
           <ClientOnly>
@@ -187,7 +198,7 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
+import { watch, onMounted, onUnmounted, computed } from 'vue'
 
 const props = withDefaults(defineProps<{ title?: string }>(), { title: 'Справочник СМП' })
 const route = useRoute()
@@ -462,6 +473,22 @@ const searchQuery = ref('')
 const lastSearchValue = ref('')
 const isComposing = ref(false)
 const isSearchExpanded = ref(false)
+const isMobile = ref(false)
+
+// Обновляем состояние мобильного устройства
+const updateMobileState = () => {
+  isMobile.value = window.innerWidth <= 768
+}
+
+// Инициализируем состояние мобильного устройства
+onMounted(() => {
+  updateMobileState()
+  window.addEventListener('resize', updateMobileState)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateMobileState)
+})
 
 // Проверяем, находимся ли на странице подстанций
 const isSubstationsPage = computed(() => route.path === '/substations')

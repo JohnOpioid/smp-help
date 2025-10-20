@@ -2,12 +2,12 @@
   <ClientOnly>
     <div v-if="isSearchActive" class="flex-1">
     <div class="max-w-5xl mx-auto px-4 py-8">
-      <div class="text-center mb-8">
+      <div v-if="searchResults.length > 0" class="text-center mb-8">
         <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-700 dark:text-white mb-2 sm:mb-4">
-          {{ searchResults.length > 0 ? 'Результаты поиска' : 'Поиск' }}
+          Результаты поиска
         </h2>
         <p class="text-base sm:text-lg lg:text-xl text-slate-600 dark:text-slate-300">
-          {{ searchResults.length > 0 ? `Найдено ${searchResults.length} результатов` : 'Введите запрос для поиска' }}
+          Найдено {{ searchResults.length }} результатов
         </p>
       </div>
 
