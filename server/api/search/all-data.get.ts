@@ -76,104 +76,34 @@ export default defineEventHandler(async (event) => {
     
     // Получаем данные из каждой коллекции отдельно для диагностики
     console.log('🔍 API: Загружаем LocalStatus...')
-    let localStatuses = []
-    try {
-      // Сначала пробуем без populate
-      const localStatusesRaw = await LocalStatus.find({}).lean()
-      console.log('✅ API: LocalStatus загружены без populate:', localStatusesRaw.length)
-      
-      // Если данные есть, пробуем с populate
-      if (localStatusesRaw.length > 0) {
-        localStatuses = await LocalStatus.find({}).populate('category', 'name url').lean()
-        console.log('✅ API: LocalStatus загружены с populate:', localStatuses.length)
-      } else {
-        localStatuses = localStatusesRaw
-        console.log('⚠️ API: LocalStatus пусты, используем данные без populate')
-      }
-    } catch (err) {
+    const localStatuses = await LocalStatus.find({}).populate('category', 'name url').lean().catch((err: any) => {
       console.error('❌ API: Ошибка загрузки LocalStatus:', err)
-      localStatuses = []
-    }
+      return []
+    })
     
     console.log('🔍 API: Загружаем MKB...')
-    let mkbCodes = []
-    try {
-      // Сначала пробуем без populate
-      const mkbCodesRaw = await MKB.find({}).lean()
-      console.log('✅ API: MKB загружены без populate:', mkbCodesRaw.length)
-      
-      // Если данные есть, пробуем с populate
-      if (mkbCodesRaw.length > 0) {
-        mkbCodes = await MKB.find({}).populate('category', 'name url').lean()
-        console.log('✅ API: MKB загружены с populate:', mkbCodes.length)
-      } else {
-        mkbCodes = mkbCodesRaw
-        console.log('⚠️ API: MKB пусты, используем данные без populate')
-      }
-    } catch (err) {
+    const mkbCodes = await MKB.find({}).populate('category', 'name url').lean().catch((err: any) => {
       console.error('❌ API: Ошибка загрузки MKB:', err)
-      mkbCodes = []
-    }
+      return []
+    })
     
     console.log('🔍 API: Загружаем Algorithm...')
-    let algorithms = []
-    try {
-      // Сначала пробуем без populate
-      const algorithmsRaw = await Algorithm.find({}).lean()
-      console.log('✅ API: Algorithm загружены без populate:', algorithmsRaw.length)
-      
-      // Если данные есть, пробуем с populate
-      if (algorithmsRaw.length > 0) {
-        algorithms = await Algorithm.find({}).populate('category', 'name url').populate('section', 'name url').lean()
-        console.log('✅ API: Algorithm загружены с populate:', algorithms.length)
-      } else {
-        algorithms = algorithmsRaw
-        console.log('⚠️ API: Algorithm пусты, используем данные без populate')
-      }
-    } catch (err) {
+    const algorithms = await Algorithm.find({}).populate('category', 'name url').populate('section', 'name url').lean().catch(err => {
       console.error('❌ API: Ошибка загрузки Algorithm:', err)
-      algorithms = []
-    }
+      return []
+    })
     
     console.log('🔍 API: Загружаем Drug...')
-    let drugs = []
-    try {
-      // Сначала пробуем без populate
-      const drugsRaw = await Drug.find({}).lean()
-      console.log('✅ API: Drug загружены без populate:', drugsRaw.length)
-      
-      // Если данные есть, пробуем с populate
-      if (drugsRaw.length > 0) {
-        drugs = await Drug.find({}).populate('categories', 'name url').lean()
-        console.log('✅ API: Drug загружены с populate:', drugs.length)
-      } else {
-        drugs = drugsRaw
-        console.log('⚠️ API: Drug пусты, используем данные без populate')
-      }
-    } catch (err) {
+    const drugs = await Drug.find({}).populate('categories', 'name url').lean().catch((err: any) => {
       console.error('❌ API: Ошибка загрузки Drug:', err)
-      drugs = []
-    }
+      return []
+    })
     
     console.log('🔍 API: Загружаем Substation...')
-    let substations = []
-    try {
-      // Сначала пробуем без populate
-      const substationsRaw = await Substation.find({}).lean()
-      console.log('✅ API: Substation загружены без populate:', substationsRaw.length)
-      
-      // Если данные есть, пробуем с populate
-      if (substationsRaw.length > 0) {
-        substations = await Substation.find({}).populate('region', 'name').lean()
-        console.log('✅ API: Substation загружены с populate:', substations.length)
-      } else {
-        substations = substationsRaw
-        console.log('⚠️ API: Substation пусты, используем данные без populate')
-      }
-    } catch (err) {
+    const substations = await Substation.find({}).populate('region', 'name').lean().catch((err: any) => {
       console.error('❌ API: Ошибка загрузки Substation:', err)
-      substations = []
-    }
+      return []
+    })
     
     console.log('📊 API: Результаты загрузки:')
     console.log(`  - LocalStatus: ${localStatuses.length}`)
