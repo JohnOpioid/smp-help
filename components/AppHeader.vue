@@ -522,7 +522,7 @@ const onSearchFocus = () => {
   // Активируем поиск при фокусе, даже если запрос пустой
   if (!isSearchActive.value) {
     activateSearch(q)
-    // Если есть запрос, выполняем поиск
+    // Если есть запрос, выполняем поиск сразу
     if (q) {
       performSearch()
     }
@@ -563,6 +563,7 @@ const onSearchBlur = () => {
       if (!searchQuery.value.trim()) {
         deactivateSearch()
       }
+      // НЕ выполняем поиск при потере фокуса - это вызывает проблему
     }
   }, 200)
 }
@@ -577,12 +578,28 @@ const onSearchInput = () => {
   lastSearchValue.value = searchQuery.value
   // Не выполняем поиск во время композиции (IME ввод)
   if (!isComposing.value) {
-    handleSearchInput()
+    // На мобильных устройствах делаем поиск более реактивным
+    const isMobile = window.innerWidth <= 768
+    if (isMobile) {
+      // На мобильных устройствах делаем поиск сразу
+      handleSearchInput()
+    } else {
+      // На десктопе используем обычную логику
+      handleSearchInput()
+    }
   }
 }
 
 const onSearchKeyup = () => {
-  handleSearchInput()
+  // На мобильных устройствах делаем поиск более реактивным
+  const isMobile = window.innerWidth <= 768
+  if (isMobile) {
+    // На мобильных устройствах делаем поиск сразу при нажатии клавиш
+    handleSearchInput()
+  } else {
+    // На десктопе используем обычную логику
+    handleSearchInput()
+  }
 }
 
 const onSearchChange = () => {
@@ -591,7 +608,15 @@ const onSearchChange = () => {
   const currentValue = searchQuery.value
   if (currentValue !== lastSearchValue.value) {
     lastSearchValue.value = currentValue
-    handleSearchInput()
+    // На мобильных устройствах делаем поиск более реактивным
+    const isMobile = window.innerWidth <= 768
+    if (isMobile) {
+      // На мобильных устройствах делаем поиск сразу при изменении
+      handleSearchInput()
+    } else {
+      // На десктопе используем обычную логику
+      handleSearchInput()
+    }
   }
 }
 
@@ -599,7 +624,15 @@ const onSearchPaste = () => {
   // При вставке текста делаем поиск сразу
   setTimeout(() => {
     lastSearchValue.value = searchQuery.value
-    handleSearchInput()
+    // На мобильных устройствах делаем поиск более реактивным
+    const isMobile = window.innerWidth <= 768
+    if (isMobile) {
+      // На мобильных устройствах делаем поиск сразу после вставки
+      handleSearchInput()
+    } else {
+      // На десктопе используем обычную логику
+      handleSearchInput()
+    }
   }, 10)
 }
 
@@ -612,7 +645,15 @@ const onSearchCompositionEnd = () => {
   // Конец ввода с помощью IME
   isComposing.value = false
   lastSearchValue.value = searchQuery.value
-  handleSearchInput()
+  // На мобильных устройствах делаем поиск более реактивным
+  const isMobile = window.innerWidth <= 768
+  if (isMobile) {
+    // На мобильных устройствах делаем поиск сразу после завершения IME ввода
+    handleSearchInput()
+  } else {
+    // На десктопе используем обычную логику
+    handleSearchInput()
+  }
 }
 
 const handleSearchInput = () => {
@@ -1041,6 +1082,10 @@ const onSearchKeydown = () => {
 const onSearchTouchStart = () => {
   // Начало касания на мобильных устройствах
   console.log('🔍 Touch start on search input')
+  // Активируем поиск при касании, если он еще не активен
+  if (!isSearchActive.value && !isSubstationsPage.value) {
+    activateSearch(searchQuery.value.trim())
+  }
 }
 
 const onSearchTouchEnd = () => {
@@ -1050,9 +1095,12 @@ const onSearchTouchEnd = () => {
   setTimeout(() => {
     if (lastSearchValue.value !== searchQuery.value) {
       lastSearchValue.value = searchQuery.value
-      handleSearchInput()
+      // На мобильных устройствах делаем поиск сразу после касания
+      if (searchQuery.value.trim().length >= 2) {
+        handleSearchInput()
+      }
     }
-  }, 100)
+  }, 50) // Уменьшаем задержку для более быстрого отклика
 }
 
 // Экспортируем переменные и функции для использования в template
