@@ -5,6 +5,7 @@ import MKB from '~/server/models/MKB'
 import Algorithm from '~/server/models/Algorithm'
 import Drug from '~/server/models/Drug'
 import Substation from '~/server/models/Substation'
+import Region from '~/server/models/Region'
 
 export default defineEventHandler(async (event) => {
   // Отключаем кэширование для этого endpoint
@@ -76,34 +77,89 @@ export default defineEventHandler(async (event) => {
     
     // Получаем данные из каждой коллекции отдельно для диагностики
     console.log('🔍 API: Загружаем LocalStatus...')
-    const localStatuses = await LocalStatus.find({}).populate('category', 'name url').lean().catch((err: any) => {
+    let localStatuses = []
+    try {
+      localStatuses = await LocalStatus.find({}).populate('category', 'name url').lean()
+      console.log('✅ API: LocalStatus загружены успешно:', localStatuses.length)
+    } catch (err) {
       console.error('❌ API: Ошибка загрузки LocalStatus:', err)
-      return []
-    })
+      // Пробуем загрузить без populate
+      try {
+        localStatuses = await LocalStatus.find({}).lean()
+        console.log('⚠️ API: LocalStatus загружены без populate:', localStatuses.length)
+      } catch (err2) {
+        console.error('❌ API: Ошибка загрузки LocalStatus без populate:', err2)
+        localStatuses = []
+      }
+    }
     
     console.log('🔍 API: Загружаем MKB...')
-    const mkbCodes = await MKB.find({}).populate('category', 'name url').lean().catch((err: any) => {
+    let mkbCodes = []
+    try {
+      mkbCodes = await MKB.find({}).populate('category', 'name url').lean()
+      console.log('✅ API: MKB загружены успешно:', mkbCodes.length)
+    } catch (err) {
       console.error('❌ API: Ошибка загрузки MKB:', err)
-      return []
-    })
+      // Пробуем загрузить без populate
+      try {
+        mkbCodes = await MKB.find({}).lean()
+        console.log('⚠️ API: MKB загружены без populate:', mkbCodes.length)
+      } catch (err2) {
+        console.error('❌ API: Ошибка загрузки MKB без populate:', err2)
+        mkbCodes = []
+      }
+    }
     
     console.log('🔍 API: Загружаем Algorithm...')
-    const algorithms = await Algorithm.find({}).populate('category', 'name url').populate('section', 'name url').lean().catch(err => {
+    let algorithms = []
+    try {
+      algorithms = await Algorithm.find({}).populate('category', 'name url').populate('section', 'name url').lean()
+      console.log('✅ API: Algorithm загружены успешно:', algorithms.length)
+    } catch (err) {
       console.error('❌ API: Ошибка загрузки Algorithm:', err)
-      return []
-    })
+      // Пробуем загрузить без populate
+      try {
+        algorithms = await Algorithm.find({}).lean()
+        console.log('⚠️ API: Algorithm загружены без populate:', algorithms.length)
+      } catch (err2) {
+        console.error('❌ API: Ошибка загрузки Algorithm без populate:', err2)
+        algorithms = []
+      }
+    }
     
     console.log('🔍 API: Загружаем Drug...')
-    const drugs = await Drug.find({}).populate('categories', 'name url').lean().catch((err: any) => {
+    let drugs = []
+    try {
+      drugs = await Drug.find({}).populate('categories', 'name url').lean()
+      console.log('✅ API: Drug загружены успешно:', drugs.length)
+    } catch (err) {
       console.error('❌ API: Ошибка загрузки Drug:', err)
-      return []
-    })
+      // Пробуем загрузить без populate
+      try {
+        drugs = await Drug.find({}).lean()
+        console.log('⚠️ API: Drug загружены без populate:', drugs.length)
+      } catch (err2) {
+        console.error('❌ API: Ошибка загрузки Drug без populate:', err2)
+        drugs = []
+      }
+    }
     
     console.log('🔍 API: Загружаем Substation...')
-    const substations = await Substation.find({}).populate('region', 'name').lean().catch((err: any) => {
+    let substations = []
+    try {
+      substations = await Substation.find({}).populate('region', 'name').lean()
+      console.log('✅ API: Substation загружены успешно:', substations.length)
+    } catch (err) {
       console.error('❌ API: Ошибка загрузки Substation:', err)
-      return []
-    })
+      // Пробуем загрузить без populate
+      try {
+        substations = await Substation.find({}).lean()
+        console.log('⚠️ API: Substation загружены без populate:', substations.length)
+      } catch (err2) {
+        console.error('❌ API: Ошибка загрузки Substation без populate:', err2)
+        substations = []
+      }
+    }
     
     console.log('📊 API: Результаты загрузки:')
     console.log(`  - LocalStatus: ${localStatuses.length}`)
@@ -111,6 +167,23 @@ export default defineEventHandler(async (event) => {
     console.log(`  - Algorithm: ${algorithms.length}`)
     console.log(`  - Drug: ${drugs.length}`)
     console.log(`  - Substation: ${substations.length}`)
+    
+    // Проверяем, что данные действительно загружены
+    if (localStatuses.length === 0) {
+      console.log('⚠️ API: LocalStatus пусты!')
+    }
+    if (mkbCodes.length === 0) {
+      console.log('⚠️ API: MKB пусты!')
+    }
+    if (algorithms.length === 0) {
+      console.log('⚠️ API: Algorithm пусты!')
+    }
+    if (drugs.length === 0) {
+      console.log('⚠️ API: Drug пусты!')
+    }
+    if (substations.length === 0) {
+      console.log('⚠️ API: Substation пусты!')
+    }
     
     // Проверяем количество документов в каждой коллекции
     try {
@@ -126,6 +199,14 @@ export default defineEventHandler(async (event) => {
       console.log(`  - Algorithm: ${algorithmCount}`)
       console.log(`  - Drug: ${drugCount}`)
       console.log(`  - Substation: ${substationCount}`)
+      
+      // Сравниваем с загруженными данными
+      console.log('📊 API: Сравнение загруженных данных с количеством документов:')
+      console.log(`  - LocalStatus: загружено ${localStatuses.length}, всего ${localStatusCount}`)
+      console.log(`  - MKB: загружено ${mkbCodes.length}, всего ${mkbCount}`)
+      console.log(`  - Algorithm: загружено ${algorithms.length}, всего ${algorithmCount}`)
+      console.log(`  - Drug: загружено ${drugs.length}, всего ${drugCount}`)
+      console.log(`  - Substation: загружено ${substations.length}, всего ${substationCount}`)
     } catch (err) {
       console.error('❌ API: Ошибка подсчета документов:', err)
     }
