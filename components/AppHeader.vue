@@ -134,7 +134,7 @@
           </div>
           
           <!-- Кнопка поиска на мобильных - за пределами инпута -->
-          <button v-if="isMobile && isSearchExpanded"
+          <button v-if="isMobile && (isSearchExpanded || isSearchActive)"
             @click="performSearch"
             class="inline-flex items-center justify-center px-4 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             aria-label="Выполнить поиск">
@@ -490,6 +490,25 @@ onUnmounted(() => {
   window.removeEventListener('resize', updateMobileState)
 })
 
+// Следим за изменениями маршрута и сбрасываем состояние поиска
+watch(() => route.path, () => {
+  // При переходе на новую страницу сбрасываем состояние поиска
+  isSearchExpanded.value = false
+  searchQuery.value = ''
+  deactivateSearch()
+})
+
+// Следим за состоянием активности поиска и управляем внешним видом поля
+watch(isSearchActive, (newValue) => {
+  const isMobile = window.innerWidth <= 768
+  if (isMobile) {
+    // Если поиск стал неактивным, сворачиваем поле
+    if (!newValue) {
+      isSearchExpanded.value = false
+    }
+  }
+})
+
 // Проверяем, находимся ли на странице подстанций
 const isSubstationsPage = computed(() => route.path === '/substations')
 
@@ -573,22 +592,17 @@ const onSearchBlur = () => {
     return
   }
   
-  // На мобильных устройствах сворачиваем строку поиска
+  // На мобильных устройствах управляем состоянием поля поиска
   const isMobile = window.innerWidth <= 768
   if (isMobile) {
-    isSearchExpanded.value = false
+    // Если поиск не активен, сворачиваем поле
+    if (!isSearchActive.value) {
+      isSearchExpanded.value = false
+    }
   }
   
-  // Небольшая задержка, чтобы пользователь мог кликнуть по результатам
-  setTimeout(() => {
-    // Проверяем, что фокус действительно ушел с поля поиска
-    if (document.activeElement !== searchInput.value) {
-      // Если нет запроса, закрываем поиск
-      if (!searchQuery.value.trim()) {
-        deactivateSearch()
-      }
-    }
-  }, 200)
+  // Убираем логику автоматического закрытия поиска при потере фокуса
+  // Поиск теперь закрывается только при нажатии на кнопку очистки
 }
 
 const onSearchEnter = () => {
