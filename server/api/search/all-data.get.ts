@@ -1,4 +1,4 @@
-import { defineEventHandler } from 'h3'
+import { defineEventHandler, setHeader } from 'h3'
 import connectDB from '~/server/utils/mongodb'
 import LocalStatus from '~/server/models/LocalStatus'
 import MKB from '~/server/models/MKB'
@@ -7,6 +7,11 @@ import Drug from '~/server/models/Drug'
 import Substation from '~/server/models/Substation'
 
 export default defineEventHandler(async (event) => {
+  // Отключаем кэширование для этого endpoint
+  setHeader(event, 'Cache-Control', 'no-cache, no-store, must-revalidate')
+  setHeader(event, 'Pragma', 'no-cache')
+  setHeader(event, 'Expires', '0')
+  
   try {
     console.log('🔍 API: Подключаемся к базе данных...')
     await connectDB()
@@ -27,6 +32,14 @@ export default defineEventHandler(async (event) => {
     console.log('✅ API: База данных доступна')
     
     console.log('🔍 API: Начинаем загрузку данных для поиска...')
+    
+    // Добавляем диагностику подключения к моделям
+    console.log('🔍 API: Проверяем модели...')
+    console.log('  - LocalStatus model:', !!LocalStatus)
+    console.log('  - MKB model:', !!MKB)
+    console.log('  - Algorithm model:', !!Algorithm)
+    console.log('  - Drug model:', !!Drug)
+    console.log('  - Substation model:', !!Substation)
     
     // Получаем данные из каждой коллекции отдельно для диагностики
     console.log('🔍 API: Загружаем LocalStatus...')

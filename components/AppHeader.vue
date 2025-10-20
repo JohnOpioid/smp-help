@@ -772,10 +772,18 @@ const performSearch = async () => {
   updateSearching(true)
   
   try {
+    // Очищаем кэш предзагрузки для поиска
+    if (process.client) {
+      const { clearCache } = usePreloader()
+      clearCache()
+    }
+    
     // Загружаем данные для поиска
     let response
     try {
-      response = await $fetch('/api/search/all-data')
+      // Добавляем уникальный параметр для избежания кэширования
+      const timestamp = Date.now()
+      response = await $fetch(`/api/search/all-data?t=${timestamp}`)
       console.log('📡 API response:', response)
     } catch (apiError) {
       console.error('❌ Main API failed, trying fallback endpoints:', apiError)
