@@ -519,32 +519,19 @@ const onSearchFocus = () => {
     return
   }
   
-  // Активируем поиск при фокусе, даже если запрос пустой
+  console.log('🔍 Focus on search input, query:', q)
+  
+  // Активируем поиск при фокусе
   if (!isSearchActive.value) {
     activateSearch(q)
-    // Если есть запрос, выполняем поиск сразу
-    if (q) {
-      performSearch()
-    }
-    return
+    console.log('🔍 Search activated on focus')
   }
   
-  // Если поиск уже активен и есть запрос, проверяем результаты
-  if (q) {
-    // Проверяем, что groupedResults существует
-    if (!groupedResults.value) return
-    
-    const totalResults = (groupedResults.value.mkb?.length || 0) + 
-                        (groupedResults.value.ls?.length || 0) + 
-                        (groupedResults.value.algorithm?.length || 0) + 
-                        (groupedResults.value.drug?.length || 0) + 
-                        (groupedResults.value.substation?.length || 0)
-    
-    if (totalResults === 0) {
-      performSearch()
-    } else {
-      activateSearch(q) // только показать уже найденное
-    }
+  // На мобильных устройствах выполняем поиск сразу при фокусе, если есть запрос
+  const isMobile = window.innerWidth <= 768
+  if (isMobile && q && q.length >= 2) {
+    console.log('🔍 Mobile: performing search on focus')
+    performSearch()
   }
 }
 
@@ -555,15 +542,19 @@ const onSearchBlur = () => {
     return
   }
   
+  console.log('🔍 Blur from search input')
+  
   // Небольшая задержка, чтобы пользователь мог кликнуть по результатам
   setTimeout(() => {
     // Проверяем, что фокус действительно ушел с поля поиска
     if (document.activeElement !== searchInput.value) {
       // Если нет запроса, закрываем поиск
       if (!searchQuery.value.trim()) {
+        console.log('🔍 No query, deactivating search')
         deactivateSearch()
+      } else {
+        console.log('🔍 Query exists, keeping search active')
       }
-      // НЕ выполняем поиск при потере фокуса - это вызывает проблему
     }
   }, 200)
 }
@@ -576,63 +567,36 @@ const onSearchEnter = () => {
 
 const onSearchInput = () => {
   lastSearchValue.value = searchQuery.value
+  console.log('🔍 Search input event, composing:', isComposing.value)
+  
   // Не выполняем поиск во время композиции (IME ввод)
   if (!isComposing.value) {
-    // На мобильных устройствах делаем поиск более реактивным
-    const isMobile = window.innerWidth <= 768
-    if (isMobile) {
-      // На мобильных устройствах делаем поиск сразу
-      handleSearchInput()
-    } else {
-      // На десктопе используем обычную логику
-      handleSearchInput()
-    }
+    handleSearchInput()
   }
 }
 
 const onSearchKeyup = () => {
-  // На мобильных устройствах делаем поиск более реактивным
-  const isMobile = window.innerWidth <= 768
-  if (isMobile) {
-    // На мобильных устройствах делаем поиск сразу при нажатии клавиш
-    handleSearchInput()
-  } else {
-    // На десктопе используем обычную логику
-    handleSearchInput()
-  }
+  console.log('🔍 Search keyup event')
+  handleSearchInput()
 }
 
 const onSearchChange = () => {
-  // Проверяем, действительно ли изменилось значение
-  // Событие change может срабатывать при снятии фокуса даже без изменения значения
   const currentValue = searchQuery.value
+  console.log('🔍 Search change event, current:', currentValue, 'last:', lastSearchValue.value)
+  
+  // Проверяем, действительно ли изменилось значение
   if (currentValue !== lastSearchValue.value) {
     lastSearchValue.value = currentValue
-    // На мобильных устройствах делаем поиск более реактивным
-    const isMobile = window.innerWidth <= 768
-    if (isMobile) {
-      // На мобильных устройствах делаем поиск сразу при изменении
-      handleSearchInput()
-    } else {
-      // На десктопе используем обычную логику
-      handleSearchInput()
-    }
+    handleSearchInput()
   }
 }
 
 const onSearchPaste = () => {
+  console.log('🔍 Search paste event')
   // При вставке текста делаем поиск сразу
   setTimeout(() => {
     lastSearchValue.value = searchQuery.value
-    // На мобильных устройствах делаем поиск более реактивным
-    const isMobile = window.innerWidth <= 768
-    if (isMobile) {
-      // На мобильных устройствах делаем поиск сразу после вставки
-      handleSearchInput()
-    } else {
-      // На десктопе используем обычную логику
-      handleSearchInput()
-    }
+    handleSearchInput()
   }, 10)
 }
 
@@ -642,18 +606,11 @@ const onSearchCompositionStart = () => {
 }
 
 const onSearchCompositionEnd = () => {
+  console.log('🔍 Search composition end event')
   // Конец ввода с помощью IME
   isComposing.value = false
   lastSearchValue.value = searchQuery.value
-  // На мобильных устройствах делаем поиск более реактивным
-  const isMobile = window.innerWidth <= 768
-  if (isMobile) {
-    // На мобильных устройствах делаем поиск сразу после завершения IME ввода
-    handleSearchInput()
-  } else {
-    // На десктопе используем обычную логику
-    handleSearchInput()
-  }
+  handleSearchInput()
 }
 
 const handleSearchInput = () => {
@@ -684,15 +641,15 @@ const handleSearchInput = () => {
     return
   }
   
-  // На мобильных устройствах делаем поиск быстрее
+  // На мобильных устройствах делаем поиск сразу
   const isMobile = window.innerWidth <= 768
   
-  // Для мобильных устройств делаем поиск почти мгновенно
   if (isMobile) {
-    // На мобильных устройствах делаем поиск сразу, без задержки
+    console.log('🔍 Mobile: performing search immediately')
     activateSearch(searchQuery.value)
     performSearch()
   } else {
+    console.log('🔍 Desktop: using debounce')
     // На десктопе используем задержку
     const delay = 300
     searchTimeout = setTimeout(() => {
@@ -1080,7 +1037,6 @@ const onSearchKeydown = () => {
 }
 
 const onSearchTouchStart = () => {
-  // Начало касания на мобильных устройствах
   console.log('🔍 Touch start on search input')
   // Активируем поиск при касании, если он еще не активен
   if (!isSearchActive.value && !isSubstationsPage.value) {
@@ -1089,18 +1045,14 @@ const onSearchTouchStart = () => {
 }
 
 const onSearchTouchEnd = () => {
-  // Конец касания на мобильных устройствах
   console.log('🔍 Touch end on search input')
   // Небольшая задержка для обработки изменений
   setTimeout(() => {
     if (lastSearchValue.value !== searchQuery.value) {
       lastSearchValue.value = searchQuery.value
-      // На мобильных устройствах делаем поиск сразу после касания
-      if (searchQuery.value.trim().length >= 2) {
-        handleSearchInput()
-      }
+      handleSearchInput()
     }
-  }, 50) // Уменьшаем задержку для более быстрого отклика
+  }, 50)
 }
 
 // Экспортируем переменные и функции для использования в template
