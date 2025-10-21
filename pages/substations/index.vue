@@ -300,7 +300,6 @@ const groupedItems = computed(() => {
     const regionId = item.region?._id || 'no-region'
     const regionName = item.region?.name || 'Без региона'
     
-    console.log('Item region data:', item.region)
     
     if (!groups[regionId]) {
       groups[regionId] = []
@@ -313,8 +312,6 @@ const groupedItems = computed(() => {
     const regionName = items[0]?.regionName || 'Без региона'
     const regionData = items[0]?.region
     
-    console.log('Region data for group:', regionName, regionData)
-    console.log('District:', regionData?.district)
     
     return {
       regionId,

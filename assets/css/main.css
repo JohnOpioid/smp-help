@@ -170,40 +170,60 @@ div[contenteditable] {
 
 /* Global scrollbar styling */
 :root {
-  scrollbar-width: thin; /* Firefox */
-  scrollbar-color: #90a1b9 #FDFDFE; /* thumb track */
+  scrollbar-width: thin !important; /* Firefox */
+  scrollbar-color: #90a1b9 #FDFDFE !important; /* thumb track */
 }
 
-/* WebKit browsers */
+/* WebKit browsers - максимальный приоритет */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
 *::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-*::-webkit-scrollbar-track {
-  background: #e2e8f0; /* slate-200 */
-}
-*::-webkit-scrollbar-thumb {
-  background: #90a1b9; /* slate-400 */
-  border-radius: 9999px;
-  border: 1px solid #e2e8f0; /* creates padding */
-}
-*::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8; /* slate-500 */
+  width: 10px !important;
+  height: 10px !important;
 }
 
-/* Dark mode (Tailwind class-based) */
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
+  background: #e2e8f0 !important; /* slate-200 */
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  background: #90a1b9 !important; /* slate-400 */
+  border-radius: 9999px !important;
+  border: 1px solid #e2e8f0 !important; /* creates padding */
+}
+
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8 !important; /* slate-500 */
+}
+
+/* Dark mode (Tailwind class-based) - максимальный приоритет */
 .dark :root {
-  scrollbar-color: #475569 #0f172a; /* slate-600 thumb on slate-900 track */
+  scrollbar-color: #475569 #0f172a !important; /* slate-600 thumb on slate-900 track */
 }
+
+.dark html::-webkit-scrollbar-track,
+.dark body::-webkit-scrollbar-track,
 .dark *::-webkit-scrollbar-track {
-  background: #0f172a; /* slate-900 */
+  background: #0f172a !important; /* slate-900 */
 }
+
+.dark html::-webkit-scrollbar-thumb,
+.dark body::-webkit-scrollbar-thumb,
 .dark *::-webkit-scrollbar-thumb {
-  background: #475569; /* slate-600 */
-  border: 1px solid #0f172a;
+  background: #475569 !important; /* slate-600 */
+  border: 1px solid #0f172a !important;
 }
+
+.dark html::-webkit-scrollbar-thumb:hover,
+.dark body::-webkit-scrollbar-thumb:hover,
 .dark *::-webkit-scrollbar-thumb:hover {
-  background: #64748b; /* slate-500 */
+  background: #64748b !important; /* slate-500 */
 }
 
 .hide-scrollbar {
@@ -213,9 +233,78 @@ div[contenteditable] {
   display: none; /* Chrome, Safari */
 }
 
-/* Nuxt UI NavigationMenu: пусть viewport вычисляет ширину по контенту */
-:root {
-  --reka-navigation-menu-viewport-width: max-content;
+/* Custom scroll styles */
+.custom-scroll {
+  scrollbar-width: thin !important; /* Firefox */
+  scrollbar-color: #90a1b9 #FDFDFE !important; /* thumb track */
+}
+
+.custom-scroll::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: #e2e8f0 !important; /* slate-200 */
+  border-radius: 4px !important;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #90a1b9 !important; /* slate-400 */
+  border-radius: 4px !important;
+  border: 1px solid #e2e8f0 !important; /* creates padding */
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8 !important; /* slate-500 */
+}
+
+/* Dark mode for custom scroll */
+.dark .custom-scroll {
+  scrollbar-color: #475569 #0f172a !important; /* slate-600 thumb on slate-900 track */
+}
+
+.dark .custom-scroll::-webkit-scrollbar-track {
+  background: #0f172a !important; /* slate-900 */
+}
+
+.dark .custom-scroll::-webkit-scrollbar-thumb {
+  background: #475569 !important; /* slate-600 */
+  border: 1px solid #0f172a !important;
+}
+
+.dark .custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: #64748b !important; /* slate-500 */
+}
+
+/* Дополнительные селекторы для максимального покрытия */
+html.dark,
+body.dark,
+.dark html,
+.dark body {
+  scrollbar-color: #475569 #0f172a !important; /* slate-600 thumb on slate-900 track */
+}
+
+html.dark::-webkit-scrollbar-track,
+body.dark::-webkit-scrollbar-track,
+.dark html::-webkit-scrollbar-track,
+.dark body::-webkit-scrollbar-track {
+  background: #0f172a !important; /* slate-900 */
+}
+
+html.dark::-webkit-scrollbar-thumb,
+body.dark::-webkit-scrollbar-thumb,
+.dark html::-webkit-scrollbar-thumb,
+.dark body::-webkit-scrollbar-thumb {
+  background: #475569 !important; /* slate-600 */
+  border: 1px solid #0f172a !important;
+}
+
+html.dark::-webkit-scrollbar-thumb:hover,
+body.dark::-webkit-scrollbar-thumb:hover,
+.dark html::-webkit-scrollbar-thumb:hover,
+.dark body::-webkit-scrollbar-thumb:hover {
+  background: #64748b !important; /* slate-500 */
 }
 
 /* PWA стили */
