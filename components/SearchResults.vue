@@ -22,7 +22,7 @@
         </div>
 
         <!-- Скелетон во время поиска -->
-        <div v-if="isSearching" class="space-y-3">
+        <div v-if="isSearching || (isSearchActive && searchQuery && searchResults.length === 0)" class="space-y-3">
           <div class="p-3">
             <div class="flex items-center justify-between">
               <USkeleton class="h-4 w-48 rounded bg-slate-200 dark:bg-slate-700" />

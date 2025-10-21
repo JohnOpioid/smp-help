@@ -291,7 +291,20 @@ export default defineEventHandler(async (event) => {
     ...mkbFuse.map((i: any) => ({ _id: i._id, type: 'mkb', title: i.name, name: i.name, mkbCode: i.mkbCode, stationCode: i.stationCode, note: i.note, category: i.category })),
     ...lsFuse.map((i: any) => ({ _id: i._id, type: 'ls', title: i.name, name: i.name, description: i.description, note: i.note, localis: i.localis, category: i.category })),
     ...algoFuse.map((i: any) => ({ _id: i._id, type: 'algorithm', title: i.title, description: i.description, content: i.content, category: i.category, section: i.section })),
-    ...drugFuse.map((i: any) => ({ _id: i._id, type: 'drug', title: i.name, name: i.name, latinName: i.latinName, synonyms: i.synonyms, description: i.description, forms: i.forms, pediatricDose: i.pediatricDose, pediatricDoseUnit: i.pediatricDoseUnit, ageRestrictions: i.ageRestrictions })),
+    ...drugFuse.map((i: any) => ({ 
+      _id: i._id, 
+      type: 'drug', 
+      title: i.name, 
+      name: i.name, 
+      latinName: i.latinName, 
+      synonyms: i.synonyms, 
+      synonymsText: Array.isArray(i.synonyms) ? i.synonyms.join(' ') : (i.synonyms || ''), // Добавляем текстовое представление синонимов
+      description: i.description, 
+      forms: i.forms, 
+      pediatricDose: i.pediatricDose, 
+      pediatricDoseUnit: i.pediatricDoseUnit, 
+      ageRestrictions: i.ageRestrictions 
+    })),
     ...substationFuse.map((i: any) => ({ _id: i._id, type: 'substation', title: i.name, name: i.name, address: i.address, phone: i.phone, region: i.region }))
   ]
 
@@ -303,6 +316,7 @@ export default defineEventHandler(async (event) => {
       { name: 'name', weight: 0.6 },
       { name: 'latinName', weight: 0.5 },
       { name: 'synonyms', weight: 0.4 },
+      { name: 'synonymsText', weight: 0.4 }, // Добавляем текстовое поле синонимов
       { name: 'description', weight: 0.3 },
       { name: 'content', weight: 0.2 },
       { name: 'note', weight: 0.2 },

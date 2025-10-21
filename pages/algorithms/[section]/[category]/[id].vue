@@ -1814,8 +1814,9 @@ function parseDrugsInText(text: string): string {
     if (!drugInfo) continue
     
     // Создаем регулярное выражение для поиска варианта названия
+    // Исключаем уже существующие ссылки
     const escapedVariant = variant.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    const regex = new RegExp(escapedVariant, 'gi')
+    const regex = new RegExp(`(?<!<a[^>]*>)${escapedVariant}(?![^<]*</a>)`, 'gi')
     
     // Проверяем, есть ли совпадения
     const matches = result.match(regex)
