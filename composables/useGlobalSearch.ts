@@ -120,6 +120,10 @@ export const useGlobalSearch = () => {
     globalState.isDataFromCache.value = fromCache
   }
 
+  const updateSearchQuery = (query: string) => {
+    globalState.searchQuery.value = query
+  }
+
   const selectSearchResult = (result: any) => {
     let url = ''
     
@@ -160,6 +164,7 @@ export const useGlobalSearch = () => {
     updateSearchResults,
     updateSearching,
     updateCacheStatus,
+    updateSearchQuery,
     selectSearchResult,
     updatePageContext,
     prioritizeResults

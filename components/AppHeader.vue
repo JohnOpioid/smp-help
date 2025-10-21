@@ -3,17 +3,14 @@
     <div class="w-full max-w-5xl mx-auto px-2 md:px-4 py-4 mdpy-6">
       <div class="flex items-center justify-between gap-3">
         <div class="flex items-center gap-2 min-w-0 transition-all duration-700 ease-in-out"
-             :class="{ 'hidden md:flex': isSearchExpanded || isSearchActive }">
+          :class="{ 'hidden md:flex': isSearchExpanded || isSearchActive }">
           <div class="relative">
             <!-- Логотип (крутится при реактивной навигации) -->
             <img ref="logoRef" :src="logoUrl" alt="Логотип"
-              class="h-9 w-9 cursor-pointer transition-all duration-700 ease-in-out"
-              :class="{ 
+              class="h-9 w-9 cursor-pointer transition-all duration-700 ease-in-out" :class="{
                 'scale-110': dropdownMenuOpen,
                 'animate-spin': isContentLoading
-              }" 
-              @click="navigateToHome"
-              @contextmenu.prevent="openDropdownMenu" />
+              }" @click="navigateToHome" @contextmenu.prevent="openDropdownMenu" />
 
             <!-- Выпадающее меню из логотипа-кнопки -->
             <Transition enter-active-class="transition-all duration-200 ease-out"
@@ -40,9 +37,9 @@
                       class="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-pointer"
                       aria-label="Закрыть меню">
                       <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
-          </button>
+                    </button>
                   </div>
-        </div>
+                </div>
 
                 <!-- Контент меню -->
                 <div class="py-2 max-h-96 overflow-y-auto">
@@ -60,7 +57,7 @@
                       </div>
                       <UIcon v-if="item.hasChildren" name="i-heroicons-chevron-right" class="w-4 h-4 text-slate-400" />
                     </div>
-          </div>
+                  </div>
 
                   <!-- Подменю -->
                   <div v-else class="space-y-1">
@@ -69,7 +66,7 @@
                       class="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer w-full text-left">
                       <UIcon name="i-heroicons-arrow-left" class="w-5 h-5" />
                       <span>Назад</span>
-          </button>
+                    </button>
 
                     <!-- Элементы подменю -->
                     <div v-for="item in currentSubmenuItems" :key="item.to"
@@ -99,31 +96,17 @@
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
               </svg>
             </div>
-            <input 
-              ref="searchInput"
-              v-model="searchQuery"
-              type="text" 
-              placeholder="Введите запрос для поиска..."
+            <input ref="searchInput" v-model="searchQuery" type="text" placeholder="Введите запрос для поиска..."
               :class="[
                 'block w-full pl-11 pr-11 py-4 outline-none focus:outline-none focus:ring-0 focus:border-slate-300 dark:focus:border-slate-500 hover:shadow-sm focus:shadow-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 transition-all duration-700 ease-in-out rounded-lg'
-              ]"
-              @input="onSearchInput"
-              @focus="onSearchFocus"
-              @blur="onSearchBlur"
-              @keydown.enter.prevent="onSearchEnter"
-              @keyup="onSearchKeyup"
-              @keydown="onSearchKeydown"
-              @change="onSearchChange"
-              @paste="onSearchPaste"
-              @compositionstart="onSearchCompositionStart"
-              @compositionend="onSearchCompositionEnd"
-              @touchstart="onSearchTouchStart"
-              @touchend="onSearchTouchEnd">
-            
+              ]" @input="onSearchInput" @focus="onSearchFocus" @blur="onSearchBlur"
+              @keydown.enter.prevent="onSearchEnter" @keyup="onSearchKeyup" @keydown="onSearchKeydown"
+              @change="onSearchChange" @paste="onSearchPaste" @compositionstart="onSearchCompositionStart"
+              @compositionend="onSearchCompositionEnd" @touchstart="onSearchTouchStart" @touchend="onSearchTouchEnd">
+
             <!-- Кнопка очистки внутри инпута -->
             <div class="absolute inset-y-0 right-0 flex items-center pr-2">
-              <button v-if="searchQuery || isSearchActive"
-                @click="clearSearch"
+              <button v-if="searchQuery || isSearchActive" @click="clearSearch"
                 class="inline-flex items-center justify-center h-8 w-8 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-300 transition-colors duration-200 cursor-pointer"
                 aria-label="Очистить поиск">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,65 +115,65 @@
               </button>
             </div>
           </div>
-          
+
           <!-- Кнопка поиска на мобильных - за пределами инпута -->
-          <button v-if="isMobile && (isSearchExpanded || isSearchActive)"
-            @click="performSearch"
+          <button v-if="isMobile && (isSearchExpanded || isSearchActive)" @click="performSearch"
             class="inline-flex items-center justify-center px-4 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             aria-label="Выполнить поиск">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
           </button>
         </div>
 
         <div class="flex items-center space-x-3 sm:space-x-4 relative transition-all duration-700 ease-in-out"
-             :class="{ 'hidden md:flex': isSearchExpanded || isSearchActive }">
+          :class="{ 'hidden md:flex': isSearchExpanded || isSearchActive }">
 
           <!-- Профиль: выпадающее меню (мобайл + десктоп) -->
           <ClientOnly>
             <div class="relative flex items-center" ref="profileRef">
               <button @click="toggleMenu"
                 class="shrink-0 h-10 w-10 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-semibold hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer transition-all duration-700 ease-in-out">
-              {{ initials }}
-            </button>
+                {{ initials }}
+              </button>
 
               <div v-if="menuOpen"
                 class="absolute right-0 top-full mt-2 w-56 rounded-md border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 shadow-xl z-100">
-              <div class="px-3 py-2 border-b border-slate-100 dark:border-slate-700">
+                <div class="px-3 py-2 border-b border-slate-100 dark:border-slate-700">
                   <p class="text-sm font-medium text-slate-900 dark:text-white">{{ user?.firstName }} {{ user?.lastName
-                    }}</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ user?.email }}</p>
-              </div>
-              <nav class="py-1">
-                  <NuxtLink to="/profile/bookmarks"
-                    class="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
-                    @click="menuOpen = false">
-                  <UIcon name="i-heroicons-bookmark" class="w-4 h-4 text-slate-500" />
-                  <span>Закладки</span>
-                </NuxtLink>
-                  <NuxtLink to="/profile/settings"
-                    class="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
-                    @click="menuOpen = false">
-                  <UIcon name="i-heroicons-cog-6-tooth" class="w-4 h-4 text-slate-500" />
-                  <span>Настройки</span>
-                </NuxtLink>
-                  <div
-                    class="flex items-center justify-between px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
-                  <span>Тёмная тема</span>
-                  <USwitch :model-value="isDark" @update:model-value="onToggleTheme" size="sm" color="neutral" />
+                  }}</p>
+                  <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ user?.email }}</p>
                 </div>
+                <nav class="py-1">
+                  <NuxtLink to="/profile/bookmarks"
+                    class="flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    @click="menuOpen = false">
+                    <UIcon name="i-heroicons-bookmark" class="w-4 h-4 text-slate-500" />
+                    <span>Закладки</span>
+                  </NuxtLink>
+                  <NuxtLink to="/profile/settings"
+                    class="flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    @click="menuOpen = false">
+                    <UIcon name="i-heroicons-cog-6-tooth" class="w-4 h-4 text-slate-500" />
+                    <span>Настройки</span>
+                  </NuxtLink>
+                  <div
+                    class="flex items-center justify-between px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
+                    <span>Тёмная тема</span>
+                    <USwitch :model-value="isDark" @update:model-value="onToggleTheme" size="sm" color="neutral" />
+                  </div>
                   <NuxtLink v-if="user?.role === 'admin'" to="/admin"
-                    class="block px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    class="block px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
                     @click="menuOpen = false">Админка</NuxtLink>
                   <button @click="menuOpen = false; logout()"
-                    class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40">Выйти</button>
-              </nav>
-            </div>
+                    class="w-full text-left px-3 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 cursor-pointer">Выйти</button>
+                </nav>
+              </div>
             </div>
           </ClientOnly>
 
-          
+
         </div>
       </div>
     </div>
@@ -289,31 +272,31 @@ const mainMenuItems = computed<MenuItem[]>(() => [
     description: 'Медицинские алгоритмы',
     hasChildren: true,
     children: [
-    {
-      label: 'Взрослые',
-      to: '/algorithms/adults',
-      icon: 'i-heroicons-user',
-      description: 'Алгоритмы для взрослых пациентов'
-    },
-    {
-      label: 'Детские',
-      to: '/algorithms/pediatrics',
-      icon: 'i-heroicons-user-group',
-      description: 'Алгоритмы для детских пациентов'
-    },
-    {
-      label: 'ОНМП',
-      to: '/algorithms/onmp',
-      icon: 'i-heroicons-bolt',
-      description: 'Алгоритмы неотложной помощи'
-    },
-    {
-      label: 'ОНМП Дети',
-      to: '/algorithms/onmp-children',
-      icon: 'i-heroicons-bolt',
-      description: 'Алгоритмы детской неотложной помощи'
-    }
-  ]
+      {
+        label: 'Взрослые',
+        to: '/algorithms/adults',
+        icon: 'i-heroicons-user',
+        description: 'Алгоритмы для взрослых пациентов'
+      },
+      {
+        label: 'Детские',
+        to: '/algorithms/pediatrics',
+        icon: 'i-heroicons-user-group',
+        description: 'Алгоритмы для детских пациентов'
+      },
+      {
+        label: 'ОНМП',
+        to: '/algorithms/onmp',
+        icon: 'i-heroicons-bolt',
+        description: 'Алгоритмы неотложной помощи'
+      },
+      {
+        label: 'ОНМП Дети',
+        to: '/algorithms/onmp-children',
+        icon: 'i-heroicons-bolt',
+        description: 'Алгоритмы детской неотложной помощи'
+      }
+    ]
   },
   {
     label: 'Кодификатор',
@@ -473,6 +456,9 @@ const {
 // Импортируем кеш поиска
 const { getSearchData, getCacheInfo } = useSearchCache()
 
+// Импортируем историю поисков
+const { addToHistory } = useSearchHistory()
+
 // Локальная переменная для поля ввода
 const searchQuery = ref('')
 const lastSearchValue = ref('')
@@ -515,6 +501,24 @@ watch(isSearchActive, (newValue) => {
   }
 })
 
+// Синхронизируем глобальное состояние поиска с локальным инпутом
+watch(globalSearchQuery, (newQuery) => {
+  if (newQuery !== searchQuery.value) {
+    searchQuery.value = newQuery
+  }
+})
+
+// Отдельный watcher для выполнения поиска после заполнения инпута
+watch(searchQuery, (newQuery) => {
+  // Выполняем поиск только если это изменение пришло из истории поиска
+  if (newQuery && newQuery.trim().length >= 2 && isSearchActive.value) {
+    // Небольшая задержка, чтобы инпут успел отрендериться
+    setTimeout(() => {
+      performSearch()
+    }, 10)
+  }
+})
+
 // Проверяем, находимся ли на странице подстанций
 const isSubstationsPage = computed(() => route.path === '/substations')
 
@@ -525,7 +529,7 @@ let searchTimeout: NodeJS.Timeout | null = null
 // Определяем текущую категорию на основе маршрута
 const getCurrentCategory = () => {
   const path = route.path
-  
+
   if (path.includes('/algorithms/')) {
     return 'algorithm'
   } else if (path.includes('/codifier/')) {
@@ -537,7 +541,7 @@ const getCurrentCategory = () => {
   } else if (path.includes('/substations')) {
     return 'substation'
   }
-  
+
   return null
 }
 
@@ -569,23 +573,23 @@ const getTypeLabel = (type: string) => {
 // Обработчики поиска
 const onSearchFocus = () => {
   const q = searchQuery.value.trim()
-  
+
   // На странице подстанций не активируем глобальный поиск
   if (isSubstationsPage.value) {
     return
   }
-  
+
   // На мобильных устройствах расширяем строку поиска
   const isMobile = window.innerWidth <= 768
   if (isMobile) {
     isSearchExpanded.value = true
   }
-  
+
   // Активируем поиск при фокусе
   if (!isSearchActive.value) {
     activateSearch(q)
   }
-  
+
   // На мобильных устройствах выполняем поиск сразу при фокусе, если есть запрос
   if (isMobile && q && q.length >= 2) {
     performSearch()
@@ -597,7 +601,7 @@ const onSearchBlur = () => {
   if (isSubstationsPage.value) {
     return
   }
-  
+
   // На мобильных устройствах управляем состоянием поля поиска
   const isMobile = window.innerWidth <= 768
   if (isMobile) {
@@ -606,7 +610,7 @@ const onSearchBlur = () => {
       isSearchExpanded.value = false
     }
   }
-  
+
   // Убираем логику автоматического закрытия поиска при потере фокуса
   // Поиск теперь закрывается только при нажатии на кнопку очистки
 }
@@ -619,14 +623,14 @@ const onSearchEnter = () => {
 
 const onSearchInput = () => {
   lastSearchValue.value = searchQuery.value
-  
+
   // На мобильных устройствах выполняем поиск сразу
   const isMobile = window.innerWidth <= 768
   if (isMobile) {
     handleSearchInput()
     return
   }
-  
+
   // На десктопе проверяем композицию
   if (!isComposing.value) {
     handleSearchInput()
@@ -640,43 +644,43 @@ const onSearchKeyup = () => {
     handleSearchInput()
     return
   }
-  
+
   // На десктопе обычная логика
   handleSearchInput()
 }
 
 const onSearchChange = () => {
   const currentValue = searchQuery.value
-  
+
   // Проверяем, действительно ли изменилось значение
   if (currentValue !== lastSearchValue.value) {
     lastSearchValue.value = currentValue
-    
+
     // На мобильных устройствах выполняем поиск сразу
     const isMobile = window.innerWidth <= 768
     if (isMobile) {
       handleSearchInput()
       return
     }
-    
+
     // На десктопе обычная логика
     handleSearchInput()
   }
 }
 
 const onSearchPaste = () => {
-  
+
   // При вставке текста делаем поиск сразу
   setTimeout(() => {
     lastSearchValue.value = searchQuery.value
-    
+
     // На мобильных устройствах выполняем поиск сразу
     const isMobile = window.innerWidth <= 768
     if (isMobile) {
       handleSearchInput()
       return
     }
-    
+
     // На десктопе обычная логика
     handleSearchInput()
   }, 10)
@@ -691,14 +695,14 @@ const onSearchCompositionEnd = () => {
   // Конец ввода с помощью IME
   isComposing.value = false
   lastSearchValue.value = searchQuery.value
-  
+
   // На мобильных устройствах выполняем поиск сразу
   const isMobile = window.innerWidth <= 768
   if (isMobile) {
     handleSearchInput()
     return
   }
-  
+
   // На десктопе обычная логика
   handleSearchInput()
 }
@@ -707,16 +711,16 @@ const handleSearchInput = () => {
   // Если мы на странице подстанций, отправляем событие для локального поиска
   if (isSubstationsPage.value) {
     // Отправляем событие на страницу подстанций для фильтрации
-    window.dispatchEvent(new CustomEvent('substations-search', { 
-      detail: { query: searchQuery.value } 
+    window.dispatchEvent(new CustomEvent('substations-search', {
+      detail: { query: searchQuery.value }
     }))
     return
   }
-  
+
   const query = searchQuery.value.trim()
   const isMobile = window.innerWidth <= 768
-  
-  
+
+
   // Если запрос слишком короткий
   if (query.length < 2) {
     searchResults.value = []
@@ -729,19 +733,19 @@ const handleSearchInput = () => {
     }
     return
   }
-  
+
   // На мобильных устройствах - мгновенный поиск без задержек
   if (isMobile) {
     activateSearch(query)
     performSearch()
     return
   }
-  
+
   // На десктопе - debounce
   if (searchTimeout) {
     clearTimeout(searchTimeout)
   }
-  
+
   searchTimeout = setTimeout(() => {
     activateSearch(query)
     performSearch()
@@ -752,85 +756,85 @@ const handleSearchInput = () => {
 const performSimpleSearch = (allItems: any[], query: string) => {
   const queryLower = query.toLowerCase().trim()
   const queryWords = queryLower.split(/\s+/).filter(word => word.length >= 2)
-  
-  
+
+
   const results: any[] = []
-  
+
   for (const item of allItems) {
     const title = (item.title || item.name || '').toLowerCase()
     const description = (item.description || item.note || '').toLowerCase()
     const latinName = (item.latinName || '').toLowerCase()
     const synonyms = (item.synonyms || []).join(' ').toLowerCase()
     const content = (item.content || '').toLowerCase()
-    
-    
+
+
     // Проверяем точное совпадение в названии
     if (title.includes(queryLower)) {
       results.push({ ...item, score: 0.1, searchType: 'exact-title' })
       continue
     }
-    
+
     // Проверяем совпадение в латинском названии
     if (latinName.includes(queryLower)) {
       results.push({ ...item, score: 0.2, searchType: 'latin-name' })
       continue
     }
-    
+
     // Проверяем совпадение в синонимах
     if (synonyms.includes(queryLower)) {
       results.push({ ...item, score: 0.3, searchType: 'synonyms' })
       continue
     }
-    
+
     // Проверяем совпадение всех слов запроса
-    const allWordsMatch = queryWords.every(word => 
-      title.includes(word) || 
-      description.includes(word) || 
-      latinName.includes(word) || 
+    const allWordsMatch = queryWords.every(word =>
+      title.includes(word) ||
+      description.includes(word) ||
+      latinName.includes(word) ||
       synonyms.includes(word) ||
       content.includes(word)
     )
-    
+
     if (allWordsMatch) {
       // Подсчитываем количество совпавших слов
-      const matchedWords = queryWords.filter(word => 
-        title.includes(word) || 
-        description.includes(word) || 
-        latinName.includes(word) || 
+      const matchedWords = queryWords.filter(word =>
+        title.includes(word) ||
+        description.includes(word) ||
+        latinName.includes(word) ||
         synonyms.includes(word) ||
         content.includes(word)
       )
-      
+
       const score = 0.4 + (matchedWords.length / queryWords.length) * 0.3
       results.push({ ...item, score, searchType: 'word-match' })
     } else {
       // Для препаратов проверяем частичные совпадения
       if (item.type === 'drug') {
-        const hasPartialMatch = queryWords.some(word => 
-          title.includes(word) || 
-          description.includes(word) || 
-          latinName.includes(word) || 
+        const hasPartialMatch = queryWords.some(word =>
+          title.includes(word) ||
+          description.includes(word) ||
+          latinName.includes(word) ||
           synonyms.includes(word)
         )
-        
+
         if (hasPartialMatch) {
-          const matchedWords = queryWords.filter(word => 
-            title.includes(word) || 
-            description.includes(word) || 
-            latinName.includes(word) || 
+          const matchedWords = queryWords.filter(word =>
+            title.includes(word) ||
+            description.includes(word) ||
+            latinName.includes(word) ||
             synonyms.includes(word)
           )
-          
+
           const score = 0.6 + (matchedWords.length / queryWords.length) * 0.2
           results.push({ ...item, score, searchType: 'partial-match' })
         }
       }
     }
   }
-  
+
   // Сортируем по score
   results.sort((a, b) => a.score - b.score)
-  
+
   return results
 }
 
@@ -838,31 +842,31 @@ const performSimpleSearch = (allItems: any[], query: string) => {
 const performSearch = async () => {
   // Проверяем, что мы на клиенте
   if (!process.client) return
-  
+
   const query = searchQuery.value.trim()
   if (!query) return
-  
+
   updateSearching(true)
-  
+
   try {
     // Очищаем кэш предзагрузки для поиска
     if (process.client) {
       const { clearCache } = usePreloader()
       clearCache()
     }
-    
+
     // Используем кеш для загрузки данных
     let allItems: any[] = []
-    
+
     try {
       // Пытаемся получить данные из кеша или API
       const searchData = await getSearchData()
-      
+
       if (!searchData) {
         console.error('❌ Не удалось загрузить данные для поиска')
         return
       }
-      
+
       // Преобразуем данные в нужный формат
       if (Array.isArray(searchData)) {
         allItems = searchData.map((item: any) => ({
@@ -889,18 +893,18 @@ const performSearch = async () => {
           allItems.push(...data.substations.items.map((item: any) => ({ ...item, type: 'substation' })))
         }
       }
-      
+
       // Проверяем, были ли данные загружены из кеша
       const cacheInfo = getCacheInfo()
       const fromCache = cacheInfo.cachedData !== null
       updateCacheStatus(fromCache)
-      
-      console.log('📋 Данные загружены из кеша/API:', allItems.length, 'элементов', 
-                  fromCache ? '(из кеша)' : '(из API)')
-      
+
+      console.log('📋 Данные загружены из кеша/API:', allItems.length, 'элементов',
+        fromCache ? '(из кеша)' : '(из API)')
+
     } catch (error) {
       console.error('❌ Ошибка при загрузке данных:', error)
-      
+
       // Fallback: используем отдельные API endpoints
       console.log('🔄 Используем fallback API endpoints...')
       const [mkbData, lsResults, algoResults, drugResults, substationResults] = await Promise.all([
@@ -910,10 +914,10 @@ const performSearch = async () => {
         $fetch('/api/drugs/all').catch(() => ({ success: true, items: [] })),
         $fetch('/api/substations/all').catch(() => ({ success: true, items: [] }))
       ])
-      
+
       // Собираем данные из fallback endpoints
       allItems = []
-      
+
       if (mkbData?.success && 'items' in mkbData && Array.isArray((mkbData as any).items)) {
         allItems.push(...(mkbData as any).items.map((item: any) => ({ ...item, type: 'mkb' })))
       }
@@ -929,17 +933,17 @@ const performSearch = async () => {
       if (substationResults?.success && 'items' in substationResults && Array.isArray((substationResults as any).items)) {
         allItems.push(...(substationResults as any).items.map((item: any) => ({ ...item, type: 'substation' })))
       }
-      
+
       console.log('📡 Fallback API загружен:', allItems.length, 'элементов')
     }
-    
+
     // Отладочная информация о типах данных
     const typeCounts = allItems.reduce((acc, item) => {
       acc[item.type] = (acc[item.type] || 0) + 1
       return acc
     }, {} as Record<string, number>)
     console.log('📊 Items by type:', typeCounts)
-    
+
     // Показываем примеры каждого типа
     Object.keys(typeCounts).forEach(type => {
       const sample = allItems.find(item => item.type === type)
@@ -951,13 +955,13 @@ const performSearch = async () => {
         })
       }
     })
-    
+
     // Всегда используем Fuse.js для более точного поиска
     const { search } = useFuseSearch()
     const fuseResults = search(allItems, query)
-    
+
     let finalResults: any[] = fuseResults
-    
+
     // Если Fuse.js ничего не нашел, пробуем простой поиск как fallback
     if (fuseResults.length === 0) {
       const simpleResults = performSimpleSearch(allItems, query)
@@ -966,7 +970,7 @@ const performSearch = async () => {
         finalResults = simpleResults
       }
     }
-    
+
     // Группируем результаты по типам
     const grouped: Record<string, any[]> = {
       mkb: [],
@@ -975,17 +979,21 @@ const performSearch = async () => {
       drug: [],
       substation: []
     }
-    
+
     finalResults.forEach(result => {
       if (grouped[result.type]) {
         grouped[result.type].push(result)
       }
     })
-    
+
     console.log('📊 Grouped results:', grouped)
     updateSearchResults(finalResults, grouped)
-    console.log('✅ Search completed, results updated')
     
+    // Добавляем запрос в историю поисков
+    addToHistory(query)
+    
+    console.log('✅ Search completed, results updated')
+
   } catch (error) {
     console.error('❌ Ошибка поиска:', error)
   } finally {
@@ -996,7 +1004,7 @@ const performSearch = async () => {
 // Выбираем результат поиска
 const selectSearchResult = (result: any) => {
   let url = ''
-  
+
   switch (result.type) {
     case 'algorithm':
       url = `/algorithms/${result.section}/${result.category?.url}/${result._id}`
@@ -1014,7 +1022,7 @@ const selectSearchResult = (result: any) => {
       url = `/substations?select=${encodeURIComponent(result.name)}`
       break
   }
-  
+
   if (url) {
     deactivateSearch()
     navigateTo(url)
@@ -1024,24 +1032,24 @@ const selectSearchResult = (result: any) => {
 // Функция для обрезки текста до приблизительного количества строк
 const truncateToApproximateLines = (text: string, maxLines: number = 3) => {
   if (!text) return ''
-  
+
   // Примерно 60-70 символов на строку для текста размера text-sm
   const charsPerLine = 65
   const maxChars = maxLines * charsPerLine
-  
+
   if (text.length <= maxChars) return text
-  
+
   // Находим последний пробел перед лимитом, чтобы не обрезать слово
   let cutIndex = maxChars
   while (cutIndex > 0 && text[cutIndex] !== ' ' && text[cutIndex] !== '.' && text[cutIndex] !== ',') {
     cutIndex--
   }
-  
+
   // Если не нашли подходящее место для обрезки, обрезаем по лимиту
   if (cutIndex < maxChars * 0.8) {
     cutIndex = maxChars
   }
-  
+
   return text.slice(0, cutIndex) + '...'
 }
 
@@ -1087,20 +1095,20 @@ const getResultDetails = (result: any) => {
 // Очищаем поиск
 const clearSearch = () => {
   searchQuery.value = ''
-  
+
   // На мобильных устройствах сворачиваем строку поиска
   const isMobile = window.innerWidth <= 768
   if (isMobile) {
     isSearchExpanded.value = false
   }
-  
+
   // Если мы на странице подстанций, отправляем событие для очистки поиска
   if (isSubstationsPage.value) {
-    window.dispatchEvent(new CustomEvent('substations-search', { 
-      detail: { query: '' } 
+    window.dispatchEvent(new CustomEvent('substations-search', {
+      detail: { query: '' }
     }))
   }
-  
+
   // Всегда деактивируем поиск для скрытия панели результатов
   deactivateSearch()
 }

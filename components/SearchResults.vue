@@ -1,456 +1,569 @@
 <template>
   <ClientOnly>
     <div v-if="isSearchActive" class="flex-1" @click.stop data-search-results>
-    <div class="max-w-5xl mx-auto px-4 py-8" @click.stop>
-      <div v-if="searchResults.length > 0" class="text-center mb-8">
-        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-700 dark:text-white mb-2 sm:mb-4">
-          Результаты поиска
-        </h2>
-        <p class="text-base sm:text-lg lg:text-xl text-slate-600 dark:text-slate-300">
-          Найдено {{ searchResults.length }} результатов
-        </p>
-        <!-- Индикатор источника данных -->
-        <div v-if="isDataFromCache" class="mt-2">
-          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      <div class="max-w-5xl mx-auto px-4 py-8" @click.stop>
+        <div v-if="searchResults.length > 0" class="text-center mb-8">
+          <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-700 dark:text-white mb-2 sm:mb-4">
+            Результаты поиска
+          </h2>
+          <p class="text-base sm:text-lg lg:text-xl text-slate-600 dark:text-slate-300">
+            Найдено {{ searchResults.length }} результатов
+          </p>
+          <!-- Индикатор источника данных -->
+          <div v-if="isDataFromCache" class="mt-2">
+            <span
+              class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              Загружено из кеша
+            </span>
+          </div>
+        </div>
+
+        <!-- Скелетон во время поиска -->
+        <div v-if="isSearching" class="space-y-3">
+          <div class="p-3">
+            <div class="flex items-center justify-between">
+              <USkeleton class="h-4 w-48 rounded bg-slate-200 dark:bg-slate-700" />
+              <USkeleton class="h-4 w-24 rounded bg-slate-200 dark:bg-slate-700" />
+            </div>
+            <div class="mt-3 space-y-2">
+              <USkeleton class="h-3 w-full rounded bg-slate-200 dark:bg-slate-700" />
+              <USkeleton class="h-3 w-5/6 rounded bg-slate-200 dark:bg-slate-700" />
+              <USkeleton class="h-3 w-2/3 rounded bg-slate-200 dark:bg-slate-700" />
+            </div>
+          </div>
+          <div class="p-3">
+            <div class="flex items-center justify-between">
+              <USkeleton class="h-4 w-40 rounded bg-slate-200 dark:bg-slate-700" />
+              <USkeleton class="h-4 w-20 rounded bg-slate-200 dark:bg-slate-700" />
+            </div>
+            <div class="mt-3 space-y-2">
+              <USkeleton class="h-3 w-full rounded bg-slate-200 dark:bg-slate-700" />
+              <USkeleton class="h-3 w-4/6 rounded bg-slate-200 dark:bg-slate-700" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Результаты поиска -->
+        <div v-else-if="searchResults.length > 0" class="space-y-4">
+          <!-- Динамические группы в зависимости от контекста страницы -->
+          <template v-for="group in orderedGroups" :key="group.key">
+            <!-- МКБ -->
+            <template v-if="group.key === 'mkb'">
+              <div class="space-y-3">
+                <div v-for="result in getDisplayedResults('mkb', groupedResults.mkb)" :key="result._id || result.id"
+                  class="bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
+                  <div class="p-3">
+                    <div class="flex items-start justify-between">
+                      <div class="flex-1">
+                        <h4 class="font-medium text-slate-900 dark:text-white">
+                          {{ result.title || result.name }}
+                          <template
+                            v-if="(result.synonyms && result.synonyms.length > 0) || (result.data?.synonyms && result.data.synonyms.length > 0)">
+                            — {{ (result.synonyms && result.synonyms.length > 0 ? result.synonyms :
+                              result.data?.synonyms)?.join(', ') }}
+                          </template>
+                        </h4>
+                        <p v-if="(result.description || result.note || result.content)"
+                          class="text-sm text-slate-600 dark:text-slate-300 mt-1">
+                          {{ truncateToApproximateLines(result.description || result.note || result.content, 5) }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Разделитель между шапкой и футером -->
+                  <div class="border-t border-slate-100 dark:border-slate-600"></div>
+                  <!-- Контентная часть с бейджами и заметками -->
+                  <div class="px-3 py-2 bg-slate-50/50 dark:bg-slate-800/30">
+                    <div class="flex items-center gap-2 mb-2 flex-wrap">
+                      <span v-if="result.mkbCode"
+                        class="bg-slate-100 dark:bg-slate-600 px-2 py-1 rounded text-xs font-mono text-slate-600 dark:text-slate-300">МКБ:
+                        {{ result.mkbCode }}</span>
+                      <span v-if="result.stationCode"
+                        class="bg-green-100 dark:bg-green-900 px-2 py-1 rounded text-xs font-mono text-green-700 dark:text-green-300">Станция:
+                        {{ result.stationCode }}</span>
+                      <span v-if="result.category?.name"
+                        class="bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded text-xs text-blue-700 dark:text-blue-300">{{
+                        result.category.name }}</span>
+                    </div>
+                  </div>
+                  <div
+                    class="px-3 pb-3 pt-0 border-t border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
+                    <div class="flex flex-wrap gap-1 pt-2">
+                      <button @click="openMkbModal(result)"
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-xs hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide-clipboard-list" class="w-3 h-3" />Открыть
+                      </button>
+                      <button
+                        @click="copyToClipboard((result.title || result.name) + ': ' + (result.description || result.note || result.content))"
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide-copy" class="w-3 h-3" />Копировать
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Кнопка "Показать еще" для МКБ -->
+                <div v-if="groupedResults.mkb.length > 3" class="flex justify-center pt-2">
+                  <button @click="toggleGroup('mkb')"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors border-0 cursor-pointer">
+                    <UIcon :name="expandedGroups.mkb ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+                      class="w-4 h-4" />
+                    {{ expandedGroups.mkb ? 'Скрыть' : `Показать еще ${getHiddenCount('mkb', groupedResults.mkb)}
+                    результатов` }}
+                  </button>
+                </div>
+              </div>
+            </template>
+
+            <!-- Локальные статусы -->
+            <template v-if="group.key === 'ls'">
+              <div class="space-y-3">
+                <div v-for="result in getDisplayedResults('localStatus', groupedResults.ls)"
+                  :key="result._id || result.id"
+                  class="bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
+                  <div class="p-3">
+                    <div class="flex items-start justify-between">
+                      <div class="flex-1">
+                        <h4 class="font-medium text-slate-900 dark:text-white">
+                          {{ result.title || result.name || result.data?.name }}
+                          <template
+                            v-if="(result.synonyms && result.synonyms.length > 0) || (result.data?.synonyms && result.data.synonyms.length > 0)">
+                            — {{ (result.synonyms && result.synonyms.length > 0 ? result.synonyms :
+                              result.data?.synonyms)?.join(', ') }}
+                          </template>
+                        </h4>
+                        <p v-if="(result.description || result.data?.description || result.data?.note)"
+                          class="text-sm text-slate-600 dark:text-slate-300 mt-1">
+                          {{ truncateToApproximateLines(result.description || result.data?.description ||
+                          result.data?.note, 5) }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Описание локального статуса (localis) -->
+                  <div v-if="result.localis"
+                    class="px-3 py-2 border-t border-slate-100 dark:border-slate-600 bg-white dark:bg-slate-700">
+                    <div class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">{{
+                      truncateToApproximateLines(result.localis, 5) }}</div>
+                  </div>
+                  <div
+                    class="px-3 pb-3 pt-0 border-t border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
+                    <div class="flex flex-wrap gap-1 pt-2">
+                      <button @click="openLocalStatusModal(result)"
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 rounded-full text-xs hover:bg-orange-200 dark:hover:bg-orange-800 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide-tag" class="w-3 h-3" />Открыть
+                      </button>
+                      <button
+                        @click="copyToClipboard((result.title || result.name) + ': ' + (result.description || result.note || result.content))"
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide-copy" class="w-3 h-3" />Копировать
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Кнопка "Показать еще" для локальных статусов -->
+                <div v-if="groupedResults.ls.length > 3" class="flex justify-center pt-2">
+                  <button @click="toggleGroup('localStatus')"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors border-0 cursor-pointer">
+                    <UIcon :name="expandedGroups.localStatus ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+                      class="w-4 h-4" />
+                    {{ expandedGroups.localStatus ? 'Скрыть' : `Показать еще ${getHiddenCount('localStatus',
+                      groupedResults.ls)}
+                    результатов` }}
+                  </button>
+                </div>
+              </div>
+            </template>
+
+            <!-- Алгоритмы -->
+            <template v-if="group.key === 'algorithm'">
+              <div class="space-y-3">
+                <div v-for="result in getDisplayedResults('algorithm', groupedResults.algorithm)"
+                  :key="result._id || result.id"
+                  class="bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
+                  <div class="p-3">
+                    <div class="flex items-start justify-between">
+                      <div class="flex-1">
+                        <h4 class="font-medium text-slate-900 dark:text-white">{{ result.title || result.data?.name ||
+                          result.name }}</h4>
+                        <p v-if="(result.description || result.data?.description || result.data?.note)"
+                          class="text-sm text-slate-600 dark:text-slate-300 mt-1">
+                          {{ truncateToApproximateLines(result.description || result.data?.description ||
+                          result.data?.note, 5) }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Разделитель между шапкой и футером -->
+                  <div class="border-t border-slate-100 dark:border-slate-600"></div>
+                  <!-- Контентная часть с таблицей алгоритма -->
+                  <div class="bg-slate-50/50 dark:bg-slate-800/30">
+                    <div v-if="result.content" class="relative">
+                      <div
+                        :class="isTableExpanded(String(result._id || result.id)) ? 'max-h-none' : 'max-h-32 overflow-hidden'">
+                        <!-- Обертка таблицы без внешнего бордера -->
+                        <div class="bg-white dark:bg-slate-800 rounded-none overflow-x-hidden relative sticky-container"
+                          data-styled-table-wrapper>
+                          <div v-html="renderAlgorithmTable(result.content)" @vue:mounted="setupMobileTableLogic"></div>
+                        </div>
+                      </div>
+                      <!-- Градиент для визуального эффекта исчезновения (только когда таблица свернута) -->
+                      <div v-if="!isTableExpanded(String(result._id || result.id))"
+                        class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-slate-50/50 to-transparent dark:from-slate-800/30 dark:to-transparent pointer-events-none">
+                      </div>
+                      <!-- Кнопка раскрытия/скрытия -->
+                      <div class="flex justify-center py-2">
+                        <button @click="toggleTable(String(result._id || result.id))"
+                          class="inline-flex items-center gap-1 px-3 py-1 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-full text-xs hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors border-0 cursor-pointer">
+                          <UIcon
+                            :name="isTableExpanded(String(result._id || result.id)) ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+                            class="w-3 h-3" />
+                          {{ isTableExpanded(String(result._id || result.id)) ? 'Скрыть' : 'Показать полностью' }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="px-3 pb-3 pt-0 border-t border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
+                    <div class="flex flex-wrap gap-1 pt-2">
+                      <button @click="openAlgorithmModal(result)"
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-full text-xs hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide-list-tree" class="w-3 h-3" />Открыть
+                      </button>
+                      <button
+                        @click="copyToClipboard((result.title || result.name) + ': ' + (result.description || result.note || result.content))"
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide-copy" class="w-3 h-3" />Копировать
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Кнопка "Показать еще" для алгоритмов -->
+                <div v-if="groupedResults.algorithm.length > 3" class="flex justify-center pt-2">
+                  <button @click="toggleGroup('algorithm')"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors border-0 cursor-pointer">
+                    <UIcon :name="expandedGroups.algorithm ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+                      class="w-4 h-4" />
+                    {{ expandedGroups.algorithm ? 'Скрыть' : `Показать еще ${getHiddenCount('algorithm',
+                      groupedResults.algorithm)} результатов` }}
+                  </button>
+                </div>
+              </div>
+            </template>
+
+            <!-- Препараты -->
+            <template v-if="group.key === 'drug'">
+              <div class="space-y-3">
+                <div v-for="result in getDisplayedResults('drug', groupedResults.drug)" :key="result._id || result.id"
+                  class="bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
+                  <div class="p-3">
+                    <div class="flex items-start justify-between">
+                      <div class="flex-1">
+                        <h4 class="font-medium text-slate-900 dark:text-white">
+                          {{ result.title || result.name || result.data?.name }}
+                          <template
+                            v-if="(result.synonyms && result.synonyms.length > 0) || (result.data?.synonyms && result.data.synonyms.length > 0)">
+                            , {{ (result.synonyms && result.synonyms.length > 0 ? result.synonyms :
+                              result.data?.synonyms)?.join(', ') }}
+                          </template>
+                        </h4>
+                        <p v-if="result.latinName || result.data?.latinName"
+                          class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{
+                            result.latinName || result.data?.latinName }}</p>
+                        <p v-if="result.dosage" class="text-sm text-green-600 dark:text-green-400 mt-1 font-medium">{{
+                          result.dosage }}</p>
+
+                        <p v-if="(result.description || result.note || result.data?.description || result.data?.note) && (result.description) !== (result.latinName || result.data?.latinName)"
+                          class="text-sm text-slate-600 dark:text-slate-300 mt-1">
+                          {{ (result.description || result.note || result.data?.description || result.data?.note) }}
+                        </p>
+
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Разделитель между шапкой и контентом -->
+                  <div class="border-t border-slate-200 dark:border-slate-600"></div>
+
+                  <!-- Калькуляторы дозировок: между шапкой и футером, без внешнего фона и бордера, во всю ширину -->
+                  <div v-if="result?.dosages?.type === 'calculator' && Array.isArray(result?.dosages?.variants)"
+                    class="">
+                    <div class="mt-0 rounded-none bg-transparent border-0" v-if="initDrugCalc(result)">
+                      <div class="px-3 py-2">
+                        <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Калькулятор
+                          дозировок</label>
+                      </div>
+                      <div class="space-y-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 px-3">
+                          <div>
+                            <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Масса (кг)</label>
+                            <UInput v-model.number="drugCalc[getDrugId(result)].weight" size="xl" type="number" min="0"
+                              step="0.1" placeholder="Например, 70" class="w-full" />
+                          </div>
+                          <div>
+                            <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Вариант</label>
+                            <USelect v-model="drugCalc[getDrugId(result)].variant" size="xl"
+                              :items="getVariantItems(result)" class="w-full" />
+                          </div>
+                          <div>
+                            <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Метод</label>
+                            <USelect v-model="drugCalc[getDrugId(result)].method" size="xl"
+                              :items="getMethodItems(result, drugCalc[getDrugId(result)].variant)" class="w-full" />
+                          </div>
+                          <div>
+                            <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Группа</label>
+                            <USelect v-model="drugCalc[getDrugId(result)].groupIdx" size="xl"
+                              :items="getGroupItems(result)" class="w-full" />
+                          </div>
+                        </div>
+                        <div class="px-3">
+                          <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Дозировка ({{
+                            getPerKgUnit(result)
+                            }})</label>
+                          <USelect v-model="drugCalc[getDrugId(result)].doseValue" size="xl"
+                            :items="getDoseItems(result)" class="w-full" />
+                        </div>
+                        <div class="px-3 pb-2">
+                          <div
+                            class="p-3 rounded bg-slate-200 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                            <div class="text-sm text-slate-700 dark:text-slate-300">
+                              <span class="font-medium">Расчетная доза:&nbsp;</span>
+                              <span v-if="calcDoseByPerKg(result)">{{ calcDoseByPerKg(result) }} {{
+                                resultUnitByPerKg(result) }}</span>
+                              <span v-else> —</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div v-else-if="result?.dosages?.type === 'simple_calculator'" class="">
+                    <div class="mt-0 rounded-none bg-transparent border-0" v-if="initDrugCalc(result)">
+                      <div class="px-3 py-2">
+                        <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Калькулятор
+                          дозировок</label>
+                      </div>
+                      <div class="space-y-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 px-3">
+                          <div>
+                            <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Масса (кг)</label>
+                            <UInput v-model.number="drugCalc[getDrugId(result)].weight" size="xl" type="number" min="0"
+                              step="0.1" placeholder="Например, 70" class="w-full" />
+                          </div>
+                          <div>
+                            <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Доза ({{
+                              simpleUnit(result) }})</label>
+                            <USelect v-model="drugCalc[getDrugId(result)].simpleDose" size="xl"
+                              :items="simpleDoseItems(result)" class="w-full" />
+                          </div>
+                        </div>
+                        <div class="px-3 pb-2">
+                          <div
+                            class="p-3 rounded bg-slate-200 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                            <div class="text-sm text-slate-700 dark:text-slate-300">
+                              <span class="font-medium">Расчетная доза:&nbsp;</span>
+                              <span v-if="simpleResult(result).value">
+                                {{ simpleResult(result).value }} {{ simpleResult(result).unit }}
+                                <span v-if="simpleResult(result).capped"
+                                  class="text-xs text-amber-600 dark:text-amber-400">(указана
+                                  максимальная доза)</span>
+                              </span>
+                              <span v-else> —</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div v-else-if="result?.dosages?.type === 'simple_calculator_with_ml'" class="">
+                    <div class="mt-0 rounded-none bg-transparent border-0" v-if="initDrugCalc(result)">
+                      <div class="px-3 py-2">
+                        <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Калькулятор
+                          дозировок</label>
+                      </div>
+                      <div class="space-y-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 px-3">
+                          <div>
+                            <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Масса (кг)</label>
+                            <UInput v-model.number="drugCalc[getDrugId(result)].weight" size="xl" type="number" min="0"
+                              step="0.1" placeholder="Например, 70" class="w-full" />
+                          </div>
+                          <div>
+                            <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Доза ({{
+                              withMlMgUnit(result) }}; {{
+                              withMlMlUnit(result) }})</label>
+                            <USelect v-model="drugCalc[getDrugId(result)].withMlIndex" size="xl"
+                              :items="withMlDoseItems(result)" class="w-full" />
+                          </div>
+                        </div>
+                        <div class="px-3 pb-2">
+                          <div
+                            class="p-3 rounded bg-slate-200 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                            <div class="text-sm text-slate-700 dark:text-slate-300">
+                              <span class="font-medium">Расчетная доза:&nbsp;</span>
+                              <span v-if="withMlResult(result).mg">
+                                {{ withMlResult(result).mg }} мг ({{ withMlResult(result).ml }} мл)
+                                <span v-if="withMlResult(result).capped"
+                                  class="text-xs text-amber-600 dark:text-amber-400">(указана
+                                  максимальная доза)</span>
+                              </span>
+                              <span v-else> —</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    class="px-3 pb-3 pt-0 border-t border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
+                    <div class="flex flex-wrap gap-1 pt-2">
+                      <button @click="openDrugModal(result)"
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-xs hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-heroicons:eye" class="w-3 h-3" />Подробнее
+                      </button>
+                      <button @click="addDrugBookmark(result)"
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-xs hover:bg-green-200 dark:hover:bg-green-800 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-heroicons:bookmark" class="w-3 h-3" />В закладки
+                      </button>
+                      <button
+                        @click="copyToClipboard((result.title || result.name) + ': ' + (result.description || result.note || ''))"
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide-copy" class="w-3 h-3" />Копировать
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Кнопка "Показать еще" для препаратов -->
+                <div v-if="groupedResults.drug.length > 3" class="flex justify-center pt-2">
+                  <button @click="toggleGroup('drug')"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors border-0 cursor-pointer">
+                    <UIcon :name="expandedGroups.drug ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+                      class="w-4 h-4" />
+                    {{ expandedGroups.drug ? 'Скрыть' : `Показать еще ${getHiddenCount('drug', groupedResults.drug)}
+                    результатов` }}
+                  </button>
+                </div>
+              </div>
+            </template>
+
+            <!-- Подстанции -->
+            <template v-if="group.key === 'substation'">
+              <div class="space-y-3">
+                <div v-for="result in getDisplayedResults('substation', groupedResults.substation)"
+                  :key="result._id || result.id"
+                  class="bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
+                  <div class="p-3">
+                    <div class="flex items-start justify-between">
+                      <div class="flex-1">
+                        <h4 class="font-medium text-slate-900 dark:text-white">{{ result.title || result.name ||
+                          result.data?.name || result.data?.title }}</h4>
+                        <p v-if="result.data?.address || result.address"
+                          class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ result.data?.address ||
+                          result.address }}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Разделитель между шапкой и контентом -->
+                  <div class="border-t border-slate-100 dark:border-slate-600"></div>
+
+                  <!-- Контентная часть с телефонами и картой -->
+                  <div class="px-3 py-2 bg-slate-50/50 dark:bg-slate-800/30">
+                    <!-- Кнопки для телефонов -->
+                    <div v-if="result.data?.phones || result.phones" class="flex flex-wrap gap-2">
+                      <button v-for="(phone, index) in getPhoneArray(result.data?.phones || result.phones)" :key="index"
+                        @click="callPhone(phone)"
+                        class="inline-flex items-center px-3 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-full text-sm hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors cursor-pointer">
+                        <UIcon name="i-lucide-phone" class="w-3 h-3 mr-1" />{{ phone }}
+                      </button>
+                    </div>
+
+                    <!-- Карта подстанции -->
+                    <div
+                      v-if="result.location?.coordinates && Array.isArray(result.location.coordinates) && result.location.coordinates.length === 2"
+                      class="mt-3">
+                      <div class="bg-slate-50 dark:bg-slate-800 rounded-lg overflow-hidden">
+                        <div class="h-32 w-full">
+                          <YMap :center="[result.location.coordinates[1], result.location.coordinates[0]]" :zoom="15"
+                            :placemarks="[{
+                              id: result.id,
+                              coords: [result.location.coordinates[1], result.location.coordinates[0]],
+                              hint: result.title || result.name || result.data?.name || result.data?.title,
+                              balloon: getSubstationBalloon(result)
+                            }]" class="rounded-lg" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="px-3 pb-3 pt-0 border-t border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
+                    <div class="flex flex-wrap gap-1 pt-2">
+                      <button @click="openSubstationModal(result)"
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-full text-xs hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide-map-pin" class="w-3 h-3" />Открыть
+                      </button>
+                      <button
+                        @click="copyToClipboard((result.title || result.name) + ': ' + (result.description || result.note || result.content))"
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide-copy" class="w-3 h-3" />Копировать
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Кнопка "Показать еще" для подстанций -->
+                <div v-if="groupedResults.substation.length > 3" class="flex justify-center pt-2">
+                  <button @click="toggleGroup('substation')"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors border-0 cursor-pointer">
+                    <UIcon :name="expandedGroups.substation ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+                      class="w-4 h-4" />
+                    {{ expandedGroups.substation ? 'Скрыть' : `Показать еще ${getHiddenCount('substation',
+                      groupedResults.substation)} результатов` }}
+                  </button>
+                </div>
+              </div>
+            </template>
+          </template>
+        </div>
+
+        <!-- Пустое состояние -->
+        <div v-else class="text-center py-12" @click.stop>
+
+          <div class="text-slate-400 dark:text-slate-500">
+            <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
-            Загружено из кеша
-          </span>
-        </div>
-      </div>
-
-      <!-- Скелетон во время поиска -->
-      <div v-if="isSearching" class="space-y-3">
-        <div class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600 p-3">
-          <div class="flex items-center justify-between">
-            <USkeleton class="h-4 w-48 rounded" />
-            <USkeleton class="h-4 w-24 rounded" />
-          </div>
-          <div class="mt-3 space-y-2">
-            <USkeleton class="h-3 w-full rounded" />
-            <USkeleton class="h-3 w-5/6 rounded" />
-            <USkeleton class="h-3 w-2/3 rounded" />
-          </div>
-        </div>
-        <div class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600 p-3">
-          <div class="flex items-center justify-between">
-            <USkeleton class="h-4 w-40 rounded" />
-            <USkeleton class="h-4 w-20 rounded" />
-          </div>
-          <div class="mt-3 space-y-2">
-            <USkeleton class="h-3 w-full rounded" />
-            <USkeleton class="h-3 w-4/6 rounded" />
-          </div>
-        </div>
-      </div>
-
-      <!-- Результаты поиска -->
-      <div v-else-if="searchResults.length > 0" class="space-y-4">
-        <!-- Динамические группы в зависимости от контекста страницы -->
-        <template v-for="group in orderedGroups" :key="group.key">
-          <!-- МКБ -->
-          <template v-if="group.key === 'mkb'">
-          <div class="space-y-3">
-            <div v-for="result in getDisplayedResults('mkb', groupedResults.mkb)" :key="result._id || result.id" 
-              class="bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
-              <div class="p-3">
-                <div class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <h4 class="font-medium text-slate-900 dark:text-white">
-                      {{ result.title || result.name }}
-                      <template v-if="(result.synonyms && result.synonyms.length > 0) || (result.data?.synonyms && result.data.synonyms.length > 0)">
-                        — {{ (result.synonyms && result.synonyms.length > 0 ? result.synonyms : result.data?.synonyms)?.join(', ') }}
-                      </template>
-                    </h4>
-                    <p v-if="(result.description || result.note || result.content)" class="text-sm text-slate-600 dark:text-slate-300 mt-1">
-                      {{ truncateToApproximateLines(result.description || result.note || result.content, 5) }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <!-- Разделитель между шапкой и футером -->
-              <div class="border-t border-slate-100 dark:border-slate-600"></div>
-              <!-- Контентная часть с бейджами и заметками -->
-              <div class="px-3 py-2 bg-slate-50/50 dark:bg-slate-800/30">
-                <div class="flex items-center gap-2 mb-2 flex-wrap">
-                  <span v-if="result.mkbCode" class="bg-slate-100 dark:bg-slate-600 px-2 py-1 rounded text-xs font-mono text-slate-600 dark:text-slate-300">МКБ: {{ result.mkbCode }}</span>
-                  <span v-if="result.stationCode" class="bg-green-100 dark:bg-green-900 px-2 py-1 rounded text-xs font-mono text-green-700 dark:text-green-300">Станция: {{ result.stationCode }}</span>
-                  <span v-if="result.category?.name" class="bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded text-xs text-blue-700 dark:text-blue-300">{{ result.category.name }}</span>
-                </div>
-              </div>
-              <div class="px-3 pb-3 pt-0 border-t border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
-                <div class="flex flex-wrap gap-1 pt-2">
-                  <button @click="openMkbModal(result)" class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-xs hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors border-0 cursor-pointer">
-                    <UIcon name="i-lucide-clipboard-list" class="w-3 h-3" />Открыть
-                  </button>
-                  <button @click="copyToClipboard((result.title || result.name) + ': ' + (result.description || result.note || result.content))" class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
-                    <UIcon name="i-lucide-copy" class="w-3 h-3" />Копировать
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Кнопка "Показать еще" для МКБ -->
-            <div v-if="groupedResults.mkb.length > 3" class="flex justify-center pt-2">
-              <button @click="toggleGroup('mkb')" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors border-0 cursor-pointer">
-                <UIcon :name="expandedGroups.mkb ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" class="w-4 h-4" />
-                {{ expandedGroups.mkb ? 'Скрыть' : `Показать еще ${getHiddenCount('mkb', groupedResults.mkb)} результатов` }}
+            <p class="text-lg font-medium mb-2">{{ searchQuery ? 'Ничего не найдено' : 'Начните поиск' }}</p>
+            <p class="text-sm">{{ searchQuery ? 'Попробуйте изменить запрос или использовать другие ключевые слова' :
+              'Введите запрос в поле поиска выше' }}</p>
+            <!-- История поисков -->
+            <div v-if="!searchQuery && searchHistory.length > 0" class="flex flex-wrap gap-2 justify-center mt-4">
+              <button v-for="(query, index) in searchHistory" :key="index" @click="performSearchFromHistory(query)"
+                class="inline-flex items-center px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors duration-200 cursor-pointer">
+                <span>{{ query }}</span>
+                <span @click.stop="removeFromHistory(query)"
+                  class="ml-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                  </svg>
+                </span>
               </button>
             </div>
           </div>
-          </template>
-
-          <!-- Локальные статусы -->
-          <template v-if="group.key === 'ls'">
-          <div class="space-y-3">
-            <div v-for="result in getDisplayedResults('localStatus', groupedResults.ls)" :key="result._id || result.id" 
-              class="bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
-              <div class="p-3">
-                <div class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <h4 class="font-medium text-slate-900 dark:text-white">
-                      {{ result.title || result.name || result.data?.name }}
-                      <template v-if="(result.synonyms && result.synonyms.length > 0) || (result.data?.synonyms && result.data.synonyms.length > 0)">
-                        — {{ (result.synonyms && result.synonyms.length > 0 ? result.synonyms : result.data?.synonyms)?.join(', ') }}
-                      </template>
-                    </h4>
-                    <p v-if="(result.description || result.data?.description || result.data?.note)" class="text-sm text-slate-600 dark:text-slate-300 mt-1">
-                      {{ truncateToApproximateLines(result.description || result.data?.description || result.data?.note, 5) }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <!-- Описание локального статуса (localis) -->
-              <div v-if="result.localis" class="px-3 py-2 border-t border-slate-100 dark:border-slate-600 bg-white dark:bg-slate-700">
-                <div class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">{{ truncateToApproximateLines(result.localis, 5) }}</div>
-              </div>
-              <div class="px-3 pb-3 pt-0 border-t border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
-                <div class="flex flex-wrap gap-1 pt-2">
-                  <button @click="openLocalStatusModal(result)" class="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 rounded-full text-xs hover:bg-orange-200 dark:hover:bg-orange-800 transition-colors border-0 cursor-pointer">
-                    <UIcon name="i-lucide-tag" class="w-3 h-3" />Открыть
-                  </button>
-                  <button @click="copyToClipboard((result.title || result.name) + ': ' + (result.description || result.note || result.content))" class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
-                    <UIcon name="i-lucide-copy" class="w-3 h-3" />Копировать
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Кнопка "Показать еще" для локальных статусов -->
-            <div v-if="groupedResults.ls.length > 3" class="flex justify-center pt-2">
-              <button @click="toggleGroup('localStatus')" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors border-0 cursor-pointer">
-                <UIcon :name="expandedGroups.localStatus ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" class="w-4 h-4" />
-                {{ expandedGroups.localStatus ? 'Скрыть' : `Показать еще ${getHiddenCount('localStatus', groupedResults.ls)} результатов` }}
-              </button>
-            </div>
-          </div>
-          </template>
-
-          <!-- Алгоритмы -->
-          <template v-if="group.key === 'algorithm'">
-          <div class="space-y-3">
-            <div v-for="result in getDisplayedResults('algorithm', groupedResults.algorithm)" :key="result._id || result.id" 
-              class="bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
-              <div class="p-3">
-                <div class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <h4 class="font-medium text-slate-900 dark:text-white">{{ result.title || result.data?.name || result.name }}</h4>
-                    <p v-if="(result.description || result.data?.description || result.data?.note)" class="text-sm text-slate-600 dark:text-slate-300 mt-1">
-                      {{ truncateToApproximateLines(result.description || result.data?.description || result.data?.note, 5) }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <!-- Разделитель между шапкой и футером -->
-              <div class="border-t border-slate-100 dark:border-slate-600"></div>
-              <!-- Контентная часть с таблицей алгоритма -->
-              <div class="bg-slate-50/50 dark:bg-slate-800/30">
-                <div v-if="result.content" class="relative">
-                  <div :class="isTableExpanded(String(result._id || result.id)) ? 'max-h-none' : 'max-h-32 overflow-hidden'">
-                    <!-- Обертка таблицы без внешнего бордера -->
-                    <div class="bg-white dark:bg-slate-800 rounded-none overflow-x-hidden relative sticky-container" data-styled-table-wrapper>
-                      <div v-html="renderAlgorithmTable(result.content)" @vue:mounted="setupMobileTableLogic"></div>
-                    </div>
-                  </div>
-                  <!-- Градиент для визуального эффекта исчезновения (только когда таблица свернута) -->
-                  <div v-if="!isTableExpanded(String(result._id || result.id))" class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-slate-50/50 to-transparent dark:from-slate-800/30 dark:to-transparent pointer-events-none"></div>
-                  <!-- Кнопка раскрытия/скрытия -->
-                  <div class="flex justify-center py-2">
-                    <button @click="toggleTable(String(result._id || result.id))" class="inline-flex items-center gap-1 px-3 py-1 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-full text-xs hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors border-0 cursor-pointer">
-                      <UIcon :name="isTableExpanded(String(result._id || result.id)) ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" class="w-3 h-3" />
-                      {{ isTableExpanded(String(result._id || result.id)) ? 'Скрыть' : 'Показать полностью' }}
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div class="px-3 pb-3 pt-0 border-t border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
-                <div class="flex flex-wrap gap-1 pt-2">
-                  <button @click="openAlgorithmModal(result)" class="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-full text-xs hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors border-0 cursor-pointer">
-                    <UIcon name="i-lucide-list-tree" class="w-3 h-3" />Открыть
-                  </button>
-                  <button @click="copyToClipboard((result.title || result.name) + ': ' + (result.description || result.note || result.content))" class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
-                    <UIcon name="i-lucide-copy" class="w-3 h-3" />Копировать
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Кнопка "Показать еще" для алгоритмов -->
-            <div v-if="groupedResults.algorithm.length > 3" class="flex justify-center pt-2">
-              <button @click="toggleGroup('algorithm')" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors border-0 cursor-pointer">
-                <UIcon :name="expandedGroups.algorithm ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" class="w-4 h-4" />
-                {{ expandedGroups.algorithm ? 'Скрыть' : `Показать еще ${getHiddenCount('algorithm', groupedResults.algorithm)} результатов` }}
-              </button>
-            </div>
-          </div>
-          </template>
-
-          <!-- Препараты -->
-          <template v-if="group.key === 'drug'">
-          <div class="space-y-3">
-            <div v-for="result in getDisplayedResults('drug', groupedResults.drug)" :key="result._id || result.id" 
-              class="bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
-              <div class="p-3">
-                <div class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <h4 class="font-medium text-slate-900 dark:text-white">
-                      {{ result.title || result.name || result.data?.name }}
-                      <template v-if="(result.synonyms && result.synonyms.length > 0) || (result.data?.synonyms && result.data.synonyms.length > 0)">
-                        , {{ (result.synonyms && result.synonyms.length > 0 ? result.synonyms : result.data?.synonyms)?.join(', ') }}
-                      </template>
-                    </h4>
-                    <p v-if="result.latinName || result.data?.latinName" class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ result.latinName || result.data?.latinName }}</p>
-                    <p v-if="result.dosage" class="text-sm text-green-600 dark:text-green-400 mt-1 font-medium">{{ result.dosage }}</p>
-                    
-                    <p v-if="(result.description || result.note || result.data?.description || result.data?.note) && (result.description) !== (result.latinName || result.data?.latinName)" class="text-sm text-slate-600 dark:text-slate-300 mt-1">
-                      {{ (result.description || result.note || result.data?.description || result.data?.note) }}
-                    </p>
-                    
-                  </div>
-                </div>
-              </div>
-
-              <!-- Разделитель между шапкой и контентом -->
-              <div class="border-t border-slate-200 dark:border-slate-600"></div>
-
-              <!-- Калькуляторы дозировок: между шапкой и футером, без внешнего фона и бордера, во всю ширину -->
-              <div v-if="result?.dosages?.type === 'calculator' && Array.isArray(result?.dosages?.variants)" class="">
-                <div class="mt-0 rounded-none bg-transparent border-0" v-if="initDrugCalc(result)">
-                  <div class="px-3 py-2">
-                    <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Калькулятор дозировок</label>
-                  </div>
-                  <div class="space-y-3">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 px-3">
-                      <div>
-                        <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Масса (кг)</label>
-                        <UInput v-model.number="drugCalc[getDrugId(result)].weight" size="xl" type="number" min="0" step="0.1" placeholder="Например, 70" class="w-full" />
-                      </div>
-                      <div>
-                        <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Вариант</label>
-                        <USelect v-model="drugCalc[getDrugId(result)].variant" size="xl" :items="getVariantItems(result)" class="w-full" />
-                      </div>
-                      <div>
-                        <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Метод</label>
-                        <USelect v-model="drugCalc[getDrugId(result)].method" size="xl" :items="getMethodItems(result, drugCalc[getDrugId(result)].variant)" class="w-full" />
-                      </div>
-                      <div>
-                        <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Группа</label>
-                        <USelect v-model="drugCalc[getDrugId(result)].groupIdx" size="xl" :items="getGroupItems(result)" class="w-full" />
-                      </div>
-                    </div>
-                    <div class="px-3">
-                      <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Дозировка ({{ getPerKgUnit(result) }})</label>
-                      <USelect v-model="drugCalc[getDrugId(result)].doseValue" size="xl" :items="getDoseItems(result)" class="w-full" />
-                    </div>
-                    <div class="px-3 pb-2">
-                      <div class="p-3 rounded bg-slate-200 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-                        <div class="text-sm text-slate-700 dark:text-slate-300">
-                          <span class="font-medium">Расчетная доза:&nbsp;</span>
-                          <span v-if="calcDoseByPerKg(result)">{{ calcDoseByPerKg(result) }} {{ resultUnitByPerKg(result) }}</span>
-                          <span v-else> —</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div v-else-if="result?.dosages?.type === 'simple_calculator'" class="">
-                <div class="mt-0 rounded-none bg-transparent border-0" v-if="initDrugCalc(result)">
-                  <div class="px-3 py-2">
-                    <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Калькулятор дозировок</label>
-                  </div>
-                  <div class="space-y-3">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 px-3">
-                      <div>
-                        <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Масса (кг)</label>
-                        <UInput v-model.number="drugCalc[getDrugId(result)].weight" size="xl" type="number" min="0" step="0.1" placeholder="Например, 70" class="w-full" />
-                      </div>
-                      <div>
-                        <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Доза ({{ simpleUnit(result) }})</label>
-                        <USelect v-model="drugCalc[getDrugId(result)].simpleDose" size="xl" :items="simpleDoseItems(result)" class="w-full" />
-                      </div>
-                    </div>
-                    <div class="px-3 pb-2">
-                      <div class="p-3 rounded bg-slate-200 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-                        <div class="text-sm text-slate-700 dark:text-slate-300">
-                          <span class="font-medium">Расчетная доза:&nbsp;</span>
-                          <span v-if="simpleResult(result).value">
-                            {{ simpleResult(result).value }} {{ simpleResult(result).unit }}
-                            <span v-if="simpleResult(result).capped" class="text-xs text-amber-600 dark:text-amber-400">(указана максимальная доза)</span>
-                          </span>
-                          <span v-else> —</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div v-else-if="result?.dosages?.type === 'simple_calculator_with_ml'" class="">
-                <div class="mt-0 rounded-none bg-transparent border-0" v-if="initDrugCalc(result)">
-                  <div class="px-3 py-2">
-                    <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Калькулятор дозировок</label>
-                  </div>
-                  <div class="space-y-3">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 px-3">
-                      <div>
-                        <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Масса (кг)</label>
-                        <UInput v-model.number="drugCalc[getDrugId(result)].weight" size="xl" type="number" min="0" step="0.1" placeholder="Например, 70" class="w-full" />
-                      </div>
-                      <div>
-                        <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Доза ({{ withMlMgUnit(result) }}; {{ withMlMlUnit(result) }})</label>
-                        <USelect v-model="drugCalc[getDrugId(result)].withMlIndex" size="xl" :items="withMlDoseItems(result)" class="w-full" />
-                      </div>
-                    </div>
-                    <div class="px-3 pb-2">
-                      <div class="p-3 rounded bg-slate-200 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-                        <div class="text-sm text-slate-700 dark:text-slate-300">
-                          <span class="font-medium">Расчетная доза:&nbsp;</span>
-                          <span v-if="withMlResult(result).mg">
-                            {{ withMlResult(result).mg }} мг ({{ withMlResult(result).ml }} мл)
-                            <span v-if="withMlResult(result).capped" class="text-xs text-amber-600 dark:text-amber-400">(указана максимальная доза)</span>
-                          </span>
-                          <span v-else> —</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="px-3 pb-3 pt-0 border-t border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
-                <div class="flex flex-wrap gap-1 pt-2">
-                  <button @click="openDrugModal(result)" class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-xs hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors border-0 cursor-pointer">
-                    <UIcon name="i-heroicons:eye" class="w-3 h-3" />Подробнее
-                  </button>
-                  <button @click="addDrugBookmark(result)" class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-xs hover:bg-green-200 dark:hover:bg-green-800 transition-colors border-0 cursor-pointer">
-                    <UIcon name="i-heroicons:bookmark" class="w-3 h-3" />В закладки
-                  </button>
-                  <button @click="copyToClipboard((result.title || result.name) + ': ' + (result.description || result.note || ''))" class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
-                    <UIcon name="i-lucide-copy" class="w-3 h-3" />Копировать
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Кнопка "Показать еще" для препаратов -->
-            <div v-if="groupedResults.drug.length > 3" class="flex justify-center pt-2">
-              <button @click="toggleGroup('drug')" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors border-0 cursor-pointer">
-                <UIcon :name="expandedGroups.drug ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" class="w-4 h-4" />
-                {{ expandedGroups.drug ? 'Скрыть' : `Показать еще ${getHiddenCount('drug', groupedResults.drug)} результатов` }}
-              </button>
-            </div>
-          </div>
-          </template>
-
-          <!-- Подстанции -->
-          <template v-if="group.key === 'substation'">
-          <div class="space-y-3">
-            <div v-for="result in getDisplayedResults('substation', groupedResults.substation)" :key="result._id || result.id" 
-              class="bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
-              <div class="p-3">
-                <div class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <h4 class="font-medium text-slate-900 dark:text-white">{{ result.title || result.name || result.data?.name || result.data?.title }}</h4>
-                    <p v-if="result.data?.address || result.address" class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ result.data?.address || result.address }}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Разделитель между шапкой и контентом -->
-              <div class="border-t border-slate-100 dark:border-slate-600"></div>
-              
-              <!-- Контентная часть с телефонами и картой -->
-              <div class="px-3 py-2 bg-slate-50/50 dark:bg-slate-800/30">
-                <!-- Кнопки для телефонов -->
-                <div v-if="result.data?.phones || result.phones" class="flex flex-wrap gap-2">
-                  <button 
-                    v-for="(phone, index) in getPhoneArray(result.data?.phones || result.phones)" 
-                    :key="index"
-                    @click="callPhone(phone)"
-                    class="inline-flex items-center px-3 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-full text-sm hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors cursor-pointer"
-                  >
-                    <UIcon name="i-lucide-phone" class="w-3 h-3 mr-1" />{{ phone }}
-                  </button>
-                </div>
-                
-                <!-- Карта подстанции -->
-                <div v-if="result.location?.coordinates && Array.isArray(result.location.coordinates) && result.location.coordinates.length === 2" class="mt-3">
-                  <div class="bg-slate-50 dark:bg-slate-800 rounded-lg overflow-hidden">
-                    <div class="h-32 w-full">
-                      <YMap 
-                        :center="[result.location.coordinates[1], result.location.coordinates[0]]"
-                        :zoom="15"
-                        :placemarks="[{
-                          id: result.id,
-                          coords: [result.location.coordinates[1], result.location.coordinates[0]],
-                          hint: result.title || result.name || result.data?.name || result.data?.title,
-                          balloon: getSubstationBalloon(result)
-                        }]"
-                        class="rounded-lg"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="px-3 pb-3 pt-0 border-t border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
-                <div class="flex flex-wrap gap-1 pt-2">
-                  <button @click="openSubstationModal(result)" class="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-full text-xs hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors border-0 cursor-pointer">
-                    <UIcon name="i-lucide-map-pin" class="w-3 h-3" />Открыть
-                  </button>
-                  <button @click="copyToClipboard((result.title || result.name) + ': ' + (result.description || result.note || result.content))" class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
-                    <UIcon name="i-lucide-copy" class="w-3 h-3" />Копировать
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Кнопка "Показать еще" для подстанций -->
-            <div v-if="groupedResults.substation.length > 3" class="flex justify-center pt-2">
-              <button @click="toggleGroup('substation')" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors border-0 cursor-pointer">
-                <UIcon :name="expandedGroups.substation ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" class="w-4 h-4" />
-                {{ expandedGroups.substation ? 'Скрыть' : `Показать еще ${getHiddenCount('substation', groupedResults.substation)} результатов` }}
-              </button>
-            </div>
-          </div>
-          </template>
-        </template>
-      </div>
-
-      <!-- Пустое состояние -->
-      <div v-else class="text-center py-12" @click.stop>
-        <div class="text-slate-400 dark:text-slate-500">
-          <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-          <p class="text-lg font-medium mb-2">{{ searchQuery ? 'Ничего не найдено' : 'Начните поиск' }}</p>
-          <p class="text-sm">{{ searchQuery ? 'Попробуйте изменить запрос или использовать другие ключевые слова' : 'Введите запрос в поле поиска выше' }}</p>
         </div>
       </div>
     </div>
-  </div>
   </ClientOnly>
 </template>
 
@@ -459,13 +572,15 @@ import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import { nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useGlobalSearch } from '~/composables/useGlobalSearch'
+import { useSearchHistory } from '~/composables/useSearchHistory'
 
 const { isSearchActive, isSearching, searchResults, groupedResults, selectSearchResult, deactivateSearch, currentPageContext, searchQuery, isDataFromCache } = useGlobalSearch()
+const { searchHistory, addToHistory, clearHistory, removeFromHistory } = useSearchHistory()
 
 // Определяем порядок отображения групп в зависимости от контекста страницы
 const groupDisplayOrder = computed(() => {
   const context = currentPageContext.value
-  
+
   switch (context) {
     case 'algorithm':
       return ['algorithm', 'mkb', 'ls', 'drug', 'substation']
@@ -485,7 +600,7 @@ const groupDisplayOrder = computed(() => {
 // Получаем группы в правильном порядке
 const orderedGroups = computed(() => {
   const groups: Array<{ key: string, title: string, results: any[] }> = []
-  
+
   groupDisplayOrder.value.forEach(groupKey => {
     const results = groupedResults.value[groupKey]
     if (results && results.length > 0) {
@@ -510,7 +625,7 @@ const orderedGroups = computed(() => {
       groups.push({ key: groupKey, title, results })
     }
   })
-  
+
   return groups
 })
 
@@ -549,12 +664,12 @@ const getHiddenCount = (groupName: string, results: any[]) => {
 // Работа с телефонами подстанций
 const getPhoneArray = (phones: any): string[] => {
   if (!phones) return []
-  
+
   // Если это уже массив
   if (Array.isArray(phones)) {
     return phones.filter(phone => phone && phone.trim())
   }
-  
+
   // Если это строка, пытаемся распарсить
   if (typeof phones === 'string') {
     try {
@@ -567,7 +682,7 @@ const getPhoneArray = (phones: any): string[] => {
       return phones.split(',').map((p: string) => p.trim()).filter((p: string) => p)
     }
   }
-  
+
   return []
 }
 
@@ -582,14 +697,14 @@ const getSubstationBalloon = (result: any) => {
   const name = result.title || result.name || result.data?.name || result.data?.title
   const address = result.data?.address || result.address || ''
   const phones = result.phones || []
-  
+
   let balloon = `
     <div class="balloon-header">
       <div class="balloon-title">${name}</div>
       <div class="balloon-subtitle">${address}</div>
     </div>
     <div class="balloon-body">`
-  
+
   if (phones && phones.length > 0) {
     phones.forEach((phone: string) => {
       balloon += `
@@ -603,7 +718,7 @@ const getSubstationBalloon = (result: any) => {
   } else {
     balloon += `<div style="text-align: center; color: #64748b; font-size: 12px; padding: 8px;">Телефоны не указаны</div>`
   }
-  
+
   balloon += `</div>`
   return balloon
 }
@@ -614,7 +729,7 @@ try {
   router.afterEach(() => {
     deactivateSearch()
   })
-} catch {}
+} catch { }
 
 const route = useRoute()
 
@@ -787,21 +902,21 @@ const isTableExpanded = (tableId: string) => !!expandedTables.value[tableId]
 // Функция для обрезки текста до приблизительного количества строк
 const truncateToApproximateLines = (text: string, maxLines: number = 5) => {
   if (!text) return ''
-  
+
   // Примерно 60-70 символов на строку для текста размера text-sm
   const charsPerLine = 65
   const maxChars = maxLines * charsPerLine
-  
+
   if (text.length <= maxChars) return text
-  
+
   // Находим последний пробел перед лимитом, чтобы не обрезать слово
   let cutIndex = maxChars
   while (cutIndex > 0 && text[cutIndex] !== ' ') {
     cutIndex--
   }
-  
+
   if (cutIndex === 0) cutIndex = maxChars
-  
+
   return text.substring(0, cutIndex) + '...'
 }
 
@@ -815,52 +930,52 @@ const renderMarkdown = (text: string) => {
 // Функция для рендеринга таблиц алгоритмов с мобильной поддержкой (точно как на странице алгоритмов)
 const renderAlgorithmTable = (content: string): string => {
   if (!content) return ''
-  
+
   // Очищаем контент от лишних тегов и оставляем только таблицы
   let html = content
-  
+
   // Удаляем все кроме таблиц
   const tableMatch = html.match(/<table[^>]*>[\s\S]*?<\/table>/gi)
   if (!tableMatch) return ''
-  
+
   // Берем первую таблицу и стилизуем её
   let table = tableMatch[0]
-  
+
   // Удаляем лишние теги, которые могут появиться из-за неправильной обработки
   table = table.replace(/<tr><th[^>]*><\/th><\/tr>/gi, '')
-  
+
   // Создаем временный DOM элемент для работы с таблицей
   const tempDiv = document.createElement('div')
   tempDiv.innerHTML = table
   const tableElement = tempDiv.querySelector('table') as HTMLTableElement
-  
+
   if (!tableElement) return table
-  
+
   // Применяем стили точно как на странице алгоритмов
   // Стили только для содержимого таблицы, без внешнего бордера
   tableElement.classList.remove('border', 'border-slate-100', 'dark:border-slate-700', 'rounded-lg', 'rounded-md', 'overflow-hidden')
   tableElement.classList.add('w-full', 'table-fixed', 'border-0', 'bg-transparent')
   tableElement.style.tableLayout = 'fixed'
-  
+
   const thead = tableElement.querySelector('thead')
   const tbody = tableElement.querySelector('tbody')
   if (thead) thead.classList.add('bg-slate-100', 'dark:bg-slate-800', 'border-b', 'border-slate-100', 'dark:border-slate-700', 'sticky', 'top-0', 'z-20')
   if (tbody) tbody.classList.add('divide-y', 'divide-slate-100', 'dark:divide-slate-700')
-  
+
   // Равномерное распределение 3 колонок + перенос текста
   tableElement.querySelectorAll('colgroup col').forEach(col => (col as HTMLElement).style.width = '33.3333%')
-  
+
   tableElement.querySelectorAll('th').forEach(th => {
     th.classList.remove('text-left', 'align-top', 'h-[85px]')
     th.classList.add('px-4', 'py-3', 'text-sm', 'text-slate-600', 'dark:text-slate-300', 'text-center', 'font-medium', 'whitespace-normal', 'break-words', 'align-middle', 'sticky', 'top-0', 'z-20', 'bg-slate-200', 'dark:bg-slate-800')
   })
-  
+
   tableElement.querySelectorAll('td').forEach(td => {
     td.classList.add('p-4', 'text-sm', 'text-slate-600', 'dark:text-slate-300', 'whitespace-normal', 'break-words', 'align-top', 'bg-white', 'dark:bg-slate-800')
   })
-  
+
   tableElement.querySelectorAll('tr').forEach(tr => tr.classList.add('hover:bg-slate-50/60', 'dark:hover:bg-slate-700/40'))
-  
+
   // Бордеры: у первой колонки справа, у второй слева и справа на md+ экранах
   tableElement.querySelectorAll('thead tr').forEach(tr => {
     const cells = Array.from(tr.children) as HTMLElement[]
@@ -870,7 +985,7 @@ const renderAlgorithmTable = (content: string): string => {
       cells[1].classList.add('md:border-r', 'md:border-slate-100', 'md:dark:border-slate-700')
     }
   })
-  
+
   tableElement.querySelectorAll('tbody tr').forEach(tr => {
     const cells = Array.from(tr.children) as HTMLElement[]
     if (cells[0]) cells[0].classList.add('border-r', 'border-slate-100', 'dark:border-slate-700')
@@ -879,7 +994,7 @@ const renderAlgorithmTable = (content: string): string => {
       cells[1].classList.add('md:border-r', 'md:border-slate-100', 'md:dark:border-slate-700')
     }
   })
-  
+
   // Возвращаем HTML строку
   return tableElement.outerHTML
 }
@@ -904,7 +1019,7 @@ const setupMobileTableLogic = () => {
 const applyDarkThemeStyles = (table: HTMLTableElement) => {
   // Проверяем, активна ли темная тема
   const isDark = document.documentElement.classList.contains('dark')
-  
+
   if (isDark) {
     // Применяем стили для темной темы
     const thead = table.querySelector('thead')
@@ -912,41 +1027,41 @@ const applyDarkThemeStyles = (table: HTMLTableElement) => {
       thead.style.backgroundColor = '#1e293b'
       thead.style.borderBottomColor = '#475569'
     }
-    
+
     const tbody = table.querySelector('tbody')
     if (tbody) {
       tbody.style.borderTopWidth = '0'
     }
-    
+
     // Стили для заголовков
     table.querySelectorAll('th').forEach(th => {
       th.style.color = '#cbd5e1'
       th.style.backgroundColor = '#1e293b'
     })
-    
+
     // Стили для ячеек
     table.querySelectorAll('td').forEach(td => {
       td.style.color = '#cbd5e1'
       td.style.backgroundColor = '#1e293b'
     })
-    
+
     // Границы между колонками
     table.querySelectorAll('thead tr th:first-child, tbody tr td:first-child').forEach(cell => {
       (cell as HTMLElement).style.borderRightColor = '#475569'
     })
-    
+
     table.querySelectorAll('thead tr th:nth-child(2), tbody tr td:nth-child(2)').forEach(cell => {
       (cell as HTMLElement).style.borderLeftColor = '#475569'
       if (window.innerWidth >= 768) {
         (cell as HTMLElement).style.borderRightColor = '#475569'
       }
     })
-    
+
     // Границы между строками
     table.querySelectorAll('tbody tr').forEach(tr => {
       (tr as HTMLElement).style.borderBottomColor = '#475569'
     })
-    
+
     // Добавляем hover эффекты для темной темы
     table.querySelectorAll('tr').forEach(tr => {
       tr.addEventListener('mouseenter', () => {
@@ -963,41 +1078,41 @@ const applyDarkThemeStyles = (table: HTMLTableElement) => {
       thead.style.backgroundColor = '#f1f5f9'
       thead.style.borderBottomColor = '#e2e8f0'
     }
-    
+
     const tbody = table.querySelector('tbody')
     if (tbody) {
       tbody.style.borderTopWidth = '0'
     }
-    
+
     // Стили для заголовков
     table.querySelectorAll('th').forEach(th => {
       th.style.color = '#475569'
       th.style.backgroundColor = '#e2e8f0'
     })
-    
+
     // Стили для ячеек
     table.querySelectorAll('td').forEach(td => {
       td.style.color = '#475569'
       td.style.backgroundColor = '#ffffff'
     })
-    
+
     // Границы между колонками
     table.querySelectorAll('thead tr th:first-child, tbody tr td:first-child').forEach(cell => {
       (cell as HTMLElement).style.borderRightColor = '#e2e8f0'
     })
-    
+
     table.querySelectorAll('thead tr th:nth-child(2), tbody tr td:nth-child(2)').forEach(cell => {
       (cell as HTMLElement).style.borderLeftColor = '#e2e8f0'
       if (window.innerWidth >= 768) {
         (cell as HTMLElement).style.borderRightColor = '#e2e8f0'
       }
     })
-    
+
     // Границы между строками
     table.querySelectorAll('tbody tr').forEach(tr => {
       (tr as HTMLElement).style.borderBottomColor = '#e2e8f0'
     })
-    
+
     // Добавляем hover эффекты для светлой темы
     table.querySelectorAll('tr').forEach(tr => {
       tr.addEventListener('mouseenter', () => {
@@ -1025,12 +1140,12 @@ const setupThemeObserver = () => {
       }
     })
   })
-  
+
   observer.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ['class']
   })
-  
+
   return observer
 }
 
@@ -1086,11 +1201,11 @@ const setupMobileTwoColumn = (table: HTMLTableElement) => {
     const maxDuration = 600 // мс
     const horizontalDominance = Math.abs(dx) > Math.abs(dy) * 1.5
     const shouldSwitch = Math.abs(dx) >= minDistance && horizontalDominance && dt <= maxDuration
-    
+
     if (shouldSwitch) {
       if (dx < 0) wrapper.setAttribute('data-mobile-col', '3')
       else wrapper.setAttribute('data-mobile-col', '2')
-      
+
       applyMobileTwoColumnView(wrapper, table)
     }
     isDragging = false
@@ -1120,24 +1235,24 @@ const applyMobileTwoColumnView = (wrapper: HTMLElement, table: HTMLTableElement)
         dotsContainer = document.createElement('div')
         dotsContainer.setAttribute('data-mobile-dots-container', '1')
         dotsContainer.classList.add('md:hidden', 'absolute', 'right-2', 'top-1/2', '-translate-y-1/2', 'flex', 'items-center', 'gap-1', 'z-30', 'pointer-events-none', 'bg-slate-100', 'dark:bg-slate-800', 'p-1', 'rounded-full')
-        
+
         const dot2 = document.createElement('span')
         dot2.setAttribute('data-dot', '2')
         dot2.classList.add('inline-block', 'w-1.5', 'h-1.5', 'rounded-full')
-        
+
         const dot3 = document.createElement('span')
         dot3.setAttribute('data-dot', '3')
         dot3.classList.add('inline-block', 'w-1.5', 'h-1.5', 'rounded-full')
-        
+
         dotsContainer.appendChild(dot2)
         dotsContainer.appendChild(dot3)
         thead.appendChild(dotsContainer)
       }
-      
+
       // Обновляем активные точки
       const dot2 = dotsContainer.querySelector('[data-dot="2"]') as HTMLElement
       const dot3 = dotsContainer.querySelector('[data-dot="3"]') as HTMLElement
-      
+
       if (mobileTarget === 2) {
         dot2.style.backgroundColor = 'rgb(59 130 246)'
         dot3.style.backgroundColor = 'rgb(148 163 184)'
@@ -1165,18 +1280,18 @@ const applyMobileTwoColumnView = (wrapper: HTMLElement, table: HTMLTableElement)
     rows.forEach((tr, rowIndex) => {
       const cells = Array.from(tr.children) as HTMLElement[]
       const isHead = !!(tr.parentElement && tr.parentElement.tagName.toLowerCase() === 'thead')
-      
+
       if (cells[0]) {
         cells[0].classList.remove('hidden', 'w-0', 'p-0')
         cells[0].style.width = '35%'
         cells[0].style.maxWidth = '35%'
-        
+
         // Для заголовков добавляем стили обрезки текста
         if (isHead && cells[0].tagName === 'TH') {
           cells[0].classList.add('whitespace-nowrap', 'overflow-hidden', 'text-ellipsis')
         }
       }
-      
+
       if (cells[1]) {
         const hide = mobileTarget !== 2
         cells[1].classList.toggle('hidden', hide)
@@ -1184,13 +1299,13 @@ const applyMobileTwoColumnView = (wrapper: HTMLElement, table: HTMLTableElement)
         cells[1].classList.toggle('p-0', hide)
         cells[1].style.width = hide ? '' : '65%'
         cells[1].style.maxWidth = hide ? '' : '65%'
-        
+
         // Для заголовков добавляем стили обрезки текста
         if (isHead && cells[1].tagName === 'TH') {
           cells[1].classList.add('whitespace-nowrap', 'overflow-hidden', 'text-ellipsis')
         }
       }
-      
+
       if (cells[2]) {
         const hide = mobileTarget !== 3
         cells[2].classList.toggle('hidden', hide)
@@ -1198,7 +1313,7 @@ const applyMobileTwoColumnView = (wrapper: HTMLElement, table: HTMLTableElement)
         cells[2].classList.toggle('p-0', hide)
         cells[2].style.width = hide ? '' : '65%'
         cells[2].style.maxWidth = hide ? '' : '65%'
-        
+
         // Для заголовков добавляем стили обрезки текста
         if (isHead && cells[2].tagName === 'TH') {
           cells[2].classList.add('whitespace-nowrap', 'overflow-hidden', 'text-ellipsis')
@@ -1216,7 +1331,7 @@ const applyMobileTwoColumnView = (wrapper: HTMLElement, table: HTMLTableElement)
         else c.style.width = ''
       })
     }
-    
+
     // Убираем индикаторы точек на десктопе
     const thead = table.querySelector('thead')
     if (thead) {
@@ -1226,9 +1341,9 @@ const applyMobileTwoColumnView = (wrapper: HTMLElement, table: HTMLTableElement)
     rows.forEach((tr) => {
       const cells = Array.from(tr.children) as HTMLElement[]
       const isHead = !!(tr.parentElement && tr.parentElement.tagName.toLowerCase() === 'thead')
-      
-      if (cells[0]) { 
-        cells[0].classList.remove('hidden', 'w-0', 'p-0'); 
+
+      if (cells[0]) {
+        cells[0].classList.remove('hidden', 'w-0', 'p-0');
         // Фиксированная ширина первой колонки на десктопе
         cells[0].style.width = '30%'
         cells[0].style.maxWidth = '30%'
@@ -1238,7 +1353,7 @@ const applyMobileTwoColumnView = (wrapper: HTMLElement, table: HTMLTableElement)
         }
       }
       if (cells[1]) {
-        cells[1].classList.remove('hidden', 'w-0', 'p-0'); 
+        cells[1].classList.remove('hidden', 'w-0', 'p-0');
         cells[1].style.width = ''
         // Убираем стили обрезки текста и индикаторы для десктопа
         if (isHead && cells[1].tagName === 'TH') {
@@ -1248,7 +1363,7 @@ const applyMobileTwoColumnView = (wrapper: HTMLElement, table: HTMLTableElement)
         }
       }
       if (cells[2]) {
-        cells[2].classList.remove('hidden', 'w-0', 'p-0'); 
+        cells[2].classList.remove('hidden', 'w-0', 'p-0');
         cells[2].style.width = ''
         // Убираем стили обрезки текста для десктопа
         if (isHead && cells[2].tagName === 'TH') {
@@ -1266,16 +1381,16 @@ const isMobile = () => {
 
 // Функция для копирования в буфер обмена
 const copyToClipboard = async (text: string) => {
-  try { 
-    await navigator.clipboard.writeText(text) 
-  } catch (err) { 
-    console.error('Ошибка копирования:', err) 
+  try {
+    await navigator.clipboard.writeText(text)
+  } catch (err) {
+    console.error('Ошибка копирования:', err)
   }
 }
 
 // Функция для предзагрузки и навигации
 const preloadAndNavigate = async (to: string, preloadFn: () => Promise<void>) => {
-  try { 
+  try {
     await preloadFn()
     deactivateSearch()
     await navigateTo(to)
@@ -1287,7 +1402,7 @@ const preloadAndNavigate = async (to: string, preloadFn: () => Promise<void>) =>
 // Функции для открытия модалов (скопированы из BottomSearchPanel)
 const openMkbModal = (result: any) => {
   console.log('🔍 Открываем МКБ модалку:', result)
-  
+
   // Если в результате уже есть готовый url — используем его
   if (result.url) {
     const url = result.url
@@ -1300,9 +1415,9 @@ const openMkbModal = (result: any) => {
   // Пробуем получить категорию и id на верхнем уровне, как в выдаче
   const categoryUrl = result.category?.url || result.data?.category?.url
   const mkbId = result._id || result.data?._id || result.id?.replace('mkb-', '')
-  
+
   console.log('🔍 Данные для навигации:', { categoryUrl, mkbId })
-  
+
   if (categoryUrl && mkbId) {
     const target = `/codifier/${categoryUrl}?id=${mkbId}`
     console.log('🔍 Переходим на:', target)
@@ -1310,19 +1425,19 @@ const openMkbModal = (result: any) => {
     navigateTo(target)
     return
   }
-  
+
   console.log('❌ Не удалось определить URL для МКБ элемента')
 }
 
 const openLocalStatusModal = (result: any) => {
   console.log('🔍 Открываем LocalStatus модалку:', result)
-  
+
   // Предпочтительно: собрать URL из полей результата
   const categoryUrl = result.category?.url || result.data?.category?.url
   const lsId = result._id || result.data?._id || result.id?.replace('ls-', '')
-  
+
   console.log('🔍 Данные для навигации LocalStatus:', { categoryUrl, lsId })
-  
+
   if (categoryUrl && lsId) {
     const target = `/local-statuses/${categoryUrl}?id=${lsId}`
     console.log('🔍 Переходим на LocalStatus:', target)
@@ -1339,13 +1454,13 @@ const openLocalStatusModal = (result: any) => {
     navigateTo(url)
     return
   }
-  
+
   console.log('❌ Не удалось определить URL для LocalStatus элемента')
 }
 
 const openAlgorithmModal = (result: any) => {
   console.log('🔍 Открываем Algorithm модалку:', result)
-  
+
   // Предпочтительно используем реальные поля объекта алгоритма из БД
   const section = result?.section?.url || result?.section
   const category = result?.category?.url || result?.category
@@ -1369,7 +1484,7 @@ const openAlgorithmModal = (result: any) => {
     navigateTo(url)
     return
   }
-  
+
   console.log('❌ Не удалось определить URL для Algorithm элемента')
 }
 
@@ -1399,7 +1514,7 @@ const openDrugModal = (drugData: any) => {
 
 const addDrugBookmark = async (drugData: any) => {
   if (!drugData?._id) return
-  
+
   try {
     await $fetch('/api/bookmarks', {
       method: 'POST',
@@ -1419,8 +1534,8 @@ const addDrugBookmark = async (drugData: any) => {
 const openSubstationModal = (result: any) => {
   const name = result.title || result.data?.name
   if (name) {
-    preloadAndNavigate(`/substations?select=${name}`, async () => { 
-      await $fetch('/api/substations').catch(() => {}) 
+    preloadAndNavigate(`/substations?select=${name}`, async () => {
+      await $fetch('/api/substations').catch(() => { })
     })
   }
 }
@@ -1440,6 +1555,24 @@ onBeforeUnmount(() => {
     themeObserver = null
   }
 })
+
+// Функция для выполнения поиска из истории
+const performSearchFromHistory = (query: string) => {
+  // Получаем глобальное состояние поиска
+  const { activateSearch, updateSearchQuery, updateSearching } = useGlobalSearch()
+
+  // Сначала активируем поиск
+  activateSearch(query)
+  
+  // Затем обновляем запрос (это заполнит инпут через watcher)
+  updateSearchQuery(query)
+
+  // Устанавливаем флаг поиска для показа скелетона
+  updateSearching(true)
+
+  // Добавляем в историю (если еще не добавлен)
+  addToHistory(query)
+}
 
 </script>
 
@@ -1546,11 +1679,12 @@ onBeforeUnmount(() => {
 }
 
 @media (min-width: 768px) {
+
   :deep(thead tr th:nth-child(2)),
   :deep(tbody tr td:nth-child(2)) {
     border-right: 1px solid #e2e8f0;
   }
-  
+
   .dark :deep(thead tr th:nth-child(2)),
   .dark :deep(tbody tr td:nth-child(2)) {
     border-right-color: #475569;
@@ -1587,4 +1721,5 @@ onBeforeUnmount(() => {
     max-width: 100%;
   }
 }
+
 </style>
