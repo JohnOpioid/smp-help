@@ -1,4 +1,4 @@
-import { defineEventHandler, setHeader } from 'h3'
+import { defineEventHandler, setHeader, getHeader, createError } from 'h3'
 import connectDB from '~/server/utils/mongodb'
 import LocalStatus from '~/server/models/LocalStatus'
 import MKB from '~/server/models/MKB'
@@ -8,10 +8,13 @@ import Substation from '~/server/models/Substation'
 import Region from '~/server/models/Region'
 
 export default defineEventHandler(async (event) => {
-  // Отключаем кэширование для этого endpoint
-  setHeader(event, 'Cache-Control', 'no-cache, no-store, must-revalidate')
-  setHeader(event, 'Pragma', 'no-cache')
-  setHeader(event, 'Expires', '0')
+  // Настраиваем кеширование на сервере (5 минут)
+  setHeader(event, 'Cache-Control', 'public, max-age=300, s-maxage=300')
+  setHeader(event, 'ETag', `"search-data-${Date.now()}"`)
+  
+  // Проверяем заголовки для условного запроса
+  const ifNoneMatch = getHeader(event, 'if-none-match')
+  const ifModifiedSince = getHeader(event, 'if-modified-since')
   
   try {
     console.log('🔍 API: Подключаемся к базе данных...')
@@ -270,6 +273,21 @@ export default defineEventHandler(async (event) => {
       }
     }
     
+    // Проверяем условный запрос
+    const currentETag = `"search-data-${Date.now()}"`
+    if (ifNoneMatch === currentETag) {
+      console.log('📦 API: Возвращаем 304 Not Modified')
+      setHeader(event, 'ETag', currentETag)
+      throw createError({
+        statusCode: 304,
+        statusMessage: 'Not Modified'
+      })
+    }
+    
+    // Устанавливаем заголовки для кеширования
+    setHeader(event, 'ETag', currentETag)
+    setHeader(event, 'Last-Modified', new Date().toUTCString())
+    
     return {
       success: true,
       data: {
@@ -294,7 +312,9 @@ export default defineEventHandler(async (event) => {
           total: substations.length
         }
       },
-      totalItems: totalItems
+      totalItems: totalItems,
+      cached: false, // Помечаем, что данные не из кеша
+      timestamp: Date.now()
     }
   } catch (error) {
     console.error('❌ API: Ошибка при получении данных для поиска:', error)

@@ -278,6 +278,44 @@ async function loadItems(page: number = 1, append: boolean = false) {
   }
 }
 
+// Загрузка конкретного элемента по ID
+async function loadSpecificItem(itemId: string) {
+  try {
+    console.log('🔍 Загружаем конкретный элемент:', itemId)
+    
+    // Загружаем элемент напрямую из API MKB
+    const response = await $fetch<{ success: boolean; items: any[] }>('/api/mkb/all')
+    
+    if (response.success && response.items) {
+      const found = response.items.find((item: any) => String(item._id) === String(itemId))
+      
+      if (found) {
+        console.log('✅ Элемент найден и загружен:', found.name)
+        
+        // Проверяем, что элемент принадлежит текущей категории
+        if (found.category?.url === url) {
+          // Добавляем элемент в список, если его там еще нет
+          const exists = allItems.value.find((item: any) => String(item._id) === String(itemId))
+          if (!exists) {
+            allItems.value.push(found)
+          }
+          
+          // Открываем модалку
+          selectedItem.value = found
+          modalOpen.value = true
+          updateIsBookmarked()
+        } else {
+          console.log('❌ Элемент не принадлежит текущей категории')
+        }
+      } else {
+        console.log('❌ Элемент не найден в базе данных')
+      }
+    }
+  } catch (err) {
+    console.error('❌ Ошибка загрузки конкретного элемента:', err)
+  }
+}
+
 // Intersection Observer для ленивой загрузки
 const loadMoreTrigger = ref<HTMLElement>()
 let io: IntersectionObserver | null = null
@@ -316,35 +354,36 @@ onMounted(async () => {
   
   console.log('🔍 Авто-открытие кодификатора:', { itemId, openId, mkbCode, itemsCount: items.value.length })
   
-  if (itemId) {
-    // Ждем загрузки данных и открываем нужный элемент
-    const checkAndOpenItem = () => {
-      console.log('🔍 Проверка авто-открытия:', { itemsCount: items.value.length, itemId })
-      if (items.value.length > 0) {
-        const found = items.value.find((i: any) => String(i._id) === String(itemId))
-        console.log('🔍 Поиск элемента:', { found: !!found, foundId: found?._id, searchId: itemId })
-        if (found) {
-          console.log('✅ Открываем модалку кодификатора')
-          // Открываем модалку без изменения URL для предотвращения моргания
-          selectedItem.value = found
-          modalOpen.value = true
-          updateIsBookmarked()
-        } else {
-          console.log('❌ Элемент не найден в загруженных данных')
-        }
-      } else {
-        console.log('⏳ Данные еще загружаются, повторяем через 100мс')
-        // Данные еще загружаются, повторяем через 100мс
-        setTimeout(checkAndOpenItem, 100)
-      }
-    }
-    checkAndOpenItem()
-  } else if (openId) {
+  // Обрабатываем только openId и mkbCode здесь, itemId обрабатывается в watcher
+  if (openId) {
     const found = items.value.find((i: any) => String(i._id) === String(openId))
     if (found) openModal(found)
   } else if (mkbCode) {
     const found = items.value.find((i: any) => i.mkbCode === mkbCode)
     if (found) openModal(found)
+  } else if (itemId) {
+    // Если есть itemId при загрузке страницы, обрабатываем его здесь
+    console.log('🔍 Обрабатываем itemId при загрузке страницы:', itemId)
+    const checkAndOpenItem = () => {
+      console.log('🔍 Проверка авто-открытия при загрузке:', { itemsCount: items.value.length, itemId })
+      if (items.value.length > 0) {
+        const found = items.value.find((i: any) => String(i._id) === String(itemId))
+        console.log('🔍 Поиск элемента при загрузке:', { found: !!found, foundId: found?._id, searchId: itemId })
+        if (found) {
+          console.log('✅ Открываем модалку кодификатора при загрузке')
+          selectedItem.value = found
+          modalOpen.value = true
+          updateIsBookmarked()
+        } else {
+          console.log('❌ Элемент не найден в загруженных данных при загрузке, загружаем напрямую')
+          loadSpecificItem(itemId)
+        }
+      } else {
+        console.log('⏳ Данные еще загружаются при загрузке, повторяем через 100мс')
+        setTimeout(checkAndOpenItem, 100)
+      }
+    }
+    checkAndOpenItem()
   }
 })
 
@@ -533,19 +572,39 @@ watch(() => [route.query.open, route.query.mkb], ([openVal, mkbVal]) => {
 // Отдельный watcher для id параметра
 watch(() => route.query.id, (newId, oldId) => {
   console.log('🔍 Watcher route.query.id:', { newId, oldId, itemsCount: items.value.length })
+  
+  // Пропускаем срабатывание при первоначальной загрузке страницы с параметром id
+  if (newId && !oldId) {
+    console.log('🔍 Пропускаем watcher при первоначальной загрузке с id')
+    return
+  }
+  
   // Если есть новый ID и он отличается от старого
   if (newId && newId !== oldId) {
-    const found = items.value.find((i: any) => String(i._id) === String(newId))
-    console.log('🔍 Watcher поиск элемента:', { found: !!found, foundId: found?._id, searchId: newId })
-    if (found) {
-      console.log('✅ Watcher открываем модалку кодификатора')
-      // Открываем модалку без изменения URL
-      selectedItem.value = found
-      modalOpen.value = true
-      updateIsBookmarked()
-    } else {
-      console.log('❌ Watcher элемент не найден')
+    // Ждем загрузки данных и открываем нужный элемент
+    const checkAndOpenItem = () => {
+      console.log('🔍 Проверка авто-открытия в watcher:', { itemsCount: items.value.length, itemId: newId })
+      if (items.value.length > 0) {
+        const found = items.value.find((i: any) => String(i._id) === String(newId))
+        console.log('🔍 Watcher поиск элемента:', { found: !!found, foundId: found?._id, searchId: newId })
+        if (found) {
+          console.log('✅ Watcher открываем модалку кодификатора')
+          // Открываем модалку без изменения URL
+          selectedItem.value = found
+          modalOpen.value = true
+          updateIsBookmarked()
+        } else {
+          console.log('❌ Watcher элемент не найден в загруженных данных, загружаем напрямую')
+          // Если элемент не найден в загруженных данных, загружаем его напрямую
+          loadSpecificItem(String(newId))
+        }
+      } else {
+        console.log('⏳ Watcher данные еще загружаются, повторяем через 100мс')
+        // Данные еще загружаются, повторяем через 100мс
+        setTimeout(checkAndOpenItem, 100)
+      }
     }
+    checkAndOpenItem()
   } else if (!newId && modalOpen.value) {
     console.log('🔍 Watcher закрываем модалку')
     // Если id убран, закрываем модалку

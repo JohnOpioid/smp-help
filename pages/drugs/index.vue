@@ -432,6 +432,8 @@
               v-model="modalOpen" 
               :title="selected?.name"
               :subtitle="modalDescription"
+              :loading="isLoadingDrug"
+              :skeleton-lines="6"
               @close="modalOpen = false"
             >
               <div class="p-4 pb-6">
@@ -855,6 +857,7 @@ onMounted(async () => {
 
         // Если не нашли в уже загруженных или список пуст — пробуем догрузить по ID
         try {
+          isLoadingDrug.value = true
           const response: any = await $fetch(`/api/drugs/${openDrugId}`)
           const data = response?.data ?? response?.item ?? response
           if (data && (data._id || data.id)) {
@@ -863,7 +866,11 @@ onMounted(async () => {
             updateIsBookmarked()
             dropdownOpen.value = false
           }
-        } catch (error) {}
+        } catch (error) {
+          console.error('Ошибка загрузки препарата:', error)
+        } finally {
+          isLoadingDrug.value = false
+        }
       } else {
         // Данные еще загружаются, повторяем через 100мс
         setTimeout(checkAndOpenDrug, 100)
@@ -878,6 +885,7 @@ const modalOpen = ref(false)
 const selected = ref<any | null>(null)
 const isBookmarked = ref(false)
 const userBookmarks = ref<any[]>([])
+const isLoadingDrug = ref(false)
 // Фильтрация по категориям
 const selectedCategoryIds = ref<string[]>([])
 const categoryOptions = ref<Array<{ label: string; value: string }>>([])
@@ -959,6 +967,7 @@ function normalizeCategoryName(name: string): string {
 function openModal(drug: any) {
   selected.value = drug
   modalOpen.value = true
+  isLoadingDrug.value = false // Данные уже загружены
   updateIsBookmarked()
   dropdownOpen.value = false
   

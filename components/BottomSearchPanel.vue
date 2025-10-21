@@ -579,6 +579,7 @@
 <script setup lang="ts">
 import { marked } from 'marked'
 import { useFuseSearch } from '~/composables/useFuseSearch'
+import { useSearchCache } from '~/composables/useSearchCache'
 import { DATA_TYPE_RULES } from '~/composables/useSearchIndexing'
 
 // Роут и путь
@@ -790,7 +791,8 @@ function stopTypewriter(messageId: string) {
 }
 
 // Поиск (используем глобальное состояние)
-const { searchQuery, searchResults: globalSearchResults, isSearching } = useGlobalSearch()
+const { searchQuery, searchResults: globalSearchResults, isSearching, updateCacheStatus } = useGlobalSearch()
+const { getSearchData, getCacheInfo } = useSearchCache()
 const isPreloading = ref(false)
 const isLoadingSearch = ref(false)
 
@@ -1860,23 +1862,48 @@ const performSearch = async (query: string) => {
   isLoadingSearch.value = true
   
   try {
-    // Загружаем все данные одним запросом
+    // Используем кеш для загрузки данных
+    const { getSearchData } = useSearchCache()
     let searchData
+    
     try {
-      searchData = await $fetch('/api/search/all-data')
+      // Пытаемся получить данные из кеша или API
+      const cachedData = await getSearchData()
       
-      // Проверяем, успешен ли ответ
-      if (!searchData.success) {
-        throw new Error(`API вернул ошибку: ${(searchData as any).message || 'Неизвестная ошибка'}`)
+      if (!cachedData) {
+        throw new Error('Не удалось загрузить данные для поиска')
       }
-    } catch (apiError) {
+      
+      // Преобразуем данные в формат, ожидаемый компонентом
+      searchData = {
+        success: true,
+        data: {
+          localStatuses: { items: cachedData.filter(item => item.type === 'ls') },
+          mkbCodes: { items: cachedData.filter(item => item.type === 'mkb') },
+          algorithms: { items: cachedData.filter(item => item.type === 'algorithm') },
+          drugs: { items: cachedData.filter(item => item.type === 'drug') },
+          substations: { items: cachedData.filter(item => item.type === 'substation') }
+        }
+      }
+      
+      console.log('📋 Данные загружены из кеша/API для BottomSearchPanel')
+      
+      // Обновляем статус кеша в глобальном состоянии
+      const { getCacheInfo } = useSearchCache()
+      const cacheInfo = getCacheInfo()
+      updateCacheStatus(cacheInfo.cachedData !== null)
+      
+    } catch (error) {
+      console.error('❌ Ошибка при загрузке данных из кеша:', error)
+      
       // Fallback: используем старые API endpoints
+      console.log('🔄 Используем fallback API endpoints...')
       const [mkbData, lsResults, algoResults, drugResults, substationResults] = await Promise.all([
-        $fetch('/api/mkb/all'),
-        $fetch('/api/local-statuses/all'),
-        $fetch('/api/algorithms'),
-        $fetch('/api/drugs'),
-        $fetch('/api/substations')
+        $fetch('/api/mkb/all').catch(() => ({ success: true, items: [] })),
+        $fetch('/api/local-statuses/all').catch(() => ({ success: true, items: [] })),
+        $fetch('/api/algorithms').catch(() => ({ success: true, items: [] })),
+        $fetch('/api/drugs').catch(() => ({ success: true, items: [] })),
+        $fetch('/api/substations').catch(() => ({ success: true, items: [] }))
       ])
       
       searchData = {
@@ -1889,6 +1916,11 @@ const performSearch = async (query: string) => {
           substations: substationResults
         }
       }
+      
+      console.log('📡 Fallback API загружен для BottomSearchPanel')
+      
+      // Обновляем статус кеша (данные не из кеша)
+      updateCacheStatus(false)
     }
     
     const { data } = searchData as any
@@ -2378,71 +2410,89 @@ const handleQuickReply = async (reply: string, message: ChatMessage) => {
 
 // Действия с результатами
 const openMkbModal = (result: SearchResult) => {
+  console.log('🔍 BottomSearchPanel: Открываем МКБ модалку:', result)
+  
   if (result.url) {
     const url = result.url
-    preloadAndNavigate(url, async () => {
-      const m = url.match(/\/codifier\/(.*?)\?/)
-      const categoryUrl = m?.[1]
-      if (categoryUrl) { await $fetch(`/api/codifier/${categoryUrl}`).catch(() => {}) }
-    })
+    console.log('🔍 BottomSearchPanel: Используем готовый URL:', url)
+    closePanel()
+    navigateTo(url)
     return
   }
+  
   const categoryUrl = (result as any).data?.category?.url
   const mkbId = (result as any).data?._id || (result as any).id?.replace('mkb-', '')
+  
+  console.log('🔍 BottomSearchPanel: Данные для навигации:', { categoryUrl, mkbId })
+  
   if (categoryUrl && mkbId) {
     const target = `/codifier/${categoryUrl}?id=${mkbId}`
-    preloadAndNavigate(target, async () => { await $fetch(`/api/codifier/${categoryUrl}`).catch(() => {}) })
+    console.log('🔍 BottomSearchPanel: Переходим на:', target)
+    closePanel()
+    navigateTo(target)
     return
   }
+  
+  console.log('❌ BottomSearchPanel: Не удалось определить URL для МКБ элемента')
 }
 
 const openLocalStatusModal = (result: SearchResult) => {
+  console.log('🔍 BottomSearchPanel: Открываем LocalStatus модалку:', result)
+  
   if (result.url) {
     const url = result.url
-    preloadAndNavigate(url, async () => {
-      const m = url.match(/\/local-statuses\/(.*?)\?/)
-      const cat = m?.[1]
-      if (cat) { await $fetch(`/api/local-statuses/${cat}`).catch(() => {}) }
-    })
+    console.log('🔍 BottomSearchPanel: Используем готовый URL LocalStatus:', url)
+    closePanel()
+    navigateTo(url)
+    return
   }
+  
+  console.log('❌ BottomSearchPanel: Не удалось определить URL для LocalStatus элемента')
 }
 
 const openAlgorithmModal = (result: SearchResult) => {
+  console.log('🔍 BottomSearchPanel: Открываем Algorithm модалку:', result)
+  
   if (result.url) {
     const url = result.url
-    preloadAndNavigate(url, async () => {
-      const m = url.match(/\/algorithms\/(.*?)\/(.*?)\/(.*?)\?/)
-      const section = m?.[1]
-      const category = m?.[2] 
-      const algorithmId = m?.[3]
-      if (section && category) { 
-        await $fetch(`/api/algorithms/${section}/${category}`).catch(() => {}) 
-      }
-    })
+    console.log('🔍 BottomSearchPanel: Используем готовый URL Algorithm:', url)
+    closePanel()
+    navigateTo(url)
     return
   }
+  
   const algorithmId = (result as any).data?._id || (result as any).id?.replace('algo-', '')
   const section = (result as any).data?.section?.url
   const category = (result as any).data?.category?.url
+  
+  console.log('🔍 BottomSearchPanel: Данные для навигации Algorithm:', { section, category, algorithmId })
+  
   if (section && category && algorithmId) {
     const target = `/algorithms/${section}/${category}/${algorithmId}`
-    preloadAndNavigate(target, async () => { 
-      await $fetch(`/api/algorithms/${section}/${category}`).catch(() => {}) 
-    })
+    console.log('🔍 BottomSearchPanel: Переходим на Algorithm:', target)
+    closePanel()
+    navigateTo(target)
     return
   }
+  
   // Fallback - открываем общую страницу алгоритмов
-  navigateTo('/algorithms')
+  console.log('🔍 BottomSearchPanel: Fallback - переходим на общую страницу алгоритмов')
   closePanel()
+  navigateTo('/algorithms')
 }
 
 const openDrugModal = (drugData: any) => {
+  console.log('🔍 BottomSearchPanel: Открываем Drug модалку:', drugData)
+  
   if (drugData?._id) {
     const url = `/drugs?id=${drugData._id}`
-    preloadAndNavigate(url, async () => {
-      await $fetch('/api/drugs').catch(() => {})
-    })
+    console.log('🔍 BottomSearchPanel: Переходим на Drug:', url)
+    closePanel()
+    navigateTo(url)
+    return
   }
+  
+  console.log('❌ BottomSearchPanel: Не удалось определить URL для Drug элемента')
 }
 
 const addDrugBookmark = async (drugData: any) => {

@@ -155,8 +155,15 @@
 
     <template v-else>
       <ClientOnly>
-        <BottomSheet v-model="modalOpen" :title="selectedItem?.name" @close="modalOpen = false">
-          <div v-if="selectedItem" class="space-y-4">
+        <BottomSheet 
+          v-model="modalOpen" 
+          :title="selectedItem?.name" 
+          :loading="isLoadingItem"
+          :skeleton-lines="4"
+          @close="modalOpen = false"
+        >
+          <div class="p-4 pb-6">
+            <div v-if="selectedItem" class="space-y-5">
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Код статуса</label>
@@ -201,6 +208,7 @@
                   Поделиться
                 </UButton>
               </div>
+            </div>
             </div>
           </div>
         </BottomSheet>
@@ -313,6 +321,7 @@ async function loadPage(first = false) {
 const { isMobile } = useIsMobile()
 const modalOpen = ref(false)
 const selectedItem = ref<any>(null)
+const isLoadingItem = ref(false)
 
 
 async function shareItem() {
@@ -337,6 +346,7 @@ async function shareItem() {
 function openModal(item: any) {
   selectedItem.value = item
   modalOpen.value = true
+  isLoadingItem.value = false // Данные уже загружены
 
   // Обновляем URL с ID локального статуса через query параметр только если его еще нет
   if (!routeQuery.query.id || routeQuery.query.id !== item._id) {
@@ -361,6 +371,46 @@ function closeModal() {
 function closeModalMobile() {
   closeModal()
 }
+// Загрузка конкретного элемента по ID
+async function loadSpecificItem(itemId: string) {
+  try {
+    console.log('🔍 Загружаем конкретный локальный статус:', itemId)
+    isLoadingItem.value = true
+    
+    // Загружаем элемент напрямую из API
+    const response = await $fetch<{ success: boolean; items: any[] }>('/api/local-statuses/all')
+    
+    if (response.success && response.items) {
+      const found = response.items.find((item: any) => String(item._id) === String(itemId))
+      
+      if (found) {
+        console.log('✅ Локальный статус найден и загружен:', found.name)
+        
+        // Проверяем, что элемент принадлежит текущей категории
+        if (found.category?.url === url) {
+          // Добавляем элемент в список, если его там еще нет
+          const exists = items.value.find((item: any) => String(item._id) === String(itemId))
+          if (!exists) {
+            items.value.push(found)
+          }
+          
+          // Открываем модалку
+          selectedItem.value = found
+          modalOpen.value = true
+        } else {
+          console.log('❌ Элемент не принадлежит текущей категории')
+        }
+      } else {
+        console.log('❌ Элемент не найден в базе данных')
+      }
+    }
+  } catch (err) {
+    console.error('❌ Ошибка загрузки конкретного локального статуса:', err)
+  } finally {
+    isLoadingItem.value = false
+  }
+}
+
 onMounted(async () => {
   await loadPage(true)
   const io = new IntersectionObserver((entries) => {
@@ -370,14 +420,29 @@ onMounted(async () => {
     }
   })
   if (sentinel.value) io.observe(sentinel.value)
+  
   const itemId = routeQuery.query.id as string | undefined
   if (itemId) {
-    const found = items.value.find((i: any) => String(i._id) === String(itemId))
-    if (found) {
-      // Открываем модалку без изменения URL для предотвращения моргания
-      selectedItem.value = found
-      modalOpen.value = true
+    // Сначала ищем в уже загруженных данных
+    const checkAndOpenItem = () => {
+      console.log('🔍 Проверка авто-открытия локального статуса:', { itemsCount: items.value.length, itemId })
+      if (items.value.length > 0) {
+        const found = items.value.find((i: any) => String(i._id) === String(itemId))
+        console.log('🔍 Поиск элемента:', { found: !!found, foundId: found?._id, searchId: itemId })
+        if (found) {
+          console.log('✅ Открываем модалку локального статуса')
+          selectedItem.value = found
+          modalOpen.value = true
+        } else {
+          console.log('❌ Элемент не найден в загруженных данных, загружаем напрямую')
+          loadSpecificItem(itemId)
+        }
+      } else {
+        console.log('⏳ Данные еще загружаются, повторяем через 100мс')
+        setTimeout(checkAndOpenItem, 100)
+      }
     }
+    checkAndOpenItem()
   }
 })
 
@@ -386,14 +451,31 @@ onMounted(async () => {
 // Реакция на изменение query на текущей странице (открыть/закрыть модалку)
 watch(() => routeQuery.query.id, (val) => {
   const id = val as string | undefined
+  console.log('🔍 Watcher route.query.id для локальных статусов:', { newId: id, itemsCount: items.value.length })
+  
   if (id) {
-    const found = items.value.find((i: any) => String(i._id) === String(id))
-    if (found) {
-      // Открываем модалку без изменения URL
-      selectedItem.value = found
-      modalOpen.value = true
+    // Ждем загрузки данных и открываем нужный элемент
+    const checkAndOpenItem = () => {
+      console.log('🔍 Проверка авто-открытия в watcher:', { itemsCount: items.value.length, itemId: id })
+      if (items.value.length > 0) {
+        const found = items.value.find((i: any) => String(i._id) === String(id))
+        console.log('🔍 Watcher поиск элемента:', { found: !!found, foundId: found?._id, searchId: id })
+        if (found) {
+          console.log('✅ Watcher открываем модалку локального статуса')
+          selectedItem.value = found
+          modalOpen.value = true
+        } else {
+          console.log('❌ Watcher элемент не найден в загруженных данных, загружаем напрямую')
+          loadSpecificItem(id)
+        }
+      } else {
+        console.log('⏳ Watcher данные еще загружаются, повторяем через 100мс')
+        setTimeout(checkAndOpenItem, 100)
+      }
     }
+    checkAndOpenItem()
   } else if (modalOpen.value) {
+    console.log('🔍 Watcher закрываем модалку')
     closeModal()
   }
 })

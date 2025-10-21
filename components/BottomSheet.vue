@@ -10,7 +10,7 @@
           :class="{ 'dragging': isDragging }"
           :style="{ 
             transform: `translateY(${dragOffset}px)`,
-            height: `${sheetHeight}px`,
+            height: isExpanded ? `${maxHeight}px` : 'auto',
             maxHeight: '90vh'
           }"
         >
@@ -40,8 +40,15 @@
           <!-- Слот для контента -->
           <div 
             ref="contentRef" 
-            class="flex-1" 
-            :class="{ 'overflow-y-auto': isExpanded, 'overflow-hidden': !isExpanded }"
+            class="flex-shrink-0" 
+            :class="{ 
+              'overflow-y-auto': isExpanded || needsScroll, 
+              'overflow-hidden': !isExpanded && !needsScroll
+            }"
+            :style="{ 
+              maxHeight: isExpanded ? '90vh' : 'auto',
+              height: isExpanded ? '90vh' : 'auto'
+            }"
             @touchstart="onContentDragStart"
             @touchmove="onContentDragMove"
             @touchend="onContentDragEnd"
@@ -50,7 +57,38 @@
             @mouseup="onContentDragEnd"
             @mouseleave="onContentDragEnd"
           >
-            <slot />
+            <!-- Скелетон во время загрузки -->
+            <div v-if="loading" class="p-4 pb-6">
+              <div class="space-y-4">
+                <!-- Скелетон для заголовка -->
+                <div v-if="title" class="space-y-2">
+                  <USkeleton class="h-6 w-3/4" />
+                  <USkeleton class="h-4 w-1/2" />
+                </div>
+                
+                <!-- Скелетон для основного контента -->
+                <div class="space-y-3">
+                  <div v-for="i in skeletonLines" :key="i" class="space-y-2">
+                    <USkeleton class="h-4 w-full" />
+                    <USkeleton class="h-4 w-5/6" />
+                    <USkeleton class="h-4 w-4/6" />
+                  </div>
+                </div>
+                
+                <!-- Скелетон для кнопок -->
+                <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-600">
+                  <div class="flex gap-2">
+                    <USkeleton class="h-10 flex-1" />
+                    <USkeleton class="h-10 flex-1" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Основной контент -->
+            <div v-else>
+              <slot />
+            </div>
           </div>
           
         </div>
@@ -64,6 +102,8 @@ interface Props {
   modelValue: boolean
   title?: string
   subtitle?: string
+  loading?: boolean
+  skeletonLines?: number
 }
 
 interface Emits {
@@ -71,7 +111,10 @@ interface Emits {
   (e: 'close'): void
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  loading: false,
+  skeletonLines: 3
+})
 const emit = defineEmits<Emits>()
 
 // Глобальная проверка на дублирование BottomSheet
@@ -90,6 +133,18 @@ const isScrollDisabled = ref(false) // Флаг для отслеживания 
 const savedScrollPosition = ref(0) // Сохраненная позиция скролла
 const isScrollingToTop = ref(false) // Флаг скролла наверх
 const isInitialized = ref(false) // Флаг инициализации
+const needsScroll = ref(false) // Флаг необходимости скролла
+
+// Computed для проверки длинного контента
+const hasLongContent = computed(() => {
+  if (process.client && contentRef.value) {
+    const availableHeight = window.innerHeight * 0.9
+    const headerHeight = headerRef.value?.offsetHeight || 60
+    const contentAvailableHeight = availableHeight - headerHeight
+    return contentRef.value.scrollHeight > contentAvailableHeight
+  }
+  return false
+})
 
 // Вспомогательная функция для безопасного предотвращения события
 function safePreventDefault(e: TouchEvent | MouseEvent) {
@@ -137,46 +192,12 @@ function onDragMove(e: TouchEvent | MouseEvent) {
   const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
   const dy = clientY - startY.value
   
-  // Если тянем вниз - плавно уменьшаем высоту
+  // Обрабатываем только свайп вниз для закрытия BottomSheet
   if (dy > 0) {
     safePreventDefault(e)
-    
-    if (isExpanded.value) {
-      // Если расширен, сначала уменьшаем высоту
-      const downwardDistance = dy
-      const newHeight = maxHeight.value - downwardDistance
-      
-      // Ограничиваем минимальной высотой
-      sheetHeight.value = Math.max(newHeight, getInitialHeight())
-      
-      // Если достигли начальной высоты, переключаемся в обычный режим
-      if (newHeight <= getInitialHeight()) {
-        isExpanded.value = false
-        sheetHeight.value = getInitialHeight()
-      }
-    } else {
-      // Если не расширен, показываем визуальную обратную связь
-      dragOffset.value = Math.max(0, dy)
-    }
-  } else {
-    // Если тянем вверх - расширяем
-    safePreventDefault(e)
-    
-    if (!isExpanded.value) {
-      const initialHeight = getInitialHeight()
-      const upwardDistance = Math.abs(dy)
-      
-      const newHeight = initialHeight + upwardDistance
-      sheetHeight.value = Math.min(newHeight, maxHeight.value)
-      
-      if (newHeight >= maxHeight.value) {
-        isExpanded.value = true
-        sheetHeight.value = maxHeight.value
-      }
-    }
-    
-    dragOffset.value = 0
+    dragOffset.value = Math.max(0, dy)
   }
+  // Полностью игнорируем свайп вверх - не показываем никакой визуальной обратной связи
 }
 
 function onDragEnd(e: TouchEvent | MouseEvent) {
@@ -189,39 +210,16 @@ function onDragEnd(e: TouchEvent | MouseEvent) {
   const clientY = 'changedTouches' in e ? e.changedTouches[0].clientY : e.clientY
   const dy = clientY - startY.value
   
+  // Обрабатываем только свайп вниз для закрытия
   if (dy > 0) {
-    // Если тянем вниз
-    if (isExpanded.value) {
-      // Если расширен, проверяем, нужно ли закрыть
-      if (dy > threshold) {
-        close()
-      } else {
-        // Возвращаемся к начальной высоте
-        isExpanded.value = false
-        sheetHeight.value = getInitialHeight()
-      }
+    if (dragOffset.value > threshold) {
+      close()
     } else {
-      // Если не расширен, проверяем порог для закрытия
-      if (dragOffset.value > threshold) {
-        close()
-      } else {
-        // Возвращаемся к исходному состоянию
-        dragOffset.value = 0
-      }
+      // Возвращаемся к исходному состоянию
+      dragOffset.value = 0
     }
   } else {
-    // Если тянем вверх - определяем финальное состояние
-    if (!isExpanded.value) {
-      const upwardDistance = Math.abs(dy)
-      
-      if (upwardDistance > 100) {
-        isExpanded.value = true
-        sheetHeight.value = maxHeight.value
-      } else {
-        sheetHeight.value = getInitialHeight()
-      }
-    }
-    
+    // Полностью игнорируем свайп вверх - просто сбрасываем состояние
     dragOffset.value = 0
   }
   
@@ -230,16 +228,22 @@ function onDragEnd(e: TouchEvent | MouseEvent) {
 
 // Функции для перетаскивания контента (только для расширения)
 function onContentDragStart(e: TouchEvent | MouseEvent) {
-  // Разрешаем перетаскивание только если не расширен
-  if (isExpanded.value) return
+  // Разрешаем перетаскивание только если не расширен ИЛИ если нужен скролл
+  if (isExpanded.value && !needsScroll.value) return
   
   // Предотвращаем множественные события
   if (isDragging.value) return
   
-  // Проверяем, не скроллится ли контент
+  // Проверяем состояние скролла
   const contentEl = contentRef.value
-  if (contentEl && contentEl.scrollTop > 0) {
-    return // Если контент уже прокручен, не начинаем перетаскивание
+  const isScrolled = contentEl && contentEl.scrollTop > 0
+  const canScroll = contentEl && contentEl.scrollHeight > contentEl.clientHeight
+  
+  // Начинаем перетаскивание только если:
+  // 1. Контент не может скроллиться (короткий контент)
+  // 2. ИЛИ контент может скроллиться, но уже наверху (scrollTop = 0)
+  if (canScroll && isScrolled) {
+    return // Если контент может скроллиться и прокручен, не начинаем перетаскивание
   }
   
   startY.value = 'touches' in e ? e.touches[0].clientY : e.clientY
@@ -259,75 +263,30 @@ function onContentDragMove(e: TouchEvent | MouseEvent) {
   // Проверяем состояние скролла
   const contentEl = contentRef.value
   const isScrolled = contentEl && contentEl.scrollTop > 0
+  const canScroll = contentEl && contentEl.scrollHeight > contentEl.clientHeight
   
-  if (dy < 0) {
-    // Свайп вверх - расширение
-    if (!isScrolled && !isExpanded.value) {
-      safePreventDefault(e)
-      
-      const initialHeight = getInitialHeight()
-      const upwardDistance = Math.abs(dy)
-      const newHeight = initialHeight + upwardDistance
-      
-      sheetHeight.value = Math.min(newHeight, maxHeight.value)
-      
-      if (newHeight >= maxHeight.value) {
-        isExpanded.value = true
-        sheetHeight.value = maxHeight.value
-      }
-    }
-  } else if (dy > 0) {
-    // Свайп вниз
-    if (isScrolled) {
-      // Если контент прокручен, сначала прокручиваем наверх
-      safePreventDefault(e)
-      
-      if (contentEl) {
-        const scrollAmount = Math.min(dy * 1.5, contentEl.scrollTop) // Ускоряем скролл
-        contentEl.scrollTop -= scrollAmount
-        
-        // Если достигли верха, начинаем закрывать BottomSheet
-        if (contentEl.scrollTop <= 0) {
-          isScrollingToTop.value = true
-          
-          if (isExpanded.value) {
-            const downwardDistance = dy - (contentEl.scrollTop + scrollAmount)
-            const newHeight = maxHeight.value - downwardDistance
-            
-            // Убеждаемся, что высота не меньше начальной
-            sheetHeight.value = Math.max(newHeight, getInitialHeight())
-            
-            if (newHeight <= getInitialHeight()) {
-              isExpanded.value = false
-              sheetHeight.value = getInitialHeight()
-            }
-          } else {
-            dragOffset.value = Math.max(0, dy - scrollAmount)
-          }
-        }
-      }
+  // Если тянем вверх - позволяем браузеру обрабатывать скролл естественным образом
+  if (dy < 0 && canScroll) {
+    return // Позволяем браузеру обрабатывать скролл естественным образом
+  }
+  
+  // Обрабатываем только свайп вниз для закрытия
+  if (dy > 0) {
+    safePreventDefault(e)
+    
+    // Проверяем текущую позицию скролла (не изменяем её)
+    const currentScrollTop = contentEl ? contentEl.scrollTop : 0
+    
+    if (currentScrollTop > 0) {
+      // Если контент прокручен, НЕ показываем визуальную обратную связь
+      // Пользователь должен сам прокрутить контент к началу
+      dragOffset.value = 0
     } else {
-      // Если контент наверху, закрываем BottomSheet
-      safePreventDefault(e)
-      
-      if (isExpanded.value) {
-        // Если расширен, уменьшаем высоту
-        const downwardDistance = dy
-        const newHeight = maxHeight.value - downwardDistance
-        
-        // Убеждаемся, что высота не меньше начальной
-        sheetHeight.value = Math.max(newHeight, getInitialHeight())
-        
-        if (newHeight <= getInitialHeight()) {
-          isExpanded.value = false
-          sheetHeight.value = getInitialHeight()
-        }
-      } else {
-        // Если не расширен, показываем визуальную обратную связь
-        dragOffset.value = Math.max(0, dy)
-      }
+      // Если контент уже наверху, показываем визуальную обратную связь для закрытия
+      dragOffset.value = Math.max(0, dy)
     }
   }
+  // Полностью игнорируем свайп вверх - не обрабатываем его вообще
 }
 
 function onContentDragEnd(e: TouchEvent | MouseEvent) {
@@ -342,46 +301,24 @@ function onContentDragEnd(e: TouchEvent | MouseEvent) {
   
   // Проверяем состояние скролла
   const contentEl = contentRef.value
-  const isScrolled = contentEl && contentEl.scrollTop > 0
+  const currentScrollTop = contentEl ? contentEl.scrollTop : 0
   
   if (dy > 0) {
     // Свайп вниз
-    if (isScrolled || isScrollingToTop.value) {
-      // Если контент был прокручен, завершаем скролл наверх
-      if (contentEl) {
-        contentEl.scrollTo({ top: 0, behavior: 'smooth' })
-        isScrollingToTop.value = false
-      }
+    if (currentScrollTop > 0) {
+      // Если контент прокручен, НЕ закрываем модалку
+      // Пользователь должен сам прокрутить контент к началу
+      dragOffset.value = 0
     } else {
-      // Если контент наверху, закрываем BottomSheet
-      if (isExpanded.value) {
-        if (dy > threshold) {
-          close()
-        } else {
-          isExpanded.value = false
-          sheetHeight.value = getInitialHeight()
-        }
+      // Если контент наверху, закрываем BottomSheet только если dragOffset достаточно большой
+      if (dragOffset.value > threshold) {
+        close()
       } else {
-        if (dragOffset.value > threshold) {
-          close()
-        } else {
-          dragOffset.value = 0
-        }
+        dragOffset.value = 0
       }
     }
   } else {
-    // Свайп вверх
-    if (!isScrolled && !isExpanded.value) {
-      const upwardDistance = Math.abs(dy)
-      
-      if (upwardDistance > 100) {
-        isExpanded.value = true
-        sheetHeight.value = maxHeight.value
-      } else {
-        sheetHeight.value = getInitialHeight()
-      }
-    }
-    
+    // Полностью игнорируем свайп вверх - просто сбрасываем состояние
     dragOffset.value = 0
   }
   
@@ -391,6 +328,17 @@ function onContentDragEnd(e: TouchEvent | MouseEvent) {
 // Функция для измерения высоты контента
 function measureContentHeight() {
   if (!contentRef.value || !headerRef.value) return 400
+
+  // Если контент загружается, используем фиксированную высоту для скелетона
+  if (props.loading) {
+    const headerHeight = headerRef.value.offsetHeight
+    const skeletonHeight = 200 + (props.skeletonLines * 60) // Примерная высота скелетона
+    const totalHeight = headerHeight + skeletonHeight + 32 // 32px для отступов
+    const maxHeight = window.innerHeight * 0.7 // 70% от высоты экрана для скелетона
+    const minHeight = Math.max(300, getInitialHeight())
+    
+    return Math.max(minHeight, Math.min(totalHeight, maxHeight))
+  }
 
   // Проверяем, есть ли карта в контенте
   const hasMap = contentRef.value.querySelector('.ymap-container') || 
@@ -410,25 +358,71 @@ function measureContentHeight() {
     return Math.max(minHeight, Math.min(totalHeight, maxHeight))
   }
 
-  // Для обычного контента используем стандартную логику
-  const tempDiv = document.createElement('div')
-  tempDiv.style.position = 'absolute'
-  tempDiv.style.visibility = 'hidden'
-  tempDiv.style.width = contentRef.value.offsetWidth + 'px'
-  tempDiv.style.padding = '16px'
-  tempDiv.innerHTML = contentRef.value.innerHTML
-  
-  document.body.appendChild(tempDiv)
-  
-  const contentHeight = tempDiv.offsetHeight
+  // Для обычного контента используем реальные размеры
   const headerHeight = headerRef.value.offsetHeight
   
-  document.body.removeChild(tempDiv)
+  // Получаем реальную высоту контента
+  let contentHeight = 0
   
-  // Добавляем отступы и ограничиваем максимальной высотой экрана
+  // Если контент уже отрендерен, используем его реальную высоту
+  if (contentRef.value.children.length > 0) {
+    // Создаем временный элемент для точного измерения
+    const tempDiv = document.createElement('div')
+    tempDiv.style.position = 'absolute'
+    tempDiv.style.visibility = 'hidden'
+    tempDiv.style.width = contentRef.value.offsetWidth + 'px'
+    tempDiv.style.top = '-9999px'
+    tempDiv.style.left = '-9999px'
+    
+    // Копируем все стили контента
+    const computedStyle = window.getComputedStyle(contentRef.value)
+    tempDiv.style.padding = computedStyle.padding
+    tempDiv.style.margin = computedStyle.margin
+    tempDiv.style.border = computedStyle.border
+    tempDiv.style.boxSizing = computedStyle.boxSizing
+    
+    // Копируем HTML контента
+    tempDiv.innerHTML = contentRef.value.innerHTML
+    
+    document.body.appendChild(tempDiv)
+    
+    // Измеряем реальную высоту
+    contentHeight = tempDiv.scrollHeight
+    
+    // Удаляем временный элемент
+    document.body.removeChild(tempDiv)
+    
+    console.log('📏 Измеренная высота контента:', contentHeight)
+  } else {
+    // Если контент еще не отрендерен, используем минимальную высоту
+    contentHeight = 300
+  }
+  
+  // Добавляем отступы и определяем финальную высоту
   const totalHeight = contentHeight + headerHeight + 32 // 32px для отступов
   const maxHeight = window.innerHeight * 0.9 // 90% от высоты экрана
   const minHeight = Math.max(300, getInitialHeight()) // Минимальная высота не меньше начальной
+  
+  // Если контент больше доступной высоты, возвращаем полную высоту для включения скролла
+  if (totalHeight > maxHeight) {
+    console.log('📏 Контент превышает доступную высоту, включаем скролл:', {
+      contentHeight,
+      headerHeight,
+      totalHeight,
+      maxHeight,
+      needsScroll: true
+    })
+    return totalHeight // Возвращаем полную высоту для включения скролла
+  }
+  
+  console.log('📏 Измерение высоты BottomSheet:', {
+    contentHeight,
+    headerHeight,
+    totalHeight,
+    maxHeight,
+    minHeight,
+    finalHeight: Math.max(minHeight, Math.min(totalHeight, maxHeight))
+  })
   
   return Math.max(minHeight, Math.min(totalHeight, maxHeight))
 }
@@ -442,19 +436,77 @@ function getInitialHeight() {
 function updateSheetHeight() {
   nextTick(() => {
     const measuredHeight = measureContentHeight()
-    // Убеждаемся, что максимальная высота не меньше начальной высоты
-    maxHeight.value = Math.max(measuredHeight, getInitialHeight())
+    const initialHeight = getInitialHeight()
     
-    // При открытии всегда устанавливаем начальную высоту (половина экрана)
-    if (!isExpanded.value) {
-      sheetHeight.value = getInitialHeight()
+    // Убеждаемся, что максимальная высота не меньше начальной высоты
+    maxHeight.value = Math.max(measuredHeight, initialHeight)
+    
+    // Определяем, нужен ли скролл
+    // Если контент больше доступной высоты (90vh), включаем скролл
+    const availableHeight = window.innerHeight * 0.9 // 90vh
+    const headerHeight = headerRef.value?.offsetHeight || 60
+    const contentAvailableHeight = availableHeight - headerHeight
+    
+    // Принудительно включаем скролл если контент длинный
+    const isLongContent = contentRef.value && contentRef.value.scrollHeight > contentAvailableHeight
+    
+    // needsScroll должен быть true если контент больше доступной высоты ИЛИ если это длинный контент
+    needsScroll.value = measuredHeight > availableHeight || !!isLongContent
+    
+    // Если контент длинный, автоматически переходим в расширенный режим
+    if (isLongContent && !isExpanded.value) {
+      isExpanded.value = true
+      console.log('🔧 Автоматически включен расширенный режим для длинного контента')
+      
+      // Принудительно обновляем DOM
+      nextTick(() => {
+        if (contentRef.value) {
+          contentRef.value.style.maxHeight = '90vh'
+          contentRef.value.style.height = '90vh'
+          contentRef.value.classList.add('overflow-y-auto')
+          contentRef.value.classList.remove('overflow-hidden')
+          console.log('🔧 Принудительно применены стили скролла')
+        }
+      })
     }
+    
+    console.log('📏 Обновление высоты BottomSheet:', {
+      measuredHeight,
+      maxHeight: maxHeight.value,
+      isExpanded: isExpanded.value,
+      needsScroll: needsScroll.value,
+      contentAvailableHeight,
+      availableHeight,
+      shouldHaveScroll: measuredHeight > availableHeight,
+      isLongContent,
+      scrollHeight: contentRef.value?.scrollHeight,
+      offsetHeight: contentRef.value?.offsetHeight,
+      cssClasses: {
+        'overflow-y-auto': isExpanded.value || needsScroll.value,
+        'overflow-hidden': !isExpanded.value && !needsScroll.value
+      },
+      inlineStyles: {
+        maxHeight: isExpanded.value ? '90vh' : 'auto',
+        height: isExpanded.value ? '90vh' : 'auto'
+      }
+    })
   })
+}
+
+// Дополнительный метод для принудительного обновления высоты
+function forceUpdateHeight() {
+  if (props.modelValue && contentRef.value) {
+    // Даем время для полного рендеринга контента
+    setTimeout(() => {
+      updateSheetHeight()
+    }, 200)
+  }
 }
 
 // Экспортируем методы для внешнего использования
 defineExpose({
-  updateHeight: updateSheetHeight
+  updateHeight: updateSheetHeight,
+  forceUpdateHeight
 })
 
 // Функции для управления скроллом страницы
@@ -525,6 +577,35 @@ watch(() => props.modelValue, (newValue) => {
     // Небольшая задержка для рендеринга контента
     setTimeout(updateSheetHeight, 50)
     
+    // Дополнительное обновление через больший интервал для длинного контента
+    setTimeout(() => {
+      if (props.modelValue && contentRef.value) {
+        updateSheetHeight()
+        // Принудительно обновляем высоту еще раз для длинного контента
+        setTimeout(updateSheetHeight, 100)
+        
+        // Принудительная проверка скролла
+        setTimeout(() => {
+          if (contentRef.value && contentRef.value.scrollHeight > window.innerHeight * 0.6) {
+            needsScroll.value = true
+            isExpanded.value = true
+            
+            // Принудительно применяем стили
+            nextTick(() => {
+              if (contentRef.value) {
+                contentRef.value.style.maxHeight = '90vh'
+                contentRef.value.style.height = '90vh'
+                contentRef.value.classList.add('overflow-y-auto')
+                contentRef.value.classList.remove('overflow-hidden')
+              }
+            })
+            
+            console.log('🔧 Принудительно включен скролл и расширенный режим при открытии для длинного контента')
+          }
+        }, 200)
+      }
+    }, 300)
+    
     // Фокусируем элемент для корректной работы touch событий
     nextTick(() => {
       setTimeout(() => {
@@ -538,6 +619,62 @@ watch(() => props.modelValue, (newValue) => {
     setTimeout(() => {
       enableBodyScroll()
     }, 50) // Задержка для завершения анимации закрытия
+  }
+})
+
+// Следим за изменениями состояния загрузки для автоматической подстройки высоты
+watch(() => props.loading, (newLoading, oldLoading) => {
+  // Если состояние загрузки изменилось, обновляем высоту
+  if (newLoading !== oldLoading && props.modelValue) {
+    nextTick(() => {
+      setTimeout(updateSheetHeight, 100) // Небольшая задержка для рендеринга скелетона
+    })
+  }
+})
+
+// Следим за изменениями контента для автоматической подстройки высоты
+watch(() => contentRef.value?.children.length, (newLength, oldLength) => {
+  // Если количество дочерних элементов изменилось, обновляем высоту
+  if (newLength !== oldLength && props.modelValue && !props.loading) {
+    nextTick(() => {
+      setTimeout(updateSheetHeight, 150) // Увеличиваем задержку для полного рендеринга контента
+      
+      // Дополнительная проверка для длинного контента
+      setTimeout(() => {
+        if (contentRef.value && contentRef.value.scrollHeight > window.innerHeight * 0.6) {
+          needsScroll.value = true
+          isExpanded.value = true
+          console.log('🔧 Принудительно включен скролл и расширенный режим при изменении контента')
+        }
+      }, 300)
+    })
+  }
+})
+
+// Дополнительный watcher для отслеживания изменений в содержимом
+watch(() => contentRef.value?.innerHTML, (newContent, oldContent) => {
+  // Если содержимое изменилось, обновляем высоту
+  if (newContent !== oldContent && props.modelValue && !props.loading) {
+    nextTick(() => {
+      setTimeout(updateSheetHeight, 200) // Задержка для полного рендеринга
+      
+      // Дополнительная проверка через больший интервал
+      setTimeout(() => {
+        if (contentRef.value && contentRef.value.scrollHeight > window.innerHeight * 0.6) {
+          needsScroll.value = true
+          isExpanded.value = true
+          console.log('🔧 Принудительно включен скролл и расширенный режим для длинного контента')
+        }
+      }, 500)
+    })
+  }
+})
+
+// Watcher для отслеживания изменений позиции скролла
+watch(() => contentRef.value?.scrollTop, (newScrollTop, oldScrollTop) => {
+  // Если скролл достиг верха (scrollTop = 0), разрешаем закрытие модалки
+  if (newScrollTop === 0 && (oldScrollTop ?? 0) > 0) {
+    console.log('📜 Контент достиг верха, можно закрыть модалку')
   }
 })
 

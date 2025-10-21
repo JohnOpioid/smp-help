@@ -4,6 +4,7 @@ const globalState = {
   searchQuery: ref(''),
   searchResults: ref<any[]>([]),
   isSearching: ref(false),
+  isDataFromCache: ref(false),
   groupedResults: ref<Record<string, any[]>>({
     mkb: [],
     ls: [],
@@ -115,6 +116,10 @@ export const useGlobalSearch = () => {
     globalState.isSearching.value = searching
   }
 
+  const updateCacheStatus = (fromCache: boolean) => {
+    globalState.isDataFromCache.value = fromCache
+  }
+
   const selectSearchResult = (result: any) => {
     let url = ''
     
@@ -147,12 +152,14 @@ export const useGlobalSearch = () => {
     searchQuery: globalState.searchQuery,
     searchResults: globalState.searchResults,
     isSearching: globalState.isSearching,
+    isDataFromCache: globalState.isDataFromCache,
     groupedResults: globalState.groupedResults,
     currentPageContext: globalState.currentPageContext,
     activateSearch,
     deactivateSearch,
     updateSearchResults,
     updateSearching,
+    updateCacheStatus,
     selectSearchResult,
     updatePageContext,
     prioritizeResults

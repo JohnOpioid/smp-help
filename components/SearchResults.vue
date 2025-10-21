@@ -9,6 +9,15 @@
         <p class="text-base sm:text-lg lg:text-xl text-slate-600 dark:text-slate-300">
           Найдено {{ searchResults.length }} результатов
         </p>
+        <!-- Индикатор источника данных -->
+        <div v-if="isDataFromCache" class="mt-2">
+          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Загружено из кеша
+          </span>
+        </div>
       </div>
 
       <!-- Скелетон во время поиска -->
@@ -451,7 +460,7 @@ import DOMPurify from 'dompurify'
 import { nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useGlobalSearch } from '~/composables/useGlobalSearch'
 
-const { isSearchActive, isSearching, searchResults, groupedResults, selectSearchResult, deactivateSearch, currentPageContext, searchQuery } = useGlobalSearch()
+const { isSearchActive, isSearching, searchResults, groupedResults, selectSearchResult, deactivateSearch, currentPageContext, searchQuery, isDataFromCache } = useGlobalSearch()
 
 // Определяем порядок отображения групп в зависимости от контекста страницы
 const groupDisplayOrder = computed(() => {
@@ -1277,92 +1286,103 @@ const preloadAndNavigate = async (to: string, preloadFn: () => Promise<void>) =>
 
 // Функции для открытия модалов (скопированы из BottomSearchPanel)
 const openMkbModal = (result: any) => {
+  console.log('🔍 Открываем МКБ модалку:', result)
+  
   // Если в результате уже есть готовый url — используем его
   if (result.url) {
     const url = result.url
-    preloadAndNavigate(url, async () => {
-      const m = url.match(/\/codifier\/(.*?)\?/)
-      const categoryUrl = m?.[1]
-      if (categoryUrl) { await $fetch(`/api/codifier/${categoryUrl}`).catch(() => {}) }
-    })
+    console.log('🔍 Используем готовый URL:', url)
+    deactivateSearch()
+    navigateTo(url)
     return
   }
 
   // Пробуем получить категорию и id на верхнем уровне, как в выдаче
   const categoryUrl = result.category?.url || result.data?.category?.url
   const mkbId = result._id || result.data?._id || result.id?.replace('mkb-', '')
+  
+  console.log('🔍 Данные для навигации:', { categoryUrl, mkbId })
+  
   if (categoryUrl && mkbId) {
     const target = `/codifier/${categoryUrl}?id=${mkbId}`
-    preloadAndNavigate(target, async () => { await $fetch(`/api/codifier/${categoryUrl}`).catch(() => {}) })
+    console.log('🔍 Переходим на:', target)
+    deactivateSearch()
+    navigateTo(target)
     return
   }
+  
+  console.log('❌ Не удалось определить URL для МКБ элемента')
 }
 
 const openLocalStatusModal = (result: any) => {
+  console.log('🔍 Открываем LocalStatus модалку:', result)
+  
   // Предпочтительно: собрать URL из полей результата
   const categoryUrl = result.category?.url || result.data?.category?.url
   const lsId = result._id || result.data?._id || result.id?.replace('ls-', '')
+  
+  console.log('🔍 Данные для навигации LocalStatus:', { categoryUrl, lsId })
+  
   if (categoryUrl && lsId) {
     const target = `/local-statuses/${categoryUrl}?id=${lsId}`
-    preloadAndNavigate(target, async () => {
-      await $fetch(`/api/local-statuses/${categoryUrl}`).catch(() => {})
-    })
+    console.log('🔍 Переходим на LocalStatus:', target)
+    deactivateSearch()
+    navigateTo(target)
     return
   }
 
   // Fallback: если уже есть готовый url
   if (result.url) {
     const url = result.url
-    preloadAndNavigate(url, async () => {
-      const m = url.match(/\/local-statuses\/(.*?)\?/)
-      const cat = m?.[1]
-      if (cat) { await $fetch(`/api/local-statuses/${cat}`).catch(() => {}) }
-    })
+    console.log('🔍 Используем готовый URL LocalStatus:', url)
+    deactivateSearch()
+    navigateTo(url)
+    return
   }
+  
+  console.log('❌ Не удалось определить URL для LocalStatus элемента')
 }
 
 const openAlgorithmModal = (result: any) => {
+  console.log('🔍 Открываем Algorithm модалку:', result)
+  
   // Предпочтительно используем реальные поля объекта алгоритма из БД
   const section = result?.section?.url || result?.section
   const category = result?.category?.url || result?.category
   const algorithmId = result?._id || result?.id?.replace('algo-', '')
 
+  console.log('🔍 Данные для навигации Algorithm:', { section, category, algorithmId })
+
   if (section && category && algorithmId) {
     const target = `/algorithms/${section}/${category}/${algorithmId}`
-    preloadAndNavigate(target, async () => { 
-      await $fetch(`/api/algorithms/${section}/${category}`).catch(() => {}) 
-    })
+    console.log('🔍 Переходим на Algorithm:', target)
+    deactivateSearch()
+    navigateTo(target)
     return
   }
 
   // Поддержка заранее собранного URL (если он есть)
   if (result.url) {
     const url = result.url
-    preloadAndNavigate(url, async () => {
-      const m = url.match(/\/algorithms\/(.*?)\/(.*?)\/(.*?)(?:\?|$)/)
-      const s = m?.[1]
-      const c = m?.[2]
-      if (s && c) {
-        await $fetch(`/api/algorithms/${s}/${c}`).catch(() => {})
-      }
-    })
+    console.log('🔍 Используем готовый URL Algorithm:', url)
+    deactivateSearch()
+    navigateTo(url)
     return
   }
-
-  // Если не хватает данных — не уводим на общий список, просто скрываем поиск
-  deactivateSearch()
+  
+  console.log('❌ Не удалось определить URL для Algorithm элемента')
 }
 
 const openDrugModal = (drugData: any) => {
-  console.log('openDrugModal вызвана с данными:', drugData)
+  console.log('🔍 Открываем Drug модалку:', drugData)
   const raw = drugData?._id || drugData?.data?._id || drugData?.id
   const id = raw ? String(raw).replace(/^drug-/, '') : ''
-  console.log('Извлеченный ID:', id)
+  console.log('🔍 Извлеченный ID препарата:', id)
 
   if (!id) {
-    console.log('Нет корректного ID, переходим на список препаратов')
-    // Нет корректного id — просто переходим на список препаратов
-    preloadAndNavigate('/drugs', async () => { await $fetch('/api/drugs').catch(() => {}) })
+    console.log('❌ Нет корректного ID препарата, переходим на список препаратов')
+    deactivateSearch()
+    navigateTo('/drugs')
     return
   }
 
@@ -1370,12 +1390,11 @@ const openDrugModal = (drugData: any) => {
   sessionStorage.removeItem('drugModalClosedByUser')
 
   // Всегда переходим на страницу с query id для изменения URL
-  console.log('Переходим на страницу препаратов с ID:', id)
+  console.log('🔍 Переходим на страницу препаратов с ID:', id)
   const url = `/drugs?id=${id}`
-  preloadAndNavigate(url, async () => {
-    // Предзагрузим конкретный препарат для ускорения
-    await $fetch(`/api/drugs/${id}`).catch(() => {})
-  })
+  console.log('🔍 Переходим на:', url)
+  deactivateSearch()
+  navigateTo(url)
 }
 
 const addDrugBookmark = async (drugData: any) => {

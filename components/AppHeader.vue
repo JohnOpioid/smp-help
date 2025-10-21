@@ -199,6 +199,7 @@
 
 <script setup lang="ts">
 import { watch, onMounted, onUnmounted, computed } from 'vue'
+import { useSearchCache } from '~/composables/useSearchCache'
 
 const props = withDefaults(defineProps<{ title?: string }>(), { title: 'Справочник СМП' })
 const route = useRoute()
@@ -465,8 +466,12 @@ const {
   activateSearch,
   deactivateSearch,
   updateSearchResults,
-  updateSearching
+  updateSearching,
+  updateCacheStatus
 } = useGlobalSearch()
+
+// Импортируем кеш поиска
+const { getSearchData, getCacheInfo } = useSearchCache()
 
 // Локальная переменная для поля ввода
 const searchQuery = ref('')
@@ -474,6 +479,7 @@ const lastSearchValue = ref('')
 const isComposing = ref(false)
 const isSearchExpanded = ref(false)
 const isMobile = ref(false)
+const isDataFromCache = ref(false)
 
 // Обновляем состояние мобильного устройства
 const updateMobileState = () => {
@@ -845,17 +851,58 @@ const performSearch = async () => {
       clearCache()
     }
     
-    // Загружаем данные для поиска
-    let response
+    // Используем кеш для загрузки данных
+    let allItems: any[] = []
+    
     try {
-      // Добавляем уникальный параметр для избежания кэширования
-      const timestamp = Date.now()
-      response = await $fetch(`/api/search/all-data?t=${timestamp}`)
-      console.log('📡 API response:', response)
-    } catch (apiError) {
-      console.error('❌ Main API failed, trying fallback endpoints:', apiError)
+      // Пытаемся получить данные из кеша или API
+      const searchData = await getSearchData()
+      
+      if (!searchData) {
+        console.error('❌ Не удалось загрузить данные для поиска')
+        return
+      }
+      
+      // Преобразуем данные в нужный формат
+      if (Array.isArray(searchData)) {
+        allItems = searchData.map((item: any) => ({
+          ...item,
+          type: item.type || 'unknown'
+        }))
+      } else {
+        // Если данные в формате объекта, преобразуем их
+        allItems = []
+        const data = searchData as any
+        if (data.algorithms?.items && Array.isArray(data.algorithms.items)) {
+          allItems.push(...data.algorithms.items.map((item: any) => ({ ...item, type: 'algorithm' })))
+        }
+        if (data.mkbCodes?.items && Array.isArray(data.mkbCodes.items)) {
+          allItems.push(...data.mkbCodes.items.map((item: any) => ({ ...item, type: 'mkb' })))
+        }
+        if (data.localStatuses?.items && Array.isArray(data.localStatuses.items)) {
+          allItems.push(...data.localStatuses.items.map((item: any) => ({ ...item, type: 'ls' })))
+        }
+        if (data.drugs?.items && Array.isArray(data.drugs.items)) {
+          allItems.push(...data.drugs.items.map((item: any) => ({ ...item, type: 'drug' })))
+        }
+        if (data.substations?.items && Array.isArray(data.substations.items)) {
+          allItems.push(...data.substations.items.map((item: any) => ({ ...item, type: 'substation' })))
+        }
+      }
+      
+      // Проверяем, были ли данные загружены из кеша
+      const cacheInfo = getCacheInfo()
+      const fromCache = cacheInfo.cachedData !== null
+      updateCacheStatus(fromCache)
+      
+      console.log('📋 Данные загружены из кеша/API:', allItems.length, 'элементов', 
+                  fromCache ? '(из кеша)' : '(из API)')
+      
+    } catch (error) {
+      console.error('❌ Ошибка при загрузке данных:', error)
       
       // Fallback: используем отдельные API endpoints
+      console.log('🔄 Используем fallback API endpoints...')
       const [mkbData, lsResults, algoResults, drugResults, substationResults] = await Promise.all([
         $fetch('/api/mkb/all').catch(() => ({ success: true, items: [] })),
         $fetch('/api/local-statuses/all').catch(() => ({ success: true, items: [] })),
@@ -864,64 +911,27 @@ const performSearch = async () => {
         $fetch('/api/substations/all').catch(() => ({ success: true, items: [] }))
       ])
       
-      response = {
-        success: true,
-        data: {
-          mkbCodes: mkbData,
-          localStatuses: lsResults,
-          algorithms: algoResults,
-          drugs: drugResults,
-          substations: substationResults
-        }
+      // Собираем данные из fallback endpoints
+      allItems = []
+      
+      if (mkbData?.success && 'items' in mkbData && Array.isArray((mkbData as any).items)) {
+        allItems.push(...(mkbData as any).items.map((item: any) => ({ ...item, type: 'mkb' })))
       }
-      console.log('📡 Fallback API response:', response)
+      if (lsResults?.success && 'items' in lsResults && Array.isArray((lsResults as any).items)) {
+        allItems.push(...(lsResults as any).items.map((item: any) => ({ ...item, type: 'ls' })))
+      }
+      if (algoResults?.success && 'items' in algoResults && Array.isArray((algoResults as any).items)) {
+        allItems.push(...(algoResults as any).items.map((item: any) => ({ ...item, type: 'algorithm' })))
+      }
+      if (drugResults?.success && 'items' in drugResults && Array.isArray((drugResults as any).items)) {
+        allItems.push(...(drugResults as any).items.map((item: any) => ({ ...item, type: 'drug' })))
+      }
+      if (substationResults?.success && 'items' in substationResults && Array.isArray((substationResults as any).items)) {
+        allItems.push(...(substationResults as any).items.map((item: any) => ({ ...item, type: 'substation' })))
+      }
+      
+      console.log('📡 Fallback API загружен:', allItems.length, 'элементов')
     }
-    
-    if (!response.success) {
-      console.error('❌ API returned error:', response)
-      return
-    }
-    
-    const { data } = response as any
-    console.log('📊 API data:', data)
-    const allItems: any[] = []
-    
-    // Добавляем алгоритмы
-    if (data.algorithms?.items && Array.isArray(data.algorithms.items)) {
-      allItems.push(...data.algorithms.items.map((item: any) => ({ ...item, type: 'algorithm' })))
-    } else {
-      console.log('⚠️ No algorithms data:', data.algorithms)
-    }
-    
-    // Добавляем МКБ коды
-    if (data.mkbCodes?.items && Array.isArray(data.mkbCodes.items)) {
-      allItems.push(...data.mkbCodes.items.map((item: any) => ({ ...item, type: 'mkb' })))
-    } else {
-      console.log('⚠️ No MKB data:', data.mkbCodes)
-    }
-    
-    // Добавляем локальные статусы
-    if (data.localStatuses?.items && Array.isArray(data.localStatuses.items)) {
-      allItems.push(...data.localStatuses.items.map((item: any) => ({ ...item, type: 'ls' })))
-    } else {
-      console.log('⚠️ No local statuses data:', data.localStatuses)
-    }
-    
-    // Добавляем препараты
-    if (data.drugs?.items && Array.isArray(data.drugs.items)) {
-      allItems.push(...data.drugs.items.map((item: any) => ({ ...item, type: 'drug' })))
-    } else {
-      console.log('⚠️ No drugs data:', data.drugs)
-    }
-    
-    // Добавляем подстанции
-    if (data.substations?.items && Array.isArray(data.substations.items)) {
-      allItems.push(...data.substations.items.map((item: any) => ({ ...item, type: 'substation' })))
-    } else {
-      console.log('⚠️ No substations data:', data.substations)
-    }
-    
-    console.log('📋 Total items for search:', allItems.length)
     
     // Отладочная информация о типах данных
     const typeCounts = allItems.reduce((acc, item) => {
