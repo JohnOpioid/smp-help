@@ -46,8 +46,8 @@
               'overflow-hidden': !isExpanded && !needsScroll
             }"
             :style="{ 
-              maxHeight: isExpanded ? '90vh' : 'auto',
-              height: isExpanded ? '90vh' : 'auto'
+              maxHeight: isExpanded || needsScroll ? `${maxContentHeight}px` : 'auto',
+              height: isExpanded || needsScroll ? `${maxContentHeight}px` : 'auto'
             }"
             @touchstart="onContentDragStart"
             @touchmove="onContentDragMove"
@@ -144,6 +144,16 @@ const hasLongContent = computed(() => {
     return contentRef.value.scrollHeight > contentAvailableHeight
   }
   return false
+})
+
+// Computed для максимальной высоты контента
+const maxContentHeight = computed(() => {
+  if (process.client) {
+    const availableHeight = window.innerHeight * 0.9 // 90vh
+    const headerHeight = headerRef.value?.offsetHeight || 60
+    return availableHeight - headerHeight
+  }
+  return 400 // Fallback для SSR
 })
 
 // Вспомогательная функция для безопасного предотвращения события
@@ -403,7 +413,7 @@ function measureContentHeight() {
   const maxHeight = window.innerHeight * 0.9 // 90% от высоты экрана
   const minHeight = Math.max(300, getInitialHeight()) // Минимальная высота не меньше начальной
   
-  // Если контент больше доступной высоты, возвращаем полную высоту для включения скролла
+  // Если контент больше доступной высоты, возвращаем максимальную высоту для включения скролла
   if (totalHeight > maxHeight) {
     console.log('📏 Контент превышает доступную высоту, включаем скролл:', {
       contentHeight,
@@ -412,7 +422,7 @@ function measureContentHeight() {
       maxHeight,
       needsScroll: true
     })
-    return totalHeight // Возвращаем полную высоту для включения скролла
+    return maxHeight // Возвращаем максимальную высоту для включения скролла
   }
   
   console.log('📏 Измерение высоты BottomSheet:', {
@@ -461,8 +471,8 @@ function updateSheetHeight() {
       // Принудительно обновляем DOM
       nextTick(() => {
         if (contentRef.value) {
-          contentRef.value.style.maxHeight = '90vh'
-          contentRef.value.style.height = '90vh'
+          contentRef.value.style.maxHeight = `${maxContentHeight.value}px`
+          contentRef.value.style.height = `${maxContentHeight.value}px`
           contentRef.value.classList.add('overflow-y-auto')
           contentRef.value.classList.remove('overflow-hidden')
           console.log('🔧 Принудительно применены стили скролла')
@@ -593,8 +603,8 @@ watch(() => props.modelValue, (newValue) => {
             // Принудительно применяем стили
             nextTick(() => {
               if (contentRef.value) {
-                contentRef.value.style.maxHeight = '90vh'
-                contentRef.value.style.height = '90vh'
+                contentRef.value.style.maxHeight = `${maxContentHeight.value}px`
+                contentRef.value.style.height = `${maxContentHeight.value}px`
                 contentRef.value.classList.add('overflow-y-auto')
                 contentRef.value.classList.remove('overflow-hidden')
               }
