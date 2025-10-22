@@ -179,8 +179,6 @@
         <BottomSheet 
           v-model="modalOpen" 
           :title="selectedItem?.name" 
-          :loading="isLoadingItem"
-          :skeleton-lines="6"
           @close="modalOpen = false"
         >
           <div class="p-4 pb-6">
@@ -368,7 +366,7 @@ async function loadPage(first = false) {
 const { isMobile } = useIsMobile()
 const modalOpen = ref(false)
 const selectedItem = ref<any>(null)
-const isLoadingItem = ref(false)
+// Убираем промежуточную загрузку для стабильной высоты, как у препаратов/кодификатора
 
 // Состояние закладок
 const isBookmarked = ref(false)
@@ -458,22 +456,8 @@ async function shareItem() {
 
 function openModal(item: any) {
   selectedItem.value = item
-  // Показать короткую загрузку для стабильной высоты
-  isLoadingItem.value = true
   modalOpen.value = true
-  updateIsBookmarked()
-
-  // Обновляем URL с ID локального статуса через query параметр только если его еще нет
-  if (!routeQuery.query.id || routeQuery.query.id !== item._id) {
-    const newUrl = new URL(window.location.href)
-    newUrl.searchParams.set('id', item._id)
-    window.history.replaceState({}, '', newUrl.toString())
-  }
-
-  // Небольшая задержка, чтобы BottomSheet стабилизировал высоту, затем показываем контент
-  setTimeout(() => {
-    isLoadingItem.value = false
-  }, 150)
+  updateIsBookmarked();
 }
 
 // Авто-открытие по query ?id=<id>
@@ -494,7 +478,6 @@ function closeModalMobile() {
 async function loadSpecificItem(itemId: string) {
   try {
     console.log('🔍 Загружаем конкретный локальный статус:', itemId)
-    isLoadingItem.value = true
     
     // Загружаем элемент напрямую из API
     const response = await $fetch<{ success: boolean; items: any[] }>('/api/local-statuses/all')
@@ -527,7 +510,7 @@ async function loadSpecificItem(itemId: string) {
   } catch (err) {
     console.error('❌ Ошибка загрузки конкретного локального статуса:', err)
   } finally {
-    isLoadingItem.value = false
+    // nothing
   }
 }
 

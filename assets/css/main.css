@@ -346,26 +346,27 @@ button.secondary.soft:hover,
 }
 
 /* Дополнительные селекторы для максимального покрытия */
-.bg-blue-500,
-.bg-blue-600,
-.bg-primary-500,
-.bg-primary-600 {
+button.bg-blue-500,
+button.bg-blue-600,
+button.bg-primary-500,
+button.bg-primary-600 {
   background-color: #e2e8f0 !important; /* slate-200 */
 }
 
-.text-blue-600,
-.text-blue-700,
-.text-primary-600,
-.text-primary-700 {
+button.text-blue-600,
+button.text-blue-700,
+button.text-primary-600,
+button.text-primary-700 {
   color: #475569 !important; /* slate-600 */
 }
 
 /* Специфичные селекторы для Nuxt UI Button */
 button[class*="bg-blue"],
-button[class*="bg-primary"],
+button[class*="bg-primary"] {
+  background-color: #e2e8f0 !important; /* slate-200 */
+}
 button[class*="text-blue"],
 button[class*="text-primary"] {
-  background-color: #e2e8f0 !important; /* slate-200 */
   color: #475569 !important; /* slate-600 */
 }
 

@@ -4,7 +4,7 @@
       <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
         <!-- Левая часть - копирайт -->
         <div class="text-sm text-gray-500 dark:text-gray-400">
-          © {{ currentYear }} SMP Help. Сделано 
+          © {{ currentYear }} Помощник СМП. Сделано 
           <a 
             href="https://desjo.ru/" 
             target="_blank" 
