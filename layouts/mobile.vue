@@ -103,7 +103,7 @@
     </div>
     
     <!-- Мобильная нижняя навигация -->
-    <MobileBottomNav />
+    <MobileNav />
     
     <!-- Панель поиска с чат-ботом -->
     <BottomSearchPanel :is-open="isBottomSearchOpen" @close="closeBottomSearch" />

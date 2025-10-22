@@ -301,13 +301,11 @@
     <AppFooter v-if="!isInitialLoading && route.path !== '/substations'" />
     <AppFooterSkeleton v-else-if="isInitialLoading && route.path !== '/substations'" />
 
+    <!-- Мобильная навигация -->
     <MobileNav v-if="!isInitialLoading" />
     
     <!-- Панель поиска с чат-ботом -->
     <BottomSearchPanel :is-open="isBottomSearchOpen" @close="closeBottomSearch" />
-    
-    <!-- Нижняя навигация для мобильных браузеров -->
-    <MobileBottomNav v-if="isMobileApp" />
     
     <!-- Глобальный индикатор предзагрузки -->
     <PreloadIndicator />
@@ -316,7 +314,6 @@
 
 <script setup lang="ts">
 import PreloadIndicator from '~/components/PreloadIndicator.vue'
-import MobileBottomNav from '~/components/MobileBottomNav.vue'
 import { Capacitor } from '@capacitor/core'
 
 // Реактивное состояние размера экрана
