@@ -315,10 +315,39 @@
 import PreloadIndicator from '~/components/PreloadIndicator.vue'
 import { Capacitor } from '@capacitor/core'
 
-// Определяем, находимся ли в мобильном приложении
+// Реактивное состояние размера экрана
+const screenWidth = ref(0)
+
+// Определяем, находимся ли в мобильном приложении или мобильном браузере
 const isMobileApp = computed(() => {
-  return process.client && Capacitor.isNativePlatform()
+  if (!process.client) return false
+  
+  // Проверяем Capacitor
+  if (Capacitor.isNativePlatform()) return true
+  
+  // Проверяем мобильный браузер
+  const userAgent = navigator.userAgent.toLowerCase()
+  const isMobileBrowser = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent)
+  
+  // Проверяем размер экрана
+  const isSmallScreen = screenWidth.value <= 768
+  
+  return isMobileBrowser || isSmallScreen
 })
+
+// Обновляем размер экрана при изменении
+if (process.client) {
+  const updateScreenWidth = () => {
+    screenWidth.value = window.innerWidth
+  }
+  
+  updateScreenWidth()
+  window.addEventListener('resize', updateScreenWidth)
+  
+  onUnmounted(() => {
+    window.removeEventListener('resize', updateScreenWidth)
+  })
+}
 
 // Показывать ли кнопку "Назад" в мобильном приложении
 const showBackButton = computed(() => {
