@@ -20,7 +20,10 @@ export default defineNuxtConfig({
         { name: 'description', content: 'Справочник СМП: алгоритмы, инструкции, кодификаторы и медицинские калькуляторы.' },
         { name: 'theme-color', content: '#3b82f6' }
       ],
-      link: []
+      link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        { rel: 'shortcut icon', href: '/favicon.svg', type: 'image/svg+xml' }
+      ]
     }
   },
   runtimeConfig: {
