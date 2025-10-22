@@ -406,29 +406,26 @@
             </template>
             <template #footer>
               <div class="flex gap-3 w-full">
-                <UButton
-                  :icon="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
-                  color="secondary"
-                  variant="soft"
+                <button 
+                  type="button" 
+                  :title="isBookmarked ? 'В избранном' : 'В закладки'" 
+                  :disabled="!selected"
                   @click="toggleBookmark()"
-                  :disabled="!selected"
-                  size="xl"
-                  :title="isBookmarked ? 'В избранном' : 'В закладки'"
-                  class="cursor-pointer flex-1 justify-center items-center custom-secondary-button"
+                  class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer flex-1 justify-center items-center"
                 >
+                  <UIcon :name="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'" class="w-4 h-4" />
                   {{ isBookmarked ? 'В избранном' : 'В закладки' }}
-                </UButton>
-                <UButton
-                  icon="i-heroicons-share"
-                  color="secondary"
-                  variant="soft"
-                  size="xl"
-                  @click="shareItem"
+                </button>
+                <button 
+                  type="button" 
+                  title="Поделиться"
                   :disabled="!selected"
-                  class="cursor-pointer flex-1 justify-center items-center custom-secondary-button"
+                  @click="shareItem"
+                  class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer flex-1 justify-center items-center"
                 >
+                  <UIcon name="i-heroicons-share" class="w-4 h-4" />
                   Поделиться
-                </UButton>
+                </button>
               </div>
             </template>
           </UModal>
@@ -756,29 +753,26 @@
                 <!-- Кнопки действий -->
                 <div class="mt-6">
                   <div class="flex gap-3 w-full">
-                    <UButton
-                      :icon="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
-                      color="secondary"
-                      variant="soft"
+                    <button 
+                      type="button" 
+                      :title="isBookmarked ? 'В избранном' : 'В закладки'" 
+                      :disabled="!selected"
                       @click="toggleBookmark()"
-                      :disabled="!selected"
-                      size="xl"
-                      :title="isBookmarked ? 'В избранном' : 'В закладки'"
-                      class="cursor-pointer flex-1 justify-center items-center custom-secondary-button"
+                      class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer flex-1 justify-center items-center"
                     >
+                      <UIcon :name="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'" class="w-4 h-4" />
                       {{ isBookmarked ? 'В избранном' : 'В закладки' }}
-                    </UButton>
-                    <UButton
-                      icon="i-heroicons-share"
-                      color="secondary"
-                      variant="soft"
-                      size="xl"
-                      @click="shareItem"
+                    </button>
+                    <button 
+                      type="button" 
+                      title="Поделиться"
                       :disabled="!selected"
-                      class="cursor-pointer flex-1 justify-center items-center custom-secondary-button"
+                      @click="shareItem"
+                      class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer flex-1 justify-center items-center"
                     >
+                      <UIcon name="i-heroicons-share" class="w-4 h-4" />
                       Поделиться
-                    </UButton>
+                    </button>
                   </div>
                 </div>
               </div>

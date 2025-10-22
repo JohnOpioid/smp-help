@@ -93,13 +93,13 @@
                     class="px-3 pb-3 pt-0 border-t border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
                     <div class="flex flex-wrap gap-1 pt-2">
                       <button @click="openMkbModal(result)"
-                        class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-xs hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors border-0 cursor-pointer">
-                        <UIcon name="i-lucide-clipboard-list" class="w-3 h-3" />Открыть
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-sm hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide-clipboard-list" class="w-4 h-4" />Открыть
                       </button>
                       <button
                         @click="copyToClipboard((result.title || result.name) + ': ' + (result.description || result.note || result.content))"
-                        class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
-                        <UIcon name="i-lucide-copy" class="w-3 h-3" />Копировать
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide-copy" class="w-4 h-4" />Копировать
                       </button>
                     </div>
                   </div>
@@ -153,13 +153,13 @@
                     class="px-3 pb-3 pt-0 border-t border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
                     <div class="flex flex-wrap gap-1 pt-2">
                       <button @click="openLocalStatusModal(result)"
-                        class="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 rounded-full text-xs hover:bg-orange-200 dark:hover:bg-orange-800 transition-colors border-0 cursor-pointer">
-                        <UIcon name="i-lucide-tag" class="w-3 h-3" />Открыть
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 rounded-full text-sm hover:bg-orange-200 dark:hover:bg-orange-800 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide-tag" class="w-4 h-4" />Открыть
                       </button>
                       <button
                         @click="copyToClipboard((result.title || result.name) + ': ' + (result.description || result.note || result.content))"
-                        class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
-                        <UIcon name="i-lucide-copy" class="w-3 h-3" />Копировать
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide-copy" class="w-4 h-4" />Копировать
                       </button>
                     </div>
                   </div>
@@ -218,10 +218,10 @@
                       <!-- Кнопка раскрытия/скрытия -->
                       <div class="flex justify-center py-2">
                         <button @click="toggleTable(String(result._id || result.id))"
-                          class="inline-flex items-center gap-1 px-3 py-1 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-full text-xs hover:bg-slate-300 dark:hover:bg-slate-1000 transition-colors border-0 cursor-pointer">
+                          class="inline-flex items-center gap-1 px-3 py-1 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-full text-sm hover:bg-slate-300 dark:hover:bg-slate-1000 transition-colors border-0 cursor-pointer">
                           <UIcon
                             :name="isTableExpanded(String(result._id || result.id)) ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
-                            class="w-3 h-3" />
+                            class="w-4 h-4" />
                           {{ isTableExpanded(String(result._id || result.id)) ? 'Скрыть' : 'Показать полностью' }}
                         </button>
                       </div>
@@ -231,13 +231,13 @@
                     class="px-3 pb-3 pt-0 border-t border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
                     <div class="flex flex-wrap gap-1 pt-2">
                       <button @click="openAlgorithmModal(result)"
-                        class="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-full text-xs hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors border-0 cursor-pointer">
-                        <UIcon name="i-lucide-list-tree" class="w-3 h-3" />Открыть
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-full text-sm hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide-list-tree" class="w-4 h-4" />Открыть
                       </button>
                       <button
                         @click="copyToClipboard((result.title || result.name) + ': ' + (result.description || result.note || result.content))"
-                        class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
-                        <UIcon name="i-lucide-copy" class="w-3 h-3" />Копировать
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide-copy" class="w-4 h-4" />Копировать
                       </button>
                     </div>
                   </div>
@@ -426,17 +426,17 @@
                     class="px-3 pb-3 pt-0 border-t border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
                     <div class="flex flex-wrap gap-1 pt-2">
                       <button @click="openDrugModal(result)"
-                        class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-xs hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors border-0 cursor-pointer">
-                        <UIcon name="i-heroicons:eye" class="w-3 h-3" />Подробнее
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-sm hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-heroicons:eye" class="w-4 h-4" />Подробнее
                       </button>
                       <button @click="addDrugBookmark(result)"
-                        class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-xs hover:bg-green-200 dark:hover:bg-green-800 transition-colors border-0 cursor-pointer">
-                        <UIcon name="i-heroicons:bookmark" class="w-3 h-3" />В закладки
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-sm hover:bg-green-200 dark:hover:bg-green-800 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-heroicons:bookmark" class="w-4 h-4" />В закладки
                       </button>
                       <button
                         @click="copyToClipboard((result.title || result.name) + ': ' + (result.description || result.note || ''))"
-                        class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
-                        <UIcon name="i-lucide-copy" class="w-3 h-3" />Копировать
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide-copy" class="w-4 h-4" />Копировать
                       </button>
                     </div>
                   </div>
@@ -508,13 +508,13 @@
                     class="px-3 pb-3 pt-0 border-t border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
                     <div class="flex flex-wrap gap-1 pt-2">
                       <button @click="openSubstationModal(result)"
-                        class="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-full text-xs hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors border-0 cursor-pointer">
-                        <UIcon name="i-lucide-map-pin" class="w-3 h-3" />Открыть
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-full text-sm hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide-map-pin" class="w-4 h-4" />Открыть
                       </button>
                       <button
                         @click="copyToClipboard((result.title || result.name) + ': ' + (result.description || result.note || result.content))"
-                        class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-xs hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
-                        <UIcon name="i-lucide-copy" class="w-3 h-3" />Копировать
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide-copy" class="w-4 h-4" />Копировать
                       </button>
                     </div>
                   </div>

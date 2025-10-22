@@ -140,39 +140,35 @@
         </template>
         <template #footer>
           <div class="flex gap-3 w-full">
-            <UButton
-              :icon="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
-              color="secondary"
-              variant="soft"
+            <button 
+              type="button" 
+              :title="isBookmarked ? 'В избранном' : 'В закладки'" 
+              :disabled="!selectedItem"
               @click="toggleBookmark()"
-              :disabled="!selectedItem"
-              size="xl"
-              :title="isBookmarked ? 'В избранном' : 'В закладки'"
-              class="cursor-pointer flex-1 justify-center items-center custom-secondary-button"
+              class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer flex-1 justify-center items-center"
             >
+              <UIcon :name="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'" class="w-4 h-4" />
               {{ isBookmarked ? 'В избранном' : 'В закладки' }}
-            </UButton>
-            <UButton
-              icon="i-heroicons-share"
-              color="secondary"
-              variant="soft"
-              size="xl"
+            </button>
+            <button 
+              type="button" 
+              title="Поделиться"
+              :disabled="!selectedItem"
               @click="shareItem"
-              :disabled="!selectedItem"
-              class="cursor-pointer flex-1 justify-center items-center custom-secondary-button"
+              class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer flex-1 justify-center items-center"
             >
+              <UIcon name="i-heroicons-share" class="w-4 h-4" />
               Поделиться
-            </UButton>
-            <UButton
-              icon="i-heroicons-clipboard"
-              color="secondary"
-              variant="soft"
-              size="xl"
-              @click="copyDescription"
+            </button>
+            <button 
+              type="button" 
+              title="Копировать"
               :disabled="!selectedItem"
-              class="cursor-pointer w-12 h-12 p-0 flex items-center justify-center custom-secondary-button"
-              :title="'Копировать'"
-            />
+              @click="copyDescription"
+              class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer w-12 h-12 p-0 flex items-center justify-center"
+            >
+              <UIcon name="i-heroicons-clipboard" class="w-4 h-4" />
+            </button>
           </div>
         </template>
       </UModal>
@@ -184,7 +180,7 @@
           v-model="modalOpen" 
           :title="selectedItem?.name" 
           :loading="isLoadingItem"
-          :skeleton-lines="4"
+          :skeleton-lines="6"
           @close="modalOpen = false"
         >
           <div class="p-4 pb-6">
@@ -223,40 +219,41 @@
 
             <!-- Кнопки действий -->
             <div class="mt-6">
-              <div class="flex gap-3">
-                <UButton
-                  :icon="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
-                  color="secondary"
-                  variant="soft"
-                  @click="toggleBookmark()"
+              <!-- Копировать: отдельной строкой на всю ширину -->
+              <div class="mb-3">
+                <button 
+                  type="button" 
+                  title="Копировать"
                   :disabled="!selectedItem"
-                  size="xl"
-                  :title="isBookmarked ? 'В избранном' : 'В закладки'"
-                  class="cursor-pointer flex-1 justify-center items-center custom-secondary-button"
-                >
-                  {{ isBookmarked ? 'В избранном' : 'В закладки' }}
-                </UButton>
-                <UButton
-                  icon="i-heroicons-share"
-                  color="secondary"
-                  variant="soft"
-                  size="xl"
-                  @click="shareItem"
-                  :disabled="!selectedItem"
-                  class="cursor-pointer flex-1 justify-center items-center custom-secondary-button"
-                >
-                  Поделиться
-                </UButton>
-                <UButton
-                  icon="i-heroicons-clipboard"
-                  color="secondary"
-                  variant="soft"
-                  size="xl"
                   @click="copyDescription"
+                  class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer w-full justify-center items-center"
+                >
+                  <UIcon name="i-heroicons-clipboard" class="w-4 h-4" />
+                  Копировать
+                </button>
+              </div>
+              <!-- Остальные две кнопки в строку -->
+              <div class="flex gap-3 w-full">
+                <button 
+                  type="button" 
+                  :title="isBookmarked ? 'В избранном' : 'В закладки'" 
                   :disabled="!selectedItem"
-                  class="cursor-pointer w-12 h-12 p-0 flex items-center justify-center custom-secondary-button"
-                  :title="'Копировать'"
-                />
+                  @click="toggleBookmark()"
+                  class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer flex-1 justify-center items-center"
+                >
+                  <UIcon :name="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'" class="w-4 h-4" />
+                  {{ isBookmarked ? 'В избранном' : 'В закладки' }}
+                </button>
+                <button 
+                  type="button" 
+                  title="Поделиться"
+                  :disabled="!selectedItem"
+                  @click="shareItem"
+                  class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer flex-1 justify-center items-center"
+                >
+                  <UIcon name="i-heroicons-share" class="w-4 h-4" />
+                  Поделиться
+                </button>
               </div>
             </div>
             </div>
@@ -461,17 +458,22 @@ async function shareItem() {
 
 function openModal(item: any) {
   selectedItem.value = item
+  // Показать короткую загрузку для стабильной высоты
+  isLoadingItem.value = true
   modalOpen.value = true
-  isLoadingItem.value = false // Данные уже загружены
   updateIsBookmarked()
 
   // Обновляем URL с ID локального статуса через query параметр только если его еще нет
   if (!routeQuery.query.id || routeQuery.query.id !== item._id) {
-    // Используем прямое изменение истории браузера для избежания моргания
     const newUrl = new URL(window.location.href)
     newUrl.searchParams.set('id', item._id)
     window.history.replaceState({}, '', newUrl.toString())
   }
+
+  // Небольшая задержка, чтобы BottomSheet стабилизировал высоту, затем показываем контент
+  setTimeout(() => {
+    isLoadingItem.value = false
+  }, 150)
 }
 
 // Авто-открытие по query ?id=<id>

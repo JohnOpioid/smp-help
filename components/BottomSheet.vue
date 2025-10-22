@@ -464,43 +464,7 @@ function updateSheetHeight() {
     // needsScroll должен быть true если контент больше доступной высоты ИЛИ если это длинный контент
     needsScroll.value = measuredHeight > availableHeight || !!isLongContent
     
-    // Если контент длинный, автоматически переходим в расширенный режим
-    if (isLongContent && !isExpanded.value) {
-      isExpanded.value = true
-      console.log('🔧 Автоматически включен расширенный режим для длинного контента')
-      
-      // Принудительно обновляем DOM
-      nextTick(() => {
-        if (contentRef.value) {
-          contentRef.value.style.maxHeight = `${maxContentHeight.value}px`
-          contentRef.value.style.height = `${maxContentHeight.value}px`
-          contentRef.value.classList.add('overflow-y-auto')
-          contentRef.value.classList.remove('overflow-hidden')
-          console.log('🔧 Принудительно применены стили скролла')
-        }
-      })
-    }
-    
-    console.log('📏 Обновление высоты BottomSheet:', {
-      measuredHeight,
-      maxHeight: maxHeight.value,
-      isExpanded: isExpanded.value,
-      needsScroll: needsScroll.value,
-      contentAvailableHeight,
-      availableHeight,
-      shouldHaveScroll: measuredHeight > availableHeight,
-      isLongContent,
-      scrollHeight: contentRef.value?.scrollHeight,
-      offsetHeight: contentRef.value?.offsetHeight,
-      cssClasses: {
-        'overflow-y-auto': isExpanded.value || needsScroll.value,
-        'overflow-hidden': !isExpanded.value && !needsScroll.value
-      },
-      inlineStyles: {
-        maxHeight: isExpanded.value ? '90vh' : 'auto',
-        height: isExpanded.value ? '90vh' : 'auto'
-      }
-    })
+    // Убираем агрессивное авто-расширение: расширяем только когда контент реально превышает доступную высоту (обрабатывается выше)
   })
 }
 
@@ -592,28 +556,8 @@ watch(() => props.modelValue, (newValue) => {
     setTimeout(() => {
       if (props.modelValue && contentRef.value) {
         updateSheetHeight()
-        // Принудительно обновляем высоту еще раз для длинного контента
+        // Дополнительное обновление для стабилизации после рендера
         setTimeout(updateSheetHeight, 100)
-        
-        // Принудительная проверка скролла
-        setTimeout(() => {
-          if (contentRef.value && contentRef.value.scrollHeight > window.innerHeight * 0.6) {
-            needsScroll.value = true
-            isExpanded.value = true
-            
-            // Принудительно применяем стили
-            nextTick(() => {
-              if (contentRef.value) {
-                contentRef.value.style.maxHeight = `${maxContentHeight.value}px`
-                contentRef.value.style.height = `${maxContentHeight.value}px`
-                contentRef.value.classList.add('overflow-y-auto')
-                contentRef.value.classList.remove('overflow-hidden')
-              }
-            })
-            
-            console.log('🔧 Принудительно включен скролл и расширенный режим при открытии для длинного контента')
-          }
-        }, 200)
       }
     }, 300)
     
@@ -645,38 +589,18 @@ watch(() => props.loading, (newLoading, oldLoading) => {
 
 // Следим за изменениями контента для автоматической подстройки высоты
 watch(() => contentRef.value?.children.length, (newLength, oldLength) => {
-  // Если количество дочерних элементов изменилось, обновляем высоту
   if (newLength !== oldLength && props.modelValue && !props.loading) {
     nextTick(() => {
       setTimeout(updateSheetHeight, 150) // Увеличиваем задержку для полного рендеринга контента
-      
-      // Дополнительная проверка для длинного контента
-      setTimeout(() => {
-        if (contentRef.value && contentRef.value.scrollHeight > window.innerHeight * 0.6) {
-          needsScroll.value = true
-          isExpanded.value = true
-          console.log('🔧 Принудительно включен скролл и расширенный режим при изменении контента')
-        }
-      }, 300)
     })
   }
 })
 
 // Дополнительный watcher для отслеживания изменений в содержимом
 watch(() => contentRef.value?.innerHTML, (newContent, oldContent) => {
-  // Если содержимое изменилось, обновляем высоту
   if (newContent !== oldContent && props.modelValue && !props.loading) {
     nextTick(() => {
       setTimeout(updateSheetHeight, 200) // Задержка для полного рендеринга
-      
-      // Дополнительная проверка через больший интервал
-      setTimeout(() => {
-        if (contentRef.value && contentRef.value.scrollHeight > window.innerHeight * 0.6) {
-          needsScroll.value = true
-          isExpanded.value = true
-          console.log('🔧 Принудительно включен скролл и расширенный режим для длинного контента')
-        }
-      }, 500)
     })
   }
 })
