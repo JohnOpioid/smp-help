@@ -890,6 +890,11 @@ const performSearch = async () => {
   const query = searchQuery.value.trim()
   if (!query) return
 
+  // Проверяем, находимся ли в Android приложении
+  const isAndroidApp = process.client && window.Capacitor && window.Capacitor.isNativePlatform()
+  console.log('🔍 Search: Android app detected:', isAndroidApp)
+  console.log('🔍 Search: Query:', query)
+
   updateSearching(true)
 
   try {
@@ -904,6 +909,7 @@ const performSearch = async () => {
 
     try {
       // Пытаемся получить данные из кеша или API
+      console.log('🔍 Search: Загружаем данные для поиска...')
       const searchData = await getSearchData()
 
       if (!searchData) {
