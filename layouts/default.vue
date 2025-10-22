@@ -1,6 +1,6 @@
 <template>
   <!-- Единый лейаут для всех устройств -->
-  <div :class="containerClass" :style="{ paddingBottom: isMobileApp ? '80px' : '0' }">
+  <div :class="containerClass">
     <AppHeader v-if="!isInitialLoading" :title="headerTitle" />
     <header v-else class="transition-colors duration-300 relative z-50">
       <div class="w-full max-w-5xl mx-auto px-2 md:px-4 py-6">
