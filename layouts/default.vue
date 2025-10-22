@@ -1,5 +1,11 @@
 <template>
-  <div :class="containerClass">
+  <!-- Мобильный лейаут для Capacitor -->
+  <MobileLayout v-if="isMobileApp" :show-back-button="showBackButton">
+    <slot />
+  </MobileLayout>
+  
+  <!-- Обычный лейаут для веб-браузера -->
+  <div v-else :class="containerClass">
     <AppHeader v-if="!isInitialLoading" :title="headerTitle" />
     <header v-else class="transition-colors duration-300 relative z-50">
       <div class="w-full max-w-5xl mx-auto px-2 md:px-4 py-6">
@@ -307,6 +313,18 @@
 
 <script setup lang="ts">
 import PreloadIndicator from '~/components/PreloadIndicator.vue'
+import { Capacitor } from '@capacitor/core'
+
+// Определяем, находимся ли в мобильном приложении
+const isMobileApp = computed(() => {
+  return process.client && Capacitor.isNativePlatform()
+})
+
+// Показывать ли кнопку "Назад" в мобильном приложении
+const showBackButton = computed(() => {
+  const route = useRoute()
+  return route.path !== '/' && route.path !== '/auth/login'
+})
 
 // Глобальное состояние поиска
 const {

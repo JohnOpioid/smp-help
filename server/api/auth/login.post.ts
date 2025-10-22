@@ -1,9 +1,14 @@
 import connectDB from '~/server/utils/mongodb'
 import User from '~/server/models/User'
 import jwt from 'jsonwebtoken'
-import { setCookie, createError, getMethod, readBody } from 'h3'
+import { setCookie, createError, getMethod, readBody, setHeader } from 'h3'
 
 export default defineEventHandler(async (event) => {
+  // Обрабатываем preflight запросы
+  if (getMethod(event) === 'OPTIONS') {
+    return new Response(null, { status: 200 })
+  }
+
   if (getMethod(event) !== 'POST') {
     throw createError({
       statusCode: 405,

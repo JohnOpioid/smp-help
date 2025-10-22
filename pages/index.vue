@@ -92,6 +92,15 @@ const { isDark, toggleTheme } = useTheme()
 // Состояние первичной загрузки из лейаута/app
 const isInitialLoading = inject('isInitialLoading', ref(false))
 
+// Предзагружаем основные данные для ускорения навигации
+if (process.client) {
+  // Предзагружаем категории алгоритмов
+  $fetch('/api/algorithms/categories').catch(() => {})
+  
+  // Предзагружаем основные категории
+  $fetch('/api/categories').catch(() => {})
+}
+
 // Реактивное состояние загрузки для каждой карточки
 const loadingStates = ref<Record<string, boolean>>({})
 

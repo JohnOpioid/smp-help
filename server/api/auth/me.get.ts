@@ -1,7 +1,12 @@
-import { defineEventHandler } from 'h3'
+import { defineEventHandler, setHeader, getMethod } from 'h3'
 import { requireUser } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
+  // Обрабатываем preflight запросы
+  if (getMethod(event) === 'OPTIONS') {
+    return new Response(null, { status: 200 })
+  }
+
   const user: any = await requireUser(event)
   return {
     success: true,

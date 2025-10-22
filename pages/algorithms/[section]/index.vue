@@ -96,24 +96,40 @@ const getAlgorithmCount = (cat: any) => {
   return algorithmCounts.value[cat._id] || 0
 }
 
-// Загружаем количество алгоритмов для каждой категории
+// Загружаем количество алгоритмов для каждой категории (оптимизированно)
 const loadAlgorithmCounts = async () => {
   loadingCounts.value = true
-  for (const cat of filteredCategories.value) {
-    try {
-      const res: any = await $fetch('/api/algorithms', { 
-        query: { 
-          page: 1, 
-          limit: 1, 
-          category: cat._id, 
-          section: sectionToSlug(activeSection.value)
+  
+  // Загружаем все алгоритмы сразу с большим лимитом
+  try {
+    const res: any = await $fetch('/api/algorithms', { 
+      query: { 
+        page: 1, 
+        limit: 1000, // Увеличиваем лимит
+        section: sectionToSlug(activeSection.value)
+      }
+    })
+    
+    // Подсчитываем количество алгоритмов для каждой категории
+    const counts: Record<string, number> = {}
+    if (res?.items) {
+      res.items.forEach((algo: any) => {
+        const catId = algo.category?._id
+        if (catId) {
+          counts[catId] = (counts[catId] || 0) + 1
         }
       })
-      algorithmCounts.value[cat._id] = res?.total || 0
-    } catch (error) {
-      algorithmCounts.value[cat._id] = 0
     }
+    
+    algorithmCounts.value = counts
+  } catch (error) {
+    console.error('Ошибка загрузки счетчиков:', error)
+    // Устанавливаем 0 для всех категорий
+    filteredCategories.value.forEach(cat => {
+      algorithmCounts.value[cat._id] = 0
+    })
   }
+  
   loadingCounts.value = false
 }
 

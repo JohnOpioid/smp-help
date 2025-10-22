@@ -3,6 +3,35 @@ export const useAuth = () => {
   const token = useState<string | null>('auth-token', () => null)
   const isLoggedIn = computed(() => !!user.value)
   const tokenCookie = useCookie<string | null>('token', { path: '/', sameSite: 'lax' })
+  const runtimeConfig = useRuntimeConfig()
+  
+  // Определяем базовый URL для API
+  const getApiUrl = () => {
+    if (process.client) {
+      // Проверяем через Capacitor API
+      try {
+        // @ts-ignore
+        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+          console.log('Capacitor detected via API')
+          return 'http://192.168.1.40:3000'
+        }
+      } catch (e) {
+        console.log('Capacitor API not available:', e)
+      }
+      
+      // Fallback: проверяем hostname для определения среды
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      
+              if (isLocalhost) {
+                console.log('Localhost detected, using host IP with HTTP')
+                return 'http://192.168.1.40:3000'
+              } else {
+                console.log('Production detected, using helpsmp.ru')
+                return 'https://helpsmp.ru'
+              }
+    }
+    return runtimeConfig.public.apiUrl || '/api'
+  }
 
   // Инициализация из cookie через сервер
   const initAuth = async () => {
@@ -11,7 +40,8 @@ export const useAuth = () => {
       // Если нет cookie token, не запрашиваем /me
       const existingToken = useCookie<string | null>('token').value
       if (!existingToken) return
-      const res: any = await $fetch('/api/auth/me', { credentials: 'include' })
+      const apiUrl = getApiUrl()
+      const res: any = await $fetch(`${apiUrl}/api/auth/me`, { credentials: 'include' })
       if (res?.user) {
         user.value = res.user
       }
@@ -48,7 +78,8 @@ export const useAuth = () => {
     lastName: string
   }) => {
     try {
-      const data = await $fetch('/api/auth/register', {
+      const apiUrl = getApiUrl()
+      const data = await $fetch(`${apiUrl}/api/auth/register`, {
         method: 'POST',
         body: userData
       })
@@ -74,9 +105,28 @@ export const useAuth = () => {
         password: credentials.password.replace(/[\u200B-\u200D\uFEFF]/g, '').trim()
       }
 
-      console.log('Attempting login with:', { email: cleanCredentials.email, passwordLength: cleanCredentials.password.length })
-      
-      const data = await $fetch('/api/auth/login', {
+              console.log('=== DEBUG LOGIN START ===')
+              console.log('Attempting login with:', { email: cleanCredentials.email, passwordLength: cleanCredentials.password.length })
+              
+              const apiUrl = getApiUrl()
+              console.log('Using API URL:', apiUrl)
+              console.log('Current location:', window.location.href)
+              console.log('Hostname:', window.location.hostname)
+              console.log('Protocol:', window.location.protocol)
+              console.log('User Agent:', navigator.userAgent)
+              console.log('Is Web Browser:', window.location.protocol === 'http:' || window.location.protocol === 'https:')
+              console.log('Full location object:', {
+                href: window.location.href,
+                protocol: window.location.protocol,
+                hostname: window.location.hostname,
+                port: window.location.port,
+                pathname: window.location.pathname,
+                search: window.location.search,
+                hash: window.location.hash
+              })
+              console.log('=== DEBUG LOGIN END ===')
+              
+              const data = await $fetch(`${apiUrl}/api/auth/login`, {
         method: 'POST',
         body: cleanCredentials
       })

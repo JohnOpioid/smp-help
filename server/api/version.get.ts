@@ -1,6 +1,4 @@
-import { promises as fsp } from 'fs'
-import { join } from 'pathe'
-import { execSync } from 'child_process'
+// Простая версия без дополнительных зависимостей
 
 // Кэшируем вычисленную версию на время жизни процесса, чтобы не было дребезга
 let cachedVersion: string | null = null
@@ -9,22 +7,12 @@ export default defineEventHandler(async () => {
   if (!cachedVersion) {
     let version = '0.0.0'
     try {
-      const p = join(process.cwd(), '.app-version')
-      version = (await fsp.readFile(p, 'utf8')).toString().trim()
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const pkg = require('../../package.json') as { version?: string }
+      version = String(pkg?.version || '0.0.0')
     } catch {
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const pkg = require('../../package.json') as { version?: string }
-        version = String(pkg?.version || '0.0.0')
-      } catch {}
-    }
-    if (!version || version === '0.0.0') {
-      try {
-        const hash = execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
-        version = hash ? `dev (${hash})` : 'dev'
-      } catch {
-        version = 'dev'
-      }
+      // Если не можем прочитать package.json, используем дефолтную версию
+      version = '0.0.0'
     }
     cachedVersion = version
   }

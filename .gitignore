@@ -22,3 +22,42 @@ logs
 .env
 .env.*
 !.env.example
+
+# Capacitor/Android
+android/app/build/
+android/build/
+android/local.properties
+android/.gradle/
+android/gradle/
+android/gradlew
+android/gradlew.bat
+android/capacitor-cordova-android-plugins/
+
+# Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+# APK files
+*.apk
+*.aab
+
+# Version files
+.app-version
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini

@@ -209,7 +209,22 @@ const onSubmit = async () => {
     
     if (result.success) {
       success.value = result.message
-      await navigateTo('/')
+      
+      // Определяем, находимся ли мы в Capacitor (мобильное приложение)
+      const isCapacitor = process.client && (
+        window.Capacitor?.isNativePlatform?.() || 
+        window.location.protocol === 'capacitor:' ||
+        window.location.protocol === 'ionic:' ||
+        navigator.userAgent.includes('Capacitor')
+      )
+      
+      if (isCapacitor) {
+        // В Capacitor используем window.location для перенаправления
+        window.location.href = '/'
+      } else {
+        // В веб-версии используем navigateTo для сохранения реактивности
+        await navigateTo('/')
+      }
     } else {
       error.value = result.message
     }
