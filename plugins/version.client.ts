@@ -19,7 +19,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         return
       }
 
-      if (clientVersion !== serverVersion) {
+      if (clientVersion && clientVersion !== serverVersion) {
         // Новая версия: мягкое обновление страницы
         localStorage.setItem(VERSION_KEY, serverVersion)
         versionState.value = serverVersion
