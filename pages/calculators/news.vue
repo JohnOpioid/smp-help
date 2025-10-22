@@ -15,164 +15,138 @@
     <!-- Основной контент -->
     <div class="max-w-5xl mx-auto px-2 md:px-4 py-8 space-y-6">
 
-      <div class="grid grid-cols-1 gap-6">
-        <!-- Частота дыханий -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
-          <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
-            <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Частота дыханий (в минуту)</div>
-          </div>
-          <div class="p-4">
-            <UInput 
-              v-model.number="respiratoryRate" 
-              size="xl" 
-              type="number" 
-              placeholder="Например, 16" 
-              class="w-full"
-            />
-            <div class="mt-2 text-sm text-slate-600 dark:text-slate-400">
-              <span class="font-medium">Баллы:</span> 
-              <span :class="respiratoryRateClass">{{ respiratoryRatePoints }}</span>
-            </div>
-          </div>
+      <!-- Блок с инпутами и чекбоксами -->
+      <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
+          <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Параметры пациента</div>
         </div>
-
-        <!-- Сатурация SpO2 -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
-          <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
-            <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Сатурация SpO2 (%)</div>
-          </div>
-          <div class="p-4">
-            <UInput 
-              v-model.number="spo2" 
-              size="xl" 
-              type="number" 
-              placeholder="Например, 98" 
-              class="w-full"
-            />
-            <div class="mt-2 text-sm text-slate-600 dark:text-slate-400">
-              <span class="font-medium">Баллы:</span> 
-              <span :class="spo2Class">{{ spo2Points }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Потребность в оксигенации -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
-          <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
-            <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Потребность в оксигенации</div>
-          </div>
-          <div class="p-4">
-            <USwitch v-model="oxygenNeed" />
-            <div class="mt-2 text-sm text-slate-600 dark:text-slate-400">
-              <span class="font-medium">Баллы:</span> 
-              <span :class="oxygenNeedClass">{{ oxygenNeedPoints }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Систолическое АД -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
-          <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
-            <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Систолическое АД (мм. рт. ст.)</div>
-          </div>
-          <div class="p-4">
-            <UInput 
-              v-model.number="systolicBP" 
-              size="xl" 
-              type="number" 
-              placeholder="Например, 120" 
-              class="w-full"
-            />
-            <div class="mt-2 text-sm text-slate-600 dark:text-slate-400">
-              <span class="font-medium">Баллы:</span> 
-              <span :class="systolicBPClass">{{ systolicBPPoints }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- ЧСС -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
-          <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
-            <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">ЧСС (в минуту)</div>
-          </div>
-          <div class="p-4">
-            <UInput 
-              v-model.number="heartRate" 
-              size="xl" 
-              type="number" 
-              placeholder="Например, 80" 
-              class="w-full"
-            />
-            <div class="mt-2 text-sm text-slate-600 dark:text-slate-400">
-              <span class="font-medium">Баллы:</span> 
-              <span :class="heartRateClass">{{ heartRatePoints }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Температура тела -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
-          <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
-            <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Температура тела (°C)</div>
-          </div>
-          <div class="p-4">
-            <UInput 
-              v-model="temperature" 
-              size="xl" 
-              placeholder="36.5" 
-              class="w-full"
-              @input="onTempInput"
-              @keydown="onTempKeydown"
-              @paste.prevent="onTempPaste"
-            />
-            <div class="mt-2 text-sm text-slate-600 dark:text-slate-400">
-              <span class="font-medium">Баллы:</span> 
-              <span :class="temperatureClass">{{ temperaturePoints }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Нарушение сознания -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
-          <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
-            <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Нарушение сознания</div>
-          </div>
-          <div class="p-4">
-            <USwitch v-model="consciousnessDisturbance" />
-            <div class="mt-2 text-sm text-slate-600 dark:text-slate-400">
-              <span class="font-medium">Баллы:</span> 
-              <span :class="consciousnessDisturbanceClass">{{ consciousnessDisturbancePoints }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Результат -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
-          <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
-            <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Результат</div>
-          </div>
-          <div class="px-4 py-3 space-y-2">
-            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div class="text-3xl font-bold">
-                <span :class="resultTextClass">{{ totalScore }}</span>
-                <span class="text-base font-medium text-slate-500 dark:text-slate-400"> — <span :class="resultTextClass">{{ resultLabel }}</span></span>
+        <div class="p-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Частота дыханий -->
+            <div>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Частота дыханий (в минуту)</label>
+              <UInput 
+                v-model.number="respiratoryRate" 
+                size="xl" 
+                type="number" 
+                placeholder="Например, 16" 
+                class="w-full"
+              />
+              <div class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                <span class="font-medium">Баллы:</span> 
+                <span :class="respiratoryRateClass">{{ respiratoryRatePoints }}</span>
               </div>
-              <span :class="resultPillClass" class="font-medium inline-flex items-center text-sm px-2 py-1 gap-1.5 rounded-md">{{ resultLabel }}</span>
+            </div>
+
+            <!-- Сатурация SpO2 -->
+            <div>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Сатурация SpO2 (%)</label>
+              <UInput 
+                v-model.number="spo2" 
+                size="xl" 
+                type="number" 
+                placeholder="Например, 98" 
+                class="w-full"
+              />
+              <div class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                <span class="font-medium">Баллы:</span> 
+                <span :class="spo2Class">{{ spo2Points }}</span>
+              </div>
+            </div>
+
+            <!-- Потребность в оксигенации -->
+            <div>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Потребность в оксигенации</label>
+              <USwitch v-model="oxygenNeed" />
+              <div class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                <span class="font-medium">Баллы:</span> 
+                <span :class="oxygenNeedClass">{{ oxygenNeedPoints }}</span>
+              </div>
+            </div>
+
+            <!-- Систолическое АД -->
+            <div>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Систолическое АД (мм. рт. ст.)</label>
+              <UInput 
+                v-model.number="systolicBP" 
+                size="xl" 
+                type="number" 
+                placeholder="Например, 120" 
+                class="w-full"
+              />
+              <div class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                <span class="font-medium">Баллы:</span> 
+                <span :class="systolicBPClass">{{ systolicBPPoints }}</span>
+              </div>
+            </div>
+
+            <!-- ЧСС -->
+            <div>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">ЧСС (в минуту)</label>
+              <UInput 
+                v-model.number="heartRate" 
+                size="xl" 
+                type="number" 
+                placeholder="Например, 80" 
+                class="w-full"
+              />
+              <div class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                <span class="font-medium">Баллы:</span> 
+                <span :class="heartRateClass">{{ heartRatePoints }}</span>
+              </div>
+            </div>
+
+            <!-- Температура тела -->
+            <div>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Температура тела (°C)</label>
+              <UInput 
+                v-model="temperature" 
+                size="xl" 
+                placeholder="36.5" 
+                class="w-full"
+                @input="onTempInput"
+                @keydown="onTempKeydown"
+                @paste.prevent="onTempPaste"
+              />
+              <div class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                <span class="font-medium">Баллы:</span> 
+                <span :class="temperatureClass">{{ temperaturePoints }}</span>
+              </div>
+            </div>
+
+            <!-- Нарушение сознания -->
+            <div>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Нарушение сознания</label>
+              <USwitch v-model="consciousnessDisturbance" />
+              <div class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                <span class="font-medium">Баллы:</span> 
+                <span :class="consciousnessDisturbanceClass">{{ consciousnessDisturbancePoints }}</span>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Интерпретация -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
-          <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
-            <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Интерпретация</div>
+      <!-- Блок с результатом и интерпретацией -->
+      <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
+          <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Результат и интерпретация</div>
+        </div>
+        <div class="p-4 space-y-4">
+          <!-- Результат -->
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="text-3xl font-bold">
+              <span :class="resultTextClass">{{ totalScore }}</span>
+              <span class="text-base font-medium text-slate-500 dark:text-slate-400"> — <span :class="resultTextClass">{{ resultLabel }}</span></span>
+            </div>
+            <span :class="resultPillClass" class="font-medium inline-flex items-center text-sm px-2 py-1 gap-1.5 rounded-md">{{ resultLabel }}</span>
           </div>
-          <div class="px-4 py-3">
-            <div class="space-y-2">
-              <div v-for="(item, i) in interpretationItems" :key="i" class="flex items-start gap-2">
-                <UIcon name="i-heroicons-check-20-solid" class="mt-1 shrink-0 w-4 h-4 text-green-600 dark:text-green-400" />
-                <span class="text-sm text-slate-700 dark:text-slate-300">{{ item }}</span>
-              </div>
+
+          <!-- Интерпретация -->
+          <div class="space-y-2">
+            <div v-for="(item, i) in interpretationItems" :key="i" class="flex items-start gap-2">
+              <UIcon name="i-heroicons-check-20-solid" class="mt-1 shrink-0 w-4 h-4 text-green-600 dark:text-green-400" />
+              <span class="text-sm text-slate-700 dark:text-slate-300">{{ item }}</span>
             </div>
           </div>
         </div>
