@@ -37,7 +37,7 @@
                   variant="ghost"
                   size="xl"
                   icon="i-heroicons-calendar-days-20-solid"
-                  class="border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+                  class="border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
                   @click="showCalendar = !showCalendar"
                 />
               </div>

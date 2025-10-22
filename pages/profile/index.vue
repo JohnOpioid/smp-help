@@ -114,7 +114,7 @@
         </div>
         <div class="grid grid-cols-7 gap-0">
           <div v-for="(day, i) in calendarDays" :key="day.key" :class="[
-            'relative border-r border-b border-slate-200 dark:border-slate-700 pt-2 min-h-[110px] cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 flex flex-col',
+            'relative border-r border-b border-slate-200 dark:border-slate-700 pt-2 min-h-[110px] cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50 flex flex-col',
             (i % 7 === 6) ? 'border-r-0' : '',
             (i >= calendarDays.length - 7) ? 'border-b-0' : '',
             editMode && selectedTemplateForEdit ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20 border-blue-200 dark:border-blue-700' : ''
@@ -234,7 +234,7 @@
               </div>
               <div v-else class="space-y-2">
                 <div v-for="a in alternations" :key="a._id"
-                  class="group py-3 px-3 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center justify-between cursor-pointer transition-colors"
+                  class="group py-3 px-3 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800/60 flex items-center justify-between cursor-pointer transition-colors"
                   @click="openAlternationFromList(a)">
                   <div class="flex items-center gap-3 min-w-0">
                     <div class="min-w-0">
@@ -271,7 +271,7 @@
               <div class="border border-slate-200 dark:border-slate-700 rounded-md overflow-hidden">
                 <div v-for="week in 2" :key="week" class="grid grid-cols-7">
                   <button v-for="d in 7" :key="(week - 1) * 7 + d" type="button"
-                    class="aspect-square flex items-center justify-center border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer"
+                    class="aspect-square flex items-center justify-center border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/60 cursor-pointer"
                     @click="onAlternationCellClick((week - 1) * 7 + (d - 1))">
                     <span v-if="alternationDays[(week - 1) * 7 + (d - 1)] && alternationDays[(week - 1) * 7 + (d - 1)].templateId"
                       :style="{ backgroundColor: (templates.find(t => t._id === alternationDays[(week - 1) * 7 + (d - 1)].templateId)?.color) || '#3B82F6' }"
@@ -286,7 +286,7 @@
                 <div class="text-xs text-slate-500 mb-1">Шаблоны</div>
                 <div class="grid grid-cols-2 gap-2">
                   <button v-for="t in templates" :key="t._id" type="button"
-                    class="w-full flex items-center gap-3 px-3 py-2 rounded-md border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer"
+                    class="w-full flex items-center gap-3 px-3 py-2 rounded-md border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/60 cursor-pointer"
                     :class="{ 'ring-2 ring-primary': alternationSelectedTemplate?._id === t._id }"
                     @click="alternationSelectedTemplate = (alternationSelectedTemplate?._id === t._id ? null : t)">
                     <span :style="{ backgroundColor: (t as any).color || '#3B82F6' }"
@@ -303,7 +303,7 @@
             <div class="space-y-2" v-if="activeTemplatesTab === 'templates' && !alternationOpen">
               <template v-if="(templates || []).length > 0">
                 <div v-for="t in templates" :key="t._id"
-                  class="group py-3 px-3 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center justify-between cursor-pointer transition-colors"
+                  class="group py-3 px-3 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800/60 flex items-center justify-between cursor-pointer transition-colors"
                   @click="openTemplateEditor(t)">
                   <div class="flex items-center gap-3 min-w-0">
                     <span :style="{ backgroundColor: (t as any).color || '#3B82F6' }"

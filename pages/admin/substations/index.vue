@@ -199,7 +199,7 @@
                               <li 
                                 v-for="name in filteredPhoneNames[index]" 
                                 :key="name" 
-                                class="px-3 py-2 text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700"
+                                class="px-3 py-2 text-sm cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700"
                                 @click="selectPhoneName(index, name)"
                               >
                                 {{ name }}

@@ -31,7 +31,7 @@
                   'rounded-none !px-0 !py-3 w-full justify-center border-r border-b bg-transparent cursor-pointer text-default',
                   'border-slate-100 dark:border-slate-700',
                   (n-1)===10 ? 'border-r-0' : '',
-                  (n-1)===score ? [selectedBtnTextClass, selectedBtnBgClass, selectedBtnHoverClass] : 'hover:bg-slate-50 dark:hover:bg-slate-700'
+                  (n-1)===score ? [selectedBtnTextClass, selectedBtnBgClass, selectedBtnHoverClass] : 'hover:bg-slate-100 dark:hover:bg-slate-700'
                 ]"
                 color="neutral"
                 @click="score = n-1"
@@ -91,7 +91,7 @@
                   'rounded-none !px-0 !py-3 w-full justify-center border-r border-b bg-transparent cursor-pointer text-default',
                   'border-slate-100 dark:border-slate-700',
                   ((idx % 5)===4) ? 'border-r-0' : '',
-                  (wbScore===opt.value) ? [wbSelectedTextClass, wbSelectedBgClass, wbSelectedHoverClass] : 'hover:bg-slate-50 dark:hover:bg-slate-700'
+                  (wbScore===opt.value) ? [wbSelectedTextClass, wbSelectedBgClass, wbSelectedHoverClass] : 'hover:bg-slate-100 dark:hover:bg-slate-700'
                 ]"
                 color="neutral"
                 @click="wbScore = opt.value"

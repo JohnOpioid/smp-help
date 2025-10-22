@@ -132,7 +132,7 @@
                         <div v-if="editingMessageId === message.id" class="space-y-3">
                           <textarea v-model="editingText" class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white resize-none" rows="3" @keydown.enter.ctrl="saveEditMessage" @keydown.escape="cancelEditMessage"></textarea>
                           <div class="flex gap-2 justify-end">
-                            <button @click="cancelEditMessage" class="px-3 py-1 text-sm bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors">Отмена</button>
+                            <button @click="cancelEditMessage" class="px-3 py-1 text-sm bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-300 dark:hover:bg-slate-1000 transition-colors">Отмена</button>
                             <button @click="saveEditMessage" class="px-3 py-1 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors">Сохранить</button>
                           </div>
                         </div>
@@ -258,7 +258,7 @@
                  <div v-if="!isTableExpanded(result.id)" class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-slate-50/50 to-transparent dark:from-slate-800/30 dark:to-transparent pointer-events-none"></div>
                  <!-- Кнопка раскрытия/скрытия -->
                  <div class="flex justify-center py-2">
-                   <button @click="toggleTable(result.id)" class="inline-flex items-center gap-1 px-3 py-1 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-full text-xs hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors border-0 cursor-pointer">
+                   <button @click="toggleTable(result.id)" class="inline-flex items-center gap-1 px-3 py-1 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-full text-xs hover:bg-slate-300 dark:hover:bg-slate-1000 transition-colors border-0 cursor-pointer">
                      <UIcon :name="isTableExpanded(result.id) ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" class="w-3 h-3" />
                      {{ isTableExpanded(result.id) ? 'Скрыть' : 'Показать полностью' }}
                    </button>
@@ -1036,7 +1036,7 @@ const renderAlgorithmTable = (content: string): string => {
   table = table.replace(/<tbody>/gi, '<tbody class="divide-y divide-slate-100 dark:divide-slate-700">')
   
   // Добавляем hover эффекты для строк
-  table = table.replace(/<tr([^>]*)>/gi, '<tr$1 class="hover:bg-slate-50/60 dark:hover:bg-slate-700/40">')
+  table = table.replace(/<tr([^>]*)>/gi, '<tr$1 class="hover:bg-slate-100/60 dark:hover:bg-slate-700/40">')
   
   return table
 }

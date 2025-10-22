@@ -28,7 +28,7 @@
         <div v-if="moreOpen" class="absolute bottom-full right-0 mb-2 w-64 rounded-md border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 shadow-xl z-100">
           <nav class="py-1">
             <NuxtLink v-for="item in moreItems" :key="item.to" :to="item.to"
-              class="flex items-start gap-3 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer"
+              class="flex items-start gap-3 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
               :class="{ 'bg-slate-100 dark:bg-slate-700': isActive(item.to) }"
               @click="moreOpen = false">
               <UIcon :name="item.icon" class="ms-0.5 mt-0.5 w-4 h-4 text-slate-500" />

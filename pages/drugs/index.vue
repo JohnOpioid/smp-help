@@ -29,7 +29,7 @@
 
           <ul class="grid grid-cols-1 md:grid-cols-2 gap-0">
             <li v-for="(drug, index) in filteredItems" :key="drug._id"
-              class="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer relative border-b border-slate-100 dark:border-slate-700 last:border-b-0"
+              class="p-4 hover:bg-slate-100 dark:hover:bg-slate-700/40 cursor-pointer relative border-b border-slate-100 dark:border-slate-700 last:border-b-0"
               :class="{
                 'md:border-r md:border-slate-100 dark:md:border-slate-700': (index % 2 === 0 && index < filteredItems.length - 1) || (index === filteredItems.length - 1 && filteredItems.length % 2 === 1),
                 'md:border-b-0': index >= filteredItems.length - 2 && filteredItems.length % 2 === 0

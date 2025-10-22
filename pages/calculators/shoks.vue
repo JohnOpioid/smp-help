@@ -25,7 +25,7 @@
             <div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
               <UButton v-for="opt in dyspneaOptions" :key="'d-'+opt.value"
                 :class="['w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  dyspnea === opt.value ? 'bg-slate-100 dark:bg-slate-700/40' : 'hover:bg-slate-50 dark:hover:bg-slate-700']"
+                  dyspnea === opt.value ? 'bg-slate-100 dark:bg-slate-700/40' : 'hover:bg-slate-100 dark:hover:bg-slate-700']"
                 color="neutral" variant="ghost" @click="dyspnea = opt.value">
                 <span class="w-full inline-flex items-center justify-between gap-2 text-left">
                   <span class="text-left">{{ opt.label }}</span>
@@ -45,7 +45,7 @@
             <div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
               <UButton v-for="opt in weightOptions" :key="'w-'+opt.value"
                 :class="['w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  weight === opt.value ? 'bg-slate-100 dark:bg-slate-700/40' : 'hover:bg-slate-50 dark:hover:bg-slate-700']"
+                  weight === opt.value ? 'bg-slate-100 dark:bg-slate-700/40' : 'hover:bg-slate-100 dark:hover:bg-slate-700']"
                 color="neutral" variant="ghost" @click="weight = opt.value">
                 <span class="w-full inline-flex items-center justify-between gap-2 text-left">
                   <span class="text-left">{{ opt.label }}</span>
@@ -65,7 +65,7 @@
             <div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
               <UButton v-for="opt in palpitOptions" :key="'p-'+opt.value"
                 :class="['w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  palpit === opt.value ? 'bg-slate-100 dark:bg-slate-700/40' : 'hover:bg-slate-50 dark:hover:bg-slate-700']"
+                  palpit === opt.value ? 'bg-slate-100 dark:bg-slate-700/40' : 'hover:bg-slate-100 dark:hover:bg-slate-700']"
                 color="neutral" variant="ghost" @click="palpit = opt.value">
                 <span class="w-full inline-flex items-center justify-between gap-2 text-left">
                   <span class="text-left">{{ opt.label }}</span>
@@ -85,7 +85,7 @@
             <div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
               <UButton v-for="opt in postureOptions" :key="'pos-'+opt.value"
                 :class="['w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  posture === opt.value ? 'bg-slate-100 dark:bg-slate-700/40' : 'hover:bg-slate-50 dark:hover:bg-slate-700']"
+                  posture === opt.value ? 'bg-slate-100 dark:bg-slate-700/40' : 'hover:bg-slate-100 dark:hover:bg-slate-700']"
                 color="neutral" variant="ghost" @click="posture = opt.value">
                 <span class="w-full inline-flex items-center justify-between gap-2 text-left">
                   <span class="text-left">{{ opt.label }}</span>
@@ -105,7 +105,7 @@
             <div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
               <UButton v-for="opt in jvpOptions" :key="'jvp-'+opt.value"
                 :class="['w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  jvp === opt.value ? 'bg-slate-100 dark:bg-slate-700/40' : 'hover:bg-slate-50 dark:hover:bg-slate-700']"
+                  jvp === opt.value ? 'bg-slate-100 dark:bg-slate-700/40' : 'hover:bg-slate-100 dark:hover:bg-slate-700']"
                 color="neutral" variant="ghost" @click="jvp = opt.value">
                 <span class="w-full inline-flex items-center justify-between gap-2 text-left">
                   <span class="text-left">{{ opt.label }}</span>
@@ -125,7 +125,7 @@
             <div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
               <UButton v-for="opt in ralesOptions" :key="'ral-'+opt.value"
                 :class="['w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  rales === opt.value ? 'bg-slate-100 dark:bg-slate-700/40' : 'hover:bg-slate-50 dark:hover:bg-slate-700']"
+                  rales === opt.value ? 'bg-slate-100 dark:bg-slate-700/40' : 'hover:bg-slate-100 dark:hover:bg-slate-700']"
                 color="neutral" variant="ghost" @click="rales = opt.value">
                 <span class="w-full inline-flex items-center justify-between gap-2 text-left">
                   <span class="text-left">{{ opt.label }}</span>
@@ -145,7 +145,7 @@
             <div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
               <UButton v-for="opt in gallopOptions" :key="'gal-'+opt.value"
                 :class="['w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  gallop === opt.value ? 'bg-slate-100 dark:bg-slate-700/40' : 'hover:bg-slate-50 dark:hover:bg-slate-700']"
+                  gallop === opt.value ? 'bg-slate-100 dark:bg-slate-700/40' : 'hover:bg-slate-100 dark:hover:bg-slate-700']"
                 color="neutral" variant="ghost" @click="gallop = opt.value">
                 <span class="w-full inline-flex items-center justify-between gap-2 text-left">
                   <span class="text-left">{{ opt.label }}</span>
@@ -165,7 +165,7 @@
             <div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
               <UButton v-for="opt in liverOptions" :key="'liv-'+opt.value"
                 :class="['w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  liver === opt.value ? 'bg-slate-100 dark:bg-slate-700/40' : 'hover:bg-slate-50 dark:hover:bg-slate-700']"
+                  liver === opt.value ? 'bg-slate-100 dark:bg-slate-700/40' : 'hover:bg-slate-100 dark:hover:bg-slate-700']"
                 color="neutral" variant="ghost" @click="liver = opt.value">
                 <span class="w-full inline-flex items-center justify-between gap-2 text-left">
                   <span class="text-left">{{ opt.label }}</span>
@@ -185,7 +185,7 @@
             <div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
               <UButton v-for="opt in edemaOptions" :key="'ed-'+opt.value"
                 :class="['w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  edema === opt.value ? 'bg-slate-100 dark:bg-slate-700/40' : 'hover:bg-slate-50 dark:hover:bg-slate-700']"
+                  edema === opt.value ? 'bg-slate-100 dark:bg-slate-700/40' : 'hover:bg-slate-100 dark:hover:bg-slate-700']"
                 color="neutral" variant="ghost" @click="edema = opt.value">
                 <span class="w-full inline-flex items-center justify-between gap-2 text-left">
                   <span class="text-left">{{ opt.label }}</span>
@@ -205,7 +205,7 @@
             <div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
               <UButton v-for="opt in sbpOptions" :key="'sbp-'+opt.value"
                 :class="['w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  sbp === opt.value ? 'bg-slate-100 dark:bg-slate-700/40' : 'hover:bg-slate-50 dark:hover:bg-slate-700']"
+                  sbp === opt.value ? 'bg-slate-100 dark:bg-slate-700/40' : 'hover:bg-slate-100 dark:hover:bg-slate-700']"
                 color="neutral" variant="ghost" @click="sbp = opt.value">
                 <span class="w-full inline-flex items-center justify-between gap-2 text-left">
                   <span class="text-left">{{ opt.label }}</span>

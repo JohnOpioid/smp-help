@@ -28,7 +28,7 @@
               type="button"
               :class="[
                 'w-full px-4 py-3 text-left border-b border-slate-100 dark:border-slate-700 cursor-pointer transition-colors',
-                'hover:bg-slate-50 dark:hover:bg-slate-700',
+                'hover:bg-slate-100 dark:hover:bg-slate-700',
                 faceScore === option.value ? [faceSelectedTextClass, faceSelectedBgClass, faceSelectedHoverClass] : ''
               ]"
               @click="faceScore = option.value"
@@ -53,7 +53,7 @@
               type="button"
               :class="[
                 'w-full px-4 py-3 text-left border-b border-slate-100 dark:border-slate-700 cursor-pointer transition-colors',
-                'hover:bg-slate-50 dark:hover:bg-slate-700',
+                'hover:bg-slate-100 dark:hover:bg-slate-700',
                 motorScore === option.value ? [motorSelectedTextClass, motorSelectedBgClass, motorSelectedHoverClass] : ''
               ]"
               @click="motorScore = option.value"
@@ -78,7 +78,7 @@
               type="button"
               :class="[
                 'w-full px-4 py-3 text-left border-b border-slate-100 dark:border-slate-700 cursor-pointer transition-colors',
-                'hover:bg-slate-50 dark:hover:bg-slate-700',
+                'hover:bg-slate-100 dark:hover:bg-slate-700',
                 strengthScore === option.value ? [strengthSelectedTextClass, strengthSelectedBgClass, strengthSelectedHoverClass] : ''
               ]"
               @click="strengthScore = option.value"

@@ -1056,7 +1056,7 @@ function styleTables() {
     table.querySelectorAll('td').forEach(td => {
       td.classList.add('p-4', 'text-sm', 'text-slate-600', 'dark:text-slate-300', 'whitespace-normal', 'break-words', 'align-top', 'bg-white', 'dark:bg-slate-800')
     })
-    table.querySelectorAll('tr').forEach(tr => tr.classList.add('hover:bg-slate-50/60', 'dark:hover:bg-slate-700/40'))
+    table.querySelectorAll('tr').forEach(tr => tr.classList.add('hover:bg-slate-100/60', 'dark:hover:bg-slate-700/40'))
     // Бордеры: у первой колонки справа, у второй слева и справа на md+ экранах
     table.querySelectorAll('thead tr').forEach(tr => {
       const cells = Array.from(tr.children) as HTMLElement[]

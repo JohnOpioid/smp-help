@@ -12,7 +12,7 @@
           <li
             v-for="(calc, index) in section.items"
             :key="calc.url"
-            class="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer relative border-b border-slate-100 dark:border-slate-700"
+            class="p-4 hover:bg-slate-100 dark:hover:bg-slate-700/40 cursor-pointer relative border-b border-slate-100 dark:border-slate-700"
             :class="{
               'md:border-r md:border-slate-100 dark:md:border-slate-700': (index % 2 === 0) && !(section.items.length % 2 === 1 && index === section.items.length - 1),
               'md:border-b-0': section.items.length % 2 === 0 && index >= section.items.length - 2,

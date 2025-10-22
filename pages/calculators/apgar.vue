@@ -47,7 +47,7 @@
                 :key="'skin-btn-'+opt.value"
                 :class="[
                   'w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  selectedSkinColor === opt.value ? [skinColorButtonBgClass, skinColorButtonHoverClass] : 'hover:bg-slate-50 dark:hover:bg-slate-700'
+                  selectedSkinColor === opt.value ? [skinColorButtonBgClass, skinColorButtonHoverClass] : 'hover:bg-slate-100 dark:hover:bg-slate-700'
                 ]"
                 :color="'neutral'"
                 variant="ghost"
@@ -74,7 +74,7 @@
                 :key="'hr-btn-'+opt.value"
                 :class="[
                   'w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  selectedHeartRate === opt.value ? [heartRateButtonBgClass, heartRateButtonHoverClass] : 'hover:bg-slate-50 dark:hover:bg-slate-700'
+                  selectedHeartRate === opt.value ? [heartRateButtonBgClass, heartRateButtonHoverClass] : 'hover:bg-slate-100 dark:hover:bg-slate-700'
                 ]"
                 :color="'neutral'"
                 variant="ghost"
@@ -101,7 +101,7 @@
                 :key="'reflex-btn-'+opt.value"
                 :class="[
                   'w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  selectedReflex === opt.value ? [reflexButtonBgClass, reflexButtonHoverClass] : 'hover:bg-slate-50 dark:hover:bg-slate-700'
+                  selectedReflex === opt.value ? [reflexButtonBgClass, reflexButtonHoverClass] : 'hover:bg-slate-100 dark:hover:bg-slate-700'
                 ]"
                 :color="'neutral'"
                 variant="ghost"
@@ -128,7 +128,7 @@
                 :key="'muscle-btn-'+opt.value"
                 :class="[
                   'w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  selectedMuscleTone === opt.value ? [muscleToneButtonBgClass, muscleToneButtonHoverClass] : 'hover:bg-slate-50 dark:hover:bg-slate-700'
+                  selectedMuscleTone === opt.value ? [muscleToneButtonBgClass, muscleToneButtonHoverClass] : 'hover:bg-slate-100 dark:hover:bg-slate-700'
                 ]"
                 :color="'neutral'"
                 variant="ghost"
@@ -155,7 +155,7 @@
                 :key="'breath-btn-'+opt.value"
                 :class="[
                   'w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  selectedBreathing === opt.value ? [breathingButtonBgClass, breathingButtonHoverClass] : 'hover:bg-slate-50 dark:hover:bg-slate-700'
+                  selectedBreathing === opt.value ? [breathingButtonBgClass, breathingButtonHoverClass] : 'hover:bg-slate-100 dark:hover:bg-slate-700'
                 ]"
                 :color="'neutral'"
                 variant="ghost"

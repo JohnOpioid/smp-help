@@ -108,7 +108,7 @@
                 <!-- Кнопка "Показать еще" для МКБ -->
                 <div v-if="groupedResults.mkb.length > 3" class="flex justify-center pt-2">
                   <button @click="toggleGroup('mkb')"
-                    class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors border-0 cursor-pointer">
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-1000 transition-colors border-0 cursor-pointer">
                     <UIcon :name="expandedGroups.mkb ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
                       class="w-4 h-4" />
                     {{ expandedGroups.mkb ? 'Скрыть' : `Показать еще ${getHiddenCount('mkb', groupedResults.mkb)}
@@ -168,7 +168,7 @@
                 <!-- Кнопка "Показать еще" для локальных статусов -->
                 <div v-if="groupedResults.ls.length > 3" class="flex justify-center pt-2">
                   <button @click="toggleGroup('localStatus')"
-                    class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors border-0 cursor-pointer">
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-1000 transition-colors border-0 cursor-pointer">
                     <UIcon :name="expandedGroups.localStatus ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
                       class="w-4 h-4" />
                     {{ expandedGroups.localStatus ? 'Скрыть' : `Показать еще ${getHiddenCount('localStatus',
@@ -218,7 +218,7 @@
                       <!-- Кнопка раскрытия/скрытия -->
                       <div class="flex justify-center py-2">
                         <button @click="toggleTable(String(result._id || result.id))"
-                          class="inline-flex items-center gap-1 px-3 py-1 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-full text-xs hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors border-0 cursor-pointer">
+                          class="inline-flex items-center gap-1 px-3 py-1 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-full text-xs hover:bg-slate-300 dark:hover:bg-slate-1000 transition-colors border-0 cursor-pointer">
                           <UIcon
                             :name="isTableExpanded(String(result._id || result.id)) ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
                             class="w-3 h-3" />
@@ -246,7 +246,7 @@
                 <!-- Кнопка "Показать еще" для алгоритмов -->
                 <div v-if="groupedResults.algorithm.length > 3" class="flex justify-center pt-2">
                   <button @click="toggleGroup('algorithm')"
-                    class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors border-0 cursor-pointer">
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-1000 transition-colors border-0 cursor-pointer">
                     <UIcon :name="expandedGroups.algorithm ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
                       class="w-4 h-4" />
                     {{ expandedGroups.algorithm ? 'Скрыть' : `Показать еще ${getHiddenCount('algorithm',
@@ -445,7 +445,7 @@
                 <!-- Кнопка "Показать еще" для препаратов -->
                 <div v-if="groupedResults.drug.length > 3" class="flex justify-center pt-2">
                   <button @click="toggleGroup('drug')"
-                    class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors border-0 cursor-pointer">
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-1000 transition-colors border-0 cursor-pointer">
                     <UIcon :name="expandedGroups.drug ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
                       class="w-4 h-4" />
                     {{ expandedGroups.drug ? 'Скрыть' : `Показать еще ${getHiddenCount('drug', groupedResults.drug)}
@@ -523,7 +523,7 @@
                 <!-- Кнопка "Показать еще" для подстанций -->
                 <div v-if="groupedResults.substation.length > 3" class="flex justify-center pt-2">
                   <button @click="toggleGroup('substation')"
-                    class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors border-0 cursor-pointer">
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-1000 transition-colors border-0 cursor-pointer">
                     <UIcon :name="expandedGroups.substation ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
                       class="w-4 h-4" />
                     {{ expandedGroups.substation ? 'Скрыть' : `Показать еще ${getHiddenCount('substation',
@@ -974,7 +974,7 @@ const renderAlgorithmTable = (content: string): string => {
     td.classList.add('p-4', 'text-sm', 'text-slate-600', 'dark:text-slate-300', 'whitespace-normal', 'break-words', 'align-top', 'bg-white', 'dark:bg-slate-800')
   })
 
-  tableElement.querySelectorAll('tr').forEach(tr => tr.classList.add('hover:bg-slate-50/60', 'dark:hover:bg-slate-700/40'))
+  tableElement.querySelectorAll('tr').forEach(tr => tr.classList.add('hover:bg-slate-100/60', 'dark:hover:bg-slate-700/40'))
 
   // Бордеры: у первой колонки справа, у второй слева и справа на md+ экранах
   tableElement.querySelectorAll('thead tr').forEach(tr => {

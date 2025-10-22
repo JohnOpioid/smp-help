@@ -28,7 +28,7 @@
               type="button"
               :class="[
                 'w-full px-4 py-3 text-left border-b border-slate-100 dark:border-slate-700 cursor-pointer transition-colors',
-                'hover:bg-slate-50 dark:hover:bg-slate-700',
+                'hover:bg-slate-100 dark:hover:bg-slate-700',
                 thromboembolismScore === option.value ? [thromboembolismSelectedTextClass, thromboembolismSelectedBgClass, thromboembolismSelectedHoverClass] : ''
               ]"
               @click="thromboembolismScore = option.value"
@@ -53,7 +53,7 @@
               type="button"
               :class="[
                 'w-full px-4 py-3 text-left border-b border-slate-100 dark:border-slate-700 cursor-pointer transition-colors',
-                'hover:bg-slate-50 dark:hover:bg-slate-700',
+                'hover:bg-slate-100 dark:hover:bg-slate-700',
                 heartRateScore === option.value ? [heartRateSelectedTextClass, heartRateSelectedBgClass, heartRateSelectedHoverClass] : ''
               ]"
               @click="heartRateScore = option.value"
@@ -78,7 +78,7 @@
               type="button"
               :class="[
                 'w-full px-4 py-3 text-left border-b border-slate-100 dark:border-slate-700 cursor-pointer transition-colors',
-                'hover:bg-slate-50 dark:hover:bg-slate-700',
+                'hover:bg-slate-100 dark:hover:bg-slate-700',
                 surgeryScore === option.value ? [surgerySelectedTextClass, surgerySelectedBgClass, surgerySelectedHoverClass] : ''
               ]"
               @click="surgeryScore = option.value"
@@ -103,7 +103,7 @@
               type="button"
               :class="[
                 'w-full px-4 py-3 text-left border-b border-slate-100 dark:border-slate-700 cursor-pointer transition-colors',
-                'hover:bg-slate-50 dark:hover:bg-slate-700',
+                'hover:bg-slate-100 dark:hover:bg-slate-700',
                 hemoptysisScore === option.value ? [hemoptysisSelectedTextClass, hemoptysisSelectedBgClass, hemoptysisSelectedHoverClass] : ''
               ]"
               @click="hemoptysisScore = option.value"
@@ -128,7 +128,7 @@
               type="button"
               :class="[
                 'w-full px-4 py-3 text-left border-b border-slate-100 dark:border-slate-700 cursor-pointer transition-colors',
-                'hover:bg-slate-50 dark:hover:bg-slate-700',
+                'hover:bg-slate-100 dark:hover:bg-slate-700',
                 cancerScore === option.value ? [cancerSelectedTextClass, cancerSelectedBgClass, cancerSelectedHoverClass] : ''
               ]"
               @click="cancerScore = option.value"
@@ -153,7 +153,7 @@
               type="button"
               :class="[
                 'w-full px-4 py-3 text-left border-b border-slate-100 dark:border-slate-700 cursor-pointer transition-colors',
-                'hover:bg-slate-50 dark:hover:bg-slate-700',
+                'hover:bg-slate-100 dark:hover:bg-slate-700',
                 legPainScore === option.value ? [legPainSelectedTextClass, legPainSelectedBgClass, legPainSelectedHoverClass] : ''
               ]"
               @click="legPainScore = option.value"
@@ -178,7 +178,7 @@
               type="button"
               :class="[
                 'w-full px-4 py-3 text-left border-b border-slate-100 dark:border-slate-700 cursor-pointer transition-colors',
-                'hover:bg-slate-50 dark:hover:bg-slate-700',
+                'hover:bg-slate-100 dark:hover:bg-slate-700',
                 veinPainScore === option.value ? [veinPainSelectedTextClass, veinPainSelectedBgClass, veinPainSelectedHoverClass] : ''
               ]"
               @click="veinPainScore = option.value"
@@ -203,7 +203,7 @@
               type="button"
               :class="[
                 'w-full px-4 py-3 text-left border-b border-slate-100 dark:border-slate-700 cursor-pointer transition-colors',
-                'hover:bg-slate-50 dark:hover:bg-slate-700',
+                'hover:bg-slate-100 dark:hover:bg-slate-700',
                 ageScore === option.value ? [ageSelectedTextClass, ageSelectedBgClass, ageSelectedHoverClass] : ''
               ]"
               @click="ageScore = option.value"

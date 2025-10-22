@@ -27,7 +27,7 @@
                 :key="'e-btn-'+opt.value"
                 :class="[
                   'w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  eyeOpening === opt.value ? [eyeButtonBgClass, eyeButtonHoverClass] : 'hover:bg-slate-50 dark:hover:bg-slate-700'
+                  eyeOpening === opt.value ? [eyeButtonBgClass, eyeButtonHoverClass] : 'hover:bg-slate-100 dark:hover:bg-slate-700'
                 ]"
                 :color="'neutral'"
                 variant="ghost"
@@ -53,7 +53,7 @@
                 :key="'v-btn-'+opt.value"
                 :class="[
                   'w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  verbalResponse === opt.value ? [verbalButtonBgClass, verbalButtonHoverClass] : 'hover:bg-slate-50 dark:hover:bg-slate-700'
+                  verbalResponse === opt.value ? [verbalButtonBgClass, verbalButtonHoverClass] : 'hover:bg-slate-100 dark:hover:bg-slate-700'
                 ]"
                 :color="'neutral'"
                 variant="ghost"
@@ -79,7 +79,7 @@
                 :key="'m-btn-'+opt.value"
                 :class="[
                   'w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  motorResponse === opt.value ? [motorButtonBgClass, motorButtonHoverClass] : 'hover:bg-slate-50 dark:hover:bg-slate-700'
+                  motorResponse === opt.value ? [motorButtonBgClass, motorButtonHoverClass] : 'hover:bg-slate-100 dark:hover:bg-slate-700'
                 ]"
                 :color="'neutral'"
                 variant="ghost"

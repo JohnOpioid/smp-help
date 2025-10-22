@@ -11,7 +11,7 @@
           </div>
           <ul class="divide-y divide-slate-100 dark:divide-slate-700">
             <li v-for="it in filtered" :key="it._id"
-                class="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer relative border-b border-slate-100 dark:border-slate-700 last:border-b-0"
+                class="p-4 hover:bg-slate-100 dark:hover:bg-slate-700/40 cursor-pointer relative border-b border-slate-100 dark:border-slate-700 last:border-b-0"
                 @click="openInstruction(it)">
               <div class="flex items-center justify-between">
                 <div class="min-w-0">
@@ -36,7 +36,7 @@
 
           <ul class="divide-y divide-slate-100 dark:divide-slate-700">
             <li v-for="item in itemsSorted" :key="item._id"
-              class="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer" @click="openInstruction(item)">
+              class="p-4 hover:bg-slate-100 dark:hover:bg-slate-700/40 cursor-pointer" @click="openInstruction(item)">
               <div class="flex items-center justify-between">
                 <p class="text-slate-900 dark:text-white font-medium">{{ item.title }}</p>
                 <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

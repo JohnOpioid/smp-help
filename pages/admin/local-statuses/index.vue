@@ -177,7 +177,7 @@
                       <ul>
                         <li 
                           v-for="item in mkbResults" :key="item._id" 
-                          class="px-3 py-2 text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700"
+                          class="px-3 py-2 text-sm cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700"
                           @click="onPickMKB(item)"
                         >
                           <div class="flex items-center gap-2">

@@ -14,7 +14,7 @@
       </div>
       <ul class="grid grid-cols-1 md:grid-cols-2 gap-0">
         <li v-for="(a, idx) in algos" :key="(a as any)._id"
-            class="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer relative border-b border-slate-100 dark:border-slate-700"
+            class="p-4 hover:bg-slate-100 dark:hover:bg-slate-700/40 cursor-pointer relative border-b border-slate-100 dark:border-slate-700"
             :class="{ 
               'md:border-r md:border-slate-100 dark:md:border-slate-700': (idx % 2 === 0 && idx < algos.length - 1) || (idx === algos.length - 1 && algos.length % 2 === 1),
               'md:border-b-0': idx >= algos.length - 2 && algos.length % 2 === 0,

@@ -28,7 +28,7 @@
                 :key="'e-btn-'+opt.value"
                 :class="[
                   'w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  eye === opt.value ? [eyeButtonBgClass, eyeButtonHoverClass] : 'hover:bg-slate-50 dark:hover:bg-slate-700'
+                  eye === opt.value ? [eyeButtonBgClass, eyeButtonHoverClass] : 'hover:bg-slate-100 dark:hover:bg-slate-700'
                 ]"
                 :color="'neutral'"
                 variant="ghost"
@@ -55,7 +55,7 @@
                 :key="'m-btn-'+opt.value"
                 :class="[
                   'w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  motor === opt.value ? [motorButtonBgClass, motorButtonHoverClass] : 'hover:bg-slate-50 dark:hover:bg-slate-700'
+                  motor === opt.value ? [motorButtonBgClass, motorButtonHoverClass] : 'hover:bg-slate-100 dark:hover:bg-slate-700'
                 ]"
                 :color="'neutral'"
                 variant="ghost"
@@ -82,7 +82,7 @@
                 :key="'b-btn-'+opt.value"
                 :class="[
                   'w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  brain === opt.value ? [brainButtonBgClass, brainButtonHoverClass] : 'hover:bg-slate-50 dark:hover:bg-slate-700'
+                  brain === opt.value ? [brainButtonBgClass, brainButtonHoverClass] : 'hover:bg-slate-100 dark:hover:bg-slate-700'
                 ]"
                 :color="'neutral'"
                 variant="ghost"
@@ -109,7 +109,7 @@
                 :key="'r-btn-'+opt.value"
                 :class="[
                   'w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                  resp === opt.value ? [respButtonBgClass, respButtonHoverClass] : 'hover:bg-slate-50 dark:hover:bg-slate-700'
+                  resp === opt.value ? [respButtonBgClass, respButtonHoverClass] : 'hover:bg-slate-100 dark:hover:bg-slate-700'
                 ]"
                 :color="'neutral'"
                 variant="ghost"

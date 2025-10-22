@@ -27,7 +27,7 @@
               :key="'rass-'+opt.value"
               :class="[
                 'w-full justify-between text-left rounded-none !px-4 !py-3 bg-transparent border-0 cursor-pointer',
-                score === opt.value ? [selectedButtonBgClass, selectedButtonHoverClass] : 'hover:bg-slate-50 dark:hover:bg-slate-700'
+                score === opt.value ? [selectedButtonBgClass, selectedButtonHoverClass] : 'hover:bg-slate-100 dark:hover:bg-slate-700'
               ]"
               :color="'neutral'"
               variant="ghost"

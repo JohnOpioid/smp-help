@@ -55,7 +55,7 @@
                   <!-- Основное меню -->
                   <div v-if="currentView === 'main'" class="space-y-1">
                     <div v-for="item in mainMenuItems" :key="item.to"
-                      class="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer"
+                      class="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
                       :class="{ 'bg-slate-100 dark:bg-slate-700': isActive(item.to) }"
                       @click="item.hasChildren ? handleMenuItemClick(item) : navigateToItem(item)">
                       <UIcon :name="item.icon" class="w-5 h-5 text-slate-500" />
@@ -72,14 +72,14 @@
                   <div v-else class="space-y-1">
                     <!-- Кнопка "Назад" -->
                     <button @click="goBackToMainMenu"
-                      class="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer w-full text-left">
+                      class="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer w-full text-left">
                       <UIcon name="i-heroicons-arrow-left" class="w-5 h-5" />
                       <span>Назад</span>
                     </button>
 
                     <!-- Элементы подменю -->
                     <div v-for="item in currentSubmenuItems" :key="item.to"
-                      class="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer"
+                      class="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
                       :class="{ 'bg-slate-100 dark:bg-slate-700': isActive(item.to) }" @click="navigateToItem(item)">
                       <UIcon :name="item.icon" class="w-5 h-5 text-slate-500" />
                       <div class="flex-1">
@@ -156,30 +156,30 @@
                 </div>
                 <nav class="py-1">
                   <NuxtLink to="/profile"
-                    class="flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    class="flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
                     @click="menuOpen = false">
                     <UIcon name="i-heroicons-calendar-days" class="w-4 h-4 text-slate-500" />
                     <span>Смены</span>
                   </NuxtLink>
                   <NuxtLink to="/profile/bookmarks"
-                    class="flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    class="flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
                     @click="menuOpen = false">
                     <UIcon name="i-heroicons-bookmark" class="w-4 h-4 text-slate-500" />
                     <span>Закладки</span>
                   </NuxtLink>
                   <NuxtLink to="/profile/settings"
-                    class="flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    class="flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
                     @click="menuOpen = false">
                     <UIcon name="i-heroicons-cog-6-tooth" class="w-4 h-4 text-slate-500" />
                     <span>Настройки</span>
                   </NuxtLink>
                   <div
-                    class="flex items-center justify-between px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
+                    class="flex items-center justify-between px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
                     <span>Тёмная тема</span>
                     <USwitch :model-value="isDark" @update:model-value="onToggleTheme" size="sm" color="neutral" />
                   </div>
                   <NuxtLink v-if="user?.role === 'admin'" to="/admin"
-                    class="block px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    class="block px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
                     @click="menuOpen = false">Админка</NuxtLink>
                   <button @click="menuOpen = false; logout()"
                     class="w-full text-left px-3 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 cursor-pointer">Выйти</button>

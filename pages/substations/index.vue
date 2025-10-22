@@ -68,7 +68,7 @@
                   v-for="item in group.items"
                   :key="item._id"
                   :data-substation-id="item._id"
-                  class="p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/40 rounded-lg transition-colors"
+                  class="p-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/40 rounded-lg transition-colors"
                   :class="{ 'bg-slate-50 dark:bg-slate-700/40': selectedId === item._id }"
                   @click="toggleSelect(item)"
                 >
@@ -150,7 +150,7 @@
               v-for="item in group.items"
               :key="item._id"
               :data-substation-id="item._id"
-              class="p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/40 rounded-lg transition-colors"
+              class="p-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/40 rounded-lg transition-colors"
               :class="{ 'bg-slate-50 dark:bg-slate-700/40': selectedId === item._id }"
               @click="toggleSelect(item); isBottomSheetOpen = false"
             >
