@@ -32,8 +32,9 @@ const SPLASH_SIZES = {
 };
 
 // Пути
-const ANDROID_RES_PATH = path.join(__dirname, 'android', 'app', 'src', 'main', 'res');
-const ICONS_SOURCE_PATH = path.join(__dirname, 'assets', 'icons');
+const ANDROID_RES_PATH = path.join(__dirname, '..', 'android', 'app', 'src', 'main', 'res');
+const ICONS_SOURCE_PATH = path.join(__dirname, '..', 'assets', 'icons');
+const PUBLIC_PATH = path.join(__dirname, '..', 'public');
 
 // Проверяем наличие ImageMagick
 function checkImageMagick() {
@@ -100,14 +101,32 @@ function generateIcons(sourceIconPath) {
 }
 
 // Генерируем splash screen
-function generateSplashScreens(sourceSplashPath) {
+function generateSplashScreens(sourceSplashPath, sourceIconPath) {
   console.log('🖼️ Генерируем splash screen...');
   
   Object.entries(SPLASH_SIZES).forEach(([dir, dimensions]) => {
     const outputPath = path.join(ANDROID_RES_PATH, dir, 'splash.png');
     
     try {
-      execSync(`magick "${sourceSplashPath}" -resize ${dimensions.width}x${dimensions.height}! "${outputPath}"`, { stdio: 'ignore' });
+      if (fs.existsSync(sourceSplashPath)) {
+        // Используем готовый PNG файл
+        execSync(`magick "${sourceSplashPath}" -resize ${dimensions.width}x${dimensions.height}! "${outputPath}"`, { stdio: 'ignore' });
+      } else {
+        // Создаем splash screen из SVG логотипа
+        const tempIconPath = path.join(ICONS_SOURCE_PATH, 'temp-icon.png');
+        
+        // Конвертируем SVG в PNG
+        execSync(`magick "${sourceIconPath}" -resize 200x200 "${tempIconPath}"`, { stdio: 'ignore' });
+        
+        // Создаем splash screen с логотипом по центру
+        execSync(`magick -size ${dimensions.width}x${dimensions.height} xc:"#f8fafc" "${tempIconPath}" -gravity center -composite "${outputPath}"`, { stdio: 'ignore' });
+        
+        // Удаляем временный файл
+        if (fs.existsSync(tempIconPath)) {
+          fs.unlinkSync(tempIconPath);
+        }
+      }
+      
       console.log(`✅ Создан splash ${dimensions.width}x${dimensions.height} в ${dir}`);
     } catch (error) {
       console.error(`❌ Ошибка создания splash для ${dir}:`, error.message);
@@ -122,7 +141,7 @@ function createXmlConfig() {
   // ic_launcher_background.xml
   const backgroundXml = `<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#26A69A</color>
+    <color name="ic_launcher_background">#293379</color>
 </resources>`;
   
   const backgroundPath = path.join(ANDROID_RES_PATH, 'values', 'ic_launcher_background.xml');
@@ -165,18 +184,19 @@ function main() {
   }
   
   // Проверяем исходные файлы
-  const sourceIconPath = path.join(ICONS_SOURCE_PATH, 'app-icon.png');
+  const sourceIconPath = path.join(PUBLIC_PATH, 'logo.svg');
   const sourceSplashPath = path.join(ICONS_SOURCE_PATH, 'splash-screen.png');
   
   if (!fs.existsSync(sourceIconPath)) {
     console.error(`❌ Исходная иконка не найдена: ${sourceIconPath}`);
-    console.log('Создайте файл app-icon.png (512x512px) в папке assets/icons/');
+    console.log('Убедитесь, что файл logo.svg существует в папке public/');
     process.exit(1);
   }
   
   if (!fs.existsSync(sourceSplashPath)) {
     console.error(`❌ Исходный splash screen не найден: ${sourceSplashPath}`);
     console.log('Создайте файл splash-screen.png (1080x1920px) в папке assets/icons/');
+    console.log('Или используйте существующий logo.svg для создания splash screen');
     process.exit(1);
   }
   
@@ -188,7 +208,7 @@ function main() {
     generateIcons(sourceIconPath);
     
     // Генерируем splash screen
-    generateSplashScreens(sourceSplashPath);
+    generateSplashScreens(sourceSplashPath, sourceIconPath);
     
     // Создаем XML конфигурацию
     createXmlConfig();
