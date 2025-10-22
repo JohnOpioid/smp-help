@@ -5,7 +5,7 @@
   </MobileLayout>
   
   <!-- Обычный лейаут для веб-браузера -->
-  <div v-else :class="containerClass">
+  <div v-else :class="containerClass" :style="{ paddingBottom: isMobileApp ? '80px' : '0' }">
     <AppHeader v-if="!isInitialLoading" :title="headerTitle" />
     <header v-else class="transition-colors duration-300 relative z-50">
       <div class="w-full max-w-5xl mx-auto px-2 md:px-4 py-6">
@@ -306,6 +306,9 @@
     <!-- Панель поиска с чат-ботом -->
     <BottomSearchPanel :is-open="isBottomSearchOpen" @close="closeBottomSearch" />
     
+    <!-- Нижняя навигация для мобильных браузеров -->
+    <MobileBottomNav v-if="isMobileApp" />
+    
     <!-- Глобальный индикатор предзагрузки -->
     <PreloadIndicator />
   </div>
@@ -313,6 +316,7 @@
 
 <script setup lang="ts">
 import PreloadIndicator from '~/components/PreloadIndicator.vue'
+import MobileBottomNav from '~/components/MobileBottomNav.vue'
 import { Capacitor } from '@capacitor/core'
 
 // Реактивное состояние размера экрана
@@ -322,8 +326,8 @@ const screenWidth = ref(0)
 const isMobileApp = computed(() => {
   if (!process.client) return false
   
-  // Проверяем Capacitor
-  if (Capacitor.isNativePlatform()) return true
+  // Для Capacitor приложений используем веб-интерфейс
+  if (Capacitor.isNativePlatform()) return false
   
   // Проверяем мобильный браузер
   const userAgent = navigator.userAgent.toLowerCase()
