@@ -139,15 +139,40 @@
           </div>
         </template>
         <template #footer>
-          <div class="flex items-center justify-between gap-2 w-full">
-            <div class="flex items-center gap-2">
-              <UButton size="sm" variant="outline" color="neutral" icon="i-heroicons-clipboard" class="cursor-pointer"
-                @click="copyDescription">Копировать</UButton>
-              <UButton size="sm" variant="outline" color="neutral" icon="i-heroicons-share" class="cursor-pointer"
-                aria-label="Поделиться" @click="shareItem" />
-            </div>
-            <UButton color="neutral" variant="ghost" type="button" @click="closeModal" class="cursor-pointer">Закрыть
+          <div class="flex gap-3 w-full">
+            <UButton
+              :icon="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
+              color="secondary"
+              variant="soft"
+              @click="toggleBookmark()"
+              :disabled="!selectedItem"
+              size="xl"
+              :title="isBookmarked ? 'В избранном' : 'В закладки'"
+              class="cursor-pointer flex-1 justify-center items-center custom-secondary-button"
+            >
+              {{ isBookmarked ? 'В избранном' : 'В закладки' }}
             </UButton>
+            <UButton
+              icon="i-heroicons-share"
+              color="secondary"
+              variant="soft"
+              size="xl"
+              @click="shareItem"
+              :disabled="!selectedItem"
+              class="cursor-pointer flex-1 justify-center items-center custom-secondary-button"
+            >
+              Поделиться
+            </UButton>
+            <UButton
+              icon="i-heroicons-clipboard"
+              color="secondary"
+              variant="soft"
+              size="xl"
+              @click="copyDescription"
+              :disabled="!selectedItem"
+              class="cursor-pointer w-12 h-12 p-0 flex items-center justify-center custom-secondary-button"
+              :title="'Копировать'"
+            />
           </div>
         </template>
       </UModal>
@@ -197,16 +222,41 @@
             </div>
 
             <!-- Кнопки действий -->
-            <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-600">
-              <div class="flex gap-2">
-                <UButton size="lg" variant="outline" color="neutral" icon="i-heroicons-clipboard"
-                  class="flex-1 justify-center cursor-pointer" @click="copyDescription">
-                  Копировать
+            <div class="mt-6">
+              <div class="flex gap-3">
+                <UButton
+                  :icon="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
+                  color="secondary"
+                  variant="soft"
+                  @click="toggleBookmark()"
+                  :disabled="!selectedItem"
+                  size="xl"
+                  :title="isBookmarked ? 'В избранном' : 'В закладки'"
+                  class="cursor-pointer flex-1 justify-center items-center custom-secondary-button"
+                >
+                  {{ isBookmarked ? 'В избранном' : 'В закладки' }}
                 </UButton>
-                <UButton size="lg" variant="outline" color="neutral" icon="i-heroicons-share"
-                  class="flex-1 justify-center cursor-pointer" aria-label="Поделиться" @click="shareItem">
+                <UButton
+                  icon="i-heroicons-share"
+                  color="secondary"
+                  variant="soft"
+                  size="xl"
+                  @click="shareItem"
+                  :disabled="!selectedItem"
+                  class="cursor-pointer flex-1 justify-center items-center custom-secondary-button"
+                >
                   Поделиться
                 </UButton>
+                <UButton
+                  icon="i-heroicons-clipboard"
+                  color="secondary"
+                  variant="soft"
+                  size="xl"
+                  @click="copyDescription"
+                  :disabled="!selectedItem"
+                  class="cursor-pointer w-12 h-12 p-0 flex items-center justify-center custom-secondary-button"
+                  :title="'Копировать'"
+                />
               </div>
             </div>
             </div>
@@ -323,6 +373,72 @@ const modalOpen = ref(false)
 const selectedItem = ref<any>(null)
 const isLoadingItem = ref(false)
 
+// Состояние закладок
+const isBookmarked = ref(false)
+const userBookmarks = ref<any[]>([])
+
+async function loadBookmarks() {
+  try {
+    const res: any = await $fetch('/api/bookmarks')
+    if (res?.success) userBookmarks.value = res.items || []
+  } catch {}
+}
+
+function buildStatusUrl(item: any) {
+  return `/local-statuses/${url}?id=${item?._id}`
+}
+
+async function updateIsBookmarked() {
+  if (!selectedItem.value) { isBookmarked.value = false; return }
+  if (userBookmarks.value.length === 0) await loadBookmarks()
+  const targetUrl = buildStatusUrl(selectedItem.value)
+  isBookmarked.value = userBookmarks.value.some((b: any) => b.url === targetUrl)
+}
+
+async function addBookmark() {
+  if (!selectedItem.value) return
+  try {
+    await $fetch('/api/bookmarks', {
+      method: 'POST',
+      body: {
+        type: 'local-status',
+        title: selectedItem.value.name,
+        description: selectedItem.value.note || selectedItem.value.description || '',
+        category: selectedItem.value.category?.name,
+        url: buildStatusUrl(selectedItem.value),
+        code: selectedItem.value.code,
+        stationCode: selectedItem.value.stationCode,
+        complaints: selectedItem.value.complaints || '',
+        anamnesis: selectedItem.value.anamnesis || '',
+        localis: selectedItem.value.localis || ''
+      }
+    })
+    isBookmarked.value = true
+    // @ts-ignore
+    const toast = useToast?.()
+    toast?.add?.({ title: 'Добавлено в закладки', color: 'primary' })
+  } catch {}
+}
+
+async function removeBookmark() {
+  if (!selectedItem.value) return
+  try {
+    const targetUrl = buildStatusUrl(selectedItem.value)
+    if (userBookmarks.value.length === 0) await loadBookmarks()
+    const bm = userBookmarks.value.find((b: any) => b.url === targetUrl)
+    if (!bm?._id) return
+    await $fetch(`/api/bookmarks/${bm._id}`, { method: 'DELETE' })
+    isBookmarked.value = false
+    userBookmarks.value = userBookmarks.value.filter((b: any) => b._id !== bm._id)
+    // @ts-ignore
+    const toast = useToast?.()
+    toast?.add?.({ title: 'Удалено из закладок', color: 'neutral' })
+  } catch {}
+}
+
+async function toggleBookmark() {
+  if (isBookmarked.value) await removeBookmark(); else await addBookmark()
+}
 
 async function shareItem() {
   try {
@@ -347,6 +463,7 @@ function openModal(item: any) {
   selectedItem.value = item
   modalOpen.value = true
   isLoadingItem.value = false // Данные уже загружены
+  updateIsBookmarked()
 
   // Обновляем URL с ID локального статуса через query параметр только если его еще нет
   if (!routeQuery.query.id || routeQuery.query.id !== item._id) {
@@ -397,6 +514,7 @@ async function loadSpecificItem(itemId: string) {
           // Открываем модалку
           selectedItem.value = found
           modalOpen.value = true
+          updateIsBookmarked()
         } else {
           console.log('❌ Элемент не принадлежит текущей категории')
         }
@@ -433,6 +551,7 @@ onMounted(async () => {
           console.log('✅ Открываем модалку локального статуса')
           selectedItem.value = found
           modalOpen.value = true
+          updateIsBookmarked()
         } else {
           console.log('❌ Элемент не найден в загруженных данных, загружаем напрямую')
           loadSpecificItem(itemId)
@@ -464,6 +583,7 @@ watch(() => routeQuery.query.id, (val) => {
           console.log('✅ Watcher открываем модалку локального статуса')
           selectedItem.value = found
           modalOpen.value = true
+          updateIsBookmarked()
         } else {
           console.log('❌ Watcher элемент не найден в загруженных данных, загружаем напрямую')
           loadSpecificItem(id)

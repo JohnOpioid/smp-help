@@ -133,20 +133,30 @@
           </div>
         </template>
         <template #footer>
-          <div class="flex items-center justify-between gap-2 w-full">
+          <div class="flex gap-3 w-full">
             <UButton
               :icon="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
-              :class="isBookmarked
-                ? 'inline-flex items-center justify-center w-7 h-7 p-0 text-xs text-amber-600 dark:text-amber-400 cursor-pointer'
-                : 'inline-flex items-center justify-center w-7 h-7 p-0 text-xs text-slate-600 dark:text-slate-300 cursor-pointer'"
-              variant="ghost"
-              color="neutral"
+              color="secondary"
+              variant="soft"
               @click="toggleBookmark()"
               :disabled="!selectedItem"
-              size="xs"
+              size="xl"
               :title="isBookmarked ? 'В избранном' : 'В закладки'"
-            />
-            <UButton color="neutral" variant="ghost" type="button" @click="closeModal" class="cursor-pointer">Закрыть</UButton>
+              class="cursor-pointer flex-1 justify-center items-center custom-secondary-button"
+            >
+              {{ isBookmarked ? 'В избранном' : 'В закладки' }}
+            </UButton>
+            <UButton
+              icon="i-heroicons-share"
+              color="secondary"
+              variant="soft"
+              size="xl"
+              @click="shareItem"
+              :disabled="!selectedItem"
+              class="cursor-pointer flex-1 justify-center items-center custom-secondary-button"
+            >
+              Поделиться
+            </UButton>
           </div>
         </template>
       </UModal>
@@ -188,25 +198,36 @@
                 <p class="text-slate-600 dark:text-slate-300">{{ selectedItem.category?.name }}</p>
               </div>
             </div>
-          </div>
-          
-          <!-- Футер с кнопкой закладок -->
-          <template #footer>
-            <div class="flex justify-start">
-              <UButton
-                :icon="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
-                :class="isBookmarked
-                  ? 'text-amber-600 dark:text-amber-400'
-                  : 'text-slate-600 dark:text-slate-300'"
-                variant="ghost"
-                color="neutral"
-                @click="toggleBookmark()"
-                :disabled="!selectedItem"
-                size="lg"
-                :title="isBookmarked ? 'В избранном' : 'В закладки'"
-              />
+            
+            <!-- Кнопки действий -->
+            <div class="mt-6">
+              <div class="flex gap-3 w-full">
+                <UButton
+                  :icon="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
+                  color="secondary"
+                  variant="soft"
+                  @click="toggleBookmark()"
+                  :disabled="!selectedItem"
+                  size="xl"
+                  :title="isBookmarked ? 'В избранном' : 'В закладки'"
+                  class="cursor-pointer flex-1 justify-center items-center custom-secondary-button"
+                >
+                  {{ isBookmarked ? 'В избранном' : 'В закладки' }}
+                </UButton>
+                <UButton
+                  icon="i-heroicons-share"
+                  color="secondary"
+                  variant="soft"
+                  size="xl"
+                  @click="shareItem"
+                  :disabled="!selectedItem"
+                  class="cursor-pointer flex-1 justify-center items-center custom-secondary-button"
+                >
+                  Поделиться
+                </UButton>
+              </div>
             </div>
-          </template>
+          </div>
         </BottomSheet>
       </ClientOnly>
     </template>
@@ -506,7 +527,9 @@ async function addBookmark() {
         title: selectedItem.value.name,
         description: selectedItem.value.note,
         category: category.value?.name,
-        url: `/codifier/${url}?id=${selectedItem.value._id}`
+        url: `/codifier/${url}?id=${selectedItem.value._id}`,
+        mkbCode: selectedItem.value.mkbCode,
+        stationCode: selectedItem.value.stationCode
       }
     })
     isBookmarked.value = true
@@ -546,6 +569,34 @@ async function toggleBookmark() {
     await removeBookmark()
   } else {
     await addBookmark()
+  }
+}
+
+// Функция для поделиться
+async function shareItem() {
+  if (!selectedItem.value) return
+  
+  const shareData = {
+    title: selectedItem.value.name,
+    text: `МКБ-10: ${selectedItem.value.mkbCode}${selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''}`,
+    url: window.location.href
+  }
+  
+  try {
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+      await navigator.share(shareData)
+    } else {
+      // Fallback - копируем URL в буфер обмена
+      await navigator.clipboard.writeText(window.location.href)
+      // @ts-ignore
+      const toast = useToast?.()
+      toast?.add?.({ title: 'Ссылка скопирована в буфер обмена', color: 'primary' })
+    }
+  } catch (error) {
+    console.error('Ошибка при попытке поделиться:', error)
+    // @ts-ignore
+    const toast = useToast?.()
+    toast?.add?.({ title: 'Не удалось поделиться', color: 'error' })
   }
 }
 

@@ -28,11 +28,96 @@
             <UIcon :name="section.icon" class="w-4 h-4 text-slate-500" />
             <p class="text-sm text-slate-600 dark:text-slate-300">{{ section.label }}</p>
           </div>
-          <div class="divide-y divide-slate-100 dark:divide-slate-700">
+          <!-- Специальный стиль для препаратов и кодификатора -->
+          <div v-if="section.type === 'drug' || section.type === 'codifier'" class="grid grid-cols-1 md:grid-cols-2 gap-0">
+            <div 
+              v-for="(bookmark, index) in section.items" 
+              :key="bookmark._id" 
+              class="p-4 hover:bg-slate-100 dark:hover:bg-slate-700/40 cursor-pointer relative border-b border-slate-100 dark:border-slate-700 last:border-b-0"
+              :class="{
+                'md:border-r md:border-slate-100 dark:md:border-slate-700': (index % 2 === 0 && index < section.items.length - 1) || (index === section.items.length - 1 && section.items.length % 2 === 1),
+                'md:border-b-0': index >= section.items.length - 2 && section.items.length % 2 === 0
+              }"
+              @click="openBookmark(bookmark)"
+            >
+              <!-- Содержимое для препаратов -->
+              <div v-if="section.type === 'drug'" class="flex items-start justify-between">
+                <div class="flex-1 min-w-0">
+                  <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-1">
+                    {{ bookmark.title }}
+                  </h3>
+                  <p v-if="bookmark.description" class="text-sm text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                    {{ bookmark.description }}
+                  </p>
+                  <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                    <div v-if="bookmark.category" class="flex flex-wrap gap-1.5">
+                      <template v-for="category in bookmark.category.split(', ')" :key="category">
+                        <span 
+                          v-if="category.toLowerCase().includes('антидот')" 
+                          class="text-xs px-2 py-1 rounded bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200"
+                        >
+                          {{ category }}
+                        </span>
+                        <span 
+                          v-else 
+                          class="text-xs px-2 py-1 rounded bg-slate-200 text-slate-600"
+                        >
+                          {{ category }}
+                        </span>
+                      </template>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 ml-4">
+                  <UButton
+                    size="xs"
+                    variant="ghost"
+                    color="error"
+                    icon="i-heroicons-trash"
+                    class="w-7 h-7 p-0 cursor-pointer inline-flex items-center justify-center"
+                    @click.stop="removeBookmark(bookmark._id)"
+                    aria-label="Удалить закладку"
+                  />
+                </div>
+              </div>
+              
+              <!-- Содержимое для кодификатора -->
+              <div v-else-if="section.type === 'codifier'" class="flex items-start justify-between">
+                <div class="flex-1 min-w-0">
+                  <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-1">
+                    {{ bookmark.title }}
+                  </h3>
+                  <div v-if="bookmark.mkbCode || bookmark.stationCode" class="flex items-center gap-2 mt-1 flex-wrap mb-2">
+                    <span v-if="bookmark.mkbCode" class="text-xs px-2 py-1 rounded bg-slate-200 text-slate-600 font-mono">{{ bookmark.mkbCode }}</span>
+                    <span v-if="bookmark.stationCode" class="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 font-mono">{{ bookmark.stationCode }}</span>
+                  </div>
+                  <div class="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+                    <div v-if="bookmark.category" class="flex flex-wrap gap-1.5">
+                      <span class="text-xs px-2 py-1 rounded bg-slate-200 text-slate-600">{{ bookmark.category }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 ml-4">
+                  <UButton
+                    size="xs"
+                    variant="ghost"
+                    color="error"
+                    icon="i-heroicons-trash"
+                    class="w-7 h-7 p-0 cursor-pointer inline-flex items-center justify-center"
+                    @click.stop="removeBookmark(bookmark._id)"
+                    aria-label="Удалить закладку"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Обычный стиль для других типов -->
+          <div v-else class="divide-y divide-slate-100 dark:divide-slate-700">
             <div 
               v-for="bookmark in section.items" 
               :key="bookmark._id" 
-              class="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer"
+              class="p-4 hover:bg-slate-100 dark:hover:bg-slate-700/40 cursor-pointer"
               @click="openBookmark(bookmark)"
             >
               <div class="flex items-start justify-between">
@@ -40,11 +125,59 @@
                   <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-1">
                     {{ bookmark.title }}
                   </h3>
-                  <p v-if="bookmark.description" class="text-sm text-slate-600 dark:text-slate-300 mb-2 line-clamp-2">
+                  <div v-if="bookmark.mkbCode || bookmark.stationCode || bookmark.code" class="flex items-center gap-2 mt-1 flex-wrap mb-2">
+                    <span v-if="bookmark.mkbCode" class="text-xs px-2 py-1 rounded bg-slate-200 text-slate-600 font-mono">{{ bookmark.mkbCode }}</span>
+                    <span v-if="bookmark.code" class="text-xs px-2 py-1 rounded bg-slate-200 text-slate-600 font-mono">{{ bookmark.code }}</span>
+                    <span v-if="bookmark.stationCode" class="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 font-mono">{{ bookmark.stationCode }}</span>
+                  </div>
+                  <!-- Отображение отдельных секций для локальных статусов -->
+                  <div v-if="bookmark.type === 'local-status'" class="space-y-2 mb-2">
+                    <div v-if="bookmark.complaints && bookmark.complaints.trim()">
+                      <label class="text-xs font-medium text-slate-600 dark:text-slate-400">Жалобы</label>
+                      <div class="text-sm text-slate-900 dark:text-white line-clamp-2">
+                        {{ bookmark.complaints }}
+                      </div>
+                    </div>
+                    <div v-if="bookmark.anamnesis && bookmark.anamnesis.trim()">
+                      <label class="text-xs font-medium text-slate-600 dark:text-slate-400">Анамнез</label>
+                      <div class="text-sm text-slate-900 dark:text-white line-clamp-2">
+                        {{ bookmark.anamnesis }}
+                      </div>
+                    </div>
+                    <div v-if="bookmark.localis && bookmark.localis.trim()">
+                      <label class="text-xs font-medium text-slate-600 dark:text-slate-400">Status localis</label>
+                      <div class="text-sm text-slate-900 dark:text-white line-clamp-2">
+                        {{ bookmark.localis }}
+                      </div>
+                    </div>
+                    <div v-if="bookmark.description && bookmark.description.trim()">
+                      <label class="text-xs font-medium text-slate-600 dark:text-slate-400">Примечание</label>
+                      <div class="text-sm text-slate-900 dark:text-white line-clamp-2">
+                        {{ bookmark.description }}
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Обычное описание для других типов -->
+                  <div v-else-if="bookmark.description && bookmark.description.trim()" class="text-sm text-slate-600 dark:text-slate-300 mb-2 whitespace-pre-line line-clamp-3">
                     {{ bookmark.description }}
-                  </p>
+                  </div>
                   <div class="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
-                    <span v-if="bookmark.category">{{ bookmark.category }}</span>
+                    <div v-if="bookmark.category" class="flex flex-wrap gap-1.5">
+                      <template v-for="category in bookmark.category.split(', ')" :key="category">
+                        <span 
+                          v-if="category.toLowerCase().includes('антидот')" 
+                          class="text-xs px-2 py-1 rounded bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200"
+                        >
+                          {{ category }}
+                        </span>
+                        <span 
+                          v-else 
+                          class="text-xs px-2 py-1 rounded bg-slate-200 text-slate-600"
+                        >
+                          {{ category }}
+                        </span>
+                      </template>
+                    </div>
                   </div>
                 </div>
                 <div class="flex items-center gap-2 ml-4">

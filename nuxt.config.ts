@@ -4,6 +4,10 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   devServer: { port: 3000, host: 'localhost' },
   modules: ['@nuxt/ui'],
+  ui: {
+    global: true,
+    icons: ['heroicons']
+  },
   nitro: {
     preset: 'node-server'
   },

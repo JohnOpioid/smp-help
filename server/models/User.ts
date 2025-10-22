@@ -16,6 +16,12 @@ export interface IUser extends Document {
     description?: string
     category?: string
     url?: string
+    mkbCode?: string
+    stationCode?: string
+    code?: string
+    complaints?: string
+    anamnesis?: string
+    localis?: string
     createdAt: Date
   }>
   createdAt: Date
@@ -71,6 +77,12 @@ const UserSchema = new Schema<IUser>({
         description: { type: String, required: false },
         category: { type: String, required: false },
         url: { type: String, required: false },
+        mkbCode: { type: String, required: false },
+        stationCode: { type: String, required: false },
+        code: { type: String, required: false },
+        complaints: { type: String, required: false },
+        anamnesis: { type: String, required: false },
+        localis: { type: String, required: false },
         createdAt: { type: Date, default: Date.now }
       }, { _id: true, id: true })
     ],

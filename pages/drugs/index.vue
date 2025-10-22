@@ -405,21 +405,30 @@
               </div>
             </template>
             <template #footer>
-              <div class="flex items-center justify-between gap-2 w-full">
+              <div class="flex gap-3 w-full">
                 <UButton
                   :icon="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
-                  :class="isBookmarked
-                    ? 'inline-flex items-center justify-center w-7 h-7 p-0 text-xs text-amber-600 dark:text-amber-400 cursor-pointer'
-                    : 'inline-flex items-center justify-center w-7 h-7 p-0 text-xs text-slate-600 dark:text-slate-300 cursor-pointer'"
-                  variant="ghost"
-                  color="neutral"
+                  color="secondary"
+                  variant="soft"
                   @click="toggleBookmark()"
                   :disabled="!selected"
-                  size="xs"
+                  size="xl"
                   :title="isBookmarked ? 'В избранном' : 'В закладки'"
-                />
-                <UButton color="neutral" variant="ghost" type="button" @click="closeModal" class="cursor-pointer">
-                  Закрыть</UButton>
+                  class="cursor-pointer flex-1 justify-center items-center custom-secondary-button"
+                >
+                  {{ isBookmarked ? 'В избранном' : 'В закладки' }}
+                </UButton>
+                <UButton
+                  icon="i-heroicons-share"
+                  color="secondary"
+                  variant="soft"
+                  size="xl"
+                  @click="shareItem"
+                  :disabled="!selected"
+                  class="cursor-pointer flex-1 justify-center items-center custom-secondary-button"
+                >
+                  Поделиться
+                </UButton>
               </div>
             </template>
           </UModal>
@@ -745,22 +754,32 @@
                 </div>
                 
                 <!-- Кнопки действий -->
-                <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-600">
-                  <UButton
-                    :icon="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
-                    :class="isBookmarked
-                      ? 'text-amber-600 dark:text-amber-400'
-                      : 'text-slate-600 dark:text-slate-300'"
-                    variant="outline"
-                    color="neutral"
-                    @click="toggleBookmark()"
-                    :disabled="!selected"
-                    size="lg"
-                    :title="isBookmarked ? 'В избранном' : 'В закладки'"
-                    class="w-full justify-center"
-                  >
-                    {{ isBookmarked ? 'В избранном' : 'В закладки' }}
-                  </UButton>
+                <div class="mt-6">
+                  <div class="flex gap-3 w-full">
+                    <UButton
+                      :icon="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
+                      color="secondary"
+                      variant="soft"
+                      @click="toggleBookmark()"
+                      :disabled="!selected"
+                      size="xl"
+                      :title="isBookmarked ? 'В избранном' : 'В закладки'"
+                      class="cursor-pointer flex-1 justify-center items-center custom-secondary-button"
+                    >
+                      {{ isBookmarked ? 'В избранном' : 'В закладки' }}
+                    </UButton>
+                    <UButton
+                      icon="i-heroicons-share"
+                      color="secondary"
+                      variant="soft"
+                      size="xl"
+                      @click="shareItem"
+                      :disabled="!selected"
+                      class="cursor-pointer flex-1 justify-center items-center custom-secondary-button"
+                    >
+                      Поделиться
+                    </UButton>
+                  </div>
                 </div>
               </div>
             </BottomSheet>
@@ -826,19 +845,8 @@ onMounted(async () => {
   
   if (openDrugId) {
     console.log('Найден openDrugId в URL:', openDrugId)
-    // Проверяем, не был ли модалка только что закрыта пользователем
-    // Если в sessionStorage есть флаг о том, что модалка была закрыта, не открываем её автоматически
-    const wasModalClosedByUser = sessionStorage.getItem('drugModalClosedByUser')
-    console.log('Флаг drugModalClosedByUser:', wasModalClosedByUser)
-    if (wasModalClosedByUser) {
-      console.log('Модалка была закрыта пользователем, не открываем автоматически')
-      // Очищаем флаг и URL параметр
-      sessionStorage.removeItem('drugModalClosedByUser')
-      const newUrl = new URL(window.location.href)
-      newUrl.searchParams.delete('id')
-      window.history.replaceState({}, '', newUrl.toString())
-      return
-    }
+    // Очищаем флаг о закрытии модалки при прямом переходе по ссылке
+    sessionStorage.removeItem('drugModalClosedByUser')
     
     // Ждем загрузки данных и открываем нужный препарат
     const checkAndOpenDrug = async () => {
@@ -1000,13 +1008,15 @@ async function updateIsBookmarked() {
 async function addBookmark() {
   if (!selected.value) return
   try {
+    const isAntidote = selected.value.antidote || (selected.value.categories || []).some((c:any)=> String(c?.name||'').toLowerCase().includes('антидот'))
+    
     await $fetch('/api/bookmarks', {
       method: 'POST',
       body: {
         type: 'drug',
         title: selected.value.name,
         description: selected.value.latinName,
-        category: getFirstNonAntidoteCategoryName(selected.value.categories),
+        category: getCategoryForBookmark(selected.value.categories, isAntidote),
         url: buildDrugUrl(selected.value)
       }
     })
@@ -1035,6 +1045,34 @@ async function removeBookmark() {
 
 async function toggleBookmark() {
   if (isBookmarked.value) await removeBookmark(); else await addBookmark()
+}
+
+// Функция для поделиться
+async function shareItem() {
+  if (!selected.value) return
+  
+  const shareData = {
+    title: selected.value.name,
+    text: `Препарат: ${selected.value.name}${selected.value.latinName ? ` (${selected.value.latinName})` : ''}`,
+    url: window.location.href
+  }
+  
+  try {
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+      await navigator.share(shareData)
+    } else {
+      // Fallback - копируем URL в буфер обмена
+      await navigator.clipboard.writeText(window.location.href)
+      // @ts-ignore
+      const toast = useToast?.()
+      toast?.add?.({ title: 'Ссылка скопирована в буфер обмена', color: 'primary' })
+    }
+  } catch (error) {
+    console.error('Ошибка при попытке поделиться:', error)
+    // @ts-ignore
+    const toast = useToast?.()
+    toast?.add?.({ title: 'Не удалось поделиться', color: 'error' })
+  }
 }
 
 function closeModal() {
@@ -1468,6 +1506,25 @@ function getFirstNonAntidoteCategoryName(categories: Array<any> | undefined | nu
     if (!isAntidoteCategory(name)) return name
   }
   return ''
+}
+
+function getCategoryForBookmark(categories: Array<any> | undefined | null, isAntidote: boolean): string {
+  const list = Array.isArray(categories) ? categories : []
+  const categoryNames = []
+  
+  // Добавляем все не-антидотные категории
+  for (const c of list) {
+    const name = String(c?.name || '').trim()
+    if (!name) continue
+    if (!isAntidoteCategory(name)) categoryNames.push(name)
+  }
+  
+  // Добавляем "Антидоты" если препарат является антидотом
+  if (isAntidote) {
+    categoryNames.push('Антидоты')
+  }
+  
+  return categoryNames.join(', ')
 }
 
 const modalDescription = computed(() => {

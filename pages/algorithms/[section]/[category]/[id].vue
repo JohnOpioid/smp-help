@@ -223,7 +223,7 @@
       </div>
       
       <!-- Кнопки действий -->
-      <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-600">
+      <div class="mt-6">
         <UButton
           :icon="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
           :class="isBookmarked

@@ -76,7 +76,7 @@
                 </div>
                 
                 <!-- Скелетон для кнопок -->
-                <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-600">
+                <div class="mt-6">
                   <div class="flex gap-2">
                     <USkeleton class="h-10 flex-1" />
                     <USkeleton class="h-10 flex-1" />
@@ -90,6 +90,7 @@
               <slot />
             </div>
           </div>
+          
           
         </div>
       </div>

@@ -581,7 +581,7 @@
                 </div>
                 
                 <!-- Кнопка в избранное -->
-                <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-600">
+                <div class="mt-6">
                   <UButton
                     :icon="isDrugBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
                     :class="isDrugBookmarked

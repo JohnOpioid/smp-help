@@ -6,11 +6,20 @@
           :class="{ 'hidden md:flex': isSearchExpanded || isSearchActive }">
           <div class="relative">
             <!-- Логотип (крутится при реактивной навигации) -->
-            <img ref="logoRef" :src="logoUrl" alt="Логотип"
-              class="h-9 w-9 cursor-pointer transition-all duration-700 ease-in-out" :class="{
-                'scale-110': dropdownMenuOpen,
-                'animate-spin': isContentLoading
-              }" @click="navigateToHome" @contextmenu.prevent="openDropdownMenu" />
+            <UTooltip 
+              text="Для открытия меню" 
+              :kbds="['ПКМ']" 
+              arrow 
+              :delay-duration="0"
+              v-model:open="logoTooltipOpen"
+              :ui="{ content: 'tooltip-logo' }"
+            >
+              <img ref="logoRef" :src="logoUrl" alt="Логотип"
+                class="h-9 w-9 cursor-pointer transition-all duration-700 ease-in-out" :class="{
+                  'scale-110': dropdownMenuOpen,
+                  'animate-spin': isContentLoading
+                }" @click="navigateToHome" @contextmenu.prevent="openDropdownMenu" />
+            </UTooltip>
 
             <!-- Выпадающее меню из логотипа-кнопки -->
             <Transition enter-active-class="transition-all duration-200 ease-out"
@@ -146,6 +155,12 @@
                   <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ user?.email }}</p>
                 </div>
                 <nav class="py-1">
+                  <NuxtLink to="/profile"
+                    class="flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    @click="menuOpen = false">
+                    <UIcon name="i-heroicons-calendar-days" class="w-4 h-4 text-slate-500" />
+                    <span>Смены</span>
+                  </NuxtLink>
                   <NuxtLink to="/profile/bookmarks"
                     class="flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
                     @click="menuOpen = false">
@@ -192,6 +207,35 @@ const title = computed(() => props.title || 'Справочник СМП')
 
 // Получаем состояние загрузки контента для крутящегося логотипа
 const isContentLoading = inject('isContentLoading', ref(false))
+
+// Состояние tooltip логотипа с кешированием
+const logoTooltipOpen = ref(false)
+
+// Проверяем кеш при загрузке компонента
+onMounted(() => {
+  if (process.client) {
+    const cachedState = localStorage.getItem('logo-tooltip-closed')
+    // Показываем tooltip только если он еще не был закрыт
+    logoTooltipOpen.value = cachedState !== 'true'
+    
+    // Автоматически закрываем через 5 секунд, если пользователь не закрыл вручную
+    if (logoTooltipOpen.value) {
+      setTimeout(() => {
+        if (logoTooltipOpen.value) {
+          closeLogoTooltip()
+        }
+      }, 5000)
+    }
+  }
+})
+
+// Функция закрытия tooltip с сохранением в кеш
+const closeLogoTooltip = () => {
+  logoTooltipOpen.value = false
+  if (process.client) {
+    localStorage.setItem('logo-tooltip-closed', 'true')
+  }
+}
 
 // Импорт логотипа из assets (обрабатывается Vite)
 // Используем импорт, чтобы гарантировать корректный путь в проде и деве
@@ -1164,3 +1208,17 @@ defineExpose({
   onSearchTouchEnd
 })
 </script>
+
+<style scoped>
+/* Увеличиваем размер текста в tooltip логотипа */
+:deep(.tooltip-logo .tooltip-content) {
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+  padding: 8px 12px !important;
+}
+
+/* Увеличиваем размер клавиш в tooltip */
+:deep(.tooltip-logo .tooltip-kbds) {
+  font-size: 12px !important;
+}
+</style>

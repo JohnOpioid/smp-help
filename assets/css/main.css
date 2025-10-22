@@ -277,39 +277,192 @@ body::-webkit-scrollbar-thumb:hover,
   background: #64748b !important; /* slate-500 */
 }
 
+/* Переопределение цвета secondary для Nuxt UI */
+:root {
+  --color-secondary-50: #f8fafc;
+  --color-secondary-100: #f1f5f9;
+  --color-secondary-200: #e2e8f0;
+  --color-secondary-300: #cbd5e1;
+  --color-secondary-400: #94a3b8;
+  --color-secondary-500: #64748b;
+  --color-secondary-600: #475569;
+  --color-secondary-700: #334155;
+  --color-secondary-800: #1e293b;
+  --color-secondary-900: #0f172a;
+  --color-secondary-950: #020617;
+}
+
+/* Агрессивное переопределение для Nuxt UI Button с color="secondary" */
+button[data-color="secondary"],
+.btn[data-color="secondary"],
+[data-color="secondary"],
+button.secondary,
+.btn-secondary,
+.secondary {
+  background-color: #e2e8f0 !important; /* slate-200 */
+  color: #475569 !important; /* slate-600 */
+  border-color: #e2e8f0 !important;
+}
+
+button[data-color="secondary"]:hover,
+.btn[data-color="secondary"]:hover,
+[data-color="secondary"]:hover,
+button.secondary:hover,
+.btn-secondary:hover,
+.secondary:hover {
+  background-color: #cbd5e1 !important; /* slate-300 */
+  color: #1e293b !important; /* slate-800 */
+}
+
+button[data-color="secondary"]:focus,
+.btn[data-color="secondary"]:focus,
+[data-color="secondary"]:focus,
+button.secondary:focus,
+.btn-secondary:focus,
+.secondary:focus {
+  background-color: #e2e8f0 !important; /* slate-200 */
+  color: #475569 !important; /* slate-600 */
+}
+
+/* Агрессивное переопределение для variant="soft" с color="secondary" */
+button[data-color="secondary"][data-variant="soft"],
+.btn[data-color="secondary"][data-variant="soft"],
+[data-color="secondary"][data-variant="soft"],
+button.secondary.soft,
+.btn-secondary.soft,
+.secondary.soft {
+  background-color: #e2e8f0 !important; /* slate-200 */
+  color: #475569 !important; /* slate-600 */
+}
+
+button[data-color="secondary"][data-variant="soft"]:hover,
+.btn[data-color="secondary"][data-variant="soft"]:hover,
+[data-color="secondary"][data-variant="soft"]:hover,
+button.secondary.soft:hover,
+.btn-secondary.soft:hover,
+.secondary.soft:hover {
+  background-color: #cbd5e1 !important; /* slate-300 */
+  color: #1e293b !important; /* slate-800 */
+}
+
 /* Дополнительные селекторы для максимального покрытия */
-html.dark,
-body.dark,
-.dark html,
-.dark body {
-  scrollbar-color: #475569 #0f172a !important; /* slate-600 thumb on slate-900 track */
+.bg-blue-500,
+.bg-blue-600,
+.bg-primary-500,
+.bg-primary-600 {
+  background-color: #e2e8f0 !important; /* slate-200 */
 }
 
-html.dark::-webkit-scrollbar-track,
-body.dark::-webkit-scrollbar-track,
-.dark html::-webkit-scrollbar-track,
-.dark body::-webkit-scrollbar-track {
-  background: #0f172a !important; /* slate-900 */
+.text-blue-600,
+.text-blue-700,
+.text-primary-600,
+.text-primary-700 {
+  color: #475569 !important; /* slate-600 */
 }
 
-html.dark::-webkit-scrollbar-thumb,
-body.dark::-webkit-scrollbar-thumb,
-.dark html::-webkit-scrollbar-thumb,
-.dark body::-webkit-scrollbar-thumb {
-  background: #475569 !important; /* slate-600 */
-  border: 1px solid #0f172a !important;
+/* Специфичные селекторы для Nuxt UI Button */
+button[class*="bg-blue"],
+button[class*="bg-primary"],
+button[class*="text-blue"],
+button[class*="text-primary"] {
+  background-color: #e2e8f0 !important; /* slate-200 */
+  color: #475569 !important; /* slate-600 */
 }
 
-html.dark::-webkit-scrollbar-thumb:hover,
-body.dark::-webkit-scrollbar-thumb:hover,
-.dark html::-webkit-scrollbar-thumb:hover,
-.dark body::-webkit-scrollbar-thumb:hover {
-  background: #64748b !important; /* slate-500 */
+/* Переопределение для всех кнопок с secondary */
+button[class*="secondary"],
+.btn[class*="secondary"],
+[class*="secondary"] {
+  background-color: #e2e8f0 !important; /* slate-200 */
+  color: #475569 !important; /* slate-600 */
+}
+
+/* Переопределение для всех кнопок с soft variant */
+button[class*="soft"],
+.btn[class*="soft"],
+[class*="soft"] {
+  background-color: #e2e8f0 !important; /* slate-200 */
+  color: #475569 !important; /* slate-600 */
+}
+
+/* Дополнительные селекторы для Nuxt UI */
+.bg-secondary-200 {
+  background-color: #e2e8f0 !important;
+}
+
+.text-secondary-700 {
+  color: #475569 !important; /* slate-600 */
+}
+
+.bg-secondary-100 {
+  background-color: #e2e8f0 !important; /* slate-200 */
+}
+
+.hover\:bg-secondary-300:hover {
+  background-color: #cbd5e1 !important;
+}
+
+.hover\:text-secondary-800:hover {
+  color: #1e293b !important;
 }
 
 /* PWA стили */
 .offline {
   filter: grayscale(0.3);
+}
+
+/* Максимально специфичные селекторы для переопределения secondary цвета */
+html body div button[data-color="secondary"],
+html body div button[data-color="secondary"][data-variant="soft"],
+html body div button[data-color="secondary"][data-variant="soft"]:hover,
+html body div button[data-color="secondary"][data-variant="soft"]:focus,
+html body div button[data-color="secondary"][data-variant="soft"]:active {
+  background-color: #e2e8f0 !important; /* slate-200 */
+  color: #475569 !important; /* slate-600 */
+  border-color: #e2e8f0 !important;
+}
+
+/* Переопределение для всех возможных комбинаций */
+button[data-color="secondary"][data-variant="soft"] *,
+button[data-color="secondary"][data-variant="soft"] svg,
+button[data-color="secondary"][data-variant="soft"] i {
+  color: #475569 !important; /* slate-600 */
+}
+
+/* Кастомный класс для переопределения secondary кнопок */
+.custom-secondary-button {
+  background-color: #e2e8f0 !important; /* slate-200 */
+  color: #475569 !important; /* slate-600 */
+  border-color: #e2e8f0 !important;
+}
+
+.custom-secondary-button:hover {
+  background-color: #cbd5e1 !important; /* slate-300 */
+  color: #1e293b !important; /* slate-800 */
+}
+
+.custom-secondary-button:focus {
+  background-color: #e2e8f0 !important; /* slate-200 */
+  color: #475569 !important; /* slate-600 */
+}
+
+.custom-secondary-button *,
+.custom-secondary-button svg,
+.custom-secondary-button i {
+  color: #475569 !important; /* slate-600 */
+}
+
+.custom-secondary-button:hover *,
+.custom-secondary-button:hover svg,
+.custom-secondary-button:hover i {
+  color: #1e293b !important; /* slate-800 */
+}
+
+/* Уменьшение размера иконок в кнопках */
+.custom-secondary-button svg,
+.custom-secondary-button i {
+  width: 1rem !important; /* 16px */
+  height: 1rem !important; /* 16px */
 }
 
 .offline .offline-hidden {

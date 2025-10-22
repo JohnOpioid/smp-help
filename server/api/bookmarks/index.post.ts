@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const body = await readBody(event)
-    const { type, title, description, category, url } = body || {}
+    const { type, title, description, category, url, mkbCode, stationCode, code, complaints, anamnesis, localis } = body || {}
     if (!type || !title) {
       return { success: false, message: 'Неверные данные' }
     }
@@ -32,6 +32,12 @@ export default defineEventHandler(async (event) => {
       description: description || '',
       category: category || '',
       url: url || '',
+      mkbCode: mkbCode || '',
+      stationCode: stationCode || '',
+      code: code || '',
+      complaints: complaints || '',
+      anamnesis: anamnesis || '',
+      localis: localis || '',
       createdAt: new Date()
     }
 
