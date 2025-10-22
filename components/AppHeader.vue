@@ -105,7 +105,7 @@
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
               </svg>
             </div>
-            <input ref="searchInput" v-model="searchQuery" type="text" placeholder="Введите запрос для поиска..."
+            <input ref="searchInput" v-model="searchQuery" type="text" placeholder="Введите минимум 3 символа для поиска..."
               :class="[
                 'block w-full pl-11 pr-11 py-4 outline-none focus:outline-none focus:ring-0 focus:border-slate-300 dark:focus:border-slate-500 hover:shadow-sm focus:shadow-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 transition-all duration-700 ease-in-out rounded-lg'
               ]" @input="onSearchInput" @focus="onSearchFocus" @blur="onSearchBlur"
@@ -555,7 +555,7 @@ watch(globalSearchQuery, (newQuery) => {
 // Отдельный watcher для выполнения поиска после заполнения инпута
 watch(searchQuery, (newQuery) => {
   // Выполняем поиск только если это изменение пришло из истории поиска
-  if (newQuery && newQuery.trim().length >= 2 && isSearchActive.value) {
+  if (newQuery && newQuery.trim().length >= 3 && isSearchActive.value) {
     // Небольшая задержка, чтобы инпут успел отрендериться
     setTimeout(() => {
       performSearch()
@@ -635,7 +635,7 @@ const onSearchFocus = () => {
   }
 
   // На мобильных устройствах выполняем поиск сразу при фокусе, если есть запрос
-  if (isMobile && q && q.length >= 2) {
+  if (isMobile && q && q.length >= 3) {
     performSearch()
   }
 }
@@ -766,7 +766,7 @@ const handleSearchInput = () => {
 
 
   // Если запрос слишком короткий
-  if (query.length < 2) {
+  if (query.length < 3) {
     searchResults.value = []
     groupedResults.value = {
       mkb: [],

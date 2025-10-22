@@ -18,8 +18,8 @@ export interface CacheStats {
 }
 
 const CACHE_KEY = 'smp_search_cache'
-const CACHE_VERSION = '1.0.0'
-const CACHE_EXPIRY = 24 * 60 * 60 * 1000 // 24 часа в миллисекундах
+const CACHE_VERSION = '1.1.0' // Увеличиваем версию для принудительного обновления
+const CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000 // 7 дней в миллисекундах (увеличиваем время жизни кеша)
 const STATS_KEY = 'smp_search_cache_stats'
 
 export const useSearchCache = () => {
@@ -269,6 +269,36 @@ export const useSearchCache = () => {
     }
   }
 
+  // Функция для принудительной предзагрузки данных
+  const preloadData = async () => {
+    if (!process.client) return null
+    
+    console.log('🔄 Принудительная предзагрузка данных поиска...')
+    
+    try {
+      // Проверяем, есть ли уже данные в кеше
+      const cachedData = getCachedData()
+      if (cachedData && cachedData.data && cachedData.data.length > 0) {
+        console.log('✅ Данные уже закешированы:', cachedData.data.length, 'элементов')
+        return cachedData.data
+      }
+      
+      // Загружаем данные
+      const data = await getSearchData(true) // Принудительное обновление
+      
+      if (data && Array.isArray(data) && data.length > 0) {
+        console.log('✅ Данные успешно предзагружены:', data.length, 'элементов')
+        return data
+      } else {
+        console.warn('⚠️ Предзагрузка не удалась - данные пусты')
+        return null
+      }
+    } catch (error) {
+      console.error('❌ Ошибка при предзагрузке данных:', error)
+      return null
+    }
+  }
+
   return {
     getCachedData,
     setCachedData,
@@ -277,7 +307,8 @@ export const useSearchCache = () => {
     refreshCache,
     getSearchData,
     getCacheStats,
-    updateCacheStats
+    updateCacheStats,
+    preloadData
   }
 }
 
