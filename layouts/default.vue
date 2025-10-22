@@ -1,11 +1,6 @@
 <template>
-  <!-- Мобильный лейаут для Capacitor -->
-  <MobileLayout v-if="isMobileApp" :show-back-button="showBackButton">
-    <slot />
-  </MobileLayout>
-  
-  <!-- Обычный лейаут для веб-браузера -->
-  <div v-else :class="containerClass" :style="{ paddingBottom: isMobileApp ? '80px' : '0' }">
+  <!-- Единый лейаут для всех устройств -->
+  <div :class="containerClass" :style="{ paddingBottom: isMobileApp ? '80px' : '0' }">
     <AppHeader v-if="!isInitialLoading" :title="headerTitle" />
     <header v-else class="transition-colors duration-300 relative z-50">
       <div class="w-full max-w-5xl mx-auto px-2 md:px-4 py-6">
