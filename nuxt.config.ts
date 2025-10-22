@@ -9,10 +9,10 @@ export default defineNuxtConfig({
     icons: ['heroicons']
   },
   nitro: {
-    preset: 'static',
+    preset: process.env.NODE_ENV === 'production' ? 'node-server' : 'static',
     prerender: false // Временно отключаем prerender
   },
-  ssr: false, // Отключаем SSR для Capacitor
+  ssr: process.env.NODE_ENV === 'production', // Включаем SSR для продакшна
   app: {
     head: {
       title: 'Справочник СМП',

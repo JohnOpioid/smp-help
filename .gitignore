@@ -57,6 +57,19 @@ gradle-app.setting
 *.temp
 *~
 
+# Large files
+*.zip
+gradle-temp.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Large binary files (>50MB)
+*.bin
+*.exe
+*.dmg
+*.iso
+
 # OS generated files
 Thumbs.db
 ehthumbs.db
