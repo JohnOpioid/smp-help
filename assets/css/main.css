@@ -290,98 +290,111 @@ body::-webkit-scrollbar-thumb:hover,
   --color-secondary-800: #1e293b;
   --color-secondary-900: #0f172a;
   --color-secondary-950: #020617;
+  
+  /* Переопределение цвета primary для Nuxt UI */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --color-primary-950: #172554;
 }
 
 /* Агрессивное переопределение для Nuxt UI Button с color="secondary" */
-button[data-color="secondary"],
-.btn[data-color="secondary"],
-[data-color="secondary"],
-button.secondary,
-.btn-secondary,
-.secondary {
+button[data-color="secondary"]:not([data-color="primary"]),
+.btn[data-color="secondary"]:not([data-color="primary"]),
+[data-color="secondary"]:not([data-color="primary"]),
+button.secondary:not(.primary),
+.btn-secondary:not(.primary),
+.secondary:not(.primary) {
   background-color: #e2e8f0 !important; /* slate-200 */
   color: #475569 !important; /* slate-600 */
   border-color: #e2e8f0 !important;
 }
 
-button[data-color="secondary"]:hover,
-.btn[data-color="secondary"]:hover,
-[data-color="secondary"]:hover,
-button.secondary:hover,
-.btn-secondary:hover,
-.secondary:hover {
+button[data-color="secondary"]:not([data-color="primary"]):hover,
+.btn[data-color="secondary"]:not([data-color="primary"]):hover,
+[data-color="secondary"]:not([data-color="primary"]):hover,
+button.secondary:not(.primary):hover,
+.btn-secondary:not(.primary):hover,
+.secondary:not(.primary):hover {
   background-color: #cbd5e1 !important; /* slate-300 */
   color: #1e293b !important; /* slate-800 */
 }
 
-button[data-color="secondary"]:focus,
-.btn[data-color="secondary"]:focus,
-[data-color="secondary"]:focus,
-button.secondary:focus,
-.btn-secondary:focus,
-.secondary:focus {
+button[data-color="secondary"]:not([data-color="primary"]):focus,
+.btn[data-color="secondary"]:not([data-color="primary"]):focus,
+[data-color="secondary"]:not([data-color="primary"]):focus,
+button.secondary:not(.primary):focus,
+.btn-secondary:not(.primary):focus,
+.secondary:not(.primary):focus {
   background-color: #e2e8f0 !important; /* slate-200 */
   color: #475569 !important; /* slate-600 */
 }
 
 /* Агрессивное переопределение для variant="soft" с color="secondary" */
-button[data-color="secondary"][data-variant="soft"],
-.btn[data-color="secondary"][data-variant="soft"],
-[data-color="secondary"][data-variant="soft"],
-button.secondary.soft,
-.btn-secondary.soft,
-.secondary.soft {
+button[data-color="secondary"][data-variant="soft"]:not([data-color="primary"]),
+.btn[data-color="secondary"][data-variant="soft"]:not([data-color="primary"]),
+[data-color="secondary"][data-variant="soft"]:not([data-color="primary"]),
+button.secondary.soft:not(.primary),
+.btn-secondary.soft:not(.primary),
+.secondary.soft:not(.primary) {
   background-color: #e2e8f0 !important; /* slate-200 */
   color: #475569 !important; /* slate-600 */
 }
 
-button[data-color="secondary"][data-variant="soft"]:hover,
-.btn[data-color="secondary"][data-variant="soft"]:hover,
-[data-color="secondary"][data-variant="soft"]:hover,
-button.secondary.soft:hover,
-.btn-secondary.soft:hover,
-.secondary.soft:hover {
+button[data-color="secondary"][data-variant="soft"]:not([data-color="primary"]):hover,
+.btn[data-color="secondary"][data-variant="soft"]:not([data-color="primary"]):hover,
+[data-color="secondary"][data-variant="soft"]:not([data-color="primary"]):hover,
+button.secondary.soft:not(.primary):hover,
+.btn-secondary.soft:not(.primary):hover,
+.secondary.soft:not(.primary):hover {
   background-color: #cbd5e1 !important; /* slate-300 */
   color: #1e293b !important; /* slate-800 */
 }
 
-/* Дополнительные селекторы для максимального покрытия */
-button.bg-blue-500,
-button.bg-blue-600,
-button.bg-primary-500,
-button.bg-primary-600 {
+/* Дополнительные селекторы для максимального покрытия - только для secondary */
+button.bg-blue-500:not([data-color="primary"]),
+button.bg-blue-600:not([data-color="primary"]),
+button.bg-primary-500:not([data-color="primary"]),
+button.bg-primary-600:not([data-color="primary"]) {
   background-color: #e2e8f0 !important; /* slate-200 */
 }
 
-button.text-blue-600,
-button.text-blue-700,
-button.text-primary-600,
-button.text-primary-700 {
+button.text-blue-600:not([data-color="primary"]),
+button.text-blue-700:not([data-color="primary"]),
+button.text-primary-600:not([data-color="primary"]),
+button.text-primary-700:not([data-color="primary"]) {
   color: #475569 !important; /* slate-600 */
 }
 
-/* Специфичные селекторы для Nuxt UI Button */
-button[class*="bg-blue"],
-button[class*="bg-primary"] {
+/* Специфичные селекторы для Nuxt UI Button - только для secondary */
+button[class*="bg-blue"]:not([data-color="primary"]),
+button[class*="bg-primary"]:not([data-color="primary"]) {
   background-color: #e2e8f0 !important; /* slate-200 */
 }
-button[class*="text-blue"],
-button[class*="text-primary"] {
+button[class*="text-blue"]:not([data-color="primary"]),
+button[class*="text-primary"]:not([data-color="primary"]) {
   color: #475569 !important; /* slate-600 */
 }
 
 /* Переопределение для всех кнопок с secondary */
-button[class*="secondary"],
-.btn[class*="secondary"],
-[class*="secondary"] {
+button[class*="secondary"]:not([data-color="primary"]),
+.btn[class*="secondary"]:not([data-color="primary"]),
+[class*="secondary"]:not([data-color="primary"]) {
   background-color: #e2e8f0 !important; /* slate-200 */
   color: #475569 !important; /* slate-600 */
 }
 
-/* Переопределение для всех кнопок с soft variant */
-button[class*="soft"],
-.btn[class*="soft"],
-[class*="soft"] {
+/* Переопределение для всех кнопок с soft variant - только для secondary */
+button[class*="soft"]:not([data-color="primary"]),
+.btn[class*="soft"]:not([data-color="primary"]),
+[class*="soft"]:not([data-color="primary"]) {
   background-color: #e2e8f0 !important; /* slate-200 */
   color: #475569 !important; /* slate-600 */
 }
@@ -413,14 +426,36 @@ button[class*="soft"],
 }
 
 /* Максимально специфичные селекторы для переопределения secondary цвета */
-html body div button[data-color="secondary"],
-html body div button[data-color="secondary"][data-variant="soft"],
-html body div button[data-color="secondary"][data-variant="soft"]:hover,
-html body div button[data-color="secondary"][data-variant="soft"]:focus,
-html body div button[data-color="secondary"][data-variant="soft"]:active {
+html body div button[data-color="secondary"]:not([data-color="primary"]),
+html body div button[data-color="secondary"][data-variant="soft"]:not([data-color="primary"]),
+html body div button[data-color="secondary"][data-variant="soft"]:not([data-color="primary"]):hover,
+html body div button[data-color="secondary"][data-variant="soft"]:not([data-color="primary"]):focus,
+html body div button[data-color="secondary"][data-variant="soft"]:not([data-color="primary"]):active {
   background-color: #e2e8f0 !important; /* slate-200 */
   color: #475569 !important; /* slate-600 */
   border-color: #e2e8f0 !important;
+}
+
+/* Явные стили для primary кнопок */
+button[data-color="primary"],
+.btn[data-color="primary"],
+[data-color="primary"],
+button.primary,
+.btn-primary,
+.primary {
+  background-color: #3b82f6 !important; /* blue-500 */
+  color: #ffffff !important;
+  border-color: #3b82f6 !important;
+}
+
+button[data-color="primary"]:hover,
+.btn[data-color="primary"]:hover,
+[data-color="primary"]:hover,
+button.primary:hover,
+.btn-primary:hover,
+.primary:hover {
+  background-color: #2563eb !important; /* blue-600 */
+  color: #ffffff !important;
 }
 
 /* Переопределение для всех возможных комбинаций */
@@ -499,4 +534,85 @@ button[data-color="secondary"][data-variant="soft"] i {
   100% {
     box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
   }
+}
+
+/* КРИТИЧЕСКИ ВАЖНО: Максимально специфичные стили для primary кнопок */
+html body div button[data-color="primary"],
+html body div button[data-color="primary"]:hover,
+html body div button[data-color="primary"]:focus,
+html body div button[data-color="primary"]:active,
+html body div button[data-color="primary"]:visited {
+  background-color: #3b82f6 !important; /* blue-500 */
+  color: #ffffff !important;
+  border-color: #3b82f6 !important;
+}
+
+html body div button[data-color="primary"]:hover {
+  background-color: #2563eb !important; /* blue-600 */
+  color: #ffffff !important;
+}
+
+/* Переопределение для всех возможных классов primary кнопок */
+button.bg-primary,
+button.bg-primary-500,
+button.bg-primary-600,
+button.bg-blue-500,
+button.bg-blue-600,
+button.text-primary,
+button.text-primary-500,
+button.text-primary-600,
+button.text-blue-500,
+button.text-blue-600 {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+  border-color: #3b82f6 !important;
+}
+
+button.bg-primary:hover,
+button.bg-primary-500:hover,
+button.bg-primary-600:hover,
+button.bg-blue-500:hover,
+button.bg-blue-600:hover {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
+/* Специфично для UButton компонента */
+button[class*="bg-primary"],
+button[class*="bg-blue"],
+button[class*="text-primary"],
+button[class*="text-blue"] {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+  border-color: #3b82f6 !important;
+}
+
+button[class*="bg-primary"]:hover,
+button[class*="bg-blue"]:hover {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
+/* АБСОЛЮТНОЕ ПЕРЕОПРЕДЕЛЕНИЕ для всех кнопок с primary */
+button[data-color="primary"] *,
+button[data-color="primary"] svg,
+button[data-color="primary"] i,
+button[data-color="primary"] span {
+  color: #ffffff !important;
+}
+
+/* Переопределение для всех возможных вариантов */
+button[class*="primary"]:not([data-color="secondary"]),
+button[class*="blue"]:not([data-color="secondary"]),
+button[class*="indigo"]:not([data-color="secondary"]) {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+  border-color: #3b82f6 !important;
+}
+
+button[class*="primary"]:not([data-color="secondary"]):hover,
+button[class*="blue"]:not([data-color="secondary"]):hover,
+button[class*="indigo"]:not([data-color="secondary"]):hover {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
 }
