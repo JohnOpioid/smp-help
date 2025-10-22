@@ -19,6 +19,7 @@
     "cap:android": "cap open android",
     "cap:run:android": "cap run android",
     "import:data": "node scripts/import-data.cjs",
+    "generate:icons": "node scripts/generate-android-icons.cjs",
     "deploy:build": "npm run build:production",
     "deploy:start": "npm run start"
   },
