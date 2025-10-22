@@ -1401,12 +1401,10 @@ const preloadAndNavigate = async (to: string, preloadFn: () => Promise<void>) =>
 
 // Функции для открытия модалов (скопированы из BottomSearchPanel)
 const openMkbModal = (result: any) => {
-  console.log('🔍 Открываем МКБ модалку:', result)
 
   // Если в результате уже есть готовый url — используем его
   if (result.url) {
     const url = result.url
-    console.log('🔍 Используем готовый URL:', url)
     deactivateSearch()
     navigateTo(url)
     return
@@ -1416,31 +1414,25 @@ const openMkbModal = (result: any) => {
   const categoryUrl = result.category?.url || result.data?.category?.url
   const mkbId = result._id || result.data?._id || result.id?.replace('mkb-', '')
 
-  console.log('🔍 Данные для навигации:', { categoryUrl, mkbId })
 
   if (categoryUrl && mkbId) {
     const target = `/codifier/${categoryUrl}?id=${mkbId}`
-    console.log('🔍 Переходим на:', target)
     deactivateSearch()
     navigateTo(target)
     return
   }
 
-  console.log('❌ Не удалось определить URL для МКБ элемента')
 }
 
 const openLocalStatusModal = (result: any) => {
-  console.log('🔍 Открываем LocalStatus модалку:', result)
 
   // Предпочтительно: собрать URL из полей результата
   const categoryUrl = result.category?.url || result.data?.category?.url
   const lsId = result._id || result.data?._id || result.id?.replace('ls-', '')
 
-  console.log('🔍 Данные для навигации LocalStatus:', { categoryUrl, lsId })
 
   if (categoryUrl && lsId) {
     const target = `/local-statuses/${categoryUrl}?id=${lsId}`
-    console.log('🔍 Переходим на LocalStatus:', target)
     deactivateSearch()
     navigateTo(target)
     return
@@ -1449,28 +1441,23 @@ const openLocalStatusModal = (result: any) => {
   // Fallback: если уже есть готовый url
   if (result.url) {
     const url = result.url
-    console.log('🔍 Используем готовый URL LocalStatus:', url)
     deactivateSearch()
     navigateTo(url)
     return
   }
 
-  console.log('❌ Не удалось определить URL для LocalStatus элемента')
 }
 
 const openAlgorithmModal = (result: any) => {
-  console.log('🔍 Открываем Algorithm модалку:', result)
 
   // Предпочтительно используем реальные поля объекта алгоритма из БД
   const section = result?.section?.url || result?.section
   const category = result?.category?.url || result?.category
   const algorithmId = result?._id || result?.id?.replace('algo-', '')
 
-  console.log('🔍 Данные для навигации Algorithm:', { section, category, algorithmId })
 
   if (section && category && algorithmId) {
     const target = `/algorithms/${section}/${category}/${algorithmId}`
-    console.log('🔍 Переходим на Algorithm:', target)
     deactivateSearch()
     navigateTo(target)
     return
@@ -1479,23 +1466,18 @@ const openAlgorithmModal = (result: any) => {
   // Поддержка заранее собранного URL (если он есть)
   if (result.url) {
     const url = result.url
-    console.log('🔍 Используем готовый URL Algorithm:', url)
     deactivateSearch()
     navigateTo(url)
     return
   }
 
-  console.log('❌ Не удалось определить URL для Algorithm элемента')
 }
 
 const openDrugModal = (drugData: any) => {
-  console.log('🔍 Открываем Drug модалку:', drugData)
   const raw = drugData?._id || drugData?.data?._id || drugData?.id
   const id = raw ? String(raw).replace(/^drug-/, '') : ''
-  console.log('🔍 Извлеченный ID препарата:', id)
 
   if (!id) {
-    console.log('❌ Нет корректного ID препарата, переходим на список препаратов')
     deactivateSearch()
     navigateTo('/drugs')
     return
@@ -1505,9 +1487,7 @@ const openDrugModal = (drugData: any) => {
   sessionStorage.removeItem('drugModalClosedByUser')
 
   // Всегда переходим на страницу с query id для изменения URL
-  console.log('🔍 Переходим на страницу препаратов с ID:', id)
   const url = `/drugs?id=${id}`
-  console.log('🔍 Переходим на:', url)
   deactivateSearch()
   navigateTo(url)
 }

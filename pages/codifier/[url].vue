@@ -281,7 +281,6 @@ async function loadItems(page: number = 1, append: boolean = false) {
       hasMore.value = response.pagination.hasNextPage
       currentPage.value = page
       
-      console.log('📊 Загружена страница:', page, 'элементов:', response.items.length, 'всего:', allItems.value.length, 'hasMore:', hasMore.value)
     } else {
       error.value = 'Ошибка загрузки данных'
     }
@@ -296,7 +295,6 @@ async function loadItems(page: number = 1, append: boolean = false) {
 // Загрузка конкретного элемента по ID
 async function loadSpecificItem(itemId: string) {
   try {
-    console.log('🔍 Загружаем конкретный элемент:', itemId)
     
     // Загружаем элемент напрямую из API MKB
     const response = await $fetch<{ success: boolean; items: any[] }>('/api/mkb/all')
@@ -305,7 +303,6 @@ async function loadSpecificItem(itemId: string) {
       const found = response.items.find((item: any) => String(item._id) === String(itemId))
       
       if (found) {
-        console.log('✅ Элемент найден и загружен:', found.name)
         
         // Проверяем, что элемент принадлежит текущей категории
         if (found.category?.url === url) {
@@ -320,10 +317,8 @@ async function loadSpecificItem(itemId: string) {
           modalOpen.value = true
           updateIsBookmarked()
         } else {
-          console.log('❌ Элемент не принадлежит текущей категории')
         }
       } else {
-        console.log('❌ Элемент не найден в базе данных')
       }
     }
   } catch (err) {
@@ -345,21 +340,17 @@ onMounted(async () => {
   // IntersectionObserver для догрузки
   io = new IntersectionObserver((entries) => {
     const entry = entries[0]
-    console.log('👁️ Intersection Observer сработал:', entry.isIntersecting, 'hasMore:', hasMore.value, 'isLoading:', isLoading.value, 'currentPage:', currentPage.value)
     if (entry && entry.isIntersecting) {
       if (hasMore.value && !isLoading.value) {
         console.log('📥 Загружаем следующую страницу:', currentPage.value + 1)
         loadItems(currentPage.value + 1, true)
       } else {
-        console.log('❌ Не загружаем:', 'hasMore:', hasMore.value, 'isLoading:', isLoading.value)
       }
     }
   })
   if (loadMoreTrigger.value && io) {
-    console.log('🔍 Настраиваем observer для элемента:', loadMoreTrigger.value)
     io.observe(loadMoreTrigger.value)
   } else {
-    console.log('❌ Не можем настроить observer:', 'loadMoreTrigger:', !!loadMoreTrigger.value, 'io:', !!io)
   }
 
   // Авто-открытие по query параметрам
@@ -367,7 +358,6 @@ onMounted(async () => {
   const openId = routeQuery.query.open as string | undefined
   const mkbCode = routeQuery.query.mkb as string | undefined
   
-  console.log('🔍 Авто-открытие кодификатора:', { itemId, openId, mkbCode, itemsCount: items.value.length })
   
   // Обрабатываем только openId и mkbCode здесь, itemId обрабатывается в watcher
   if (openId) {
@@ -378,19 +368,14 @@ onMounted(async () => {
     if (found) openModal(found)
   } else if (itemId) {
     // Если есть itemId при загрузке страницы, обрабатываем его здесь
-    console.log('🔍 Обрабатываем itemId при загрузке страницы:', itemId)
     const checkAndOpenItem = () => {
-      console.log('🔍 Проверка авто-открытия при загрузке:', { itemsCount: items.value.length, itemId })
       if (items.value.length > 0) {
         const found = items.value.find((i: any) => String(i._id) === String(itemId))
-        console.log('🔍 Поиск элемента при загрузке:', { found: !!found, foundId: found?._id, searchId: itemId })
         if (found) {
-          console.log('✅ Открываем модалку кодификатора при загрузке')
           selectedItem.value = found
           modalOpen.value = true
           updateIsBookmarked()
         } else {
-          console.log('❌ Элемент не найден в загруженных данных при загрузке, загружаем напрямую')
           loadSpecificItem(itemId)
         }
       } else {
@@ -616,7 +601,6 @@ watch(() => [route.query.open, route.query.mkb], ([openVal, mkbVal]) => {
 
 // Отдельный watcher для id параметра
 watch(() => route.query.id, (newId, oldId) => {
-  console.log('🔍 Watcher route.query.id:', { newId, oldId, itemsCount: items.value.length })
   
   // Пропускаем срабатывание при первоначальной загрузке страницы с параметром id
   if (newId && !oldId) {

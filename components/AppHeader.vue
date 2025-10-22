@@ -892,8 +892,6 @@ const performSearch = async () => {
 
   // Проверяем, находимся ли в Android приложении
   const isAndroidApp = process.client && window.Capacitor && window.Capacitor.isNativePlatform()
-  console.log('🔍 Search: Android app detected:', isAndroidApp)
-  console.log('🔍 Search: Query:', query)
 
   updateSearching(true)
 
@@ -909,7 +907,6 @@ const performSearch = async () => {
 
     try {
       // Пытаемся получить данные из кеша или API
-      console.log('🔍 Search: Загружаем данные для поиска...')
       const searchData = await getSearchData()
 
       if (!searchData) {
@@ -924,24 +921,8 @@ const performSearch = async () => {
           type: item.type || 'unknown'
         }))
       } else {
-        // Если данные в формате объекта, преобразуем их
-        allItems = []
-        const data = searchData as any
-        if (data.algorithms?.items && Array.isArray(data.algorithms.items)) {
-          allItems.push(...data.algorithms.items.map((item: any) => ({ ...item, type: 'algorithm' })))
-        }
-        if (data.mkbCodes?.items && Array.isArray(data.mkbCodes.items)) {
-          allItems.push(...data.mkbCodes.items.map((item: any) => ({ ...item, type: 'mkb' })))
-        }
-        if (data.localStatuses?.items && Array.isArray(data.localStatuses.items)) {
-          allItems.push(...data.localStatuses.items.map((item: any) => ({ ...item, type: 'ls' })))
-        }
-        if (data.drugs?.items && Array.isArray(data.drugs.items)) {
-          allItems.push(...data.drugs.items.map((item: any) => ({ ...item, type: 'drug' })))
-        }
-        if (data.substations?.items && Array.isArray(data.substations.items)) {
-          allItems.push(...data.substations.items.map((item: any) => ({ ...item, type: 'substation' })))
-        }
+        console.error('❌ Неожиданный формат данных:', typeof searchData)
+        return
       }
 
       // Проверяем, были ли данные загружены из кеша
@@ -949,14 +930,10 @@ const performSearch = async () => {
       const fromCache = cacheInfo.cachedData !== null
       updateCacheStatus(fromCache)
 
-      console.log('📋 Данные загружены из кеша/API:', allItems.length, 'элементов',
-        fromCache ? '(из кеша)' : '(из API)')
-
     } catch (error) {
       console.error('❌ Ошибка при загрузке данных:', error)
 
       // Fallback: используем отдельные API endpoints
-      console.log('🔄 Используем fallback API endpoints...')
       const [mkbData, lsResults, algoResults, drugResults, substationResults] = await Promise.all([
         $fetch('/api/mkb/all').catch(() => ({ success: true, items: [] })),
         $fetch('/api/local-statuses/all').catch(() => ({ success: true, items: [] })),
@@ -983,8 +960,6 @@ const performSearch = async () => {
       if (substationResults?.success && 'items' in substationResults && Array.isArray((substationResults as any).items)) {
         allItems.push(...(substationResults as any).items.map((item: any) => ({ ...item, type: 'substation' })))
       }
-
-      console.log('📡 Fallback API загружен:', allItems.length, 'элементов')
     }
 
     // Отладочная информация о типах данных
@@ -992,17 +967,12 @@ const performSearch = async () => {
       acc[item.type] = (acc[item.type] || 0) + 1
       return acc
     }, {} as Record<string, number>)
-    console.log('📊 Items by type:', typeCounts)
 
     // Показываем примеры каждого типа
     Object.keys(typeCounts).forEach(type => {
       const sample = allItems.find(item => item.type === type)
       if (sample) {
-        console.log(`📝 Sample ${type}:`, {
-          title: sample.title || sample.name,
-          description: sample.description || sample.note,
-          _id: sample._id
-        })
+        // Примеры данных для отладки
       }
     })
 
@@ -1016,7 +986,6 @@ const performSearch = async () => {
     if (fuseResults.length === 0) {
       const simpleResults = performSimpleSearch(allItems, query)
       if (simpleResults.length > 0) {
-        console.log('✅ Using simple search results:', simpleResults.length)
         finalResults = simpleResults
       }
     }
@@ -1036,13 +1005,10 @@ const performSearch = async () => {
       }
     })
 
-    console.log('📊 Grouped results:', grouped)
     updateSearchResults(finalResults, grouped)
     
     // Добавляем запрос в историю поисков
     addToHistory(query)
-    
-    console.log('✅ Search completed, results updated')
 
   } catch (error) {
     console.error('❌ Ошибка поиска:', error)

@@ -34,8 +34,6 @@ export default defineNuxtPlugin(() => {
 
   const apiUrl = getApiUrl()
   
-  console.log('🔧 Fetch plugin: API URL =', apiUrl)
-  
   // Простой кэш для GET запросов
   const cache = new Map<string, { data: any, timestamp: number }>()
   const CACHE_DURATION = 5 * 60 * 1000 // 5 минут
@@ -56,11 +54,8 @@ export default defineNuxtPlugin(() => {
         const cached = cache.get(cacheKey)
         
         if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-          console.log(`💾 Cache hit: ${url}`)
           return Promise.resolve(cached.data)
         }
-        
-        console.log(`📡 Fetch: ${url} -> ${fullUrl}`)
         
         return originalFetch(fullUrl, options).then((data: any) => {
           // Сохраняем в кэш
@@ -69,7 +64,6 @@ export default defineNuxtPlugin(() => {
         })
       }
       
-      console.log(`📡 Fetch: ${url} -> ${fullUrl}`)
       return originalFetch(fullUrl, options)
     }
     return originalFetch(url, options)
@@ -79,7 +73,6 @@ export default defineNuxtPlugin(() => {
   if (process.client) {
     const clearCache = () => {
       cache.clear()
-      console.log('🧹 Cache cleared')
     }
     
     // Очищаем кэш каждые 10 минут

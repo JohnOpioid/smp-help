@@ -62,7 +62,6 @@ export const useSearchCache = () => {
     
     // Проверяем версию кеша
     if (cachedData.version !== CACHE_VERSION) {
-      console.log('🔄 Кеш устарел по версии')
       return false
     }
     
@@ -71,7 +70,6 @@ export const useSearchCache = () => {
     const cacheAge = now - cachedData.timestamp
     
     if (cacheAge > CACHE_EXPIRY) {
-      console.log('🔄 Кеш истек по времени')
       return false
     }
     
@@ -85,7 +83,6 @@ export const useSearchCache = () => {
     try {
       const cached = localStorage.getItem(CACHE_KEY)
       if (!cached) {
-        console.log('📭 Кеш пуст')
         updateCacheStats(false)
         return null
       }
@@ -93,13 +90,11 @@ export const useSearchCache = () => {
       const cachedData: CachedSearchData = JSON.parse(cached)
       
       if (!isCacheValid(cachedData)) {
-        console.log('🔄 Кеш недействителен, очищаем')
         clearCache()
         updateCacheStats(false)
         return null
       }
       
-      console.log('✅ Данные загружены из кеша')
       updateCacheStats(true)
       return cachedData
     } catch (error) {
@@ -127,8 +122,6 @@ export const useSearchCache = () => {
       const stats = getCacheStats()
       stats.cacheSize = JSON.stringify(cachedData).length
       localStorage.setItem(STATS_KEY, JSON.stringify(stats))
-      
-      console.log('💾 Данные сохранены в кеш')
     } catch (error) {
       console.warn('Ошибка при сохранении в кеш:', error)
     }
@@ -140,7 +133,6 @@ export const useSearchCache = () => {
     
     try {
       localStorage.removeItem(CACHE_KEY)
-      console.log('🗑️ Кеш очищен')
     } catch (error) {
       console.warn('Ошибка при очистке кеша:', error)
     }
@@ -171,14 +163,33 @@ export const useSearchCache = () => {
   const refreshCache = async () => {
     if (!process.client) return null
     
-    console.log('🔄 Принудительное обновление кеша...')
+    // Принудительное обновление кеша
     
     try {
       const response = await $fetch('/api/search/all-data')
       
       if (response.success && response.data) {
-        setCachedData(response.data, response.totalItems)
-        return response.data
+        // Преобразуем данные из API в плоский массив
+        const allItems = []
+        
+        if (response.data.localStatuses?.items) {
+          allItems.push(...response.data.localStatuses.items.map((item: any) => ({ ...item, type: 'ls' })))
+        }
+        if (response.data.mkbCodes?.items) {
+          allItems.push(...response.data.mkbCodes.items.map((item: any) => ({ ...item, type: 'mkb' })))
+        }
+        if (response.data.algorithms?.items) {
+          allItems.push(...response.data.algorithms.items.map((item: any) => ({ ...item, type: 'algorithm' })))
+        }
+        if (response.data.drugs?.items) {
+          allItems.push(...response.data.drugs.items.map((item: any) => ({ ...item, type: 'drug' })))
+        }
+        if (response.data.substations?.items) {
+          allItems.push(...response.data.substations.items.map((item: any) => ({ ...item, type: 'substation' })))
+        }
+        
+        setCachedData(allItems, response.totalItems || allItems.length)
+        return allItems
       }
       
       return null
@@ -194,7 +205,6 @@ export const useSearchCache = () => {
     
     // Если принудительное обновление, сразу загружаем из API
     if (forceRefresh) {
-      console.log('🔄 Принудительное обновление данных...')
       return await refreshCache()
     }
     
@@ -205,17 +215,34 @@ export const useSearchCache = () => {
     }
     
     // Если кеш пуст или недействителен, загружаем из API
-    console.log('🌐 Загрузка данных из API...')
     try {
       // Проверяем, находимся ли в Android приложении
       const isAndroidApp = process.client && window.Capacitor && window.Capacitor.isNativePlatform()
-      console.log('📱 Android app detected:', isAndroidApp)
       
       const response = await $fetch('/api/search/all-data')
       
       if (response.success && response.data) {
-        setCachedData(response.data, response.totalItems)
-        return response.data
+        // Преобразуем данные из API в плоский массив
+        const allItems = []
+        
+        if (response.data.localStatuses?.items) {
+          allItems.push(...response.data.localStatuses.items.map((item: any) => ({ ...item, type: 'ls' })))
+        }
+        if (response.data.mkbCodes?.items) {
+          allItems.push(...response.data.mkbCodes.items.map((item: any) => ({ ...item, type: 'mkb' })))
+        }
+        if (response.data.algorithms?.items) {
+          allItems.push(...response.data.algorithms.items.map((item: any) => ({ ...item, type: 'algorithm' })))
+        }
+        if (response.data.drugs?.items) {
+          allItems.push(...response.data.drugs.items.map((item: any) => ({ ...item, type: 'drug' })))
+        }
+        if (response.data.substations?.items) {
+          allItems.push(...response.data.substations.items.map((item: any) => ({ ...item, type: 'substation' })))
+        }
+        
+        setCachedData(allItems, response.totalItems || allItems.length)
+        return allItems
       }
       
       return null
@@ -224,7 +251,6 @@ export const useSearchCache = () => {
       
       // Fallback для Android приложения - используем отдельные endpoints
       if (process.client && window.Capacitor && window.Capacitor.isNativePlatform()) {
-        console.log('📱 Android fallback: используем отдельные API endpoints...')
         try {
           const [mkbData, lsResults, algoResults, drugResults, substationResults] = await Promise.all([
             $fetch('/api/mkb/all').catch(() => ({ success: true, items: [] })),
@@ -252,8 +278,6 @@ export const useSearchCache = () => {
           if (substationResults?.success && 'items' in substationResults && Array.isArray((substationResults as any).items)) {
             allItems.push(...(substationResults as any).items.map((item: any) => ({ ...item, type: 'substation' })))
           }
-
-          console.log('📱 Android fallback загружен:', allItems.length, 'элементов')
           
           // Сохраняем в кеш
           if (allItems.length > 0) {
@@ -273,13 +297,12 @@ export const useSearchCache = () => {
   const preloadData = async () => {
     if (!process.client) return null
     
-    console.log('🔄 Принудительная предзагрузка данных поиска...')
+    // Принудительная предзагрузка данных поиска
     
     try {
       // Проверяем, есть ли уже данные в кеше
       const cachedData = getCachedData()
       if (cachedData && cachedData.data && cachedData.data.length > 0) {
-        console.log('✅ Данные уже закешированы:', cachedData.data.length, 'элементов')
         return cachedData.data
       }
       
@@ -287,7 +310,6 @@ export const useSearchCache = () => {
       const data = await getSearchData(true) // Принудительное обновление
       
       if (data && Array.isArray(data) && data.length > 0) {
-        console.log('✅ Данные успешно предзагружены:', data.length, 'элементов')
         return data
       } else {
         console.warn('⚠️ Предзагрузка не удалась - данные пусты')

@@ -33,14 +33,11 @@ const checkRealConnection = async (): Promise<boolean> => {
 
 // Обработчики объявляем на верхнем уровне setup
 const handleOnline = async () => {
-  console.log('📡 Online event triggered')
   const realConnection = await checkRealConnection()
   isOnline.value = realConnection
-  console.log('🌐 After online event - isOnline:', isOnline.value)
 }
 
 const handleOffline = () => {
-  console.log('📡 Offline event triggered')
   isOnline.value = false
 }
 
@@ -49,9 +46,6 @@ onMounted(async () => {
   // Проверяем реальное подключение
   const realConnection = await checkRealConnection()
   isOnline.value = realConnection
-  console.log('🌐 Navigator.onLine:', navigator.onLine)
-  console.log('🌐 Real connection check:', realConnection)
-  console.log('🌐 Final isOnline:', isOnline.value)
   // Подписываемся на события
   window.addEventListener('online', handleOnline)
   window.addEventListener('offline', handleOffline)

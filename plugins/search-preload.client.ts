@@ -7,7 +7,6 @@ export default defineNuxtPlugin(async () => {
   // Запускаем только на клиенте
   if (!process.client) return
 
-  console.log('🚀 Инициализация предзагрузки данных поиска...')
 
   try {
     // Импортируем composable для работы с кешем поиска
@@ -16,22 +15,19 @@ export default defineNuxtPlugin(async () => {
     // Проверяем, есть ли уже данные в кеше
     const cacheInfo = getCacheInfo()
     
-    if (cacheInfo.cachedData && cacheInfo.cachedData.length > 0) {
-      console.log('✅ Данные поиска уже закешированы:', cacheInfo.cachedData.length, 'элементов')
+    if (cacheInfo.cachedData && cacheInfo.cachedData.data && cacheInfo.cachedData.data.length > 0) {
       return
     }
 
-    console.log('📡 Загружаем данные для поиска в фоновом режиме...')
-    
     // Загружаем данные в фоновом режиме
     const searchData = await preloadData()
     
     if (searchData && Array.isArray(searchData) && searchData.length > 0) {
-      console.log('✅ Данные поиска успешно загружены и закешированы:', searchData.length, 'элементов')
+      // Данные успешно загружены
       
       // Показываем уведомление пользователю (опционально)
       if (process.client && window.Capacitor && window.Capacitor.isNativePlatform()) {
-        console.log('📱 Android: Данные поиска готовы к использованию')
+        // Android приложение готово к работе
       }
     } else {
       console.warn('⚠️ Не удалось загрузить данные для поиска')

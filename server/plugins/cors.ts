@@ -6,6 +6,8 @@ export default defineNitroPlugin((nitroApp) => {
     const allowedOrigins = [
       'http://localhost:3000',
       'http://192.168.1.40:3000',
+      'http://192.168.1.40:3001',
+      'http://localhost:3001',
       'http://localhost',
       'capacitor://localhost',
       'ionic://localhost',
