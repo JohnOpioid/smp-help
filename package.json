@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "prebuild": "node scripts/prepare-version.cjs",
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",

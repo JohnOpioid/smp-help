@@ -4,7 +4,7 @@
       <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
         <!-- Левая часть - копирайт -->
         <div class="text-sm text-gray-500 dark:text-gray-400">
-          © {{ currentYear }} Помощник СМП. Сделано 
+          © {{ currentYear }} Помощник СМП — v{{ appVersion || '—' }}. Сделано 
           <a 
             href="https://desjo.ru/" 
             target="_blank" 
@@ -34,6 +34,14 @@
 <script setup lang="ts">
 // Текущий год для копирайта
 const currentYear = new Date().getFullYear()
+
+// Версия приложения — синхронизируемся с глобальным состоянием, которое ведёт плагин
+const appVersionState = useState<string>('app_version', () => '')
+const appVersion = computed(() => appVersionState.value)
+if (process.client && !appVersionState.value) {
+  const cached = localStorage.getItem('app_version')
+  if (cached) appVersionState.value = cached
+}
 
 // Ссылки в футере
 const footerLinks = [
