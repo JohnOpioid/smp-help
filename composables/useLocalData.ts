@@ -7,16 +7,29 @@ export function useLocalData() {
   // Определяем базовый URL для API
   const getApiUrl = () => {
     if (process.client) {
-      // Проверяем hostname для определения среды
-      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      // Проверяем через Capacitor API
+      try {
+        // @ts-ignore
+        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+          // В Android приложении всегда используем HTTPS API
+          return 'https://helpsmp.ru'
+        }
+      } catch (e) {
+        // Capacitor API не доступен
+      }
       
-              if (isLocalhost) {
-                // Localhost (Capacitor) - используем IP хоста с HTTP
-                return 'http://192.168.1.40:3000'
-              } else {
-                // Продакшен - используем helpsmp.ru
-                return 'https://helpsmp.ru'
-              }
+      // Fallback: проверяем hostname для определения среды
+      const hostname = window.location.hostname
+      const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1'
+      const isLocalNetwork = hostname.startsWith('192.168.') || hostname.startsWith('10.0.') || hostname.startsWith('172.')
+      
+      if (isLocalhost || isLocalNetwork) {
+        // Локальная сеть - используем локальный API
+        return `http://${hostname}:3000`
+      } else {
+        // Продакшен - используем helpsmp.ru
+        return 'https://helpsmp.ru'
+      }
     }
     return runtimeConfig.public.apiUrl || '/api'
   }

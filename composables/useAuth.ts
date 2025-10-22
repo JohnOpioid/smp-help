@@ -13,22 +13,25 @@ export const useAuth = () => {
         // @ts-ignore
         if (window.Capacitor && window.Capacitor.isNativePlatform()) {
           console.log('Capacitor detected via API')
-          return 'http://192.168.1.40:3000'
+          // В Android приложении всегда используем HTTPS API
+          return 'https://helpsmp.ru'
         }
       } catch (e) {
         console.log('Capacitor API not available:', e)
       }
       
       // Fallback: проверяем hostname для определения среды
-      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      const hostname = window.location.hostname
+      const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1'
+      const isLocalNetwork = hostname.startsWith('192.168.') || hostname.startsWith('10.0.') || hostname.startsWith('172.')
       
-              if (isLocalhost) {
-                console.log('Localhost detected, using host IP with HTTP')
-                return 'http://192.168.1.40:3000'
-              } else {
-                console.log('Production detected, using helpsmp.ru')
-                return 'https://helpsmp.ru'
-              }
+      if (isLocalhost || isLocalNetwork) {
+        console.log('Local network detected, using local API')
+        return `http://${hostname}:3000`
+      } else {
+        console.log('Production detected, using helpsmp.ru')
+        return 'https://helpsmp.ru'
+      }
     }
     return runtimeConfig.public.apiUrl || '/api'
   }
