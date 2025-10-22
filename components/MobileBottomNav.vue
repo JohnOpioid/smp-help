@@ -61,13 +61,24 @@
 import { Capacitor } from '@capacitor/core'
 
 // Состояние
-const isSearchOpen = ref(false)
+const isSearchOpen = computed(() => {
+  const isSearchActive = inject('isSearchActive', ref(false))
+  return isSearchActive.value
+})
 
 // Открытие поиска
 const openSearch = () => {
-  isSearchOpen.value = !isSearchOpen.value
-  // Здесь можно добавить логику для открытия поиска
-  // Например, показать модальное окно поиска
+  // Используем глобальное состояние поиска
+  const isSearchActive = inject('isSearchActive', ref(false))
+  const isBottomSearchOpen = inject('isBottomSearchOpen', ref(false))
+  
+  // Переключаем состояние поиска
+  isSearchActive.value = !isSearchActive.value
+  
+  // Если поиск активен, открываем нижнюю панель поиска
+  if (isSearchActive.value) {
+    isBottomSearchOpen.value = true
+  }
 }
 
 // Определяем, находимся ли в мобильном приложении
