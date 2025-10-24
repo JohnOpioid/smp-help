@@ -592,8 +592,26 @@ watch(searchQuery, (newQuery, oldQuery) => {
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
   )
   
-  // Если запрос короче 3 символов, не выполняем поиск, но оставляем панель открытой
+  // На странице подстанций поиск начинается с 1 символа
+  if (isSubstationsPage.value) {
+    if (!newQuery || newQuery.trim().length === 0) {
+      // Очищаем локальный поиск
+      window.dispatchEvent(new CustomEvent('substations-search', {
+        detail: { query: '' }
+      }))
+      return
+    } else {
+      // Выполняем локальный поиск с любым количеством символов
+      window.dispatchEvent(new CustomEvent('substations-search', {
+        detail: { query: newQuery.trim() }
+      }))
+      return
+    }
+  }
+  
+  // Для остальных страниц поиск начинается с 3 символов
   if (!newQuery || newQuery.trim().length < 3) {
+    
     // Очищаем результаты, но НЕ закрываем панель поиска
     if (isSearchActive.value) {
       // Очищаем только результаты, панель остается открытой
@@ -677,6 +695,11 @@ const onSearchFocus = () => {
 
   // На странице подстанций не активируем глобальный поиск
   if (isSubstationsPage.value) {
+    // На странице подстанций просто расширяем строку поиска на мобильных
+    const isMobile = window.innerWidth <= 768
+    if (isMobile) {
+      isSearchExpanded.value = true
+    }
     return
   }
 
@@ -929,6 +952,13 @@ const clearSearchInput = () => {
   // Очищаем группированные результаты
   groupedResults.value = emptyGrouped
   orderedSections.value = []
+  
+  // Если мы на странице подстанций, отправляем событие для очистки локального поиска
+  if (isSubstationsPage.value) {
+    window.dispatchEvent(new CustomEvent('substations-search', {
+      detail: { query: '' }
+    }))
+  }
 }
 
 // Очищаем поиск полностью (закрываем панель)
