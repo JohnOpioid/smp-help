@@ -12,6 +12,7 @@ const globalState = {
     drug: [],
     substation: []
   }),
+  orderedSections: ref<string[]>([]),
   currentPageContext: ref<string>(''),
   searchTimeout: ref<NodeJS.Timeout | null>(null)
 }
@@ -42,6 +43,17 @@ export const useGlobalSearch = () => {
 
   // Приоритизируем результаты в зависимости от контекста страницы
   const prioritizeResults = (grouped: Record<string, any[]>) => {
+    // Проверяем, что grouped существует и является объектом
+    if (!grouped || typeof grouped !== 'object') {
+      return {
+        mkb: [],
+        ls: [],
+        algorithm: [],
+        drug: [],
+        substation: []
+      }
+    }
+    
     const context = globalState.currentPageContext.value
     const prioritized: Record<string, any[]> = {}
     
@@ -85,6 +97,23 @@ export const useGlobalSearch = () => {
     updatePageContext() // Обновляем контекст при активации поиска
     globalState.isSearchActive.value = true
     globalState.searchQuery.value = query
+    
+    // Если есть запрос, пытаемся загрузить результаты из кэша
+    if (query && query.length >= 3) {
+      const cachedData = loadSearchCache(query)
+      if (cachedData) {
+        // Загружаем данные из кэша
+        globalState.searchResults.value = cachedData.results
+        globalState.groupedResults.value = cachedData.grouped
+        globalState.orderedSections.value = cachedData.orderedSections
+        globalState.isDataFromCache.value = true
+        globalState.isSearching.value = false
+        return // Не выполняем новый поиск, используем кэш
+      }
+    }
+    
+    // Если кэша нет или запрос короткий, сбрасываем флаг кэша
+    globalState.isDataFromCache.value = false
   }
 
   const deactivateSearch = () => {
@@ -102,15 +131,95 @@ export const useGlobalSearch = () => {
       drug: [],
       substation: []
     }
+    globalState.orderedSections.value = []
   }
 
-  const updateSearchResults = (results: any[], grouped: Record<string, any[]>) => {
+  // Сохраняем результаты поиска в localStorage
+  const saveSearchCache = (query: string, results: any[], grouped: Record<string, any[]>, orderedSections: string[]) => {
+    if (!process.client) return
+    
+    try {
+      const cacheData = {
+        query,
+        results,
+        grouped,
+        orderedSections,
+        timestamp: Date.now()
+      }
+      localStorage.setItem('searchCache', JSON.stringify(cacheData))
+    } catch (error) {
+      // Игнорируем ошибки localStorage
+    }
+  }
+
+  // Загружаем результаты поиска из localStorage
+  const loadSearchCache = (query: string) => {
+    if (!process.client) return null
+    
+    try {
+      const cached = localStorage.getItem('searchCache')
+      if (!cached) return null
+      
+      const cacheData = JSON.parse(cached)
+      
+      // Проверяем, что кэш соответствует текущему запросу
+      if (cacheData.query !== query) return null
+      
+      // Проверяем, что кэш не старше 3 часов
+      const maxAge = 3 * 60 * 60 * 1000 // 3 часа
+      if (Date.now() - cacheData.timestamp > maxAge) return null
+      
+      return cacheData
+    } catch (error) {
+      return null
+    }
+  }
+
+  const hideSearch = () => {
+    // Проверяем, что мы на клиенте
+    if (!process.client) return
+    
+    // Сохраняем текущие результаты в кэш перед скрытием
+    if (globalState.searchQuery.value && globalState.searchResults.value.length > 0) {
+      saveSearchCache(
+        globalState.searchQuery.value,
+        globalState.searchResults.value,
+        globalState.groupedResults.value,
+        globalState.orderedSections.value
+      )
+    }
+    
+    // Скрываем поиск, но НЕ очищаем инпут
+    globalState.isSearchActive.value = false
+    globalState.searchResults.value = []
+    globalState.isSearching.value = false
+    globalState.groupedResults.value = {
+      mkb: [],
+      ls: [],
+      algorithm: [],
+      drug: [],
+      substation: []
+    }
+    globalState.orderedSections.value = []
+    // НЕ очищаем globalState.searchQuery.value - оставляем текст в инпуте
+  }
+
+  const updateSearchResults = (results: any[], grouped: Record<string, any[]>, orderedSections?: string[]) => {
     // Проверяем, что мы на клиенте
     if (!process.client) return
     
     globalState.searchResults.value = results
     // Применяем приоритизацию к сгруппированным результатам
     globalState.groupedResults.value = prioritizeResults(grouped)
+    
+    // Сохраняем порядок разделов с сервера
+    if (orderedSections) {
+      globalState.orderedSections.value = orderedSections
+      // Логирование отключено для производительности
+      // console.log('🔍 Обновлен порядок разделов с сервера:', orderedSections)
+    } else {
+      // console.log('⚠️ orderedSections не получен с сервера')
+    }
   }
 
   const updateSearching = (searching: boolean) => {
@@ -166,7 +275,10 @@ export const useGlobalSearch = () => {
 
   // Выполнение поиска
   const executeSearch = async (query: string) => {
+    // Логирование отключено для производительности
+    // console.log('🔍 executeSearch started with query:', query)
     try {
+      // console.log('🔍 Sending request to /api/search/query')
       const response = await $fetch('/api/search/query', {
         method: 'POST',
         body: {
@@ -174,16 +286,22 @@ export const useGlobalSearch = () => {
           limit: 50
         }
       })
+      
+      // console.log('🔍 Response received:', response)
 
       if (response.success) {
-        globalState.searchResults.value = response.results || []
-        globalState.groupedResults.value = prioritizeResults(response.groupedResults || {
-          mkb: [],
-          ls: [],
-          algorithm: [],
-          drug: [],
-          substation: []
-        })
+        // Используем функцию updateSearchResults для правильной обработки данных
+        updateSearchResults(
+          response.results || [], 
+          response.groupedResults || {
+            mkb: [],
+            ls: [],
+            algorithm: [],
+            drug: [],
+            substation: []
+          },
+          response.orderedSections || []
+        )
         globalState.isDataFromCache.value = false // Серверный поиск не использует кеш
         
         // Добавляем в историю поиска только если есть результаты
@@ -194,25 +312,23 @@ export const useGlobalSearch = () => {
         }
       } else {
         console.error('Ошибка серверного поиска:', response.error)
-        globalState.searchResults.value = []
-        globalState.groupedResults.value = {
+        updateSearchResults([], {
           mkb: [],
           ls: [],
           algorithm: [],
           drug: [],
           substation: []
-        }
+        }, [])
       }
     } catch (error) {
-      console.error('Ошибка при выполнении серверного поиска:', error)
-      globalState.searchResults.value = []
-      globalState.groupedResults.value = {
+      console.error('🔍 Ошибка при выполнении серверного поиска:', error)
+      updateSearchResults([], {
         mkb: [],
         ls: [],
         algorithm: [],
         drug: [],
         substation: []
-      }
+      }, [])
     } finally {
       globalState.isSearching.value = false
     }
@@ -260,9 +376,13 @@ export const useGlobalSearch = () => {
     isSearching: globalState.isSearching,
     isDataFromCache: globalState.isDataFromCache,
     groupedResults: globalState.groupedResults,
+    orderedSections: globalState.orderedSections,
     currentPageContext: globalState.currentPageContext,
     activateSearch,
     deactivateSearch,
+    hideSearch,
+    saveSearchCache,
+    loadSearchCache,
     updateSearchResults,
     updateSearching,
     updateCacheStatus,

@@ -1,28 +1,88 @@
 <template>
   <ClientOnly>
     <div v-if="isSearchActive" class="flex-1" @click.stop data-search-results>
-      <div class="max-w-5xl mx-auto px-4 py-8" @click.stop>
-        <div v-if="searchResults.length > 0" class="text-center mb-8">
-          <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-700 dark:text-white mb-2 sm:mb-4">
-            Результаты поиска
-          </h2>
-          <p class="text-base sm:text-lg lg:text-xl text-slate-600 dark:text-slate-300">
-            Найдено {{ searchResults.length }} результатов
-          </p>
-          <!-- Индикатор источника данных -->
-          <div v-if="isDataFromCache" class="mt-2">
-            <span
-              class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-              Загружено из кеша
-            </span>
+      <div class="max-w-5xl mx-auto px-2 md:px-4 py-8" @click.stop>
+        <!-- Сообщение-заглушка -->
+        <div class="mb-4" @click.stop>
+          <!-- Сообщение в стиле чата -->
+          <div class="flex flex-col items-start space-x-3">
+            <div class="flex items-start space-x-3">
+              <!-- Аватарка маскота -->
+              <div class="flex-shrink-0">
+                <Mascot :is-active="isSearching" size="lg" />
+              </div>
+
+              <!-- Блок сообщения -->
+              <div class="max-w-md">
+                <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-4 mb-4">
+                  <!-- Текст сообщения -->
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm text-slate-900 dark:text-white">
+                      <!-- Эффект печати во время поиска -->
+                      <div v-if="isSearching" class="typing-effect">
+                        <p class="font-medium mb-1">Ищу информацию...</p>
+                        <div class="typing-dots">
+                          <span></span>
+                          <span></span>
+                          <span></span>
+                        </div>
+                      </div>
+                      <!-- Обычное сообщение когда не ищем -->
+                      <div v-else>
+                        <p class="font-medium mb-1">
+                          <span v-if="searchQuery && searchResults.length > 0">Я нашел для тебя {{ searchResults.length
+                          }} {{ getResultsText(searchResults.length) }}</span>
+                          <span v-else-if="searchQuery && searchResults.length === 0">Ничего не найдено</span>
+                          <span v-else>Привет! Я Амби, помогу тебе с поиском</span>
+                        </p>
+                        <p class="text-slate-600 dark:text-slate-300">
+                          <span v-if="searchQuery && searchResults.length > 0">По запросу "{{ searchQuery }}" {{
+                            getSectionText(getFoundSections().split(', ')) }} {{ getFoundSections() }}</span>
+                          <span v-else-if="searchQuery && searchResults.length === 0">Попробуйте изменить запрос или
+                            использовать другие ключевые слова</span>
+                          <span v-else>Введите запрос в поле поиска выше</span>
+                        </p>
+                        <!-- Индикатор источника данных -->
+                        <div v-if="searchQuery && isDataFromCache" class="mt-2">
+                          <span
+                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                              </path>
+                            </svg>
+                            Загружено из кеша
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- История поисков под сообщением (только когда поле пустое) -->
+                  <div v-if="!searchQuery && !isSearching && searchHistory.length > 0"
+                    class="flex flex-wrap gap-2 justify-start mt-4">
+                    <button v-for="(query, index) in searchHistory" :key="index"
+                      @click="performSearchFromHistory(query)"
+                      class="inline-flex items-center px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors duration-200 cursor-pointer">
+                      <span>{{ query }}</span>
+                      <span @click.stop="removeFromHistory(query)"
+                        class="ml-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12">
+                          </path>
+                        </svg>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
         <!-- Скелетон во время поиска -->
-        <div v-if="isSearching || (isSearchActive && searchQuery && searchResults.length === 0)" class="space-y-3">
+        <div v-if="isSearching" class="space-y-3">
           <div class="p-3">
             <div class="flex items-center justify-between">
               <USkeleton class="h-4 w-48 rounded bg-slate-200 dark:bg-slate-700" />
@@ -47,7 +107,7 @@
         </div>
 
         <!-- Результаты поиска -->
-        <div v-else-if="searchResults.length > 0" class="space-y-4">
+        <div v-else-if="searchQuery && searchResults.length > 0" class="space-y-4">
           <!-- Динамические группы в зависимости от контекста страницы -->
           <template v-for="group in orderedGroups" :key="group.key">
             <!-- МКБ -->
@@ -58,15 +118,18 @@
                   <div class="p-3">
                     <div class="flex items-start justify-between">
                       <div class="flex-1">
-                        <h4 class="font-medium text-slate-900 dark:text-white" v-html="highlightText(result.title || result.name, searchQuery)">
+                        <h4 class="font-medium text-slate-900 dark:text-white"
+                          v-html="highlightText(result.title || result.name, searchQuery)">
                         </h4>
                         <template
                           v-if="(result.synonyms && result.synonyms.length > 0) || (result.data?.synonyms && result.data.synonyms.length > 0)">
-                          <p class="text-sm text-slate-600 dark:text-slate-300 mt-1" v-html="highlightText('— ' + (result.synonyms && result.synonyms.length > 0 ? result.synonyms : result.data?.synonyms)?.join(', '), searchQuery)">
+                          <p class="text-sm text-slate-600 dark:text-slate-300 mt-1"
+                            v-html="highlightText('— ' + (result.synonyms && result.synonyms.length > 0 ? result.synonyms : result.data?.synonyms)?.join(', '), searchQuery)">
                           </p>
                         </template>
                         <p v-if="(result.description || result.note || result.content)"
-                          class="text-sm text-slate-600 dark:text-slate-300 mt-1" v-html="highlightText(truncateToApproximateLines(result.description || result.note || result.content, 5), searchQuery)">
+                          class="text-sm text-slate-600 dark:text-slate-300 mt-1"
+                          v-html="highlightText(truncateToApproximateLines(result.description || result.note || result.content, 5), searchQuery)">
                         </p>
                       </div>
                     </div>
@@ -84,7 +147,7 @@
                         {{ result.stationCode }}</span>
                       <span v-if="result.category?.name"
                         class="bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded text-xs text-blue-700 dark:text-blue-300">{{
-                        result.category.name }}</span>
+                          result.category.name }}</span>
                     </div>
                   </div>
                   <div
@@ -125,10 +188,12 @@
                   <div class="p-3">
                     <div class="flex items-start justify-between">
                       <div class="flex-1">
-                        <h4 class="font-medium text-slate-900 dark:text-white" v-html="highlightText((result.title || result.name || result.data?.name) + ((result.synonyms && result.synonyms.length > 0) || (result.data?.synonyms && result.data.synonyms.length > 0) ? ' — ' + (result.synonyms && result.synonyms.length > 0 ? result.synonyms : result.data?.synonyms)?.join(', ') : ''), searchQuery)">
+                        <h4 class="font-medium text-slate-900 dark:text-white"
+                          v-html="highlightText((result.title || result.name || result.data?.name) + ((result.synonyms && result.synonyms.length > 0) || (result.data?.synonyms && result.data.synonyms.length > 0) ? ' — ' + (result.synonyms && result.synonyms.length > 0 ? result.synonyms : result.data?.synonyms)?.join(', ') : ''), searchQuery)">
                         </h4>
                         <p v-if="(result.description || result.data?.description || result.data?.note)"
-                          class="text-sm text-slate-600 dark:text-slate-300 mt-1" v-html="highlightText(truncateToApproximateLines(result.description || result.data?.description || result.data?.note, 5), searchQuery)">
+                          class="text-sm text-slate-600 dark:text-slate-300 mt-1"
+                          v-html="highlightText(truncateToApproximateLines(result.description || result.data?.description || result.data?.note, 5), searchQuery)">
                         </p>
                       </div>
                     </div>
@@ -178,10 +243,12 @@
                   <div class="p-3">
                     <div class="flex items-start justify-between">
                       <div class="flex-1">
-                        <h4 class="font-medium text-slate-900 dark:text-white" v-html="highlightText(result.title || result.data?.name || result.name, searchQuery)">
+                        <h4 class="font-medium text-slate-900 dark:text-white"
+                          v-html="highlightText(result.title || result.data?.name || result.name, searchQuery)">
                         </h4>
                         <p v-if="(result.description || result.data?.description || result.data?.note)"
-                          class="text-sm text-slate-600 dark:text-slate-300 mt-1" v-html="highlightText(truncateToApproximateLines(result.description || result.data?.description || result.data?.note, 5), searchQuery)">
+                          class="text-sm text-slate-600 dark:text-slate-300 mt-1"
+                          v-html="highlightText(truncateToApproximateLines(result.description || result.data?.description || result.data?.note, 5), searchQuery)">
                         </p>
                       </div>
                     </div>
@@ -252,7 +319,8 @@
                   <div class="p-3">
                     <div class="flex items-start justify-between">
                       <div class="flex-1">
-                        <h4 class="font-medium text-slate-900 dark:text-white" v-html="highlightText((result.title || result.name || result.data?.name) + ((result.synonyms && result.synonyms.length > 0) || (result.data?.synonyms && result.data.synonyms.length > 0) ? ', ' + (result.synonyms && result.synonyms.length > 0 ? result.synonyms : result.data?.synonyms)?.join(', ') : ''), searchQuery)">
+                        <h4 class="font-medium text-slate-900 dark:text-white"
+                          v-html="highlightText((result.title || result.name || result.data?.name) + ((result.synonyms && result.synonyms.length > 0) || (result.data?.synonyms && result.data.synonyms.length > 0) ? ', ' + (result.synonyms && result.synonyms.length > 0 ? result.synonyms : result.data?.synonyms)?.join(', ') : ''), searchQuery)">
                         </h4>
                         <p v-if="result.latinName || result.data?.latinName"
                           class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{
@@ -380,7 +448,7 @@
                           <div>
                             <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Доза ({{
                               withMlMgUnit(result) }}; {{
-                              withMlMlUnit(result) }})</label>
+                                withMlMlUnit(result) }})</label>
                             <USelect v-model="drugCalc[getDrugId(result)].withMlIndex" size="xl"
                               :items="withMlDoseItems(result)" class="w-full" />
                           </div>
@@ -446,10 +514,12 @@
                   <div class="p-3">
                     <div class="flex items-start justify-between">
                       <div class="flex-1">
-                        <h4 class="font-medium text-slate-900 dark:text-white" v-html="highlightText(result.title || result.name || result.data?.name || result.data?.title, searchQuery)">
+                        <h4 class="font-medium text-slate-900 dark:text-white"
+                          v-html="highlightText(result.title || result.name || result.data?.name || result.data?.title, searchQuery)">
                         </h4>
                         <p v-if="result.data?.address || result.address"
-                          class="text-sm text-slate-500 dark:text-slate-400 mt-1" v-html="highlightText(result.data?.address || result.address, searchQuery)">
+                          class="text-sm text-slate-500 dark:text-slate-400 mt-1"
+                          v-html="highlightText(result.data?.address || result.address, searchQuery)">
                         </p>
                       </div>
                     </div>
@@ -516,34 +586,6 @@
             </template>
           </template>
         </div>
-
-        <!-- Пустое состояние -->
-        <div v-else class="text-center py-12" @click.stop>
-
-          <div class="text-slate-400 dark:text-slate-500">
-            <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
-            <p class="text-lg font-medium mb-2">{{ searchQuery ? 'Ничего не найдено' : 'Начните поиск' }}</p>
-            <p class="text-sm">{{ searchQuery ? 'Попробуйте изменить запрос или использовать другие ключевые слова' :
-              'Введите запрос в поле поиска выше' }}</p>
-            <!-- История поисков -->
-            <div v-if="!searchQuery && searchHistory.length > 0" class="flex flex-wrap gap-2 justify-center mt-4">
-              <button v-for="(query, index) in searchHistory" :key="index" @click="performSearchFromHistory(query)"
-                class="inline-flex items-center px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors duration-200 cursor-pointer">
-                <span>{{ query }}</span>
-                <span @click.stop="removeFromHistory(query)"
-                  class="ml-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                    </path>
-                  </svg>
-                </span>
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </ClientOnly>
@@ -552,55 +594,128 @@
 <script setup lang="ts">
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
-import { nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { nextTick, onMounted, onBeforeUnmount, watchEffect } from 'vue'
 import { useGlobalSearch } from '~/composables/useGlobalSearch'
 import { useSearchHistory } from '~/composables/useSearchHistory'
+import Mascot from '~/components/Mascot.vue'
 
-const { isSearchActive, isSearching, searchResults, groupedResults, selectSearchResult, deactivateSearch, currentPageContext, searchQuery, isDataFromCache } = useGlobalSearch()
+const { isSearchActive, isSearching, searchResults, groupedResults, selectSearchResult, deactivateSearch, currentPageContext, searchQuery, isDataFromCache, orderedSections } = useGlobalSearch()
 const { searchHistory, addToHistory, clearHistory, removeFromHistory } = useSearchHistory()
+
+// Отслеживаем изменения orderedSections
+watchEffect(() => {
+  // Логирование отключено для производительности
+})
 
 // Функция для подсветки найденных фрагментов
 const highlightText = (text: string, query: string) => {
   if (!text || !query) return text
-  
+
   const queryWords = query.trim().toLowerCase().split(/\s+/).filter(word => word.length > 0)
   if (queryWords.length === 0) return text
-  
+
   let highlightedText = text
-  
+
   queryWords.forEach(word => {
     const regex = new RegExp(`(${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
     highlightedText = highlightedText.replace(regex, '<mark class="search-highlight">$1</mark>')
   })
-  
+
   return highlightedText
+}
+
+// Функция для правильного склонения слова "результат"
+const getResultsText = (count: number) => {
+  const lastDigit = count % 10
+  const lastTwoDigits = count % 100
+
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
+    return 'результатов'
+  }
+
+  if (lastDigit === 1) {
+    return 'результат'
+  }
+
+  if (lastDigit >= 2 && lastDigit <= 4) {
+    return 'результата'
+  }
+
+  return 'результатов'
+}
+
+// Функция для получения списка разделов с результатами
+const getFoundSections = () => {
+  const sections = []
+
+  if (groupedResults.value.mkb && groupedResults.value.mkb.length > 0) {
+    sections.push('МКБ')
+  }
+  if (groupedResults.value.ls && groupedResults.value.ls.length > 0) {
+    sections.push('Локальные статусы')
+  }
+  if (groupedResults.value.algorithm && groupedResults.value.algorithm.length > 0) {
+    sections.push('Алгоритмы')
+  }
+  if (groupedResults.value.drug && groupedResults.value.drug.length > 0) {
+    sections.push('Препараты')
+  }
+  if (groupedResults.value.substation && groupedResults.value.substation.length > 0) {
+    sections.push('Подстанции')
+  }
+
+  return sections.join(', ')
+}
+
+// Функция для правильного склонения слова "раздел"
+const getSectionText = (sections: string[]) => {
+  if (sections.length === 1) {
+    return 'в разделе'
+  }
+  return 'в разделах'
 }
 
 // Определяем порядок отображения групп в зависимости от контекста страницы
 const groupDisplayOrder = computed(() => {
   const context = currentPageContext.value
-
-  switch (context) {
-    case 'algorithm':
-      return ['algorithm', 'mkb', 'ls', 'drug', 'substation']
-    case 'mkb':
-      return ['mkb', 'algorithm', 'ls', 'drug', 'substation']
-    case 'ls':
-      return ['ls', 'mkb', 'algorithm', 'drug', 'substation']
-    case 'drug':
-      return ['drug', 'algorithm', 'mkb', 'ls', 'substation']
-    case 'substation':
-      return ['substation', 'mkb', 'ls', 'algorithm', 'drug']
-    default:
-      return ['mkb', 'algorithm', 'ls', 'drug', 'substation']
+  
+  // Принудительно читаем orderedSections для реактивности
+  const sections = orderedSections.value
+  
+  // Если мы находимся на конкретной странице раздела, приоритет этому разделу
+  if (context && context !== 'default' && context !== 'general') {
+    const contextOrder: Record<string, string[]> = {
+      'algorithm': ['algorithm', 'mkb', 'ls', 'drug', 'substation'],
+      'mkb': ['mkb', 'algorithm', 'ls', 'drug', 'substation'],
+      'ls': ['ls', 'mkb', 'algorithm', 'drug', 'substation'],
+      'drug': ['drug', 'algorithm', 'mkb', 'ls', 'substation'],
+      'substation': ['substation', 'mkb', 'ls', 'algorithm', 'drug']
+    }
+    return contextOrder[context] || ['mkb', 'algorithm', 'ls', 'drug', 'substation']
   }
+  
+  // Для главной страницы используем порядок с сервера (отсортированный по количеству результатов)
+  if (sections && Array.isArray(sections) && sections.length > 0) {
+    return [...sections] // Создаем новый массив для избежания проблем с Proxy
+  }
+  
+  // Fallback: используем порядок из groupedResults
+  const serverOrder = Object.keys(groupedResults.value).filter(key => 
+    groupedResults.value[key] && groupedResults.value[key].length > 0
+  )
+  
+  // Добавляем разделы, которые есть в groupedResults, но не в serverOrder
+  const allSections = ['mkb', 'algorithm', 'ls', 'drug', 'substation']
+  const remainingSections = allSections.filter(section => !serverOrder.includes(section))
+  
+  return [...serverOrder, ...remainingSections]
 })
 
 // Получаем группы в правильном порядке
 const orderedGroups = computed(() => {
   const groups: Array<{ key: string, title: string, results: any[] }> = []
 
-  groupDisplayOrder.value.forEach(groupKey => {
+  groupDisplayOrder.value.forEach((groupKey: string) => {
     const results = groupedResults.value[groupKey]
     if (results && results.length > 0) {
       let title = ''
@@ -1542,7 +1657,7 @@ const performSearchFromHistory = (query: string) => {
 
   // Сначала активируем поиск
   activateSearch(query)
-  
+
   // Затем обновляем запрос (это заполнит инпут через watcher)
   updateSearchQuery(query)
 
@@ -1703,16 +1818,20 @@ const performSearchFromHistory = (query: string) => {
 
 /* Стили для подсветки найденных фрагментов */
 .search-highlight {
-  background-color: #fef3c7 !important; /* желтый фон */
-  color: #92400e !important; /* темно-желтый текст */
+  background-color: #fef3c7 !important;
+  /* желтый фон */
+  color: #92400e !important;
+  /* темно-желтый текст */
   padding: 1px 2px !important;
   border-radius: 2px !important;
   font-weight: 600 !important;
 }
 
 .dark .search-highlight {
-  background-color: #fbbf24 !important; /* желтый фон для темной темы */
-  color: #1f2937 !important; /* темный текст для контраста */
+  background-color: #fbbf24 !important;
+  /* желтый фон для темной темы */
+  color: #1f2937 !important;
+  /* темный текст для контраста */
 }
 
 /* Дополнительные стили для mark элементов */
@@ -1731,4 +1850,56 @@ mark.search-highlight,
   color: #1f2937 !important;
 }
 
+/* Эффект печати */
+.typing-effect {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.typing-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.typing-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #64748b;
+  /* slate-500 */
+  animation: typing-bounce 1.4s ease-in-out infinite both;
+}
+
+.typing-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.typing-dots span:nth-child(3) {
+  animation-delay: 0s;
+}
+
+@keyframes typing-bounce {
+
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.dark .typing-dots span {
+  background-color: #94a3b8;
+  /* slate-400 для темной темы */
+}
 </style>

@@ -98,12 +98,21 @@
         <!-- Поиск между логотипом и аватаром -->
         <div class="flex-1 flex items-center gap-2">
           <div class="flex content-center relative flex-1 rounded-lg overflow-hidden hover:shadow-sm focus:shadow-sm ">
-            <div class="px-4 flex items-center pointer-events-none">
-              <svg class="h-6 w-6 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor"
+            <div class="pr-2 pl-4 flex items-center" :class="{ 'pointer-events-none': !isSearchActive }">
+              <!-- Иконка лупы или стрелка назад -->
+              <svg v-if="!isSearchActive" class="h-6 w-6 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor"
                 viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
               </svg>
+              <!-- Иконка стрелки назад (активна при поиске) -->
+              <button v-else @click="hideSearch" 
+                class="h-6 w-6 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors duration-200 cursor-pointer"
+                aria-label="Скрыть поиск">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+              </button>
             </div>
             <UInput ref="searchInput" v-model="searchQuery" type="text" placeholder="Начните поиск"
               :class="[
@@ -115,7 +124,8 @@
 
             <!-- Кнопка очистки внутри инпута -->
             <div class="absolute inset-y-0 right-0 flex items-center pr-2">
-              <button v-if="searchQuery || isSearchActive" @click="clearSearch"
+              <!-- Кнопка очистки (показывается только при заполненном инпуте) -->
+              <button v-if="searchQuery && searchQuery.length > 0" @click="clearSearchInput"
                 class="inline-flex items-center justify-center h-8 w-8 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-300 transition-colors duration-200 cursor-pointer"
                 aria-label="Очистить поиск">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,16 +134,6 @@
               </button>
             </div>
           </div>
-
-          <!-- Кнопка поиска на мобильных - за пределами инпута -->
-          <button v-if="isMobile && (isSearchExpanded || isSearchActive)" @click="() => performServerSearch(searchQuery, 500)"
-            class="inline-flex items-center justify-center px-4 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            aria-label="Выполнить поиск">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
-          </button>
         </div>
 
         <div class="flex items-center space-x-3 sm:space-x-4 relative transition-all duration-700 ease-in-out"
@@ -465,6 +465,10 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('click', onDocClick)
   document.removeEventListener('click', onDocClickMenu)
+  // Очищаем таймаут поиска
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+  }
 })
 const initials = computed(() => {
   const f = (user.value?.firstName || '').trim()[0] || ''
@@ -503,8 +507,10 @@ const {
   searchResults,
   isSearching,
   groupedResults,
+  orderedSections,
   activateSearch,
   deactivateSearch,
+  hideSearch: globalHideSearch,
   updateSearchResults,
   updateSearching,
   updateCacheStatus,
@@ -575,33 +581,43 @@ watch(searchQuery, (newQuery, oldQuery) => {
   // Проверяем, что значение действительно изменилось
   if (newQuery === oldQuery) return
   
+  // Очищаем предыдущий таймаут
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+  }
+  
   // Определяем мобильное устройство
   const isMobile = process.client && (
     window.innerWidth <= 768 || 
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
   )
   
-  // На мобильных устройствах активируем поиск при любом изменении
-  if (isMobile) {
-    if (newQuery && newQuery.trim().length > 0) {
-      console.log('Mobile search triggered by watcher:', newQuery)
-      if (!isSearchActive.value) {
-        activateSearch(newQuery)
-      }
-      // Выполняем поиск только если запрос длиной 3+ символов
-      if (newQuery.trim().length >= 3) {
-        performServerSearch(newQuery.trim(), 500) // 500ms дебаунс
+  // Если запрос короче 3 символов, не выполняем поиск, но оставляем панель открытой
+  if (!newQuery || newQuery.trim().length < 3) {
+    // Очищаем результаты, но НЕ закрываем панель поиска
+    if (isSearchActive.value) {
+      // Очищаем только результаты, панель остается открытой
+      searchResults.value = []
+      groupedResults.value = {
+        mkb: [],
+        ls: [],
+        algorithm: [],
+        drug: [],
+        substation: []
       }
     }
-  } else {
-    // На десктопе стандартная логика
-    if (newQuery && newQuery.trim().length >= 3 && isSearchActive.value) {
-      console.log('Desktop search triggered by watcher:', newQuery)
-      setTimeout(() => {
-        performServerSearch(newQuery.trim(), 500) // 500ms дебаунс
-      }, 10)
-    }
+    return
   }
+  
+  // Активируем поиск если он еще не активен
+  if (!isSearchActive.value) {
+    activateSearch(newQuery)
+  }
+  
+  // Устанавливаем дебаунс - поиск запустится только после паузы в вводе
+  searchTimeout = setTimeout(() => {
+    performServerSearch(newQuery.trim(), 0) // Без дополнительной задержки
+  }, 500) // 500ms дебаунс
 })
 
 // Проверяем, находимся ли на странице подстанций
@@ -670,9 +686,14 @@ const onSearchFocus = () => {
     isSearchExpanded.value = true
   }
 
-  // Активируем поиск при фокусе только если инпут пустой
-  if (!isSearchActive.value && q.length === 0) {
+  // Активируем поиск при фокусе если инпут пустой ИЛИ если есть текст но поиск неактивен
+  if (!isSearchActive.value) {
     activateSearch(q)
+    
+    // Если есть текст в инпуте, выполняем поиск
+    if (q.length >= 3) {
+      performServerSearch(q, 0)
+    }
   }
 }
 
@@ -704,47 +725,20 @@ const onSearchEnter = () => {
 const onSearchInput = () => {
   // Обновляем значение
   lastSearchValue.value = searchQuery.value
-  console.log('Input event:', searchQuery.value)
   
-  // На мобильных устройствах принудительно вызываем поиск
-  const isMobile = process.client && (
-    window.innerWidth <= 768 || 
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-  )
-  
-  if (isMobile && searchQuery.value && searchQuery.value.trim().length > 0) {
-    console.log('Mobile input event - forcing search:', searchQuery.value)
-    if (!isSearchActive.value) {
-      activateSearch(searchQuery.value)
-    }
-    performServerSearch(searchQuery.value.trim(), 500) // 500ms дебаунс
-  }
+  // Убираем прямой вызов поиска - watcher сам обработает с дебаунсом
 }
 
 const onSearchInputMobile = () => {
   // Просто обновляем значение, watcher сам обработает поиск
   lastSearchValue.value = searchQuery.value
-  console.log('Mobile input event:', searchQuery.value)
 }
 
 const onSearchKeyup = () => {
   // Обновляем значение
   lastSearchValue.value = searchQuery.value
-  console.log('Keyup event:', searchQuery.value)
   
-  // На мобильных устройствах принудительно вызываем поиск
-  const isMobile = process.client && (
-    window.innerWidth <= 768 || 
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-  )
-  
-  if (isMobile && searchQuery.value && searchQuery.value.trim().length > 0) {
-    console.log('Mobile keyup event - forcing search:', searchQuery.value)
-    if (!isSearchActive.value) {
-      activateSearch(searchQuery.value)
-    }
-    performServerSearch(searchQuery.value.trim(), 500) // 500ms дебаунс
-  }
+  // Убираем прямой вызов поиска - watcher сам обработает с дебаунсом
 }
 
 const onSearchChange = () => {
@@ -753,7 +747,6 @@ const onSearchChange = () => {
   // Проверяем, действительно ли изменилось значение
   if (currentValue !== lastSearchValue.value) {
     lastSearchValue.value = currentValue
-    console.log('Change event:', currentValue)
   }
 }
 
@@ -761,7 +754,6 @@ const onSearchPaste = () => {
   // При вставке текста обновляем значение
   setTimeout(() => {
     lastSearchValue.value = searchQuery.value
-    console.log('Paste event:', searchQuery.value)
   }, 10)
 }
 
@@ -774,7 +766,6 @@ const onSearchCompositionEnd = () => {
   // Конец ввода с помощью IME
   isComposing.value = false
   lastSearchValue.value = searchQuery.value
-  console.log('Composition end event:', searchQuery.value)
 }
 
 const handleSearchInput = () => {
@@ -794,8 +785,6 @@ const handleSearchInput = () => {
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
   )
 
-  console.log('HandleSearchInput called:', { query, isMobile, queryLength: query.length })
-
   // Если запрос слишком короткий
   if (query.length < 3) {
     // Очищаем результаты для коротких запросов
@@ -812,15 +801,10 @@ const handleSearchInput = () => {
 
   // Активируем поиск
   if (!isSearchActive.value) {
-    console.log('Activating search:', query)
     activateSearch(query)
   }
 
-  // Выполняем серверный поиск с дебаунсом
-  // Используем дебаунс для уменьшения нагрузки на сервер
-  const debounceMs = 500 // 500ms дебаунс для всех устройств
-  console.log('Performing server search:', { query, debounceMs, isMobile })
-  performServerSearch(query, debounceMs)
+  // Убираем прямой вызов поиска - watcher сам обработает с дебаунсом
 }
 
 // Выбираем результат поиска
@@ -914,12 +898,48 @@ const getResultDetails = (result: any) => {
   }
 }
 
-// Очищаем поиск
+// Очищаем только инпут и результаты поиска (не закрываем панель)
+const clearSearchInput = () => {
+  searchQuery.value = ''
+
+  // Очищаем таймер поиска
+  clearSearchTimeout()
+  
+  // Очищаем кэш localStorage
+  if (process.client) {
+    try {
+      localStorage.removeItem('searchCache')
+    } catch (error) {
+      // Игнорируем ошибки localStorage
+    }
+  }
+  
+  // Очищаем результаты поиска, но НЕ деактивируем поиск
+  const emptyGrouped = {
+    mkb: [],
+    ls: [],
+    algorithm: [],
+    drug: [],
+    substation: []
+  }
+  updateSearchResults([], emptyGrouped, [])
+  updateSearching(false)
+  updateCacheStatus(false)
+  
+  // Очищаем группированные результаты
+  groupedResults.value = emptyGrouped
+  orderedSections.value = []
+}
+
+// Очищаем поиск полностью (закрываем панель)
 const clearSearch = () => {
   searchQuery.value = ''
 
   // Очищаем таймер поиска
   clearSearchTimeout()
+  
+  // Очищаем результаты поиска
+  deactivateSearch()
 
   // На мобильных устройствах сворачиваем строку поиска
   const isMobile = window.innerWidth <= 768
@@ -936,6 +956,25 @@ const clearSearch = () => {
 
   // Всегда деактивируем поиск для скрытия панели результатов
   deactivateSearch()
+}
+
+// Скрываем поиск (не очищаем инпут)
+const hideSearch = () => {
+  // Используем глобальную функцию hideSearch
+  globalHideSearch()
+
+  // На мобильных устройствах сворачиваем строку поиска
+  const isMobile = window.innerWidth <= 768
+  if (isMobile) {
+    isSearchExpanded.value = false
+  }
+
+  // Если мы на странице подстанций, отправляем событие для очистки поиска
+  if (isSubstationsPage.value) {
+    window.dispatchEvent(new CustomEvent('substations-search', {
+      detail: { query: '' }
+    }))
+  }
 }
 
 // Дополнительные обработчики для мобильных устройств
@@ -955,7 +994,6 @@ const onSearchTouchEnd = () => {
   setTimeout(() => {
     if (lastSearchValue.value !== searchQuery.value) {
       lastSearchValue.value = searchQuery.value
-      console.log('Touch end event:', searchQuery.value)
     }
   }, 50)
 }
@@ -972,6 +1010,8 @@ defineExpose({
   truncateToApproximateLines,
   selectSearchResult,
   clearSearch,
+  clearSearchInput,
+  hideSearch,
   onSearchFocus,
   onSearchBlur,
   onSearchEnter,
