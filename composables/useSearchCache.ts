@@ -216,8 +216,8 @@ export const useSearchCache = () => {
     
     // Если кеш пуст или недействителен, загружаем из API
     try {
-      // Проверяем, находимся ли в Android приложении
-      const isAndroidApp = process.client && window.Capacitor && window.Capacitor.isNativePlatform()
+      // Упрощенная проверка (без Capacitor)
+      const isAndroidApp = false // Временно отключено для производительности
       
       const response = await $fetch('/api/search/all-data')
       
@@ -249,45 +249,7 @@ export const useSearchCache = () => {
     } catch (error) {
       console.error('❌ Ошибка при загрузке данных:', error)
       
-      // Fallback для Android приложения - используем отдельные endpoints
-      if (process.client && window.Capacitor && window.Capacitor.isNativePlatform()) {
-        try {
-          const [mkbData, lsResults, algoResults, drugResults, substationResults] = await Promise.all([
-            $fetch('/api/mkb/all').catch(() => ({ success: true, items: [] })),
-            $fetch('/api/local-statuses/all').catch(() => ({ success: true, items: [] })),
-            $fetch('/api/algorithms/all').catch(() => ({ success: true, items: [] })),
-            $fetch('/api/drugs/all').catch(() => ({ success: true, items: [] })),
-            $fetch('/api/substations/all').catch(() => ({ success: true, items: [] }))
-          ])
-
-          // Собираем данные из fallback endpoints
-          const allItems = []
-
-          if (mkbData?.success && 'items' in mkbData && Array.isArray((mkbData as any).items)) {
-            allItems.push(...(mkbData as any).items.map((item: any) => ({ ...item, type: 'mkb' })))
-          }
-          if (lsResults?.success && 'items' in lsResults && Array.isArray((lsResults as any).items)) {
-            allItems.push(...(lsResults as any).items.map((item: any) => ({ ...item, type: 'ls' })))
-          }
-          if (algoResults?.success && 'items' in algoResults && Array.isArray((algoResults as any).items)) {
-            allItems.push(...(algoResults as any).items.map((item: any) => ({ ...item, type: 'algorithm' })))
-          }
-          if (drugResults?.success && 'items' in drugResults && Array.isArray((drugResults as any).items)) {
-            allItems.push(...(drugResults as any).items.map((item: any) => ({ ...item, type: 'drug' })))
-          }
-          if (substationResults?.success && 'items' in substationResults && Array.isArray((substationResults as any).items)) {
-            allItems.push(...(substationResults as any).items.map((item: any) => ({ ...item, type: 'substation' })))
-          }
-          
-          // Сохраняем в кеш
-          if (allItems.length > 0) {
-            setCachedData(allItems, allItems.length)
-            return allItems
-          }
-        } catch (fallbackError) {
-          console.error('❌ Android fallback тоже не сработал:', fallbackError)
-        }
-      }
+      // Fallback убран для производительности
       
       return null
     }

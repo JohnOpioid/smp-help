@@ -4,21 +4,10 @@ export function useLocalData() {
   const { isOnline } = useNetworkStatus()
   const runtimeConfig = useRuntimeConfig()
   
-  // Определяем базовый URL для API
+  // Упрощенное определение базового URL для API (без проверки Capacitor)
   const getApiUrl = () => {
     if (process.client) {
-      // Проверяем через Capacitor API
-      try {
-        // @ts-ignore
-        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-          // В Android приложении всегда используем HTTPS API
-          return 'https://helpsmp.ru'
-        }
-      } catch (e) {
-        // Capacitor API не доступен
-      }
-      
-      // Fallback: проверяем hostname для определения среды
+      // Простая проверка hostname без Capacitor
       const hostname = window.location.hostname
       const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1'
       const isLocalNetwork = hostname.startsWith('192.168.') || hostname.startsWith('10.0.') || hostname.startsWith('172.')

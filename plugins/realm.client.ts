@@ -1,7 +1,26 @@
 import * as Realm from 'realm-web'
 
 export default defineNuxtPlugin(() => {
-  const runtimeConfig = useRuntimeConfig()
+  // ВРЕМЕННО ОТКЛЮЧЕНО: Плагин Realm замедляет загрузку приложения
+  console.log('🔧 Realm plugin disabled for performance')
+  return {
+    provide: {
+      realm: {
+        app: computed(() => null),
+        currentUser: ref(null),
+        isLoggedIn: computed(() => false),
+        loginWithJwt: () => Promise.resolve(),
+        loginAnonymous: () => Promise.resolve(),
+        logout: () => Promise.resolve(),
+        ensureSubscriptions: () => Promise.resolve(),
+        mongoClient: computed(() => null),
+        getDb: () => null,
+        getCollection: () => null,
+      },
+    },
+  }
+
+  // const runtimeConfig = useRuntimeConfig()
   const appId = runtimeConfig.public.realmAppId
 
   const app = computed(() => {

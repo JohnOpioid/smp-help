@@ -1,18 +1,10 @@
 export const useIsMobile = () => {
   const isMobile = ref(false)
   
-  const checkMobile = () => {
+  if (process.client) {
+    // Простая проверка размера экрана без resize listener
     isMobile.value = window.innerWidth < 640 // sm breakpoint
   }
-  
-  onMounted(() => {
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-  })
-  
-  onBeforeUnmount(() => {
-    window.removeEventListener('resize', checkMobile)
-  })
   
   return { isMobile }
 }

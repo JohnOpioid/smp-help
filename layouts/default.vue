@@ -309,17 +309,13 @@
 
 <script setup lang="ts">
 import PreloadIndicator from '~/components/PreloadIndicator.vue'
-import { Capacitor } from '@capacitor/core'
 
 // Реактивное состояние размера экрана
 const screenWidth = ref(0)
 
-// Определяем, находимся ли в мобильном приложении или мобильном браузере
+// Определяем, находимся ли в мобильном браузере
 const isMobileApp = computed(() => {
   if (!process.client) return false
-  
-  // Для Capacitor приложений используем веб-интерфейс
-  if (Capacitor.isNativePlatform()) return false
   
   // Проверяем мобильный браузер
   const userAgent = navigator.userAgent.toLowerCase()

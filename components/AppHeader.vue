@@ -29,7 +29,7 @@
               leave-from-class="opacity-100 scale-100 translate-y-0"
               leave-to-class="opacity-0 scale-95 translate-y-[-10px]">
               <div v-if="dropdownMenuOpen" ref="menuRef"
-                class="absolute -top-2 -left-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-xl z-50 min-w-80 backdrop-blur-sm"
+                class="absolute -top-2 -left-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-xl z-100 min-w-80 backdrop-blur-sm"
                 @click.stop>
                 <!-- Заголовок меню с логотипом и названием -->
                 <div
@@ -97,21 +97,21 @@
 
         <!-- Поиск между логотипом и аватаром -->
         <div class="flex-1 flex items-center gap-2">
-          <div class="relative flex-1">
-            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <div class="flex content-center relative flex-1 rounded-lg overflow-hidden hover:shadow-sm focus:shadow-sm ">
+            <div class="px-4 flex items-center pointer-events-none">
               <svg class="h-6 w-6 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor"
                 viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
               </svg>
             </div>
-            <input ref="searchInput" v-model="searchQuery" type="text" placeholder="Введите минимум 3 символа для поиска..."
+            <UInput ref="searchInput" v-model="searchQuery" type="text" placeholder="Начните поиск"
               :class="[
-                'block w-full pl-11 pr-11 py-4 outline-none focus:outline-none focus:ring-0 focus:border-slate-300 dark:focus:border-slate-500 hover:shadow-sm focus:shadow-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 transition-all duration-700 ease-in-out rounded-lg'
+                'block w-full pr-11 py-4 outline-none focus:outline-none focus:ring-0 focus:border-slate-300 dark:focus:border-slate-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 transition-all duration-700 ease-in-out'
               ]" @input="onSearchInput" @focus="onSearchFocus" @blur="onSearchBlur"
               @keydown.enter.prevent="onSearchEnter" @keyup="onSearchKeyup" @keydown="onSearchKeydown"
               @change="onSearchChange" @paste="onSearchPaste" @compositionstart="onSearchCompositionStart"
-              @compositionend="onSearchCompositionEnd" @touchstart="onSearchTouchStart" @touchend="onSearchTouchEnd">
+              @compositionend="onSearchCompositionEnd" @touchstart="onSearchTouchStart" @touchend="onSearchTouchEnd" />
 
             <!-- Кнопка очистки внутри инпута -->
             <div class="absolute inset-y-0 right-0 flex items-center pr-2">
@@ -126,7 +126,7 @@
           </div>
 
           <!-- Кнопка поиска на мобильных - за пределами инпута -->
-          <button v-if="isMobile && (isSearchExpanded || isSearchActive)" @click="performSearch"
+          <button v-if="isMobile && (isSearchExpanded || isSearchActive)" @click="() => performServerSearch(searchQuery, 500)"
             class="inline-flex items-center justify-center px-4 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             aria-label="Выполнить поиск">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -197,11 +197,10 @@
 
 <script setup lang="ts">
 import { watch, onMounted, onUnmounted, computed } from 'vue'
-import { useSearchCache } from '~/composables/useSearchCache'
 
 const props = withDefaults(defineProps<{ title?: string }>(), { title: 'Справочник СМП' })
 const route = useRoute()
-const { user, logout } = useAuth()
+const { user, logout, clearAuth } = useAuth()
 const { isDark, toggleTheme } = useTheme()
 const title = computed(() => props.title || 'Справочник СМП')
 
@@ -255,12 +254,26 @@ if (!user.value) {
     const headers = useRequestHeaders(['cookie'])
     opts.headers = { cookie: headers.cookie as string }
   }
-  try {
-    const { data: meData } = useFetch('/api/auth/me', opts)
-    watch(meData, (val) => {
-      if (val?.user) user.value = val.user as any
-    }, { immediate: true })
-  } catch { }
+  
+  const { data: meData, error: meError } = useFetch('/api/auth/me', opts)
+  
+  watch(meData, (val) => {
+    if (val && typeof val === 'object' && 'user' in val && val.user) {
+      user.value = val.user as any
+    }
+  }, { immediate: true })
+  
+  // Обрабатываем ошибки авторизации
+  watch(meError, (error) => {
+    if (error && process.client) {
+      console.error('Auth error:', error)
+      // Если ошибка авторизации, очищаем данные и перенаправляем
+      if (error.statusCode === 401) {
+        clearAuth()
+        navigateTo('/auth/login')
+      }
+    }
+  }, { immediate: true })
 }
 
 const menuOpen = ref(false)
@@ -494,17 +507,22 @@ const {
   deactivateSearch,
   updateSearchResults,
   updateSearching,
-  updateCacheStatus
+  updateCacheStatus,
+  updateSearchQuery,
+  performServerSearch,
+  clearSearchTimeout
 } = useGlobalSearch()
-
-// Импортируем кеш поиска
-const { getSearchData, getCacheInfo } = useSearchCache()
 
 // Импортируем историю поисков
 const { addToHistory } = useSearchHistory()
 
 // Локальная переменная для поля ввода
 const searchQuery = ref('')
+
+// Синхронизируем локальный searchQuery с глобальным состоянием
+watch(searchQuery, (newValue) => {
+  updateSearchQuery(newValue)
+}, { immediate: true })
 const lastSearchValue = ref('')
 const isComposing = ref(false)
 const isSearchExpanded = ref(false)
@@ -553,13 +571,36 @@ watch(globalSearchQuery, (newQuery) => {
 })
 
 // Отдельный watcher для выполнения поиска после заполнения инпута
-watch(searchQuery, (newQuery) => {
-  // Выполняем поиск только если это изменение пришло из истории поиска
-  if (newQuery && newQuery.trim().length >= 3 && isSearchActive.value) {
-    // Небольшая задержка, чтобы инпут успел отрендериться
-    setTimeout(() => {
-      performSearch()
-    }, 10)
+watch(searchQuery, (newQuery, oldQuery) => {
+  // Проверяем, что значение действительно изменилось
+  if (newQuery === oldQuery) return
+  
+  // Определяем мобильное устройство
+  const isMobile = process.client && (
+    window.innerWidth <= 768 || 
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  )
+  
+  // На мобильных устройствах активируем поиск при любом изменении
+  if (isMobile) {
+    if (newQuery && newQuery.trim().length > 0) {
+      console.log('Mobile search triggered by watcher:', newQuery)
+      if (!isSearchActive.value) {
+        activateSearch(newQuery)
+      }
+      // Выполняем поиск только если запрос длиной 3+ символов
+      if (newQuery.trim().length >= 3) {
+        performServerSearch(newQuery.trim(), 500) // 500ms дебаунс
+      }
+    }
+  } else {
+    // На десктопе стандартная логика
+    if (newQuery && newQuery.trim().length >= 3 && isSearchActive.value) {
+      console.log('Desktop search triggered by watcher:', newQuery)
+      setTimeout(() => {
+        performServerSearch(newQuery.trim(), 500) // 500ms дебаунс
+      }, 10)
+    }
   }
 })
 
@@ -629,14 +670,9 @@ const onSearchFocus = () => {
     isSearchExpanded.value = true
   }
 
-  // Активируем поиск при фокусе
-  if (!isSearchActive.value) {
+  // Активируем поиск при фокусе только если инпут пустой
+  if (!isSearchActive.value && q.length === 0) {
     activateSearch(q)
-  }
-
-  // На мобильных устройствах выполняем поиск сразу при фокусе, если есть запрос
-  if (isMobile && q && q.length >= 3) {
-    performSearch()
   }
 }
 
@@ -666,31 +702,49 @@ const onSearchEnter = () => {
 }
 
 const onSearchInput = () => {
+  // Обновляем значение
   lastSearchValue.value = searchQuery.value
-
-  // На мобильных устройствах выполняем поиск сразу
-  const isMobile = window.innerWidth <= 768
-  if (isMobile) {
-    handleSearchInput()
-    return
-  }
-
-  // На десктопе проверяем композицию
-  if (!isComposing.value) {
-    handleSearchInput()
+  console.log('Input event:', searchQuery.value)
+  
+  // На мобильных устройствах принудительно вызываем поиск
+  const isMobile = process.client && (
+    window.innerWidth <= 768 || 
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  )
+  
+  if (isMobile && searchQuery.value && searchQuery.value.trim().length > 0) {
+    console.log('Mobile input event - forcing search:', searchQuery.value)
+    if (!isSearchActive.value) {
+      activateSearch(searchQuery.value)
+    }
+    performServerSearch(searchQuery.value.trim(), 500) // 500ms дебаунс
   }
 }
 
-const onSearchKeyup = () => {
-  // На мобильных устройствах выполняем поиск сразу
-  const isMobile = window.innerWidth <= 768
-  if (isMobile) {
-    handleSearchInput()
-    return
-  }
+const onSearchInputMobile = () => {
+  // Просто обновляем значение, watcher сам обработает поиск
+  lastSearchValue.value = searchQuery.value
+  console.log('Mobile input event:', searchQuery.value)
+}
 
-  // На десктопе обычная логика
-  handleSearchInput()
+const onSearchKeyup = () => {
+  // Обновляем значение
+  lastSearchValue.value = searchQuery.value
+  console.log('Keyup event:', searchQuery.value)
+  
+  // На мобильных устройствах принудительно вызываем поиск
+  const isMobile = process.client && (
+    window.innerWidth <= 768 || 
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  )
+  
+  if (isMobile && searchQuery.value && searchQuery.value.trim().length > 0) {
+    console.log('Mobile keyup event - forcing search:', searchQuery.value)
+    if (!isSearchActive.value) {
+      activateSearch(searchQuery.value)
+    }
+    performServerSearch(searchQuery.value.trim(), 500) // 500ms дебаунс
+  }
 }
 
 const onSearchChange = () => {
@@ -699,34 +753,15 @@ const onSearchChange = () => {
   // Проверяем, действительно ли изменилось значение
   if (currentValue !== lastSearchValue.value) {
     lastSearchValue.value = currentValue
-
-    // На мобильных устройствах выполняем поиск сразу
-    const isMobile = window.innerWidth <= 768
-    if (isMobile) {
-      handleSearchInput()
-      return
-    }
-
-    // На десктопе обычная логика
-    handleSearchInput()
+    console.log('Change event:', currentValue)
   }
 }
 
 const onSearchPaste = () => {
-
-  // При вставке текста делаем поиск сразу
+  // При вставке текста обновляем значение
   setTimeout(() => {
     lastSearchValue.value = searchQuery.value
-
-    // На мобильных устройствах выполняем поиск сразу
-    const isMobile = window.innerWidth <= 768
-    if (isMobile) {
-      handleSearchInput()
-      return
-    }
-
-    // На десктопе обычная логика
-    handleSearchInput()
+    console.log('Paste event:', searchQuery.value)
   }, 10)
 }
 
@@ -739,16 +774,7 @@ const onSearchCompositionEnd = () => {
   // Конец ввода с помощью IME
   isComposing.value = false
   lastSearchValue.value = searchQuery.value
-
-  // На мобильных устройствах выполняем поиск сразу
-  const isMobile = window.innerWidth <= 768
-  if (isMobile) {
-    handleSearchInput()
-    return
-  }
-
-  // На десктопе обычная логика
-  handleSearchInput()
+  console.log('Composition end event:', searchQuery.value)
 }
 
 const handleSearchInput = () => {
@@ -762,11 +788,17 @@ const handleSearchInput = () => {
   }
 
   const query = searchQuery.value.trim()
-  const isMobile = window.innerWidth <= 768
+  // Определяем мобильное устройство более надежным способом
+  const isMobile = process.client && (
+    window.innerWidth <= 768 || 
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  )
 
+  console.log('HandleSearchInput called:', { query, isMobile, queryLength: query.length })
 
   // Если запрос слишком короткий
   if (query.length < 3) {
+    // Очищаем результаты для коротких запросов
     searchResults.value = []
     groupedResults.value = {
       mkb: [],
@@ -778,243 +810,17 @@ const handleSearchInput = () => {
     return
   }
 
-  // На мобильных устройствах - мгновенный поиск без задержек
-  if (isMobile) {
+  // Активируем поиск
+  if (!isSearchActive.value) {
+    console.log('Activating search:', query)
     activateSearch(query)
-    performSearch()
-    return
   }
 
-  // На десктопе - debounce
-  if (searchTimeout) {
-    clearTimeout(searchTimeout)
-  }
-
-  searchTimeout = setTimeout(() => {
-    activateSearch(query)
-    performSearch()
-  }, 300)
-}
-
-// Простой реактивный поиск
-const performSimpleSearch = (allItems: any[], query: string) => {
-  const queryLower = query.toLowerCase().trim()
-  const queryWords = queryLower.split(/\s+/).filter(word => word.length >= 2)
-
-
-  const results: any[] = []
-
-  for (const item of allItems) {
-    const title = (item.title || item.name || '').toLowerCase()
-    const description = (item.description || item.note || '').toLowerCase()
-    const latinName = (item.latinName || '').toLowerCase()
-    const synonyms = (item.synonyms || []).join(' ').toLowerCase()
-    const content = (item.content || '').toLowerCase()
-
-
-    // Проверяем точное совпадение в названии
-    if (title.includes(queryLower)) {
-      results.push({ ...item, score: 0.1, searchType: 'exact-title' })
-      continue
-    }
-
-    // Проверяем совпадение в латинском названии
-    if (latinName.includes(queryLower)) {
-      results.push({ ...item, score: 0.2, searchType: 'latin-name' })
-      continue
-    }
-
-    // Проверяем совпадение в синонимах
-    if (synonyms.includes(queryLower)) {
-      results.push({ ...item, score: 0.3, searchType: 'synonyms' })
-      continue
-    }
-
-    // Проверяем совпадение всех слов запроса
-    const allWordsMatch = queryWords.every(word =>
-      title.includes(word) ||
-      description.includes(word) ||
-      latinName.includes(word) ||
-      synonyms.includes(word) ||
-      content.includes(word)
-    )
-
-    if (allWordsMatch) {
-      // Подсчитываем количество совпавших слов
-      const matchedWords = queryWords.filter(word =>
-        title.includes(word) ||
-        description.includes(word) ||
-        latinName.includes(word) ||
-        synonyms.includes(word) ||
-        content.includes(word)
-      )
-
-      const score = 0.4 + (matchedWords.length / queryWords.length) * 0.3
-      results.push({ ...item, score, searchType: 'word-match' })
-    } else {
-      // Для препаратов проверяем частичные совпадения
-      if (item.type === 'drug') {
-        const hasPartialMatch = queryWords.some(word =>
-          title.includes(word) ||
-          description.includes(word) ||
-          latinName.includes(word) ||
-          synonyms.includes(word)
-        )
-
-        if (hasPartialMatch) {
-          const matchedWords = queryWords.filter(word =>
-            title.includes(word) ||
-            description.includes(word) ||
-            latinName.includes(word) ||
-            synonyms.includes(word)
-          )
-
-          const score = 0.6 + (matchedWords.length / queryWords.length) * 0.2
-          results.push({ ...item, score, searchType: 'partial-match' })
-        }
-      }
-    }
-  }
-
-  // Сортируем по score
-  results.sort((a, b) => a.score - b.score)
-
-  return results
-}
-
-// Выполняем поиск
-const performSearch = async () => {
-  // Проверяем, что мы на клиенте
-  if (!process.client) return
-
-  const query = searchQuery.value.trim()
-  if (!query) return
-
-  // Проверяем, находимся ли в Android приложении
-  const isAndroidApp = process.client && window.Capacitor && window.Capacitor.isNativePlatform()
-
-  updateSearching(true)
-
-  try {
-    // Очищаем кэш предзагрузки для поиска
-    if (process.client) {
-      const { clearCache } = usePreloader()
-      clearCache()
-    }
-
-    // Используем кеш для загрузки данных
-    let allItems: any[] = []
-
-    try {
-      // Пытаемся получить данные из кеша или API
-      const searchData = await getSearchData()
-
-      if (!searchData) {
-        console.error('❌ Не удалось загрузить данные для поиска')
-        return
-      }
-
-      // Преобразуем данные в нужный формат
-      if (Array.isArray(searchData)) {
-        allItems = searchData.map((item: any) => ({
-          ...item,
-          type: item.type || 'unknown'
-        }))
-      } else {
-        console.error('❌ Неожиданный формат данных:', typeof searchData)
-        return
-      }
-
-      // Проверяем, были ли данные загружены из кеша
-      const cacheInfo = getCacheInfo()
-      const fromCache = cacheInfo.cachedData !== null
-      updateCacheStatus(fromCache)
-
-    } catch (error) {
-      console.error('❌ Ошибка при загрузке данных:', error)
-
-      // Fallback: используем отдельные API endpoints
-      const [mkbData, lsResults, algoResults, drugResults, substationResults] = await Promise.all([
-        $fetch('/api/mkb/all').catch(() => ({ success: true, items: [] })),
-        $fetch('/api/local-statuses/all').catch(() => ({ success: true, items: [] })),
-        $fetch('/api/algorithms/all').catch(() => ({ success: true, items: [] })),
-        $fetch('/api/drugs/all').catch(() => ({ success: true, items: [] })),
-        $fetch('/api/substations/all').catch(() => ({ success: true, items: [] }))
-      ])
-
-      // Собираем данные из fallback endpoints
-      allItems = []
-
-      if (mkbData?.success && 'items' in mkbData && Array.isArray((mkbData as any).items)) {
-        allItems.push(...(mkbData as any).items.map((item: any) => ({ ...item, type: 'mkb' })))
-      }
-      if (lsResults?.success && 'items' in lsResults && Array.isArray((lsResults as any).items)) {
-        allItems.push(...(lsResults as any).items.map((item: any) => ({ ...item, type: 'ls' })))
-      }
-      if (algoResults?.success && 'items' in algoResults && Array.isArray((algoResults as any).items)) {
-        allItems.push(...(algoResults as any).items.map((item: any) => ({ ...item, type: 'algorithm' })))
-      }
-      if (drugResults?.success && 'items' in drugResults && Array.isArray((drugResults as any).items)) {
-        allItems.push(...(drugResults as any).items.map((item: any) => ({ ...item, type: 'drug' })))
-      }
-      if (substationResults?.success && 'items' in substationResults && Array.isArray((substationResults as any).items)) {
-        allItems.push(...(substationResults as any).items.map((item: any) => ({ ...item, type: 'substation' })))
-      }
-    }
-
-    // Отладочная информация о типах данных
-    const typeCounts = allItems.reduce((acc, item) => {
-      acc[item.type] = (acc[item.type] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
-
-    // Показываем примеры каждого типа
-    Object.keys(typeCounts).forEach(type => {
-      const sample = allItems.find(item => item.type === type)
-      if (sample) {
-        // Примеры данных для отладки
-      }
-    })
-
-    // Всегда используем Fuse.js для более точного поиска
-    const { search } = useFuseSearch()
-    const fuseResults = search(allItems, query)
-
-    let finalResults: any[] = fuseResults
-
-    // Если Fuse.js ничего не нашел, пробуем простой поиск как fallback
-    if (fuseResults.length === 0) {
-      const simpleResults = performSimpleSearch(allItems, query)
-      if (simpleResults.length > 0) {
-        finalResults = simpleResults
-      }
-    }
-
-    // Группируем результаты по типам
-    const grouped: Record<string, any[]> = {
-      mkb: [],
-      ls: [],
-      algorithm: [],
-      drug: [],
-      substation: []
-    }
-
-    finalResults.forEach(result => {
-      if (grouped[result.type]) {
-        grouped[result.type].push(result)
-      }
-    })
-
-    updateSearchResults(finalResults, grouped)
-    
-    // Добавляем запрос в историю поисков
-    addToHistory(query)
-
-  } catch (error) {
-    console.error('❌ Ошибка поиска:', error)
-  } finally {
-    updateSearching(false)
-  }
+  // Выполняем серверный поиск с дебаунсом
+  // Используем дебаунс для уменьшения нагрузки на сервер
+  const debounceMs = 500 // 500ms дебаунс для всех устройств
+  console.log('Performing server search:', { query, debounceMs, isMobile })
+  performServerSearch(query, debounceMs)
 }
 
 // Выбираем результат поиска
@@ -1112,6 +918,9 @@ const getResultDetails = (result: any) => {
 const clearSearch = () => {
   searchQuery.value = ''
 
+  // Очищаем таймер поиска
+  clearSearchTimeout()
+
   // На мобильных устройствах сворачиваем строку поиска
   const isMobile = window.innerWidth <= 768
   if (isMobile) {
@@ -1131,10 +940,7 @@ const clearSearch = () => {
 
 // Дополнительные обработчики для мобильных устройств
 const onSearchKeydown = () => {
-  // Обрабатываем нажатия клавиш для мобильных устройств
-  if (!isComposing.value) {
-    handleSearchInput()
-  }
+  // Логика поиска теперь обрабатывается в watcher для searchQuery
 }
 
 const onSearchTouchStart = () => {
@@ -1149,7 +955,7 @@ const onSearchTouchEnd = () => {
   setTimeout(() => {
     if (lastSearchValue.value !== searchQuery.value) {
       lastSearchValue.value = searchQuery.value
-      handleSearchInput()
+      console.log('Touch end event:', searchQuery.value)
     }
   }, 50)
 }
@@ -1170,6 +976,7 @@ defineExpose({
   onSearchBlur,
   onSearchEnter,
   onSearchInput,
+  onSearchInputMobile,
   onSearchKeyup,
   onSearchKeydown,
   onSearchChange,
@@ -1192,5 +999,74 @@ defineExpose({
 /* Увеличиваем размер клавиш в tooltip */
 :deep(.tooltip-logo .tooltip-kbds) {
   font-size: 12px !important;
+}
+
+/* Убираем padding у UInput */
+:deep(.ui-input input),
+:deep(input[type="text"]) {
+  padding: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Убеждаемся, что иконка поиска видна */
+.relative .absolute {
+  z-index: 10 !important;
+}
+
+/* Дополнительные стили для иконки поиска */
+.relative .absolute svg {
+  z-index: 11 !important;
+  position: relative !important;
+}
+
+/* Убеждаемся, что иконка поиска всегда видна */
+.absolute.inset-y-0.left-0 {
+  z-index: 20 !important;
+}
+
+.absolute.inset-y-0.left-0 svg {
+  z-index: 21 !important;
+  position: relative !important;
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* Центрируем только плейсхолдер, текст ввода - слева */
+:deep(.ui-input input),
+:deep(input[type="text"]) {
+  text-align: left !important;
+  font-size: 16px !important; /* Увеличиваем размер текста */
+  border-radius: 0 !important; /* Прямые углы у инпута */
+}
+
+:deep(.ui-input input::placeholder),
+:deep(input[type="text"]::placeholder) {
+  text-align: center !important;
+  font-size: 16px !important; /* Увеличиваем размер плейсхолдера */
+}
+
+/* При фокусе скрываем плейсхолдер */
+:deep(.ui-input input:focus::placeholder),
+:deep(input[type="text"]:focus::placeholder) {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Стили для родительского контейнера поиска */
+.relative.flex-1.rounded-lg {
+  background-color: white;
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.relative.flex-1.rounded-lg:hover,
+.relative.flex-1.rounded-lg:focus-within {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.dark .relative.flex-1.rounded-lg {
+  background-color: #1e293b; /* slate-800 */
 }
 </style>

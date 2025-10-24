@@ -10,7 +10,7 @@
         </p>
       </div>
       
-      <div class="mt-8 bg-white dark:bg-slate-800 py-8 px-4 shadow sm:rounded-lg sm:px-10 transition-colors duration-300">
+      <div class="mt-8 bg-white dark:bg-slate-800 py-8 px-4 shadow rounded-lg transition-colors duration-300">
         <form @submit.prevent="onSubmit" class="space-y-6">
           <div>
             <label for="email" class="block text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -210,21 +210,8 @@ const onSubmit = async () => {
     if (result.success) {
       success.value = result.message
       
-      // Определяем, находимся ли мы в Capacitor (мобильное приложение)
-      const isCapacitor = process.client && (
-        window.Capacitor?.isNativePlatform?.() || 
-        window.location.protocol === 'capacitor:' ||
-        window.location.protocol === 'ionic:' ||
-        navigator.userAgent.includes('Capacitor')
-      )
-      
-      if (isCapacitor) {
-        // В Capacitor используем window.location для перенаправления
-        window.location.href = '/'
-      } else {
-        // В веб-версии используем navigateTo для сохранения реактивности
-        await navigateTo('/')
-      }
+      // Упрощенная логика перенаправления
+      await navigateTo('/')
     } else {
       error.value = result.message
     }

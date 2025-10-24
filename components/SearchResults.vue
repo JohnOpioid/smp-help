@@ -58,17 +58,15 @@
                   <div class="p-3">
                     <div class="flex items-start justify-between">
                       <div class="flex-1">
-                        <h4 class="font-medium text-slate-900 dark:text-white">
-                          {{ result.title || result.name }}
-                          <template
-                            v-if="(result.synonyms && result.synonyms.length > 0) || (result.data?.synonyms && result.data.synonyms.length > 0)">
-                            — {{ (result.synonyms && result.synonyms.length > 0 ? result.synonyms :
-                              result.data?.synonyms)?.join(', ') }}
-                          </template>
+                        <h4 class="font-medium text-slate-900 dark:text-white" v-html="highlightText(result.title || result.name, searchQuery)">
                         </h4>
+                        <template
+                          v-if="(result.synonyms && result.synonyms.length > 0) || (result.data?.synonyms && result.data.synonyms.length > 0)">
+                          <p class="text-sm text-slate-600 dark:text-slate-300 mt-1" v-html="highlightText('— ' + (result.synonyms && result.synonyms.length > 0 ? result.synonyms : result.data?.synonyms)?.join(', '), searchQuery)">
+                          </p>
+                        </template>
                         <p v-if="(result.description || result.note || result.content)"
-                          class="text-sm text-slate-600 dark:text-slate-300 mt-1">
-                          {{ truncateToApproximateLines(result.description || result.note || result.content, 5) }}
+                          class="text-sm text-slate-600 dark:text-slate-300 mt-1" v-html="highlightText(truncateToApproximateLines(result.description || result.note || result.content, 5), searchQuery)">
                         </p>
                       </div>
                     </div>
@@ -127,18 +125,10 @@
                   <div class="p-3">
                     <div class="flex items-start justify-between">
                       <div class="flex-1">
-                        <h4 class="font-medium text-slate-900 dark:text-white">
-                          {{ result.title || result.name || result.data?.name }}
-                          <template
-                            v-if="(result.synonyms && result.synonyms.length > 0) || (result.data?.synonyms && result.data.synonyms.length > 0)">
-                            — {{ (result.synonyms && result.synonyms.length > 0 ? result.synonyms :
-                              result.data?.synonyms)?.join(', ') }}
-                          </template>
+                        <h4 class="font-medium text-slate-900 dark:text-white" v-html="highlightText((result.title || result.name || result.data?.name) + ((result.synonyms && result.synonyms.length > 0) || (result.data?.synonyms && result.data.synonyms.length > 0) ? ' — ' + (result.synonyms && result.synonyms.length > 0 ? result.synonyms : result.data?.synonyms)?.join(', ') : ''), searchQuery)">
                         </h4>
                         <p v-if="(result.description || result.data?.description || result.data?.note)"
-                          class="text-sm text-slate-600 dark:text-slate-300 mt-1">
-                          {{ truncateToApproximateLines(result.description || result.data?.description ||
-                          result.data?.note, 5) }}
+                          class="text-sm text-slate-600 dark:text-slate-300 mt-1" v-html="highlightText(truncateToApproximateLines(result.description || result.data?.description || result.data?.note, 5), searchQuery)">
                         </p>
                       </div>
                     </div>
@@ -188,12 +178,10 @@
                   <div class="p-3">
                     <div class="flex items-start justify-between">
                       <div class="flex-1">
-                        <h4 class="font-medium text-slate-900 dark:text-white">{{ result.title || result.data?.name ||
-                          result.name }}</h4>
+                        <h4 class="font-medium text-slate-900 dark:text-white" v-html="highlightText(result.title || result.data?.name || result.name, searchQuery)">
+                        </h4>
                         <p v-if="(result.description || result.data?.description || result.data?.note)"
-                          class="text-sm text-slate-600 dark:text-slate-300 mt-1">
-                          {{ truncateToApproximateLines(result.description || result.data?.description ||
-                          result.data?.note, 5) }}
+                          class="text-sm text-slate-600 dark:text-slate-300 mt-1" v-html="highlightText(truncateToApproximateLines(result.description || result.data?.description || result.data?.note, 5), searchQuery)">
                         </p>
                       </div>
                     </div>
@@ -264,13 +252,7 @@
                   <div class="p-3">
                     <div class="flex items-start justify-between">
                       <div class="flex-1">
-                        <h4 class="font-medium text-slate-900 dark:text-white">
-                          {{ result.title || result.name || result.data?.name }}
-                          <template
-                            v-if="(result.synonyms && result.synonyms.length > 0) || (result.data?.synonyms && result.data.synonyms.length > 0)">
-                            , {{ (result.synonyms && result.synonyms.length > 0 ? result.synonyms :
-                              result.data?.synonyms)?.join(', ') }}
-                          </template>
+                        <h4 class="font-medium text-slate-900 dark:text-white" v-html="highlightText((result.title || result.name || result.data?.name) + ((result.synonyms && result.synonyms.length > 0) || (result.data?.synonyms && result.data.synonyms.length > 0) ? ', ' + (result.synonyms && result.synonyms.length > 0 ? result.synonyms : result.data?.synonyms)?.join(', ') : ''), searchQuery)">
                         </h4>
                         <p v-if="result.latinName || result.data?.latinName"
                           class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{
@@ -464,11 +446,11 @@
                   <div class="p-3">
                     <div class="flex items-start justify-between">
                       <div class="flex-1">
-                        <h4 class="font-medium text-slate-900 dark:text-white">{{ result.title || result.name ||
-                          result.data?.name || result.data?.title }}</h4>
+                        <h4 class="font-medium text-slate-900 dark:text-white" v-html="highlightText(result.title || result.name || result.data?.name || result.data?.title, searchQuery)">
+                        </h4>
                         <p v-if="result.data?.address || result.address"
-                          class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ result.data?.address ||
-                          result.address }}</p>
+                          class="text-sm text-slate-500 dark:text-slate-400 mt-1" v-html="highlightText(result.data?.address || result.address, searchQuery)">
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -576,6 +558,23 @@ import { useSearchHistory } from '~/composables/useSearchHistory'
 
 const { isSearchActive, isSearching, searchResults, groupedResults, selectSearchResult, deactivateSearch, currentPageContext, searchQuery, isDataFromCache } = useGlobalSearch()
 const { searchHistory, addToHistory, clearHistory, removeFromHistory } = useSearchHistory()
+
+// Функция для подсветки найденных фрагментов
+const highlightText = (text: string, query: string) => {
+  if (!text || !query) return text
+  
+  const queryWords = query.trim().toLowerCase().split(/\s+/).filter(word => word.length > 0)
+  if (queryWords.length === 0) return text
+  
+  let highlightedText = text
+  
+  queryWords.forEach(word => {
+    const regex = new RegExp(`(${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+    highlightedText = highlightedText.replace(regex, '<mark class="search-highlight">$1</mark>')
+  })
+  
+  return highlightedText
+}
 
 // Определяем порядок отображения групп в зависимости от контекста страницы
 const groupDisplayOrder = computed(() => {
@@ -1539,7 +1538,7 @@ onBeforeUnmount(() => {
 // Функция для выполнения поиска из истории
 const performSearchFromHistory = (query: string) => {
   // Получаем глобальное состояние поиска
-  const { activateSearch, updateSearchQuery, updateSearching } = useGlobalSearch()
+  const { activateSearch, updateSearchQuery, performServerSearch } = useGlobalSearch()
 
   // Сначала активируем поиск
   activateSearch(query)
@@ -1547,8 +1546,8 @@ const performSearchFromHistory = (query: string) => {
   // Затем обновляем запрос (это заполнит инпут через watcher)
   updateSearchQuery(query)
 
-  // Устанавливаем флаг поиска для показа скелетона
-  updateSearching(true)
+  // Выполняем серверный поиск с коротким дебаунсом для истории
+  performServerSearch(query, 100)
 
   // Добавляем в историю (если еще не добавлен)
   addToHistory(query)
@@ -1700,6 +1699,36 @@ const performSearchFromHistory = (query: string) => {
     text-overflow: ellipsis;
     max-width: 100%;
   }
+}
+
+/* Стили для подсветки найденных фрагментов */
+.search-highlight {
+  background-color: #fef3c7 !important; /* желтый фон */
+  color: #92400e !important; /* темно-желтый текст */
+  padding: 1px 2px !important;
+  border-radius: 2px !important;
+  font-weight: 600 !important;
+}
+
+.dark .search-highlight {
+  background-color: #fbbf24 !important; /* желтый фон для темной темы */
+  color: #1f2937 !important; /* темный текст для контраста */
+}
+
+/* Дополнительные стили для mark элементов */
+mark.search-highlight,
+:deep(mark.search-highlight) {
+  background-color: #fef3c7 !important;
+  color: #92400e !important;
+  padding: 1px 2px !important;
+  border-radius: 2px !important;
+  font-weight: 600 !important;
+}
+
+.dark mark.search-highlight,
+.dark :deep(mark.search-highlight) {
+  background-color: #fbbf24 !important;
+  color: #1f2937 !important;
 }
 
 </style>

@@ -114,7 +114,6 @@
 </template>
 
 <script setup lang="ts">
-import { Capacitor } from '@capacitor/core'
 
 // Props
 defineProps<{
@@ -159,9 +158,13 @@ const showBreadcrumbs = computed(() => {
 const headerHeight = ref(88) // 56px + 32px отступ
 const bottomNavHeight = ref(76) // 60px + 16px отступ
 
-// Определяем, находимся ли в мобильном приложении
+// Определяем, находимся ли в мобильном браузере
 const isMobileApp = computed(() => {
-  return process.client && Capacitor.isNativePlatform()
+  if (!process.client) return false
+  
+  // Простая проверка мобильного браузера
+  const userAgent = navigator.userAgent.toLowerCase()
+  return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent)
 })
 
 // Функция закрытия поиска

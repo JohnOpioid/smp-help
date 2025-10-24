@@ -33,7 +33,20 @@ class LocalDB extends Dexie {
 const localDB = new LocalDB()
 
 export default defineNuxtPlugin(() => {
-  const runtimeConfig = useRuntimeConfig()
+  // ВРЕМЕННО ОТКЛЮЧЕНО: Плагин локальной БД замедляет загрузку приложения
+  console.log('🔧 MongoDB local plugin disabled for performance')
+  return {
+    provide: {
+      localDB: {
+        cacheDocument: () => Promise.resolve(),
+        getCachedDocuments: () => Promise.resolve([]),
+        queueMutation: () => Promise.resolve(),
+        flushMutations: () => Promise.resolve()
+      }
+    }
+  }
+
+  // const runtimeConfig = useRuntimeConfig()
   
           // Определяем базовый URL для API
           const getApiUrl = () => {

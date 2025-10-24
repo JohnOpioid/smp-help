@@ -2,25 +2,22 @@ export const useAuth = () => {
   const user = useState<any | null>('auth-user', () => null)
   const token = useState<string | null>('auth-token', () => null)
   const isLoggedIn = computed(() => !!user.value)
-  const tokenCookie = useCookie<string | null>('token', { path: '/', sameSite: 'lax' })
+  
+  // Улучшенные настройки cookie для локальной разработки
+  const tokenCookie = useCookie<string | null>('token', { 
+    path: '/', 
+    sameSite: 'lax',
+    secure: false, // Для локальной разработки
+    httpOnly: false, // Позволяем читать cookie на клиенте
+    maxAge: 60 * 60 * 24 * 7 // 7 дней
+  })
+  
   const runtimeConfig = useRuntimeConfig()
   
-  // Определяем базовый URL для API
+  // Упрощенное определение базового URL для API (без проверки Capacitor)
   const getApiUrl = () => {
     if (process.client) {
-      // Проверяем через Capacitor API
-      try {
-        // @ts-ignore
-        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-          console.log('Capacitor detected via API')
-          // В Android приложении всегда используем HTTPS API
-          return 'https://helpsmp.ru'
-        }
-      } catch (e) {
-        console.log('Capacitor API not available:', e)
-      }
-      
-      // Fallback: проверяем hostname для определения среды
+      // Простая проверка hostname без Capacitor
       const hostname = window.location.hostname
       const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1'
       const isLocalNetwork = hostname.startsWith('192.168.') || hostname.startsWith('10.0.') || hostname.startsWith('172.')
@@ -39,31 +36,78 @@ export const useAuth = () => {
   // Инициализация из cookie через сервер
   const initAuth = async () => {
     try {
-      if (user.value) return
-      // Если нет cookie token, не запрашиваем /me
-      const existingToken = useCookie<string | null>('token').value
-      if (!existingToken) return
+      // Если пользователь уже загружен, не делаем повторный запрос
+      if (user.value) {
+        console.log('User already loaded, skipping init')
+        return
+      }
+      
+      // Проверяем cookie token
+      const existingToken = tokenCookie.value
+      console.log('Checking token cookie:', { 
+        hasToken: !!existingToken, 
+        tokenLength: existingToken?.length || 0,
+        cookieValue: existingToken ? 'exists' : 'null'
+      })
+      
+      if (!existingToken) {
+        console.log('No token cookie found')
+        return
+      }
+      
+      console.log('Initializing auth with existing token')
       const apiUrl = getApiUrl()
-      const res: any = await $fetch(`${apiUrl}/api/auth/me`, { credentials: 'include' })
+      console.log('Using API URL:', apiUrl)
+      
+      const res: any = await $fetch(`${apiUrl}/api/auth/me`, { 
+        credentials: 'include',
+        retry: 1,
+        timeout: 5000
+      })
+      
       if (res?.user) {
         user.value = res.user
+        console.log('Auth initialized successfully:', res.user.email)
+      } else {
+        // Если пользователь не найден, очищаем токен
+        console.log('User not found, clearing auth')
+        clearAuth()
       }
-    } catch {
-      // игнорируем: нет токена/не авторизован
+    } catch (error: any) {
+      console.error('Init auth error:', error)
+      // Если ошибка авторизации, очищаем токен
+      if (error.statusCode === 401 || error.status === 401) {
+        console.log('401 error, clearing auth')
+        clearAuth()
+      }
     }
   }
 
   // Сохранение без localStorage (временное отключение кэша)
   const saveAuth = (authToken: string, userData: any) => {
+    console.log('Saving auth:', { hasToken: !!authToken, hasUser: !!userData })
+    
     if (authToken) {
       const strToken = String(authToken)
       token.value = strToken
       tokenCookie.value = strToken
+      
+      // Проверяем, что cookie действительно сохранился
+      if (process.client) {
+        console.log('Token saved to cookie:', !!tokenCookie.value)
+        console.log('Cookie value:', tokenCookie.value ? 'exists' : 'null')
+      }
     } else {
       token.value = null
       tokenCookie.value = null
     }
     user.value = userData
+    
+    console.log('Auth saved successfully:', { 
+      hasUser: !!user.value, 
+      hasToken: !!token.value, 
+      hasCookie: !!tokenCookie.value 
+    })
   }
 
   // Очистка аутентификации
@@ -152,10 +196,34 @@ export const useAuth = () => {
   // Выход
   const logout = async () => {
     try {
-      await $fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
-    } catch {}
+      const apiUrl = getApiUrl()
+      await $fetch(`${apiUrl}/api/auth/logout`, { method: 'POST', credentials: 'include' })
+    } catch (error) {
+      console.error('Logout error:', error)
+      // Продолжаем выполнение даже при ошибке сервера
+    }
+    
+    // Очищаем локальные данные
     clearAuth()
-    navigateTo('/auth/login')
+    
+    // Перенаправляем на страницу входа
+    if (process.client) {
+      // Определяем, находимся ли мы в Capacitor (мобильное приложение)
+      const isCapacitor = process.client && (
+        window.Capacitor?.isNativePlatform?.() || 
+        window.location.protocol === 'capacitor:' ||
+        window.location.protocol === 'ionic:' ||
+        navigator.userAgent.includes('Capacitor')
+      )
+      
+      if (isCapacitor) {
+        // В Capacitor используем window.location для перенаправления
+        window.location.href = '/auth/login'
+      } else {
+        // В веб-версии используем navigateTo для сохранения реактивности
+        await navigateTo('/auth/login')
+      }
+    }
   }
 
   // Инициализация при создании composable
@@ -170,6 +238,7 @@ export const useAuth = () => {
     register,
     login,
     logout,
-    clearAuth
+    clearAuth,
+    initAuth
   }
 }

@@ -1,8 +1,122 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+
+/* Глобальные стили для удаления border у input элементов */
+input[type="text"],
+input[type="search"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+textarea,
+select {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  border-width: 0 !important;
+  border-style: none !important;
+}
+
+input[type="text"]:focus,
+input[type="search"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+textarea:focus,
+select:focus {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+input[type="text"]:hover,
+input[type="search"]:hover,
+input[type="email"]:hover,
+input[type="password"]:hover,
+input[type="number"]:hover,
+input[type="tel"]:hover,
+input[type="url"]:hover,
+textarea:hover,
+select:hover {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Глобальные стили для UInput - максимально агрессивно */
+.ui-input,
+.ui-input input,
+.ui-input .ui-input-base,
+.ui-input .ui-input-wrapper,
+.ui-input .ui-input-wrapper input,
+.ui-input .ui-input-wrapper .ui-input-base,
+.ui-input .ui-input-wrapper .ui-input-base input,
+.ui-input .ui-input-wrapper .ui-input-base input:focus,
+.ui-input .ui-input-wrapper .ui-input-base input:hover,
+.ui-input .ui-input-wrapper .ui-input-base input:active,
+.ui-input .ui-input-wrapper .ui-input-base input:focus-visible,
+.ui-input .ui-input-wrapper .ui-input-base input:focus-within {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Центрируем только плейсхолдер, текст ввода - слева */
+.ui-input input,
+.ui-input .ui-input-base input,
+.ui-input .ui-input-wrapper input,
+.ui-input .ui-input-wrapper .ui-input-base input {
+  text-align: left !important;
+  font-size: 16px !important; /* Увеличиваем размер текста */
+  border-radius: 0 !important; /* Прямые углы у инпута */
+}
+
+.ui-input input::placeholder,
+.ui-input .ui-input-base input::placeholder,
+.ui-input .ui-input-wrapper input::placeholder,
+.ui-input .ui-input-wrapper .ui-input-base input::placeholder {
+  text-align: center !important;
+  font-size: 16px !important; /* Увеличиваем размер плейсхолдера */
+}
+
+/* При фокусе скрываем плейсхолдер */
+.ui-input input:focus::placeholder,
+.ui-input .ui-input-base input:focus::placeholder,
+.ui-input .ui-input-wrapper input:focus::placeholder,
+.ui-input .ui-input-wrapper .ui-input-base input:focus::placeholder {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
 /* Ensure page scroll restored even if modal leaves overflow hidden */
 .overflow-reset {
   overflow: auto !important;
+}
+
+/* Глобальные стили для подсветки поиска */
+.search-highlight,
+mark.search-highlight {
+  background-color: #fef3c7 !important;
+  color: #92400e !important;
+  padding: 1px 2px !important;
+  border-radius: 2px !important;
+  font-weight: 600 !important;
+}
+
+.dark .search-highlight,
+.dark mark.search-highlight {
+  background-color: #fbbf24 !important;
+  color: #1f2937 !important;
 }
 
 body {

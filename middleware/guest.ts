@@ -14,21 +14,8 @@ export default defineNuxtRouteMiddleware(async () => {
       if (!token) return
       const res: any = await $fetch('/api/auth/me', { credentials: 'include' })
       if (res?.user) {
-        // Определяем, находимся ли мы в Capacitor (мобильное приложение)
-        const isCapacitor = process.client && (
-          window.Capacitor?.isNativePlatform?.() || 
-          window.location.protocol === 'capacitor:' ||
-          window.location.protocol === 'ionic:' ||
-          navigator.userAgent.includes('Capacitor')
-        )
-        
-        if (isCapacitor) {
-          // В Capacitor используем window.location для перенаправления
-          window.location.href = '/'
-        } else {
-          // В веб-версии используем navigateTo для сохранения реактивности
-          return navigateTo('/')
-        }
+        // Упрощенная логика перенаправления
+        return navigateTo('/')
       }
     }
   } catch {}

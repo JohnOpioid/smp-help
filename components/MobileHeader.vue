@@ -44,8 +44,6 @@
 </template>
 
 <script setup lang="ts">
-import { StatusBar } from '@capacitor/status-bar'
-import { Capacitor } from '@capacitor/core'
 
 // Props
 defineProps<{
@@ -62,15 +60,8 @@ const isMenuOpen = ref(false)
 
 // Получаем высоту статус-бара
 onMounted(async () => {
-  if (process.client && Capacitor.isNativePlatform()) {
-    try {
-      const info = await StatusBar.getInfo()
-      statusBarHeight.value = info.height
-    } catch (error) {
-      console.error('Ошибка получения высоты статус-бара:', error)
-      statusBarHeight.value = 24 // Fallback
-    }
-  }
+  // Упрощенная логика без Capacitor
+  statusBarHeight.value = 24 // Fallback значение
 })
 
 // Навигация назад

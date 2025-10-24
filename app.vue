@@ -34,15 +34,55 @@ const isMounted = ref(false)
 // Состояние загрузки контента при навигации
 const isContentLoading = ref(false)
 
+// Проверяем, является ли это принудительным обновлением
+const isPageRefresh = ref(false)
+
 // Предоставляем состояния загрузки для дочерних компонентов
 provide('isInitialLoading', isInitialLoading)
 provide('isContentLoading', isContentLoading)
 
-// Скрываем скелетоны сразу после первой отрисовки без искусственной задержки
+// Проверяем принудительное обновление
+if (process.client) {
+  // Проверяем, была ли страница обновлена принудительно
+  const navigationEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[]
+  if (navigationEntries.length > 0) {
+    const navEntry = navigationEntries[0]
+    isPageRefresh.value = navEntry.type === 'reload'
+    console.log('Page refresh detected:', isPageRefresh.value)
+  }
+  
+  // Дополнительная проверка через sessionStorage
+  const wasRefreshed = sessionStorage.getItem('page-refreshed')
+  if (wasRefreshed) {
+    isPageRefresh.value = true
+    sessionStorage.removeItem('page-refreshed')
+    console.log('Page refresh detected via sessionStorage')
+  }
+  
+  // Отслеживаем принудительное обновление
+  window.addEventListener('beforeunload', () => {
+    sessionStorage.setItem('page-refreshed', 'true')
+  })
+}
+
+// Скрываем скелетоны после загрузки данных
 onMounted(() => {
   isMounted.value = true
-  requestAnimationFrame(() => {
-    isInitialLoading.value = false
+  
+  // Небольшая задержка для стабильности
+  nextTick(() => {
+    if (isPageRefresh.value) {
+      // При принудительном обновлении показываем скелетон дольше
+      console.log('Showing skeleton for page refresh')
+      setTimeout(() => {
+        isInitialLoading.value = false
+      }, 1000) // 1000ms для принудительного обновления
+    } else {
+      // При обычной навигации скрываем быстрее
+      setTimeout(() => {
+        isInitialLoading.value = false
+      }, 300) // 300ms для обычной навигации
+    }
   })
 })
 

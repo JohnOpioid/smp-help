@@ -70,10 +70,11 @@ export default defineEventHandler(async (event) => {
 
     // Установим cookie с токеном для SSR и middleware
     setCookie(event, 'token', token, {
-      httpOnly: true,
+      httpOnly: false, // Позволяем читать cookie на клиенте
       sameSite: 'lax',
       path: '/',
-      secure: process.env.NODE_ENV === 'production'
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7 // 7 дней
     })
 
     return {
