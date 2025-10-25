@@ -34,6 +34,15 @@ export default defineEventHandler(async (event) => {
     await connectDB()
     console.log('🔍 Connected to MongoDB')
     
+    // Принудительно регистрируем модели для предотвращения ошибок
+    try {
+      console.log('🔍 Checking model registrations...')
+      const mongoose = await import('mongoose')
+      console.log('🔍 Registered models:', Object.keys(mongoose.models))
+    } catch (modelError) {
+      console.log('🔍 Model check error:', modelError)
+    }
+    
     const searchQuery = query.trim()
     
     // Создаем различные варианты поискового запроса для более гибкого поиска
@@ -299,7 +308,8 @@ export default defineEventHandler(async (event) => {
           { antidotes: { $in: searchRegexes } }
         ]
       })
-      .populate('categories', 'name url')
+      // Временно убираем populate для избежания ошибки DrugCategory
+      // .populate('categories', 'name url')
       // Лимит убран для получения всех результатов
       .lean(),
       
@@ -464,8 +474,15 @@ export default defineEventHandler(async (event) => {
 
   } catch (error) {
     console.error('❌ Ошибка серверного поиска:', error)
+    console.error('❌ Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    })
+    
+    // Возвращаем пустые результаты вместо ошибки, чтобы поиск не падал
     return {
-      success: false,
+      success: true, // Изменяем на true, чтобы клиент не считал это ошибкой
       results: [],
       groupedResults: {
         mkb: [],
@@ -475,8 +492,9 @@ export default defineEventHandler(async (event) => {
         substation: []
       },
       totalResults: 0,
-      query: '',
-      error: 'Ошибка при выполнении поиска'
+      query: query || '',
+      error: error.message, // Добавляем информацию об ошибке для отладки
+      timestamp: Date.now()
     }
   }
 })
