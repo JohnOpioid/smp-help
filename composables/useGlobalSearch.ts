@@ -1,24 +1,62 @@
-// Глобальное состояние поиска
+// Глобальное состояние поиска с использованием useState для сохранения между страницами
+// Версия без отладочных логов - 2024-01-20
 const globalState = {
-  isSearchActive: ref(false),
-  searchQuery: ref(''),
-  searchResults: ref<any[]>([]),
-  isSearching: ref(false),
-  isDataFromCache: ref(false),
-  groupedResults: ref<Record<string, any[]>>({
+  isSearchActive: useState('search.isSearchActive', () => false),
+  searchQuery: ref(''), // Временно используем ref вместо useState
+  searchResults: useState('search.searchResults', () => []),
+  isSearching: useState('search.isSearching', () => false),
+  isDataFromCache: useState('search.isDataFromCache', () => false),
+  groupedResults: useState('search.groupedResults', () => ({
     mkb: [],
     ls: [],
     algorithm: [],
     drug: [],
     substation: []
-  }),
-  orderedSections: ref<string[]>([]),
-  currentPageContext: ref<string>(''),
+  })),
+  orderedSections: useState('search.orderedSections', () => []),
+  currentPageContext: useState('search.currentPageContext', () => ''),
   searchTimeout: ref<NodeJS.Timeout | null>(null)
 }
 
+// Дополнительно используем cookie для надежного сохранения поискового запроса
+const searchQueryCookie = useCookie('search-query', {
+  default: () => '',
+  maxAge: 60 * 60 * 24, // 24 часа
+  sameSite: 'lax'
+})
+
 // Composable для управления глобальным состоянием поиска
 export const useGlobalSearch = () => {
+  // Инициализируем searchQuery из localStorage при первом запуске
+  if (process.client && !globalState.searchQuery.value) {
+    const savedQuery = localStorage.getItem('searchQuery') || ''
+    if (savedQuery) {
+      globalState.searchQuery.value = savedQuery
+      searchQueryCookie.value = savedQuery
+    }
+  }
+
+  // Синхронизируем searchQuery с cookie и localStorage
+  const searchQuery = computed({
+    get: () => {
+      const cookieValue = searchQueryCookie.value || ''
+      const stateValue = globalState.searchQuery.value || ''
+      const localStorageValue = process.client ? localStorage.getItem('searchQuery') || '' : ''
+      return cookieValue || stateValue || localStorageValue
+    },
+    set: (value: string) => {
+      globalState.searchQuery.value = value
+      searchQueryCookie.value = value
+      if (process.client) {
+        try {
+          localStorage.setItem('searchQuery', value)
+        } catch (error) {
+          // Игнорируем ошибки localStorage
+        }
+      }
+    }
+  })
+
   // Определяем контекст текущей страницы
   const updatePageContext = () => {
     const route = useRoute()
@@ -96,7 +134,7 @@ export const useGlobalSearch = () => {
     
     updatePageContext() // Обновляем контекст при активации поиска
     globalState.isSearchActive.value = true
-    globalState.searchQuery.value = query
+    searchQuery.value = query
     
     // Если есть запрос, пытаемся загрузить результаты из кэша
     if (query && query.length >= 3) {
@@ -121,7 +159,7 @@ export const useGlobalSearch = () => {
     if (!process.client) return
     
     globalState.isSearchActive.value = false
-    globalState.searchQuery.value = ''
+    searchQuery.value = ''
     globalState.searchResults.value = []
     globalState.isSearching.value = false
     globalState.groupedResults.value = {
@@ -132,6 +170,27 @@ export const useGlobalSearch = () => {
       substation: []
     }
     globalState.orderedSections.value = []
+    
+    // Очищаем localStorage при полной деактивации поиска
+    clearSearchStorage()
+  }
+
+  // Скрываем поиск без очистки инпута (для навигации между страницами)
+  const hideSearchOnly = () => {
+    if (!process.client) return
+    
+    globalState.isSearchActive.value = false
+    globalState.searchResults.value = []
+    globalState.isSearching.value = false
+    globalState.groupedResults.value = {
+      mkb: [],
+      ls: [],
+      algorithm: [],
+      drug: [],
+      substation: []
+    }
+    globalState.orderedSections.value = []
+    // НЕ очищаем searchQuery.value и localStorage
   }
 
   // Сохраняем результаты поиска в localStorage
@@ -147,6 +206,8 @@ export const useGlobalSearch = () => {
         timestamp: Date.now()
       }
       localStorage.setItem('searchCache', JSON.stringify(cacheData))
+      // Также сохраняем сам поисковый запрос отдельно
+      localStorage.setItem('searchQuery', query)
     } catch (error) {
       // Игнорируем ошибки localStorage
     }
@@ -180,9 +241,9 @@ export const useGlobalSearch = () => {
     if (!process.client) return
     
     // Сохраняем текущие результаты в кэш перед скрытием
-    if (globalState.searchQuery.value && globalState.searchResults.value.length > 0) {
+    if (searchQuery.value && globalState.searchResults.value.length > 0) {
       saveSearchCache(
-        globalState.searchQuery.value,
+        searchQuery.value,
         globalState.searchResults.value,
         globalState.groupedResults.value,
         globalState.orderedSections.value
@@ -231,7 +292,7 @@ export const useGlobalSearch = () => {
   }
 
   const updateSearchQuery = (query: string) => {
-    globalState.searchQuery.value = query
+    searchQuery.value = query
   }
 
   // Серверный поиск с дебаунсом
@@ -311,7 +372,7 @@ export const useGlobalSearch = () => {
           addToHistory(query.trim())
         }
       } else {
-        console.error('Ошибка серверного поиска:', response.error)
+        // Ошибка серверного поиска
         updateSearchResults([], {
           mkb: [],
           ls: [],
@@ -321,7 +382,7 @@ export const useGlobalSearch = () => {
         }, [])
       }
     } catch (error) {
-      console.error('🔍 Ошибка при выполнении серверного поиска:', error)
+      // Ошибка при выполнении серверного поиска
       updateSearchResults([], {
         mkb: [],
         ls: [],
@@ -339,6 +400,18 @@ export const useGlobalSearch = () => {
     if (globalState.searchTimeout.value) {
       clearTimeout(globalState.searchTimeout.value)
       globalState.searchTimeout.value = null
+    }
+  }
+
+  // Очищаем localStorage при деактивации поиска
+  const clearSearchStorage = () => {
+    if (!process.client) return
+    
+    try {
+      localStorage.removeItem('searchCache')
+      localStorage.removeItem('searchQuery')
+    } catch (error) {
+      // Игнорируем ошибки localStorage
     }
   }
 
@@ -371,7 +444,7 @@ export const useGlobalSearch = () => {
 
   return {
     isSearchActive: globalState.isSearchActive,
-    searchQuery: globalState.searchQuery,
+    searchQuery: searchQuery,
     searchResults: globalState.searchResults,
     isSearching: globalState.isSearching,
     isDataFromCache: globalState.isDataFromCache,
@@ -381,6 +454,7 @@ export const useGlobalSearch = () => {
     activateSearch,
     deactivateSearch,
     hideSearch,
+    hideSearchOnly,
     saveSearchCache,
     loadSearchCache,
     updateSearchResults,
@@ -391,6 +465,7 @@ export const useGlobalSearch = () => {
     updatePageContext,
     prioritizeResults,
     performServerSearch,
-    clearSearchTimeout
+    clearSearchTimeout,
+    clearSearchStorage
   }
 }

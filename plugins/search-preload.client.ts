@@ -8,7 +8,7 @@ export default defineNuxtPlugin(async () => {
   // Запускаем только на клиенте
   if (!process.client) return
 
-  console.log('🔧 Search preload plugin disabled for performance')
+  // Search preload plugin disabled for performance
   return
 
   // try {

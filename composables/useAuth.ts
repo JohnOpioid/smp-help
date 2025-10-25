@@ -23,10 +23,10 @@ export const useAuth = () => {
       const isLocalNetwork = hostname.startsWith('192.168.') || hostname.startsWith('10.0.') || hostname.startsWith('172.')
       
       if (isLocalhost || isLocalNetwork) {
-        console.log('Local network detected, using local API')
+        // Local network detected, using local API
         return `http://${hostname}:3000`
       } else {
-        console.log('Production detected, using helpsmp.ru')
+        // Production detected, using helpsmp.ru
         return 'https://helpsmp.ru'
       }
     }
@@ -38,26 +38,22 @@ export const useAuth = () => {
     try {
       // Если пользователь уже загружен, не делаем повторный запрос
       if (user.value) {
-        console.log('User already loaded, skipping init')
+        // User already loaded, skipping init
         return
       }
       
       // Проверяем cookie token
       const existingToken = tokenCookie.value
-      console.log('Checking token cookie:', { 
-        hasToken: !!existingToken, 
-        tokenLength: existingToken?.length || 0,
-        cookieValue: existingToken ? 'exists' : 'null'
-      })
+      // Checking token cookie
       
       if (!existingToken) {
-        console.log('No token cookie found')
+        // No token cookie found
         return
       }
       
-      console.log('Initializing auth with existing token')
+      // Initializing auth with existing token
       const apiUrl = getApiUrl()
-      console.log('Using API URL:', apiUrl)
+      // Using API URL
       
       const res: any = await $fetch(`${apiUrl}/api/auth/me`, { 
         credentials: 'include',
@@ -67,17 +63,17 @@ export const useAuth = () => {
       
       if (res?.user) {
         user.value = res.user
-        console.log('Auth initialized successfully:', res.user.email)
+        // Auth initialized successfully
       } else {
         // Если пользователь не найден, очищаем токен
-        console.log('User not found, clearing auth')
+        // User not found, clearing auth
         clearAuth()
       }
     } catch (error: any) {
-      console.error('Init auth error:', error)
+      // Init auth error
       // Если ошибка авторизации, очищаем токен
       if (error.statusCode === 401 || error.status === 401) {
-        console.log('401 error, clearing auth')
+        // 401 error, clearing auth
         clearAuth()
       }
     }
@@ -85,7 +81,7 @@ export const useAuth = () => {
 
   // Сохранение без localStorage (временное отключение кэша)
   const saveAuth = (authToken: string, userData: any) => {
-    console.log('Saving auth:', { hasToken: !!authToken, hasUser: !!userData })
+    // Saving auth
     
     if (authToken) {
       const strToken = String(authToken)
@@ -94,8 +90,7 @@ export const useAuth = () => {
       
       // Проверяем, что cookie действительно сохранился
       if (process.client) {
-        console.log('Token saved to cookie:', !!tokenCookie.value)
-        console.log('Cookie value:', tokenCookie.value ? 'exists' : 'null')
+        // Token saved to cookie
       }
     } else {
       token.value = null
@@ -103,11 +98,7 @@ export const useAuth = () => {
     }
     user.value = userData
     
-    console.log('Auth saved successfully:', { 
-      hasUser: !!user.value, 
-      hasToken: !!token.value, 
-      hasCookie: !!tokenCookie.value 
-    })
+    // Auth saved successfully
   }
 
   // Очистка аутентификации
@@ -152,40 +143,32 @@ export const useAuth = () => {
         password: credentials.password.replace(/[\u200B-\u200D\uFEFF]/g, '').trim()
       }
 
-              console.log('=== DEBUG LOGIN START ===')
-              console.log('Attempting login with:', { email: cleanCredentials.email, passwordLength: cleanCredentials.password.length })
+              // DEBUG LOGIN START
+              // Attempting login
               
               const apiUrl = getApiUrl()
-              console.log('Using API URL:', apiUrl)
-              console.log('Current location:', window.location.href)
-              console.log('Hostname:', window.location.hostname)
-              console.log('Protocol:', window.location.protocol)
-              console.log('User Agent:', navigator.userAgent)
-              console.log('Is Web Browser:', window.location.protocol === 'http:' || window.location.protocol === 'https:')
-              console.log('Full location object:', {
-                href: window.location.href,
-                protocol: window.location.protocol,
-                hostname: window.location.hostname,
-                port: window.location.port,
-                pathname: window.location.pathname,
-                search: window.location.search,
-                hash: window.location.hash
-              })
-              console.log('=== DEBUG LOGIN END ===')
+              // Using API URL
+              // Current location
+              // Hostname
+              // Protocol
+              // User Agent
+              // Is Web Browser
+              // Full location object
+              // DEBUG LOGIN END
               
               const data = await $fetch(`${apiUrl}/api/auth/login`, {
         method: 'POST',
         body: cleanCredentials
       })
 
-      console.log('Login response:', data)
+      // Login response
 
       if (data.success) {
         saveAuth(data.token, data.user)
         return { success: true, message: data.message }
       }
     } catch (error: any) {
-      console.error('Login error:', error)
+      // Login error
       return { 
         success: false, 
         message: error.data?.message || error.data?.statusMessage || 'Ошибка при авторизации' 
@@ -199,7 +182,7 @@ export const useAuth = () => {
       const apiUrl = getApiUrl()
       await $fetch(`${apiUrl}/api/auth/logout`, { method: 'POST', credentials: 'include' })
     } catch (error) {
-      console.error('Logout error:', error)
+      // Logout error
       // Продолжаем выполнение даже при ошибке сервера
     }
     

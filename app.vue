@@ -48,7 +48,7 @@ if (process.client) {
   if (navigationEntries.length > 0) {
     const navEntry = navigationEntries[0]
     isPageRefresh.value = navEntry.type === 'reload'
-    console.log('Page refresh detected:', isPageRefresh.value)
+    // Page refresh detected
   }
   
   // Дополнительная проверка через sessionStorage
@@ -56,7 +56,7 @@ if (process.client) {
   if (wasRefreshed) {
     isPageRefresh.value = true
     sessionStorage.removeItem('page-refreshed')
-    console.log('Page refresh detected via sessionStorage')
+    // Page refresh detected via sessionStorage
   }
   
   // Отслеживаем принудительное обновление
@@ -73,7 +73,7 @@ onMounted(() => {
   nextTick(() => {
     if (isPageRefresh.value) {
       // При принудительном обновлении показываем скелетон дольше
-      console.log('Showing skeleton for page refresh')
+      // Showing skeleton for page refresh
       setTimeout(() => {
         isInitialLoading.value = false
       }, 1000) // 1000ms для принудительного обновления

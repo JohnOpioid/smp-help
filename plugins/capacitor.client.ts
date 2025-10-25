@@ -5,7 +5,7 @@ import { Network } from '@capacitor/network'
 
 export default defineNuxtPlugin(async () => {
   // ВРЕМЕННО ОТКЛЮЧЕНО: Плагин Capacitor замедляет загрузку приложения
-  console.log('🔧 Capacitor plugin disabled for performance')
+  // Capacitor plugin disabled for performance
   
   return {
     provide: {

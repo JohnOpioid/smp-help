@@ -18,7 +18,7 @@ export default defineNuxtPlugin(() => {
     
     // Если это принудительное обновление, показываем скелетон сразу
     if (isPageRefresh) {
-      console.log('Page refresh detected, showing skeleton immediately')
+      // Page refresh detected, showing skeleton immediately
       // Устанавливаем состояние загрузки в true сразу
       const isInitialLoading = inject('isInitialLoading', ref(true))
       isInitialLoading.value = true

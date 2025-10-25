@@ -34,7 +34,7 @@ const localDB = new LocalDB()
 
 export default defineNuxtPlugin(() => {
   // ВРЕМЕННО ОТКЛЮЧЕНО: Плагин локальной БД замедляет загрузку приложения
-  console.log('🔧 MongoDB local plugin disabled for performance')
+  // MongoDB local plugin disabled for performance
   return {
     provide: {
       localDB: {

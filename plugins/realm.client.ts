@@ -2,7 +2,7 @@ import * as Realm from 'realm-web'
 
 export default defineNuxtPlugin(() => {
   // ВРЕМЕННО ОТКЛЮЧЕНО: Плагин Realm замедляет загрузку приложения
-  console.log('🔧 Realm plugin disabled for performance')
+  // Realm plugin disabled for performance
   return {
     provide: {
       realm: {

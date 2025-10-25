@@ -599,7 +599,7 @@ import { useGlobalSearch } from '~/composables/useGlobalSearch'
 import { useSearchHistory } from '~/composables/useSearchHistory'
 import Mascot from '~/components/Mascot.vue'
 
-const { isSearchActive, isSearching, searchResults, groupedResults, selectSearchResult, deactivateSearch, currentPageContext, searchQuery, isDataFromCache, orderedSections } = useGlobalSearch()
+const { isSearchActive, isSearching, searchResults, groupedResults, selectSearchResult, deactivateSearch, hideSearchOnly, currentPageContext, searchQuery, isDataFromCache, orderedSections } = useGlobalSearch()
 const { searchHistory, addToHistory, clearHistory, removeFromHistory } = useSearchHistory()
 
 // Отслеживаем изменения orderedSections
@@ -700,9 +700,10 @@ const groupDisplayOrder = computed(() => {
   }
   
   // Fallback: используем порядок из groupedResults
-  const serverOrder = Object.keys(groupedResults.value).filter(key => 
-    groupedResults.value[key] && groupedResults.value[key].length > 0
-  )
+  const serverOrder = Object.keys(groupedResults.value).filter(key => {
+    const results = (groupedResults.value as Record<string, any[]>)[key]
+    return results && results.length > 0
+  })
   
   // Добавляем разделы, которые есть в groupedResults, но не в serverOrder
   const allSections = ['mkb', 'algorithm', 'ls', 'drug', 'substation']
@@ -714,9 +715,10 @@ const groupDisplayOrder = computed(() => {
 // Получаем группы в правильном порядке
 const orderedGroups = computed(() => {
   const groups: Array<{ key: string, title: string, results: any[] }> = []
+  const groupedResultsTyped = groupedResults.value as Record<string, any[]>
 
   groupDisplayOrder.value.forEach((groupKey: string) => {
-    const results = groupedResults.value[groupKey]
+    const results = groupedResultsTyped[groupKey]
     if (results && results.length > 0) {
       let title = ''
       switch (groupKey) {
@@ -841,7 +843,7 @@ const getSubstationBalloon = (result: any) => {
 try {
   const router = useRouter()
   router.afterEach(() => {
-    deactivateSearch()
+    hideSearchOnly() // Используем hideSearchOnly вместо deactivateSearch
   })
 } catch { }
 

@@ -174,7 +174,8 @@
                     <span>Настройки</span>
                   </NuxtLink>
                   <div
-                    class="flex items-center justify-between px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    class="flex items-center justify-between px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                    @click="menuOpen = false">
                     <span>Тёмная тема</span>
                     <USwitch :model-value="isDark" @update:model-value="onToggleTheme" size="sm" color="neutral" />
                   </div>
@@ -503,7 +504,7 @@ function openSearchPanel() {
 // Импортируем глобальное состояние поиска
 const {
   isSearchActive,
-  searchQuery: globalSearchQuery,
+  searchQuery,
   searchResults,
   isSearching,
   groupedResults,
@@ -511,6 +512,7 @@ const {
   activateSearch,
   deactivateSearch,
   hideSearch: globalHideSearch,
+  hideSearchOnly,
   updateSearchResults,
   updateSearching,
   updateCacheStatus,
@@ -522,13 +524,13 @@ const {
 // Импортируем историю поисков
 const { addToHistory } = useSearchHistory()
 
-// Локальная переменная для поля ввода
-const searchQuery = ref('')
-
 // Синхронизируем локальный searchQuery с глобальным состоянием
 watch(searchQuery, (newValue) => {
-  updateSearchQuery(newValue)
-}, { immediate: true })
+  // Не вызываем updateSearchQuery при инициализации с пустым значением
+  if (newValue !== '') {
+    updateSearchQuery(newValue)
+  }
+}, { immediate: false })
 const lastSearchValue = ref('')
 const isComposing = ref(false)
 const isSearchExpanded = ref(false)
@@ -552,10 +554,10 @@ onUnmounted(() => {
 
 // Следим за изменениями маршрута и сбрасываем состояние поиска
 watch(() => route.path, () => {
-  // При переходе на новую страницу сбрасываем состояние поиска
+  // При переходе на новую страницу сбрасываем только состояние поиска, но НЕ очищаем запрос
   isSearchExpanded.value = false
-  searchQuery.value = ''
-  deactivateSearch()
+  // НЕ очищаем searchQuery.value - оставляем текст в инпуте
+  hideSearchOnly()
 })
 
 // Следим за состоянием активности поиска и управляем внешним видом поля
@@ -566,13 +568,6 @@ watch(isSearchActive, (newValue) => {
     if (!newValue) {
       isSearchExpanded.value = false
     }
-  }
-})
-
-// Синхронизируем глобальное состояние поиска с локальным инпутом
-watch(globalSearchQuery, (newQuery) => {
-  if (newQuery !== searchQuery.value) {
-    searchQuery.value = newQuery
   }
 })
 
@@ -711,11 +706,17 @@ const onSearchFocus = () => {
 
   // Активируем поиск при фокусе если инпут пустой ИЛИ если есть текст но поиск неактивен
   if (!isSearchActive.value) {
-    activateSearch(q)
-    
-    // Если есть текст в инпуте, выполняем поиск
-    if (q.length >= 3) {
-      performServerSearch(q, 0)
+    // Активируем поиск только если есть текст в инпуте
+    if (q && q.length > 0) {
+      activateSearch(q)
+      
+      // Если есть текст в инпуте, выполняем поиск
+      if (q.length >= 3) {
+        performServerSearch(q, 0)
+      }
+    } else {
+      // Если инпут пустой, просто активируем панель поиска
+      activateSearch('')
     }
   }
 }
@@ -932,6 +933,7 @@ const clearSearchInput = () => {
   if (process.client) {
     try {
       localStorage.removeItem('searchCache')
+      localStorage.removeItem('searchQuery')
     } catch (error) {
       // Игнорируем ошибки localStorage
     }
@@ -1071,6 +1073,36 @@ defineExpose({
   font-size: 12px !important;
 }
 
+/* Стили для инпута поиска в шапке - убираем обводку и border */
+.flex-1.rounded-lg.overflow-hidden :deep(.ui-input input),
+.flex-1.rounded-lg.overflow-hidden :deep(input[type="text"]) {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  ring: none !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+}
+
+.flex-1.rounded-lg.overflow-hidden :deep(.ui-input input:focus),
+.flex-1.rounded-lg.overflow-hidden :deep(input[type="text"]:focus) {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  ring: none !important;
+  --tw-ring-width: 0 !important;
+  --tw-ring-color: transparent !important;
+}
+
+.flex-1.rounded-lg.overflow-hidden :deep(.ui-input input:hover),
+.flex-1.rounded-lg.overflow-hidden :deep(input[type="text"]:hover) {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  ring: none !important;
+}
+
 /* Убираем padding у UInput */
 :deep(.ui-input input),
 :deep(input[type="text"]) {
@@ -1110,6 +1142,7 @@ defineExpose({
   text-align: left !important;
   font-size: 16px !important; /* Увеличиваем размер текста */
   border-radius: 0 !important; /* Прямые углы у инпута */
+  background-color: transparent !important; /* Прозрачный фон */
 }
 
 :deep(.ui-input input::placeholder),
