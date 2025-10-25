@@ -4,6 +4,7 @@ import LocalStatus from '~/server/models/LocalStatus'
 import MKB from '~/server/models/MKB'
 import Algorithm from '~/server/models/Algorithm'
 import Drug from '~/server/models/Drug'
+import DrugCategory from '~/server/models/DrugCategory'
 import Substation from '~/server/models/Substation'
 
 export default defineEventHandler(async (event) => {

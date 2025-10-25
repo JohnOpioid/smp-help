@@ -686,7 +686,14 @@ const getTypeLabel = (type: string) => {
 
 // Обработчики поиска
 const onSearchFocus = () => {
-  const q = searchQuery.value.trim()
+  // Проверяем, что searchQuery.value является строкой
+  const queryValue = searchQuery.value
+  if (typeof queryValue !== 'string') {
+    console.error('🔍 onSearchFocus: searchQuery.value is not a string:', queryValue, typeof queryValue)
+    return
+  }
+  
+  const q = queryValue.trim()
 
   // На странице подстанций не активируем глобальный поиск
   if (isSubstationsPage.value) {

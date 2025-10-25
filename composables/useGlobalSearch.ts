@@ -42,14 +42,18 @@ export const useGlobalSearch = () => {
       const cookieValue = searchQueryCookie.value || ''
       const stateValue = globalState.searchQuery.value || ''
       const localStorageValue = process.client ? localStorage.getItem('searchQuery') || '' : ''
-      return cookieValue || stateValue || localStorageValue
+      const result = cookieValue || stateValue || localStorageValue
+      // Убеждаемся, что результат всегда строка
+      return typeof result === 'string' ? result : String(result || '')
     },
     set: (value: string) => {
-      globalState.searchQuery.value = value
-      searchQueryCookie.value = value
+      // Убеждаемся, что value является строкой
+      const stringValue = typeof value === 'string' ? value : String(value || '')
+      globalState.searchQuery.value = stringValue
+      searchQueryCookie.value = stringValue
       if (process.client) {
         try {
-          localStorage.setItem('searchQuery', value)
+          localStorage.setItem('searchQuery', stringValue)
         } catch (error) {
           // Игнорируем ошибки localStorage
         }
@@ -306,7 +310,7 @@ export const useGlobalSearch = () => {
     }
 
     // Если запрос слишком короткий, очищаем результаты и сбрасываем флаг поиска
-    if (!query || query.trim().length < 3) {
+    if (!query || typeof query !== 'string' || query.trim().length < 3) {
       globalState.searchResults.value = []
       globalState.groupedResults.value = {
         mkb: [],
