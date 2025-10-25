@@ -342,14 +342,11 @@ export const useGlobalSearch = () => {
   const executeSearch = async (query: string) => {
     // Проверяем, что query является строкой
     if (typeof query !== 'string') {
-      console.error('🔍 Query is not a string:', query, typeof query)
       return
     }
     
     // Логирование отключено для производительности
-    // console.log('🔍 executeSearch started with query:', query)
     try {
-      // console.log('🔍 Sending request to /api/search/query')
       const response = await $fetch('/api/search/query', {
         method: 'POST',
         body: {
@@ -357,8 +354,6 @@ export const useGlobalSearch = () => {
           limit: 50
         }
       })
-      
-      // console.log('🔍 Response received:', response)
 
       if (response.success) {
         // Используем функцию updateSearchResults для правильной обработки данных
@@ -392,7 +387,7 @@ export const useGlobalSearch = () => {
         }, [])
       }
     } catch (error) {
-      // Ошибка при выполнении серверного поиска
+      // Логирование отключено для производительности
       updateSearchResults([], {
         mkb: [],
         ls: [],

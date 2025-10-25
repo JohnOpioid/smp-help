@@ -15,8 +15,7 @@ export default defineEventHandler(async (event) => {
     const { query: requestQuery, limit = 50 } = await readBody(event)
     query = requestQuery // Присваиваем значение
     
-    // Временная отладка для продакшена
-    console.log('🔍 Search API called with query:', query, 'type:', typeof query)
+    // Логирование отключено для производительности
     
     if (!query || typeof query !== 'string' || query.trim().length < 3) {
       return {
@@ -35,20 +34,6 @@ export default defineEventHandler(async (event) => {
     }
 
     await connectDB()
-    console.log('🔍 Connected to MongoDB')
-    
-    // Принудительно регистрируем модели для предотвращения ошибок
-    try {
-      console.log('🔍 Checking model registrations...')
-      const mongoose = await import('mongoose')
-      if (mongoose.models && typeof mongoose.models === 'object') {
-        console.log('🔍 Registered models:', Object.keys(mongoose.models))
-      } else {
-        console.log('🔍 No models registered yet')
-      }
-    } catch (modelError) {
-      console.log('🔍 Model check error:', modelError)
-    }
     
     const searchQuery = query.trim()
     
@@ -62,8 +47,7 @@ export default defineEventHandler(async (event) => {
       // Убираем лишние пробелы
       patterns.push(query.replace(/\s+/g, ' ').trim())
       
-      // Отладка паттернов
-      console.log('🔍 Creating search patterns for query:', query)
+      // Логирование отключено для производительности
       
       // Для подстанций: "32 подстанция" -> "подстанция № 32", "подстанция 32"
       if (/^\d+\s+подстанция/i.test(query)) {
@@ -118,15 +102,12 @@ export default defineEventHandler(async (event) => {
     
     const searchPatterns = createSearchPatterns(searchQuery)
     
-    // Логирование поисковых паттернов
-    console.log('🔍 Search patterns created:', searchPatterns)
+    // Логирование отключено для производительности
     
     // Создаем регулярные выражения для каждого паттерна
     const searchRegexes = searchPatterns.map(pattern => 
       new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')
     )
-    
-    console.log('🔍 Search regexes created:', searchRegexes.length, 'patterns')
     
     
     // Создаем основной поисковый запрос для точного поиска
@@ -213,8 +194,6 @@ export default defineEventHandler(async (event) => {
         { synonyms: { $in: searchRegexes } }
       ]
     }
-    
-    console.log('🔍 Executing MongoDB queries...')
     
     const [mkbResults, lsResults, algorithmResults, drugResults, substationResults] = await Promise.all([
       // Поиск по МКБ - сначала точный поиск в заголовках, потом в остальных полях
@@ -460,18 +439,6 @@ export default defineEventHandler(async (event) => {
 
     // Создаем массив разделов в правильном порядке для клиента
     const orderedSections = Object.keys(sortedGroupedResults)
-
-    // Отладка результатов поиска
-    console.log('🔍 Search results summary:')
-    console.log('🔍 Total results:', allResults.length)
-    console.log('🔍 Grouped results counts:', {
-      mkb: sortedGroupedResults.mkb?.length || 0,
-      ls: sortedGroupedResults.ls?.length || 0,
-      algorithm: sortedGroupedResults.algorithm?.length || 0,
-      drug: sortedGroupedResults.drug?.length || 0,
-      substation: sortedGroupedResults.substation?.length || 0
-    })
-    console.log('🔍 Ordered sections:', orderedSections)
 
     return {
       success: true,

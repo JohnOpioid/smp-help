@@ -689,7 +689,6 @@ const onSearchFocus = () => {
   // Проверяем, что searchQuery.value является строкой
   const queryValue = searchQuery.value
   if (typeof queryValue !== 'string') {
-    console.error('🔍 onSearchFocus: searchQuery.value is not a string:', queryValue, typeof queryValue)
     return
   }
   
