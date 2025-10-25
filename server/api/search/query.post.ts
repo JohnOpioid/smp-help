@@ -1,6 +1,7 @@
 import { defineEventHandler, readBody } from 'h3'
 import connectDB from '~/server/utils/mongodb'
 import LocalStatus from '~/server/models/LocalStatus'
+import LocalStatusCategory from '~/server/models/LocalStatusCategory'
 import MKB from '~/server/models/MKB'
 import Algorithm from '~/server/models/Algorithm'
 import Drug from '~/server/models/Drug'
@@ -44,6 +45,9 @@ export default defineEventHandler(async (event) => {
       
       // Убираем лишние пробелы
       patterns.push(query.replace(/\s+/g, ' ').trim())
+      
+      // Отладка паттернов
+      console.log('🔍 Creating search patterns for query:', query)
       
       // Для подстанций: "32 подстанция" -> "подстанция № 32", "подстанция 32"
       if (/^\d+\s+подстанция/i.test(query)) {
@@ -99,11 +103,14 @@ export default defineEventHandler(async (event) => {
     const searchPatterns = createSearchPatterns(searchQuery)
     
     // Логирование поисковых паттернов
+    console.log('🔍 Search patterns created:', searchPatterns)
     
     // Создаем регулярные выражения для каждого паттерна
     const searchRegexes = searchPatterns.map(pattern => 
       new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')
     )
+    
+    console.log('🔍 Search regexes created:', searchRegexes.length, 'patterns')
     
     
     // Создаем основной поисковый запрос для точного поиска
@@ -433,6 +440,17 @@ export default defineEventHandler(async (event) => {
     // Создаем массив разделов в правильном порядке для клиента
     const orderedSections = Object.keys(sortedGroupedResults)
 
+    // Отладка результатов поиска
+    console.log('🔍 Search results summary:')
+    console.log('🔍 Total results:', allResults.length)
+    console.log('🔍 Grouped results counts:', {
+      mkb: sortedGroupedResults.mkb?.length || 0,
+      ls: sortedGroupedResults.ls?.length || 0,
+      algorithm: sortedGroupedResults.algorithm?.length || 0,
+      drug: sortedGroupedResults.drug?.length || 0,
+      substation: sortedGroupedResults.substation?.length || 0
+    })
+    console.log('🔍 Ordered sections:', orderedSections)
 
     return {
       success: true,
