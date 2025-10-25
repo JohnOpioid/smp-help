@@ -9,8 +9,11 @@ import DrugCategory from '~/server/models/DrugCategory'
 import Substation from '~/server/models/Substation'
 
 export default defineEventHandler(async (event) => {
+  let query = '' // Объявляем переменную в начале функции
+  
   try {
-    const { query, limit = 50 } = await readBody(event)
+    const { query: requestQuery, limit = 50 } = await readBody(event)
+    query = requestQuery // Присваиваем значение
     
     // Временная отладка для продакшена
     console.log('🔍 Search API called with query:', query, 'type:', typeof query)
@@ -38,7 +41,11 @@ export default defineEventHandler(async (event) => {
     try {
       console.log('🔍 Checking model registrations...')
       const mongoose = await import('mongoose')
-      console.log('🔍 Registered models:', Object.keys(mongoose.models))
+      if (mongoose.models && typeof mongoose.models === 'object') {
+        console.log('🔍 Registered models:', Object.keys(mongoose.models))
+      } else {
+        console.log('🔍 No models registered yet')
+      }
     } catch (modelError) {
       console.log('🔍 Model check error:', modelError)
     }
