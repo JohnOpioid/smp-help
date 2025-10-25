@@ -219,7 +219,8 @@ export default defineEventHandler(async (event) => {
     const [mkbResults, lsResults, algorithmResults, drugResults, substationResults] = await Promise.all([
       // Поиск по МКБ - сначала точный поиск в заголовках, потом в остальных полях
       MKB.find(mkbQuery)
-      .populate('category', 'name url')
+      // Временно убираем populate для избежания ошибки LocalStatusCategory
+      // .populate('category', 'name url')
       // Лимит убран для получения всех результатов
       .lean(),
       
@@ -248,7 +249,8 @@ export default defineEventHandler(async (event) => {
           { anamnesis: { $in: searchRegexes } }
         ]
       })
-      .populate('category', 'name url')
+      // Временно убираем populate для избежания ошибки LocalStatusCategory
+      // .populate('category', 'name url')
       // Лимит убран для получения всех результатов
       .lean(),
       
@@ -273,8 +275,9 @@ export default defineEventHandler(async (event) => {
           { mkbExclusions: { $in: searchRegexes } }
         ]
       })
-      .populate('category', 'name url')
-      .populate('section', 'name url')
+      // Временно убираем populate для избежания ошибки LocalStatusCategory
+      // .populate('category', 'name url')
+      // .populate('section', 'name url')
       // Лимит убран для получения всех результатов
       .lean(),
       
@@ -342,7 +345,8 @@ export default defineEventHandler(async (event) => {
           { phones: { $in: searchRegexes } }
         ]
       })
-      .populate('region', 'name')
+      // Временно убираем populate для избежания ошибки LocalStatusCategory
+      // .populate('region', 'name')
       // Лимит убран для получения всех результатов
       .lean()
     ])
