@@ -33,7 +33,7 @@
                 @click.stop>
                 <!-- Заголовок меню с логотипом и названием -->
                 <div
-                  class="px-3 py-2 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 rounded-t-lg">
+                  class="px-3 py-2 bg-gradient-to-r from-slate-200 to-slate-100 dark:from-slate-700 dark:to-slate-600 rounded-t-lg">
                   <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
                       <!-- Логотип в заголовке меню (точно того же размера что в шапке) -->
@@ -43,9 +43,9 @@
                       </h3>
                     </div>
                     <button @click="closeDropdownMenu"
-                      class="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-pointer"
+                      class="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-pointer rounded flex items-center justify-center"
                       aria-label="Закрыть меню">
-                      <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+                      <UIcon name="i-heroicons-x-mark" class="w-6 h-6" />
                     </button>
                   </div>
                 </div>
@@ -143,7 +143,7 @@
           <ClientOnly>
             <div class="relative flex items-center" ref="profileRef">
               <button @click="toggleMenu"
-                class="shrink-0 h-10 w-10 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-semibold hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer transition-all duration-700 ease-in-out">
+                class="shrink-0 h-10 w-10 rounded-full bg-slate-600 text-white flex items-center justify-center text-center text-lg font-semibold hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 cursor-pointer transition-all duration-700 ease-in-out">
                 {{ initials }}
               </button>
 

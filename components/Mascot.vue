@@ -1,7 +1,7 @@
 <template>
   <div class="mascot-container">
     <img 
-      src="/mascot.png" 
+      src="/mascot.svg" 
       alt="Амби" 
       class="w-6 h-6 object-contain"
       :class="mascotClass"
