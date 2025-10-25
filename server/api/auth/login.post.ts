@@ -18,9 +18,11 @@ export default defineEventHandler(async (event) => {
 
   try {
     await connectDB()
+    console.log('🔍 Login API called')
     
     const body = await readBody(event)
     const { email, password } = body
+    console.log('🔍 Login attempt for email:', email)
 
     // Валидация
     if (!email || !password) {

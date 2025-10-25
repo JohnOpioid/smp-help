@@ -336,6 +336,12 @@ export const useGlobalSearch = () => {
 
   // Выполнение поиска
   const executeSearch = async (query: string) => {
+    // Проверяем, что query является строкой
+    if (typeof query !== 'string') {
+      console.error('🔍 Query is not a string:', query, typeof query)
+      return
+    }
+    
     // Логирование отключено для производительности
     // console.log('🔍 executeSearch started with query:', query)
     try {

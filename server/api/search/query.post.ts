@@ -10,7 +10,10 @@ export default defineEventHandler(async (event) => {
   try {
     const { query, limit = 50 } = await readBody(event)
     
-    if (!query || query.trim().length < 3) {
+    // Временная отладка для продакшена
+    console.log('🔍 Search API called with query:', query, 'type:', typeof query)
+    
+    if (!query || typeof query !== 'string' || query.trim().length < 3) {
       return {
         success: true,
         results: [],
@@ -27,6 +30,7 @@ export default defineEventHandler(async (event) => {
     }
 
     await connectDB()
+    console.log('🔍 Connected to MongoDB')
     
     const searchQuery = query.trim()
     
@@ -185,6 +189,8 @@ export default defineEventHandler(async (event) => {
         { synonyms: { $in: searchRegexes } }
       ]
     }
+    
+    console.log('🔍 Executing MongoDB queries...')
     
     const [mkbResults, lsResults, algorithmResults, drugResults, substationResults] = await Promise.all([
       // Поиск по МКБ - сначала точный поиск в заголовках, потом в остальных полях
