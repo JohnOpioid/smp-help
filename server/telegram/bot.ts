@@ -60,7 +60,7 @@ ID: ${userId}
     
     try {
       // Вызываем API для подключения Telegram
-      const apiUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://192.168.1.40:3000'
+      const apiUrl = process.env.NUXT_PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || 'https://helpsmp.ru'
       const response = await ofetch(`${apiUrl}/api/auth/connect-telegram`, {
         method: 'POST',
         body: {
@@ -120,7 +120,7 @@ ID: ${userId}
   
   try {
     // Проверяем, авторизован ли пользователь
-    const apiUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://192.168.1.40:3000'
+        const apiUrl = process.env.NUXT_PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || 'https://helpsmp.ru'
     const userCheck = await ofetch(`${apiUrl}/api/auth/find-by-telegram/${msg.from?.id}`, {
       method: 'GET',
       rejectUnauthorized: false
@@ -190,7 +190,7 @@ bot.onText(/\/favorites/, async (msg) => {
   
   try {
     // Проверяем, авторизован ли пользователь
-    const apiUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://192.168.1.40:3000'
+        const apiUrl = process.env.NUXT_PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || 'https://helpsmp.ru'
     
     // Находим пользователя по Telegram ID
     const userCheck = await ofetch(`${apiUrl}/api/auth/find-by-telegram/${telegramId}`, {
@@ -334,7 +334,7 @@ bot.on('callback_query', async (query) => {
     if (chatId && messageId && userId && firstName) {
       try {
         // Вызываем API авторизации
-        const apiUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://192.168.1.40:3000'
+        const apiUrl = process.env.NUXT_PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || 'https://helpsmp.ru'
         const response = await ofetch(`${apiUrl}/api/auth/telegram-login`, {
           method: 'POST',
           body: {
@@ -437,7 +437,7 @@ ${response.message || 'Не удалось выполнить авторизац
     
     if (chatId && userId && messageId) {
       try {
-        const apiUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://192.168.1.40:3000'
+        const apiUrl = process.env.NUXT_PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || 'https://helpsmp.ru'
         
         // Находим пользователя
         const userCheck = await ofetch(`${apiUrl}/api/auth/find-by-telegram/${userId}`, {
@@ -541,7 +541,7 @@ ${response.message || 'Не удалось выполнить авторизац
     if (!chatId) return
     
     try {
-      const apiUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://192.168.1.40:3000'
+      const apiUrl = process.env.NUXT_PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || 'https://helpsmp.ru'
       
       // Находим пользователя
       const userCheck = await ofetch(`${apiUrl}/api/auth/find-by-telegram/${userId}`, {
@@ -666,7 +666,7 @@ ${response.message || 'Не удалось выполнить авторизац
     if (!chatId || !userId || !messageId) return
     
     try {
-      const apiUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://192.168.1.40:3000'
+      const apiUrl = process.env.NUXT_PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || 'https://helpsmp.ru'
       
       // Извлекаем ID закладки
       const match = data.match(/^favorites_item_(.+?)\|(.+)$/)
@@ -932,7 +932,7 @@ ${response.message || 'Не удалось выполнить авторизац
     if (!chatId || !userId || !messageId) return
     
     try {
-      const apiUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://192.168.1.40:3000'
+      const apiUrl = process.env.NUXT_PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || 'https://helpsmp.ru'
       
       // Находим пользователя
       const userCheck = await ofetch(`${apiUrl}/api/auth/find-by-telegram/${userId}`, {
@@ -1006,7 +1006,7 @@ ${response.message || 'Не удалось выполнить авторизац
     
     if (chatId && userId && messageId) {
       try {
-        const apiUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://192.168.1.40:3000'
+        const apiUrl = process.env.NUXT_PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || 'https://helpsmp.ru'
         
         // Находим пользователя
         const userCheck = await ofetch(`${apiUrl}/api/auth/find-by-telegram/${userId}`, {
