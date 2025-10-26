@@ -2,7 +2,7 @@ import { bot } from '~/server/telegram/bot'
 
 export default defineNitroPlugin(async (nitroApp) => {
   if (bot) {
-    const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://192.168.1.40:3000'
+    const siteUrl = process.env.NUXT_PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || 'https://helpsmp.ru'
     const isHttps = siteUrl.startsWith('https://')
     
     // Проверяем порт (Telegram webhook работает только на портах 80, 88, 443, 8443)
