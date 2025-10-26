@@ -200,6 +200,13 @@ if [[ "$INSTALL_MODE" == "quick-update" || "$INSTALL_MODE" == "full-update" ]]; 
         INSTALL_MONGODB="no"
         
         log "✅ Конфигурация прочитана из существующего файла"
+        
+        # Проверяем критичные настройки
+        if [ -z "$TELEGRAM_BOT_TOKEN" ]; then
+            warn "⚠️  TELEGRAM_BOT_TOKEN не найден в конфигурации"
+        else
+            log "✅ Telegram Bot Token найден (скрыт)"
+        fi
         log "Проект: $PROJECT_NAME"
         log "Домен: $DOMAIN"
         log "Рабочая директория: $WORK_DIR"
