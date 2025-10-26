@@ -1047,11 +1047,11 @@ async function addBookmark() {
       body: {
         type: 'drug',
         title: selected.value.name,
-        description: selected.value.latinName,
+        description: selected.value.description || selected.value.latinName || '',
         category: getCategoryForBookmark(selected.value.categories, isAntidote),
         url: buildDrugUrl(selected.value),
         // Добавляем все данные препарата
-        latinName: selected.value.latinName,
+        latinName: selected.value.latinName || '',
         categories: (selected.value.categories || []).map((c: any) => c?.name).filter(Boolean),
         indications: selected.value.indications || [],
         contraindications: selected.value.contraindications || [],

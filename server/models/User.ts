@@ -46,6 +46,7 @@ export interface IUser extends Document {
     interactions?: string[]
     antidotes?: string[]
     antidote?: any
+    description?: string
     forms?: any
     pediatricDose?: string[]
     pediatricDoseUnit?: string
@@ -144,6 +145,7 @@ const UserSchema = new Schema<IUser>({
         interactions: { type: [String], required: false },
         antidotes: { type: [String], required: false },
         antidote: { type: Object, required: false },
+        description: { type: String, required: false },
         forms: { type: Object, required: false },
         pediatricDose: { type: [String], required: false },
         pediatricDoseUnit: { type: String, required: false },
