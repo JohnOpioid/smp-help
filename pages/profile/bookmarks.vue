@@ -21,15 +21,15 @@
       <p class="text-sm text-slate-500 dark:text-slate-400">Добавляйте интересные препараты и статусы в закладки для быстрого доступа</p>
     </div>
 
-    <div v-else class="space-y-6">
+    <div v-else class="space-y-6" :key="bookmarks.length">
       <template v-for="section in groupedBookmarks" :key="section.type">
         <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden">
           <div class="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-2">
             <UIcon :name="section.icon" class="w-4 h-4 text-slate-500" />
             <p class="text-sm text-slate-600 dark:text-slate-300">{{ section.label }}</p>
           </div>
-          <!-- Специальный стиль для препаратов и кодификатора -->
-          <div v-if="section.type === 'drug' || section.type === 'codifier'" class="grid grid-cols-1 md:grid-cols-2 gap-0">
+          <!-- Специальный стиль для препаратов, кодификатора и калькуляторов -->
+          <div v-if="section.type === 'drug' || section.type === 'codifier' || section.type === 'calculator'" class="grid grid-cols-1 md:grid-cols-2 gap-0">
             <div 
               v-for="(bookmark, index) in section.items" 
               :key="bookmark._id" 
@@ -94,6 +94,34 @@
                   <div class="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
                     <div v-if="bookmark.category" class="flex flex-wrap gap-1.5">
                       <span class="text-xs px-2 py-1 rounded bg-slate-200 text-slate-600">{{ bookmark.category }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 ml-4">
+                  <UButton
+                    size="xs"
+                    variant="ghost"
+                    color="error"
+                    icon="i-heroicons-trash"
+                    class="w-7 h-7 p-0 cursor-pointer inline-flex items-center justify-center"
+                    @click.stop="removeBookmark(bookmark._id)"
+                    aria-label="Удалить закладку"
+                  />
+                </div>
+              </div>
+              
+              <!-- Содержимое для калькуляторов -->
+              <div v-else-if="section.type === 'calculator'" class="flex items-start justify-between">
+                <div class="flex-1 min-w-0">
+                  <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-1">
+                    {{ bookmark.title }}
+                  </h3>
+                  <p v-if="bookmark.description" class="text-sm text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
+                    {{ bookmark.description }}
+                  </p>
+                  <div class="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400 mt-2">
+                    <div v-if="bookmark.category" class="flex flex-wrap gap-1.5">
+                      <span class="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">{{ bookmark.category }}</span>
                     </div>
                   </div>
                 </div>
@@ -206,13 +234,15 @@ definePageMeta({ middleware: 'auth', headerTitle: 'Закладки', layout: 'p
 const bookmarks = ref<any[]>([])
 const pending = ref(true)
 const error = ref<string | null>(null)
+const route = useRoute()
 
 const groupedBookmarks = computed(() => {
   const groups = [
     { type: 'codifier', label: 'Кодификатор', icon: 'i-heroicons-document-text' },
     { type: 'drug', label: 'Препараты', icon: 'i-lucide-pill' },
     { type: 'local-status', label: 'Локальные статусы', icon: 'i-heroicons-clipboard-document-list' },
-    { type: 'substation', label: 'Подстанции', icon: 'i-heroicons-building-office' }
+    { type: 'substation', label: 'Подстанции', icon: 'i-heroicons-building-office' },
+    { type: 'calculator', label: 'Калькуляторы', icon: 'i-heroicons-calculator' }
   ]
   return groups
     .map(g => ({ ...g, items: bookmarks.value.filter(b => b.type === g.type) }))
@@ -220,15 +250,22 @@ const groupedBookmarks = computed(() => {
 })
 
 async function loadBookmarks() {
+  console.log('🔄 Загружаем закладки...', new Date().toISOString())
   try {
-    const res: any = await $fetch('/api/bookmarks')
+    pending.value = true
+    const res: any = await $fetch('/api/bookmarks', {
+      query: { _t: Date.now() }
+    })
+    console.log('📋 Результат загрузки:', res)
     if (res?.success) {
       bookmarks.value = res.items || []
+      console.log('✅ Загружено закладок:', bookmarks.value.length)
       error.value = null
     } else {
       error.value = res?.message || 'Ошибка загрузки закладок'
     }
   } catch (err: any) {
+    console.error('❌ Ошибка загрузки:', err)
     error.value = err.message || 'Ошибка загрузки закладок'
   } finally {
     pending.value = false
@@ -259,7 +296,26 @@ async function removeBookmark(bookmarkId: string) {
 }
 
 onMounted(() => {
-  loadBookmarks()
+  console.log('📌 Монтирование страницы закладок')
+  // Слушаем кастомные события обновления закладок
+  window.addEventListener('bookmarks-updated', () => {
+    console.log('🔔 Получено событие bookmarks-updated')
+    loadBookmarks()
+  })
+})
+
+// Watch для отслеживания изменений route - обновляет при заходе на страницу
+watch(() => route.path, (newPath, oldPath) => {
+  console.log('📍 Изменение route:', oldPath, '->', newPath)
+  if (newPath === '/profile/bookmarks') {
+    console.log('✅ Обновляем закладки при переходе на страницу')
+    loadBookmarks()
+  }
+}, { immediate: true })
+
+// Экспортируем функцию обновления для использования в других компонентах
+defineExpose({
+  refreshBookmarks: loadBookmarks
 })
 </script>
 

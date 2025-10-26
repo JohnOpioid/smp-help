@@ -10,7 +10,7 @@
         </p>
       </div>
       
-      <div class="mt-8 bg-white dark:bg-slate-800 py-8 px-4 shadow rounded-lg transition-colors duration-300">
+      <div class="mt-8 bg-white dark:bg-slate-800 py-4 px-4 shadow rounded-lg transition-colors duration-300">
         <form @submit.prevent="onSubmit" class="space-y-6">
           <div>
             <label for="email" class="block text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -68,6 +68,18 @@
             </div>
           </div>
 
+          <div class="flex items-center justify-between">
+            <div></div>
+            <div class="text-sm">
+              <NuxtLink
+                to="/auth/forgot-password"
+                class="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+              >
+                Забыли пароль?
+              </NuxtLink>
+            </div>
+          </div>
+
           <div>
             <button
               type="submit"
@@ -75,7 +87,7 @@
               :class="[
                 'group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white transition-colors duration-200',
                 isFormValid && !loading 
-                  ? 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' 
+                  ? 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer' 
                   : 'bg-indigo-400 cursor-not-allowed'
               ]"
             >
@@ -90,25 +102,35 @@
           </div>
         </form>
 
-        <div class="mt-6">
-          <div class="relative">
-            <div class="absolute inset-0 flex items-center">
-              <div class="w-full border-t border-slate-300 dark:border-slate-600" />
-            </div>
-            <div class="relative flex justify-center text-sm">
-              <span class="px-2 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400">Или</span>
-            </div>
-          </div>
-
           <div class="mt-6">
-            <NuxtLink 
-              to="/auth/register" 
-              class="w-full flex justify-center py-2 px-4 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
-            >
-              Создать новый аккаунт
-            </NuxtLink>
+            <div class="relative">
+              <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-slate-300 dark:border-slate-600" />
+              </div>
+              <div class="relative flex justify-center text-sm">
+                <span class="px-2 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400">Или</span>
+              </div>
+            </div>
+
+            <div class="mt-6 space-y-3">
+              <a
+                href="https://t.me/helpssmp_bot?start=login"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="w-full flex justify-center items-center gap-2 py-2 px-4 border-2 border-blue-500 dark:border-blue-400 rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+              >
+                <UIcon name="i-logos-telegram" class="w-5 h-5" />
+                Войти через Telegram
+              </a>
+
+              <NuxtLink 
+                to="/auth/register" 
+                class="w-full flex justify-center py-2 px-4 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+              >
+                Создать новый аккаунт
+              </NuxtLink>
+            </div>
           </div>
-        </div>
       </div>
     </div>
   </div>
@@ -130,6 +152,102 @@ const form = reactive({
 const loading = ref(false)
 const error = ref('')
 const success = ref('')
+
+// Проверяем, открыта ли страница из Telegram
+const isTelegram = ref(false)
+const telegramData = ref<any>(null)
+
+const route = useRoute()
+
+onMounted(async () => {
+  // Проверяем параметры URL от Telegram бота
+  if (route.query.telegram === 'true' && route.query.token) {
+    try {
+      // Получаем composable useAuth
+      const { user } = useAuth()
+      
+      // Получаем токен из URL
+      const telegramToken = route.query.token as string
+      
+      // Сохраняем токен в cookie
+      const tokenCookie = useCookie('token', { 
+        path: '/',
+        sameSite: 'lax',
+        secure: true, // Используем secure для HTTPS
+        httpOnly: false,
+        maxAge: 7 * 24 * 60 * 60
+      })
+      tokenCookie.value = telegramToken
+      
+      success.value = 'Авторизация успешна!'
+      
+      // Небольшая задержка для показа сообщения перед редиректом
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Редирект на главную
+      await navigateTo('/')
+      return
+    } catch (err) {
+      error.value = 'Ошибка авторизации через Telegram'
+    }
+  }
+  
+  // Проверяем наличие Telegram WebApp
+  if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
+    isTelegram.value = true
+    const tg = (window as any).Telegram.WebApp
+    tg.ready()
+    tg.expand()
+    
+    // Получаем данные пользователя
+    const initData = tg.initDataUnsafe
+    telegramData.value = initData.user
+    
+    // Если пользователь уже авторизован через Telegram, логиним его
+    if (initData.user) {
+      try {
+        await handleTelegramLogin(initData)
+      } catch (err) {
+        error.value = 'Ошибка авторизации через Telegram'
+      }
+    }
+  }
+})
+
+const handleTelegramLogin = async (initData: any) => {
+  if (!initData.user) {
+    error.value = 'Данные Telegram не найдены'
+    return
+  }
+  
+  loading.value = true
+  error.value = ''
+  
+  try {
+    // Вызываем API для Telegram авторизации
+    const response = await $fetch('/api/auth/telegram-login', {
+      method: 'POST',
+      body: {
+        id: initData.user.id,
+        first_name: initData.user.first_name,
+        username: initData.user.username,
+        photo_url: initData.user.photo_url,
+        auth_date: initData.auth_date
+      }
+    })
+    
+    if (response.success) {
+      success.value = 'Авторизация через Telegram успешна'
+      await navigateTo('/')
+    } else {
+      error.value = response.message || 'Ошибка авторизации'
+    }
+  } catch (err: any) {
+    error.value = err.message || 'Произошла ошибка при авторизации'
+  } finally {
+    loading.value = false
+  }
+}
 
 // Отслеживаем изменения полей для корректной работы с автозаполнением
 const emailField = ref<HTMLInputElement | null>(null)

@@ -73,7 +73,7 @@
             <li v-if="loadingMore" class="p-4 text-center md:col-span-2 border-b-0">
               <USkeleton class="h-6 w-24 mx-auto" />
             </li>
-            <div ref="sentinel" class="h-1 md:col-span-2"></div>
+            <div v-if="loadingMore" ref="sentinel" class="h-1 md:col-span-2"></div>
           </ul>
         </div>
 
@@ -1004,21 +1004,87 @@ async function addBookmark() {
   try {
     const isAntidote = selected.value.antidote || (selected.value.categories || []).some((c:any)=> String(c?.name||'').toLowerCase().includes('антидот'))
     
-    await $fetch('/api/bookmarks', {
+    console.log('🔍 Adding bookmark for drug:', selected.value.name)
+    console.log('🔍 Drug data:', selected.value)
+    
+    // Подготавливаем дозировки для сохранения
+    let dosagesToSave: any = []
+    if (selected.value.dosages) {
+      // Если есть описание дозировок (текстовое)
+      if (selected.value.dosages.description) {
+        if (Array.isArray(selected.value.dosages.description)) {
+          dosagesToSave = selected.value.dosages.description
+        } else {
+          dosagesToSave = [selected.value.dosages.description]
+        }
+      } 
+      // Если есть doses массив (калькулятор)
+      else if (selected.value.dosages.doses && Array.isArray(selected.value.dosages.doses)) {
+        dosagesToSave = selected.value.dosages.doses.map((d: any) => {
+          if (typeof d === 'string') return d
+          // Формируем строку с информацией о дозе
+          const parts = []
+          if (d.context) parts.push(`${d.context}:`)
+          if (d.formula) parts.push(d.formula)
+          if (d.mgPerKg) parts.push(`${d.mgPerKg} мг/кг`)
+          if (d.maxMg) parts.push(`макс. ${d.maxMg} мг`)
+          if (d.concentrationMgPerMl) parts.push(`${d.concentrationMgPerMl} мг/мл`)
+          if (d.notes) parts.push(`(${d.notes})`)
+          return parts.join(' ')
+        }).filter(Boolean)
+      }
+      // Если есть default_dose и unit (простой калькулятор) - НЕ сохраняем, это калькулятор
+      // else if (selected.value.dosages.default_dose && selected.value.dosages.unit) {
+      //   dosagesToSave = [`${selected.value.dosages.default_dose} ${selected.value.dosages.unit}`]
+      //   if (selected.value.dosages.description) {
+      //     dosagesToSave.push(selected.value.dosages.description)
+      //   }
+      // }
+    }
+    
+    const response = await $fetch('/api/bookmarks', {
       method: 'POST',
       body: {
         type: 'drug',
         title: selected.value.name,
         description: selected.value.latinName,
         category: getCategoryForBookmark(selected.value.categories, isAntidote),
-        url: buildDrugUrl(selected.value)
+        url: buildDrugUrl(selected.value),
+        // Добавляем все данные препарата
+        latinName: selected.value.latinName,
+        categories: (selected.value.categories || []).map((c: any) => c?.name).filter(Boolean),
+        indications: selected.value.indications || [],
+        contraindications: selected.value.contraindications || [],
+        dosages: dosagesToSave,
+        sideEffects: selected.value.adverse || selected.value.sideEffects || [], // используем adverse если есть
+        adverse: selected.value.adverse || [], // альтернативное поле для побочных
+        mechanismOfAction: selected.value.mechanismOfAction || [],
+        mechanism: selected.value.mechanism || [], // альтернативное поле
+        pharmacokinetics: selected.value.pharmacokinetics || {},
+        synonyms: selected.value.synonyms || [],
+        analogs: selected.value.analogs || [],
+        interactions: selected.value.interactions || [],
+        antidotes: selected.value.antidotes || [],
+        antidote: selected.value.antidote || {},
+        description: selected.value.description || '',
+        forms: selected.value.forms || {},
+        pediatricDose: selected.value.pediatricDose || [],
+        pediatricDoseUnit: selected.value.pediatricDoseUnit || '',
+        ageRestrictions: selected.value.ageRestrictions || ''
       }
     })
+    
+    console.log('🔍 Bookmark response:', response)
     isBookmarked.value = true
     // @ts-ignore
     const toast = useToast?.()
     toast?.add?.({ title: 'Добавлено в закладки', color: 'primary' })
-  } catch {}
+  } catch (error) {
+    console.error('🔍 Error adding bookmark:', error)
+    // @ts-ignore
+    const toast = useToast?.()
+    toast?.add?.({ title: 'Не удалось добавить в закладки', color: 'error' })
+  }
 }
 
 async function removeBookmark() {
@@ -1038,7 +1104,19 @@ async function removeBookmark() {
 }
 
 async function toggleBookmark() {
-  if (isBookmarked.value) await removeBookmark(); else await addBookmark()
+  if (!selected.value) return
+  
+  if (isBookmarked.value) {
+    await removeBookmark()
+  } else {
+    await addBookmark()
+  }
+  
+  // Обновляем локальный список закладок
+  await loadBookmarks()
+  
+  // Уведомляем другие компоненты об обновлении закладок
+  window.dispatchEvent(new CustomEvent('bookmarks-updated'))
 }
 
 // Функция для поделиться

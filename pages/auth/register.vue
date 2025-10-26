@@ -10,7 +10,7 @@
         </p>
       </div>
       
-      <div class="mt-8 bg-white dark:bg-slate-800 py-8 px-4 shadow rounded-lg transition-colors duration-300">
+      <div class="mt-8 bg-white dark:bg-slate-800 py-4 px-4 shadow rounded-lg transition-colors duration-300">
         <form @submit.prevent="onSubmit" class="space-y-6">
           <div class="grid grid-cols-2 gap-4">
             <div>

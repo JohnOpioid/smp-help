@@ -2,10 +2,27 @@
   <div class="flex-1">
     <!-- Блок поиска с шапкой калькулятора -->
     <div class="max-w-5xl w-full mx-auto px-2 md:px-4 pt-8">
-      <SearchBar />
       <div class="flex items-center justify-between gap-2 mb-2 mt-6">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Детская шкала комы Глазго</h1>
-        <UButton color="neutral" variant="soft" @click="resetAll">Сбросить</UButton>
+        <div class="flex items-center gap-2">
+          <UButton 
+            :color="isBookmarked ? 'primary' : 'neutral'" 
+            :variant="isBookmarked ? 'solid' : 'soft'"
+            :icon="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
+            @click="toggleBookmark('gcs-pediatric')"
+            class="cursor-pointer h-9 w-9 flex items-center justify-center"
+            :title="isBookmarked ? 'В избранном' : 'В закладки'"
+          />
+          <UButton 
+            color="neutral" 
+            variant="soft" 
+            @click="resetAll"
+            class="cursor-pointer h-9 px-3 flex items-center justify-center"
+            title="Сбросить"
+          >
+            Сбросить
+          </UButton>
+        </div>
       </div>
       <p class="text-slate-600 dark:text-slate-300">
         Шкала комы Глазго для детей до года. Используется для оценки степени нарушения сознания у младенцев.
@@ -285,4 +302,11 @@ function resetAll() {
   selectedVerbal.value = 5
   selectedMotor.value = 6
 }
+
+// Функции для работы с закладками
+const { isBookmarked, toggleBookmark, updateIsBookmarked } = useCalculatorBookmarks()
+
+onMounted(() => {
+  updateIsBookmarked('gcs-pediatric')
+})
 </script>

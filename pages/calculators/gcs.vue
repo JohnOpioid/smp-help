@@ -2,10 +2,27 @@
   <div class="flex-1">
     <!-- Блок поиска с шапкой калькулятора -->
     <div class="max-w-5xl w-full mx-auto px-2 md:px-4 pt-8">
-      <SearchBar />
       <div class="flex items-center justify-between gap-2 mb-2 mt-6">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Шкала комы Глазго (GCS)</h1>
-        <UButton color="neutral" variant="soft" @click="resetAll">Сбросить</UButton>
+        <div class="flex items-center gap-2">
+          <UButton 
+            :color="isBookmarked ? 'primary' : 'neutral'" 
+            :variant="isBookmarked ? 'solid' : 'soft'"
+            :icon="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
+            @click="toggleBookmark"
+            class="cursor-pointer h-9 w-9 flex items-center justify-center"
+            :title="isBookmarked ? 'В избранном' : 'В закладки'"
+          />
+          <UButton 
+            color="neutral" 
+            variant="soft" 
+            @click="resetAll"
+            class="cursor-pointer h-9 px-3 flex items-center justify-center"
+            title="Сбросить"
+          >
+            Сбросить
+          </UButton>
+        </div>
       </div>
       <p class="text-slate-600 dark:text-slate-300">
         Шкала комы Глазго (Glasgow Coma Scale, GCS) используется для оценки степени нарушения сознания у взрослых.
@@ -159,6 +176,10 @@ const eyeOpening = ref<number>(4)
 const verbalResponse = ref<number>(5)
 const motorResponse = ref<number>(6)
 
+// Логика закладок
+const isBookmarked = ref(false)
+const userBookmarks = ref<any[]>([])
+
 const totalScore = computed(() => eyeOpening.value + verbalResponse.value + motorResponse.value)
 
 const interpretation = computed(() => {
@@ -276,6 +297,114 @@ function resetAll() {
   verbalResponse.value = 5
   motorResponse.value = 6
 }
+
+// Функции для работы с закладками
+async function loadBookmarks() {
+  try {
+    console.log('🔍 Loading bookmarks from API...')
+    const res: any = await $fetch('/api/bookmarks')
+    console.log('🔍 Bookmarks API response:', res)
+    if (res?.success) {
+      userBookmarks.value = res.items || []
+      console.log('🔍 Loaded bookmarks:', userBookmarks.value)
+    } else {
+      console.error('🔍 Failed to load bookmarks:', res?.message)
+    }
+  } catch (error) {
+    console.error('🔍 Error loading bookmarks:', error)
+  }
+}
+
+function buildCalculatorUrl() {
+  return '/calculators/gcs'
+}
+
+async function updateIsBookmarked() {
+  console.log('🔍 Checking if GCS calculator is bookmarked')
+  if (userBookmarks.value.length === 0) {
+    console.log('🔍 Loading bookmarks...')
+    await loadBookmarks()
+  }
+  const targetUrl = buildCalculatorUrl()
+  console.log('🔍 Target URL:', targetUrl)
+  console.log('🔍 User bookmarks:', userBookmarks.value)
+  isBookmarked.value = userBookmarks.value.some((b: any) => b.url === targetUrl)
+  console.log('🔍 Is bookmarked:', isBookmarked.value)
+}
+
+async function addBookmark() {
+  try {
+    console.log('🔍 Adding bookmark for GCS calculator')
+    const response = await $fetch('/api/bookmarks', {
+      method: 'POST',
+      body: {
+        type: 'calculator',
+        title: 'Шкала комы Глазго (GCS)',
+        description: 'Шкала комы Глазго (Glasgow Coma Scale, GCS) используется для оценки степени нарушения сознания у взрослых.',
+        category: 'Калькуляторы',
+        url: buildCalculatorUrl()
+      }
+    })
+    console.log('🔍 Bookmark response:', response)
+    
+    if (response.success) {
+      isBookmarked.value = true
+      // Обновляем локальный список закладок
+      await loadBookmarks()
+      // @ts-ignore
+      const toast = useToast?.()
+      toast?.add?.({ title: 'Добавлено в закладки', color: 'primary' })
+      
+      // Уведомляем другие компоненты об обновлении закладок
+      window.dispatchEvent(new CustomEvent('bookmarks-updated'))
+    } else {
+      console.error('🔍 Failed to add bookmark:', response.message)
+      // @ts-ignore
+      const toast = useToast?.()
+      toast?.add?.({ title: response.message || 'Не удалось добавить в закладки', color: 'error' })
+    }
+  } catch (e) {
+    console.error('🔍 Error adding bookmark:', e)
+    // @ts-ignore
+    const toast = useToast?.()
+    toast?.add?.({ title: 'Не удалось добавить в закладки', color: 'error' })
+  }
+}
+
+async function removeBookmark() {
+  try {
+    const targetUrl = buildCalculatorUrl()
+    if (userBookmarks.value.length === 0) await loadBookmarks()
+    const bm = userBookmarks.value.find((b: any) => b.url === targetUrl)
+    if (!bm?._id) return
+    await $fetch(`/api/bookmarks/${bm._id}`, { method: 'DELETE' })
+    isBookmarked.value = false
+    userBookmarks.value = userBookmarks.value.filter((b: any) => b._id !== bm._id)
+    // @ts-ignore
+    const toast = useToast?.()
+    toast?.add?.({ title: 'Удалено из закладок', color: 'neutral' })
+    
+    // Уведомляем другие компоненты об обновлении закладок
+    window.dispatchEvent(new CustomEvent('bookmarks-updated'))
+  } catch (e) {
+    // @ts-ignore
+    const toast = useToast?.()
+    toast?.add?.({ title: 'Не удалось удалить из закладок', color: 'error' })
+  }
+}
+
+async function toggleBookmark() {
+  if (isBookmarked.value) {
+    await removeBookmark()
+  } else {
+    await addBookmark()
+  }
+}
+
+// Загружаем закладки при монтировании компонента
+onMounted(() => {
+  updateIsBookmarked()
+})
 </script>
 
 <style scoped>

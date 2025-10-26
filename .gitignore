@@ -74,3 +74,8 @@ gradle-temp.zip
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# HTTPS Certificates (dev only
+cert/
+*.pem
+*.key

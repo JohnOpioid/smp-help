@@ -9,12 +9,13 @@ export function useLocalData() {
     if (process.client) {
       // Простая проверка hostname без Capacitor
       const hostname = window.location.hostname
+      const protocol = window.location.protocol // http: или https:
       const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1'
       const isLocalNetwork = hostname.startsWith('192.168.') || hostname.startsWith('10.0.') || hostname.startsWith('172.')
       
       if (isLocalhost || isLocalNetwork) {
-        // Локальная сеть - используем локальный API
-        return `http://${hostname}:3000`
+        // Локальная сеть - используем локальный API с тем же протоколом
+        return `${protocol}//${hostname}:3000`
       } else {
         // Продакшен - используем helpsmp.ru
         return 'https://helpsmp.ru'

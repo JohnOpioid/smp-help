@@ -89,6 +89,88 @@
         </UForm>
       </div>
     </div>
+
+    <!-- Подключение Telegram -->
+    <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden">
+      <div class="p-4 border-b border-slate-100 dark:border-slate-700">
+        <p class="text-sm text-slate-600 dark:text-slate-300">Подключение Telegram</p>
+      </div>
+
+       <ul class="grid grid-cols-1 gap-0" v-if="currentUser">
+         <li v-if="currentUser.telegram?.id" class="p-4 hover:bg-slate-100 dark:hover:bg-slate-700/40 border-b border-slate-100 dark:border-slate-700">
+           <div class="flex items-start justify-between gap-2">
+             <div class="flex-1 min-w-0">
+               <div class="flex items-center gap-2">
+                 <UIcon name="i-logos-telegram" class="w-5 h-5 flex-shrink-0" />
+                 <p class="text-slate-900 dark:text-white font-medium truncate">
+                   Telegram подключен
+                 </p>
+               </div>
+               <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 truncate">
+                 @{{ currentUser.telegram.username || 'username' }}
+               </p>
+             </div>
+             
+             <!-- Выпадающее меню -->
+             <div class="relative" ref="telegramMenuRef">
+               <button 
+                 @click="telegramMenuOpen = !telegramMenuOpen"
+                 class="p-2 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors flex items-center justify-center flex-shrink-0 cursor-pointer"
+                 :class="{ 'bg-slate-200 dark:bg-slate-600': telegramMenuOpen }"
+               >
+                 <UIcon name="i-heroicons-ellipsis-vertical" class="w-5 h-5 text-slate-600 dark:text-slate-400" />
+               </button>
+               
+               <!-- Выпадающее меню - используем Teleport -->
+               <Teleport to="body">
+                 <div v-if="telegramMenuOpen" 
+                      class="fixed bg-white dark:bg-slate-800 rounded-lg overflow-hidden shadow-lg border border-slate-200 dark:border-slate-600 z-[9999] min-w-40"
+                      :style="telegramMenuStyle"
+                      @click.stop>
+                 <a :href="telegramLink" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                    @click="telegramMenuOpen = false">
+                   <UIcon name="i-heroicons-pencil" class="w-4 h-4" />
+                   Изменить
+                 </a>
+                 <button @click="disconnectTelegram"
+                         class="flex items-center gap-2 px-4 py-2 text-sm text-error hover:bg-error/10 w-full text-left cursor-pointer"
+                         @click.stop="telegramMenuOpen = false">
+                   <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+                   Отвязать
+                 </button>
+                 </div>
+               </Teleport>
+             </div>
+           </div>
+         </li>
+         
+         <!-- Если не подключен - показываем кнопку подключить -->
+         <li v-else class="p-4 hover:bg-slate-100 dark:hover:bg-slate-700/40">
+           <a :href="telegramLink" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="flex items-center justify-between gap-2 w-full">
+             <div class="flex items-center gap-2">
+               <UIcon name="i-logos-telegram" class="w-5 h-5" />
+               <div>
+                 <p class="text-slate-900 dark:text-white font-medium">
+                   Подключить Telegram
+                 </p>
+                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                   Подключите свой аккаунт для быстрого входа
+                 </p>
+               </div>
+             </div>
+             <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+             </svg>
+           </a>
+         </li>
+       </ul>
+    </div>
   </div>
 </template>
 
@@ -99,6 +181,30 @@ const pending = ref(false)
 const form = reactive({ firstName: '', lastName: '', email: '', city: '', substation: '' })
 const pendingPwd = ref(false)
 const pwd = reactive({ currentPassword: '', newPassword: '' })
+const telegramMenuOpen = ref(false)
+const telegramMenuRef = ref<HTMLElement | null>(null)
+const telegramMenuStyle = ref({ top: '0px', left: '0px' })
+
+// Функция для вычисления позиции меню
+const getTelegramMenuStyle = () => {
+  if (!telegramMenuRef.value) return { top: '0px', left: '0px' }
+  
+  const rect = telegramMenuRef.value.getBoundingClientRect()
+  return {
+    top: `${rect.bottom + 4}px`,
+    left: `${rect.right - 160}px` // Выравниваем по правому краю
+  }
+}
+
+// Следим за изменением открытия меню для обновления позиции
+watch(telegramMenuOpen, () => {
+  if (telegramMenuOpen.value && telegramMenuRef.value) {
+    nextTick(() => {
+      const style = getTelegramMenuStyle()
+      telegramMenuStyle.value = style
+    })
+  }
+})
 
 // Индикатор силы пароля (Nuxt UI пример, адаптация)
 const showNew = ref(false)
@@ -134,6 +240,26 @@ if (process.server) {
   opts.headers = { cookie: headers.cookie as string }
 }
 const { data } = await useFetch('/api/auth/me', opts)
+const user = computed(() => data.value?.user)
+
+// Текущий пользователь из data
+const currentUser = computed(() => data.value?.user)
+
+// Ссылка для подключения Telegram
+const config = useRuntimeConfig()
+const telegramLink = computed(() => {
+  const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://192.168.1.40:3000'
+  const userId = currentUser.value?._id || currentUser.value?.id || 'unknown'
+  const botUsername = config.public.telegramBotUsername || 'helpssmp_bot'
+  
+  return `https://t.me/${botUsername}?start=connect_${userId}`
+})
+
+// Проверяем, подключен ли Telegram
+const isTelegramConnected = computed(() => {
+  return !!(currentUser.value?.telegram?.id)
+})
+
 watchEffect(() => {
   const u: any = data.value?.user
   if (u) {
@@ -188,4 +314,54 @@ async function onChangePassword() {
     pendingPwd.value = false
   }
 }
+
+async function disconnectTelegram() {
+  try {
+    const res: any = await $fetch('/api/auth/disconnect-telegram', { method: 'POST' })
+    // @ts-ignore
+    const toast = useToast?.()
+    if (res?.success) {
+      toast?.add?.({ title: 'Telegram отключен', color: 'neutral' })
+      // Закрываем меню
+      telegramMenuOpen.value = false
+      // Перезагружаем данные пользователя
+      await refresh()
+    } else {
+      toast?.add?.({ title: res?.message || 'Не удалось отключить Telegram', color: 'error' })
+    }
+  } catch (error) {
+    // @ts-ignore
+    const toast = useToast?.()
+    toast?.add?.({ title: 'Ошибка при отключении Telegram', color: 'error' })
+  }
+}
+
+// Проверяем параметры URL для подключения Telegram
+const route = useRoute()
+
+const { refresh } = useFetch('/api/auth/me', opts)
+
+// Слушаем изменения data и обновляем currentUser
+const userData = computed(() => data.value?.user)
+
+onMounted(async () => {
+  // Закрываем меню при клике вне его
+  document.addEventListener('click', (e) => {
+    if (!telegramMenuRef.value?.contains(e.target as Node)) {
+      telegramMenuOpen.value = false
+    }
+  })
+  
+  if (route.query.telegram_connected === 'true') {
+    // @ts-ignore
+    const toast = useToast?.()
+    toast?.add?.({ title: 'Telegram успешно подключен!', color: 'success' })
+    
+    // Обновляем данные пользователя
+    await refresh()
+    
+    // Убираем параметр из URL
+    navigateTo('/profile/settings', { replace: true })
+  }
+})
 </script>

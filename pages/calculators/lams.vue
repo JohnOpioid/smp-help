@@ -2,10 +2,27 @@
   <div class="flex-1">
     <!-- Блок поиска с шапкой калькулятора -->
     <div class="max-w-5xl w-full mx-auto px-2 md:px-4 pt-8">
-      <SearchBar />
       <div class="flex items-center justify-between gap-2 mb-2 mt-6">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Шкала LAMS</h1>
-        <UButton color="neutral" variant="soft" @click="resetAll">Сбросить</UButton>
+        <div class="flex items-center gap-2">
+          <UButton 
+            :color="isBookmarked ? 'primary' : 'neutral'" 
+            :variant="isBookmarked ? 'solid' : 'soft'"
+            :icon="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
+            @click="toggleBookmark('lams')"
+            class="cursor-pointer h-9 w-9 flex items-center justify-center"
+            :title="isBookmarked ? 'В избранном' : 'В закладки'"
+          />
+          <UButton 
+            color="neutral" 
+            variant="soft" 
+            @click="resetAll"
+            class="cursor-pointer h-9 px-3 flex items-center justify-center"
+            title="Сбросить"
+          >
+            Сбросить
+          </UButton>
+        </div>
       </div>
       <p class="text-slate-600 dark:text-slate-300">
         Шкала LAMS (Los Angeles Motor Scale - лосанджелесская шкала моторного дефицита) используется для догоспитальной диагностики инсульта. Шкала LAMS достаточно проста для клинического использования, поскольку включает всего три клинических критерия - оценка асимметрии лица, наличие двигательных нарушений и оценка мышечной силы.
@@ -259,4 +276,11 @@ function resetAll() {
   motorScore.value = 0
   strengthScore.value = 0
 }
+
+// Функции для работы с закладками
+const { isBookmarked, toggleBookmark, updateIsBookmarked } = useCalculatorBookmarks()
+
+onMounted(() => {
+  updateIsBookmarked('lams')
+})
 </script>

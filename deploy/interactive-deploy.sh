@@ -189,6 +189,8 @@ if [[ "$INSTALL_MODE" == "quick-update" || "$INSTALL_MODE" == "full-update" ]]; 
         SMTP_PORT=$(grep "SMTP_PORT:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | sed "s/.*SMTP_PORT: '\(.*\)'.*/\1/" | head -1)
         SMTP_USER=$(grep "SMTP_USER:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | sed "s/.*SMTP_USER: '\(.*\)'.*/\1/" | head -1)
         SMTP_PASS=$(grep "SMTP_PASS:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | sed "s/.*SMTP_PASS: '\(.*\)'.*/\1/" | head -1)
+        TELEGRAM_BOT_TOKEN=$(grep "TELEGRAM_BOT_TOKEN:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | sed "s/.*TELEGRAM_BOT_TOKEN: '\(.*\)'.*/\1/" | head -1)
+        TELEGRAM_BOT_USERNAME=$(grep "TELEGRAM_BOT_USERNAME:" "$DEFAULT_WORK_DIR/ecosystem.config.cjs" | sed "s/.*TELEGRAM_BOT_USERNAME: '\(.*\)'.*/\1/" | head -1)
         
         # Определяем остальные параметры
         PROJECT_USER="root"
@@ -329,6 +331,13 @@ echo
 info "=== НАСТРОЙКИ YANDEX MAPS ==="
 
 read_input "Введите Yandex Maps API Key" YAMAPS_API_KEY "false" "0cf3bb2c-e67f-4006-8a3e-c5df09b9da6c"
+
+# Настройки Telegram Bot
+echo
+info "=== НАСТРОЙКИ TELEGRAM BOT ==="
+
+read_input "Введите Telegram Bot Token (или оставьте пустым)" TELEGRAM_BOT_TOKEN "true" ""
+read_input "Введите Telegram Bot Username (без @, например: helpssmp_bot)" TELEGRAM_BOT_USERNAME "false" "helpssmp_bot"
 
 # Устанавливаем пути после ввода всех данных
 CLONE_DIR="/home/smp-help"
@@ -637,6 +646,10 @@ SMTP_PASS=$SMTP_PASS
 
 # Yandex Maps
 YAMAPS_API_KEY=$YAMAPS_API_KEY
+
+# Telegram Bot
+TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN
+TELEGRAM_BOT_USERNAME=$TELEGRAM_BOT_USERNAME
 EOF
 
     # Создаем также файл .env в рабочей директории для локального использования
@@ -668,6 +681,10 @@ SMTP_PASS=$SMTP_PASS
 
 # Yandex Maps
 YAMAPS_API_KEY=$YAMAPS_API_KEY
+
+# Telegram Bot
+TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN
+TELEGRAM_BOT_USERNAME=$TELEGRAM_BOT_USERNAME
 EOF
     
     # Устанавливаем зависимости
@@ -972,7 +989,9 @@ module.exports = {
       SMTP_PORT: 'SMTP_PORT_PLACEHOLDER',
       SMTP_USER: 'SMTP_USER_PLACEHOLDER',
       SMTP_PASS: 'SMTP_PASS_PLACEHOLDER',
-      YAMAPS_API_KEY: 'YAMAPS_API_KEY_PLACEHOLDER'
+      YAMAPS_API_KEY: 'YAMAPS_API_KEY_PLACEHOLDER',
+      TELEGRAM_BOT_TOKEN: 'TELEGRAM_BOT_TOKEN_PLACEHOLDER',
+      TELEGRAM_BOT_USERNAME: 'TELEGRAM_BOT_USERNAME_PLACEHOLDER'
     },
     log_file: 'LOG_DIR_PLACEHOLDER/smp-help.log',
     out_file: 'LOG_DIR_PLACEHOLDER/smp-help-out.log',
@@ -1002,6 +1021,8 @@ EOFCONFIG
     sed -i "s|SMTP_USER_PLACEHOLDER|$SMTP_USER|g" $WORK_DIR/ecosystem.config.cjs
     sed -i "s|SMTP_PASS_PLACEHOLDER|$SMTP_PASS|g" $WORK_DIR/ecosystem.config.cjs
     sed -i "s|YAMAPS_API_KEY_PLACEHOLDER|$YAMAPS_API_KEY|g" $WORK_DIR/ecosystem.config.cjs
+    sed -i "s|TELEGRAM_BOT_TOKEN_PLACEHOLDER|$TELEGRAM_BOT_TOKEN|g" $WORK_DIR/ecosystem.config.cjs
+    sed -i "s|TELEGRAM_BOT_USERNAME_PLACEHOLDER|$TELEGRAM_BOT_USERNAME|g" $WORK_DIR/ecosystem.config.cjs
     sed -i "s|LOG_DIR_PLACEHOLDER|$LOG_DIR|g" $WORK_DIR/ecosystem.config.cjs
         
         # Устанавливаем права на конфигурацию

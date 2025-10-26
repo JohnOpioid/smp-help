@@ -7,7 +7,7 @@ export const useAuth = () => {
   const tokenCookie = useCookie<string | null>('token', { 
     path: '/', 
     sameSite: 'lax',
-    secure: false, // Для локальной разработки
+    secure: typeof window !== 'undefined' ? window.location.protocol === 'https:' : false, // Автоматическое определение
     httpOnly: false, // Позволяем читать cookie на клиенте
     maxAge: 60 * 60 * 24 * 7 // 7 дней
   })
@@ -19,12 +19,14 @@ export const useAuth = () => {
     if (process.client) {
       // Простая проверка hostname без Capacitor
       const hostname = window.location.hostname
+      const protocol = window.location.protocol // http: или https:
       const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1'
       const isLocalNetwork = hostname.startsWith('192.168.') || hostname.startsWith('10.0.') || hostname.startsWith('172.')
       
       if (isLocalhost || isLocalNetwork) {
         // Local network detected, using local API
-        return `http://${hostname}:3000`
+        // Используем тот же протокол, что и текущая страница
+        return `${protocol}//${hostname}:3000`
       } else {
         // Production detected, using helpsmp.ru
         return 'https://helpsmp.ru'

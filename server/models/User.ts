@@ -9,9 +9,17 @@ export interface IUser extends Document {
   city?: string
   substation?: string
   role: 'admin' | 'user'
+  resetPasswordToken?: string
+  resetPasswordExpires?: Date
+  telegram?: {
+    id: string
+    username?: string
+    photo_url?: string
+    auth_date?: Date
+  }
   bookmarks?: Array<{
     _id: string
-    type: 'drug' | 'local-status' | 'codifier' | 'substation'
+    type: 'drug' | 'local-status' | 'codifier' | 'substation' | 'calculator'
     title: string
     description?: string
     category?: string
@@ -22,6 +30,27 @@ export interface IUser extends Document {
     complaints?: string
     anamnesis?: string
     localis?: string
+    // Дополнительные поля для препаратов
+    indications?: string[]
+    contraindications?: string[]
+    dosages?: string[]
+    sideEffects?: string[]
+    adverse?: string[] // побочные (альтернативное название)
+    mechanismOfAction?: string[]
+    mechanism?: string[] // альтернативное название
+    pharmacokinetics?: any
+    latinName?: string
+    categories?: string[]
+    synonyms?: string[]
+    analogs?: string[]
+    interactions?: string[]
+    antidotes?: string[]
+    antidote?: any
+    description?: string
+    forms?: any
+    pediatricDose?: string[]
+    pediatricDoseUnit?: string
+    ageRestrictions?: string
     createdAt: Date
   }>
   createdAt: Date
@@ -39,8 +68,7 @@ const UserSchema = new Schema<IUser>({
   },
   password: {
     type: String,
-    required: true,
-    minlength: 6
+    required: true
   },
   firstName: {
     type: String,
@@ -69,10 +97,28 @@ const UserSchema = new Schema<IUser>({
     enum: ['admin', 'user'],
     default: 'user'
   },
+  resetPasswordToken: {
+    type: String,
+    required: false
+  },
+  resetPasswordExpires: {
+    type: Date,
+    required: false
+  },
+  telegram: {
+    type: {
+      id: String,
+      username: String,
+      photo_url: String,
+      auth_date: Date
+    },
+    required: false,
+    _id: false
+  },
   bookmarks: {
     type: [
       new Schema({
-        type: { type: String, enum: ['drug', 'local-status', 'codifier', 'substation'], required: true },
+        type: { type: String, enum: ['drug', 'local-status', 'codifier', 'substation', 'calculator'], required: true },
         title: { type: String, required: true },
         description: { type: String, required: false },
         category: { type: String, required: false },
@@ -83,6 +129,27 @@ const UserSchema = new Schema<IUser>({
         complaints: { type: String, required: false },
         anamnesis: { type: String, required: false },
         localis: { type: String, required: false },
+        // Дополнительные поля для препаратов
+        indications: { type: [String], required: false },
+        contraindications: { type: [String], required: false },
+        dosages: { type: [String], required: false },
+        sideEffects: { type: [String], required: false },
+        adverse: { type: [String], required: false }, // побочные (альтернативное название)
+        mechanismOfAction: { type: [String], required: false },
+        mechanism: { type: [String], required: false }, // альтернативное название
+        pharmacokinetics: { type: Object, required: false },
+        latinName: { type: String, required: false },
+        categories: { type: [String], required: false },
+        synonyms: { type: [String], required: false },
+        analogs: { type: [String], required: false },
+        interactions: { type: [String], required: false },
+        antidotes: { type: [String], required: false },
+        antidote: { type: Object, required: false },
+        description: { type: String, required: false },
+        forms: { type: Object, required: false },
+        pediatricDose: { type: [String], required: false },
+        pediatricDoseUnit: { type: String, required: false },
+        ageRestrictions: { type: String, required: false },
         createdAt: { type: Date, default: Date.now }
       }, { _id: true, id: true })
     ],

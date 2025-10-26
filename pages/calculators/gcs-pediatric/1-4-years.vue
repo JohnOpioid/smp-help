@@ -2,7 +2,6 @@
   <div class="flex-1">
     <!-- Блок поиска с шапкой калькулятора -->
     <div class="max-w-5xl w-full mx-auto px-2 md:px-4 pt-8">
-      <SearchBar />
       <div class="flex items-center justify-between gap-2 mb-2 mt-6">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Детская шкала комы Глазго</h1>
         <UButton color="neutral" variant="soft" @click="resetAll">Сбросить</UButton>
