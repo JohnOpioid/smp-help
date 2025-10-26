@@ -1066,7 +1066,6 @@ async function addBookmark() {
         interactions: selected.value.interactions || [],
         antidotes: selected.value.antidotes || [],
         antidote: selected.value.antidote || {},
-        description: selected.value.description || '',
         forms: selected.value.forms || {},
         pediatricDose: selected.value.pediatricDose || [],
         pediatricDoseUnit: selected.value.pediatricDoseUnit || '',
