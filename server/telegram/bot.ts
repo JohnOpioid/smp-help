@@ -350,7 +350,7 @@ bot.on('callback_query', async (query) => {
         
         // Обновляем сообщение с результатом
         if (response.success) {
-          const loginUrl = `${process.env.NUXT_PUBLIC_SITE_URL || 'https://192.168.1.40:3000'}/auth/login?telegram=true&token=${response.token}`
+          const loginUrl = `${process.env.NUXT_PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || 'https://helpsmp.ru'}/auth/login?telegram=true&token=${response.token}`
           
           await bot.editMessageText(
             `✅ Авторизация успешна!
