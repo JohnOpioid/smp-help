@@ -1,0 +1,6 @@
+{
+  "task.automationProfile": "off",
+  "task.autoDetect": "off",
+  "task.runTaskOnFolderOpen": "never"
+}
+

@@ -79,3 +79,6 @@ Desktop.ini
 cert/
 *.pem
 *.key
+
+# Nuxt host directory artifacts
+0.0.0.0/

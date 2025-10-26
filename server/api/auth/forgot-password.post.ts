@@ -3,6 +3,7 @@ import connectDB from '~/server/utils/mongodb'
 import User from '~/server/models/User'
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
+import { sendResetPasswordEmail } from '~/server/utils/email'
 
 export default defineEventHandler(async (event) => {
   await connectDB()
@@ -40,10 +41,18 @@ export default defineEventHandler(async (event) => {
     user.resetPasswordExpires = new Date(Date.now() + 3600000) // 1 час
     await user.save()
 
-    // В production здесь должна быть отправка email
+    // Отправляем email
+    const emailSent = await sendResetPasswordEmail(user.email, resetCode)
+    
+    if (!emailSent) {
+      console.error('❌ Не удалось отправить email, код в консоли:', resetCode)
+    }
+
     return { 
       success: true,
-      message: 'Код был отправлен на email (для dev-сервера проверьте консоль сервера)' 
+      message: emailSent 
+        ? 'Если указанный email существует в системе, на него была отправлена ссылка для восстановления пароля'
+        : 'Код отправлен (для dev-сервера проверьте консоль сервера)'
     }
   } catch (error) {
     console.error('❌ Error in forgot-password:', error)
