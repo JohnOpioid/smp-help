@@ -2,12 +2,18 @@ import TelegramBot from 'node-telegram-bot-api'
 import { ofetch } from 'ofetch'
 
 // Токен бота из переменных окружения
-const config = useRuntimeConfig()
-const BOT_TOKEN = config.telegramBotToken || process.env.TELEGRAM_BOT_TOKEN
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || ''
 
 // Для локальной разработки (без HTTPS) всегда используем polling
 // Webhook требует HTTPS сертификат
-export const bot = new TelegramBot(BOT_TOKEN, { 
+
+// Проверяем наличие токена
+if (!BOT_TOKEN) {
+  console.error('❌ ERROR: Telegram Bot Token не установлен!')
+  console.error('   Установите переменную окружения TELEGRAM_BOT_TOKEN')
+}
+
+export const bot = BOT_TOKEN ? new TelegramBot(BOT_TOKEN, { 
   polling: {
     interval: 300,
     autoStart: true,
@@ -15,21 +21,24 @@ export const bot = new TelegramBot(BOT_TOKEN, {
       allowed_updates: ['message', 'callback_query']
     }
   }
-})
+}) : null
 
-// Telegram бот инициализирован
+// Telegram бот инициализирован только если токен установлен
 
-// Обработка ошибок соединения
-bot.on('polling_error', (error) => {
-  console.error('❌ Ошибка polling:', error.message)
-})
+// Обработка ошибок соединения (только если бот инициализирован)
+if (bot) {
+  bot.on('polling_error', (error) => {
+    console.error('❌ Ошибка polling:', error.message)
+  })
 
-bot.on('error', (error) => {
-  console.error('❌ Ошибка бота:', error.message)
-})
+  bot.on('error', (error) => {
+    console.error('❌ Ошибка бота:', error.message)
+  })
+}
 
-// Обработчики команд
-bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
+// Обработчики команд (только если бот инициализирован)
+if (bot) {
+  bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
   const chatId = msg.chat.id
   const firstName = msg.from?.first_name || 'Пользователь'
   const command = match?.[1]
@@ -1052,6 +1061,7 @@ ${response.message || 'Не удалось выполнить авторизац
     }
   }
 })
+} // Закрываем блок if (bot)
 
 export default bot
 
