@@ -119,50 +119,23 @@ ID: ${userId}
   }
   
   try {
-    // Проверяем, авторизован ли пользователь
-        const apiUrl = process.env.NUXT_PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || 'https://helpsmp.ru'
-    const userCheck = await ofetch(`${apiUrl}/api/auth/find-by-telegram/${msg.from?.id}`, {
-      method: 'GET',
-      rejectUnauthorized: false
-    } as any).catch(() => null)
+    // Всегда предлагаем авторизацию при /start
+    // (авторизация через бота создает новую сессию на сайте)
     
-    // Если пользователь уже авторизован
-    if (userCheck?.user) {
-      await bot.sendMessage(chatId, `👋 Привет, ${firstName}!
-
-Добро пожаловать в справочник СМП!
-
-✅ Вы уже авторизованы в системе.
-
-Доступные команды:
-/favorites - Показать избранное
-/help - Справка
-
-Или выберите действие:`, {
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: '📌 Избранное', callback_data: 'show_favorites' }],
-            [{ text: '📚 Помощь', callback_data: 'help' }]
-          ]
-        }
-      })
-    } else {
-      // Пользователь не авторизован
-      await bot.sendMessage(chatId, `👋 Привет, ${firstName}!
+    await bot.sendMessage(chatId, `👋 Привет, ${firstName}!
 
 Добро пожаловать в справочник СМП!
 
 🔐 Для доступа к полному функционалу необходимо авторизоваться.
 
 Нажмите кнопку ниже для авторизации через Telegram.`, {
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: '🔐 Авторизоваться через Telegram', callback_data: `auth_${msg.from?.id}` }],
-            [{ text: '📚 Помощь', callback_data: 'help' }]
-          ]
-        }
-      })
-    }
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '🔐 Авторизоваться через Telegram', callback_data: `auth_${msg.from?.id}` }],
+          [{ text: '📚 Помощь', callback_data: 'help' }]
+        ]
+      }
+    })
   } catch (error) {
     console.error('❌ Ошибка отправки сообщения:', error)
   }
