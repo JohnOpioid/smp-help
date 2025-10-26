@@ -248,7 +248,7 @@ const currentUser = computed(() => data.value?.user)
 // Ссылка для подключения Telegram
 const config = useRuntimeConfig()
 const telegramLink = computed(() => {
-  const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://192.168.1.40:3000'
+  const siteUrl = process.env.NUXT_PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || 'https://helpsmp.ru'
   const userId = currentUser.value?._id || currentUser.value?.id || 'unknown'
   const botUsername = config.public.telegramBotUsername || 'helpssmp_bot'
   

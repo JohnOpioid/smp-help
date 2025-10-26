@@ -55,8 +55,8 @@ export default defineNuxtPlugin(() => {
               const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
               
                       if (isLocalhost) {
-                        // Localhost (Capacitor) - используем IP хоста с HTTP
-                        return 'http://192.168.1.40:3000'
+                        // Localhost (Capacitor) - используем переменную окружения или fallback
+                        return process.env.NUXT_PUBLIC_APP_URL || 'http://localhost:3000'
                       } else {
                         // Продакшен - используем helpsmp.ru
                         return 'https://helpsmp.ru'
