@@ -602,7 +602,16 @@ clone_and_build() {
         # Проверяем, является ли это Git репозиторием
         if git rev-parse --git-dir > /dev/null 2>&1; then
             log "📁 Репозиторий существует, обновляем..."
-            git pull origin main
+            
+            # Сохраняем локальные изменения если есть
+            if ! git diff-index --quiet HEAD --; then
+                warn "Обнаружены локальные изменения, сбрасываем их..."
+                git reset --hard HEAD
+            fi
+            
+            # Получаем последние изменения
+            git fetch origin main
+            git reset --hard origin/main
         else
             log "⚠️  Директория существует, но не является Git репозиторием"
             log "Удаляем и клонируем заново..."
@@ -1280,7 +1289,10 @@ PROJECT_NAME="$PROJECT_NAME"
 cd \$PROJECT_DIR
 
 echo "📥 Получаем изменения из GitHub..."
-git pull origin main
+# Сбрасываем локальные изменения
+git reset --hard HEAD 2>/dev/null || true
+git fetch origin main
+git reset --hard origin/main
 
 echo "📦 Устанавливаем зависимости..."
 npm install
@@ -1594,7 +1606,10 @@ main() {
             # Обновляем репозиторий
             log "Обновляем код из GitHub..."
             cd $PROJECT_DIR
-            git pull origin main
+            # Сбрасываем локальные изменения и обновляем
+            git reset --hard HEAD 2>/dev/null || true
+            git fetch origin main
+            git reset --hard origin/main
             
             # Собираем проект
             log "Собираем проект..."
