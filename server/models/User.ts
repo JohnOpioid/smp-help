@@ -17,6 +17,7 @@ export interface IUser extends Document {
     photo_url?: string
     auth_date?: Date
   }
+  lastTelegramAuth?: Date
   bookmarks?: Array<{
     _id: string
     type: 'drug' | 'local-status' | 'codifier' | 'substation' | 'calculator'
@@ -114,6 +115,10 @@ const UserSchema = new Schema<IUser>({
     },
     required: false,
     _id: false
+  },
+  lastTelegramAuth: {
+    type: Date,
+    required: false
   },
   bookmarks: {
     type: [

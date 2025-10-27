@@ -66,6 +66,7 @@ export default defineNuxtConfig({
     mongodbUri: process.env.MONGODB_URI || 'mongodb://help-smp-user:vTLJP0L5QFJIJ5Ya@185.185.68.107:27017/',
     adminSetupToken: process.env.ADMIN_SETUP_TOKEN || 'setup-token',
     telegramBotToken: process.env.TELEGRAM_BOT_TOKEN || '',
+    appUrl: process.env.NUXT_PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : ''),
     public: {
       apiBase: '/api',
       yamapsApiKey: process.env.YAMAPS_API_KEY || '0cf3bb2c-e67f-4006-8a3e-c5df09b9da6c',

@@ -11,6 +11,15 @@
       </div>
       
       <div class="mt-8 bg-white dark:bg-slate-800 py-4 px-4 shadow rounded-lg transition-colors duration-300">
+        <div v-if="isWaitingForCode" class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
+          <div class="flex items-center gap-3">
+            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 dark:border-blue-400"></div>
+            <p class="text-sm text-blue-700 dark:text-blue-300">
+              Откройте Telegram и получите код авторизации
+            </p>
+          </div>
+        </div>
+
         <form @submit.prevent="onSubmit" class="space-y-6">
           <div>
             <label for="email" class="block text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -113,15 +122,14 @@
             </div>
 
             <div class="mt-6 space-y-3">
-              <a
-                href="https://t.me/helpssmp_bot?start=login"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="w-full flex justify-center items-center gap-2 py-2 px-4 border-2 border-blue-500 dark:border-blue-400 rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+              <button
+                @click="handleTelegramLogin"
+                type="button"
+                class="w-full flex justify-center items-center gap-2 py-2 px-4 border-2 border-blue-500 dark:border-blue-400 rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 cursor-pointer"
               >
                 <UIcon name="i-logos-telegram" class="w-5 h-5" />
                 Войти через Telegram
-              </a>
+              </button>
 
               <NuxtLink 
                 to="/auth/register" 
@@ -144,6 +152,15 @@ definePageMeta({
 
 const { login } = useAuth()
 
+const config = useRuntimeConfig()
+const telegramBotUrl = computed(() => {
+  const botUsername = config.public.telegramBotUsername || 'helpssmp_bot'
+  return `https://t.me/${botUsername}?start=login`
+})
+
+// Для dev используем IP адрес
+const devUrl = 'https://192.168.1.40:3000'
+
 const form = reactive({
   email: '',
   password: ''
@@ -160,39 +177,7 @@ const telegramData = ref<any>(null)
 const route = useRoute()
 
 onMounted(async () => {
-  // Проверяем параметры URL от Telegram бота
-  if (route.query.telegram === 'true' && route.query.token) {
-    try {
-      // Получаем composable useAuth
-      const { user } = useAuth()
-      
-      // Получаем токен из URL
-      const telegramToken = route.query.token as string
-      
-      // Сохраняем токен в cookie
-      const tokenCookie = useCookie('token', { 
-        path: '/',
-        sameSite: 'lax',
-        secure: true, // Используем secure для HTTPS
-        httpOnly: false,
-        maxAge: 7 * 24 * 60 * 60
-      })
-      tokenCookie.value = telegramToken
-      
-      success.value = 'Авторизация успешна!'
-      
-      // Небольшая задержка для показа сообщения перед редиректом
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Редирект на главную
-      await navigateTo('/')
-      return
-    } catch (err) {
-      error.value = 'Ошибка авторизации через Telegram'
-    }
-  }
-  
-  // Проверяем наличие Telegram WebApp
+  // Проверяем наличие Telegram WebApp (для авторизации внутри Telegram)
   if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
     isTelegram.value = true
     const tg = (window as any).Telegram.WebApp
@@ -203,51 +188,10 @@ onMounted(async () => {
     const initData = tg.initDataUnsafe
     telegramData.value = initData.user
     
-    // Если пользователь уже авторизован через Telegram, логиним его
-    if (initData.user) {
-      try {
-        await handleTelegramLogin(initData)
-      } catch (err) {
-        error.value = 'Ошибка авторизации через Telegram'
-      }
-    }
+    // Старая авторизация через Telegram Web App удалена
+    // Теперь используется новая авторизация через код
   }
 })
-
-const handleTelegramLogin = async (initData: any) => {
-  if (!initData.user) {
-    error.value = 'Данные Telegram не найдены'
-    return
-  }
-  
-  loading.value = true
-  error.value = ''
-  
-  try {
-    // Вызываем API для Telegram авторизации
-    const response = await $fetch('/api/auth/telegram-login', {
-      method: 'POST',
-      body: {
-        id: initData.user.id,
-        first_name: initData.user.first_name,
-        username: initData.user.username,
-        photo_url: initData.user.photo_url,
-        auth_date: initData.auth_date
-      }
-    })
-    
-    if (response.success) {
-      success.value = 'Авторизация через Telegram успешна'
-      await navigateTo('/')
-    } else {
-      error.value = response.message || 'Ошибка авторизации'
-    }
-  } catch (err: any) {
-    error.value = err.message || 'Произошла ошибка при авторизации'
-  } finally {
-    loading.value = false
-  }
-}
 
 // Отслеживаем изменения полей для корректной работы с автозаполнением
 const emailField = ref<HTMLInputElement | null>(null)
@@ -339,4 +283,68 @@ const onSubmit = async () => {
     loading.value = false
   }
 }
+
+const isWaitingForCode = ref(false)
+const pollTimer = ref<NodeJS.Timeout | null>(null)
+
+const handleTelegramLogin = () => {
+  // Открываем только бота - перенаправление произойдет после генерации кода
+  const botUrl = `https://t.me/${config.public.telegramBotUsername || 'helpssmp_bot'}?start=login`
+  
+  // Начинаем ожидание кода
+  isWaitingForCode.value = true
+  
+  // Открываем бота
+  window.open(botUrl, '_blank')
+  
+  // Начинаем проверку localStorage для обновления страницы при генерации кода
+  checkForGeneratedCode()
+}
+
+const checkForGeneratedCode = () => {
+  console.log('🔍 Начинаем проверку кода...')
+  
+  // Ждем 2 секунды перед началом проверки, чтобы дать боту время сгенерировать код
+  setTimeout(() => {
+    console.log('🔍 Начинаем проверять API...')
+    
+    // Проверяем API каждую секунду
+    pollTimer.value = setInterval(async () => {
+      try {
+        console.log('🔍 Проверяем API...')
+        const check = await $fetch('/api/auth/check-telegram-auth-code')
+        console.log('📋 Ответ от API:', check)
+        
+        if (check?.success && check?.code && check?.telegramId) {
+          console.log('✅ Найден код через API:', check)
+          
+          // Останавливаем проверку
+          if (pollTimer.value) {
+            clearInterval(pollTimer.value)
+          }
+          
+          // Переходим на страницу ввода кода
+          navigateTo(`/auth/telegram-code?telegramId=${check.telegramId}&code=${check.code}`)
+        }
+      } catch (e) {
+        console.error('❌ Ошибка при проверке API:', e)
+      }
+    }, 1000)
+  }, 2000)
+  
+  // Останавливаем проверку через 5 минут
+  setTimeout(() => {
+    console.log('⏱️ Превышено время ожидания кода')
+    if (pollTimer.value) {
+      clearInterval(pollTimer.value)
+      isWaitingForCode.value = false
+    }
+  }, 302000)
+}
+
+onBeforeUnmount(() => {
+  if (pollTimer.value) {
+    clearInterval(pollTimer.value)
+  }
+})
 </script>
