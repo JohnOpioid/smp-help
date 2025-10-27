@@ -195,7 +195,7 @@
       <!-- Правый сайдовер шаблонов -->
       <USlideover v-model:open="templatesSlideoverOpen" side="right" title="Шаблоны смен"
         description="Управление шаблонами" :dismissible="true"
-        :ui="{ overlay: 'bg-slate-700/50', content: 'sm:max-w-sm', body: 'p-0', footer: 'p-4 border-t border-slate-200 dark:border-slate-700' }"
+        :ui="{ overlay: 'bg-slate-700/50', content: 'sm:max-w-sm', body: 'p-4 sm:p-6', footer: 'p-4 border-t border-slate-200 dark:border-slate-700' }"
         @update:open="onTemplatesSlideoverToggle">
         <template #body>
           <div class="space-y-4 flex-1">

@@ -18,7 +18,11 @@ export default defineNuxtConfig({
   modules: ['@nuxt/ui'],
   ui: {
     global: true,
-    icons: ['heroicons']
+    icons: ['heroicons'],
+    safelistColors: ['primary'],
+    safelistOptions: {
+      timeout: 1000
+    }
   },
   nitro: {
     preset: process.env.NODE_ENV === 'production' ? 'node-server' : 'static',
@@ -30,6 +34,12 @@ export default defineNuxtConfig({
     compressPublicAssets: {
       gzip: true,
       brotli: true
+    },
+    // Перехватываем запросы к внешним API
+    hooks: {
+      'ready': (nitro) => {
+        console.log('Nitro hooks loaded')
+      }
     }
   },
   ssr: process.env.NODE_ENV === 'production', // Включаем SSR для продакшна
