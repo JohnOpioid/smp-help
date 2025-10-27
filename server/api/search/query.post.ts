@@ -42,7 +42,7 @@ export default defineEventHandler(async (event) => {
     const searchQuery = query.trim()
     
     // Логируем для отладки (только для калькуляторов)
-    console.log('🔍 Поиск калькуляторов:', searchQuery)
+    console.log('🔍 Поиск калькуляторов:', searchQuery, 'Слова:', searchQuery.split(/\s+/))
     
     // Создаем различные варианты поискового запроса для более гибкого поиска
     const createSearchPatterns = (query: string) => {
@@ -220,9 +220,7 @@ export default defineEventHandler(async (event) => {
     
     const [mkbResults, lsResults, algorithmResults, drugResults, substationResults, calculatorResults] = await Promise.all([
       // Поиск по МКБ - сначала точный поиск в заголовках, потом в остальных полях
-      MKB.find(mkbQuery)
-      .populate('category', 'name url')
-      .lean(),
+      MKB.find(mkbQuery).lean(),
       
       // Поиск по локальным статусам
       LocalStatus.find({
@@ -248,9 +246,7 @@ export default defineEventHandler(async (event) => {
           { complaints: { $in: searchRegexes } },
           { anamnesis: { $in: searchRegexes } }
         ]
-      })
-      .populate('category', 'name url')
-      .lean(),
+      }).lean(),
       
       // Поиск по алгоритмам
       Algorithm.find({
@@ -344,25 +340,29 @@ export default defineEventHandler(async (event) => {
       // Лимит убран для получения всех результатов
       .lean(),
 
-      // Поиск по калькуляторам
+      // Поиск по калькуляторам - упрощенная логика для корректной работы
       Calculator.find({
         $or: [
-          // Приоритет 1: Точный поиск в названиях
-          { name: mainSearchRegex },
-          // Приоритет 2: Расширенный поиск в названиях
-          { name: { $in: searchRegexes } },
-          // Приоритет 3: Поиск по отдельным словам в названии, описании и категории
-          { name: { $regex: new RegExp(searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').split(/\s+/).join('|'), 'i') } },
-          { description: { $regex: new RegExp(searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').split(/\s+/).join('|'), 'i') } },
-          { category: { $regex: new RegExp(searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').split(/\s+/).join('|'), 'i') } },
-          // Приоритет 4: Точный поиск в остальных полях
-          { description: mainSearchRegex },
-          { category: mainSearchRegex },
-          // Приоритет 5: Поиск по keywords как массиву строк (ВАЖНО!)
+          // Приоритет 1: Поиск в keywords (самый важный!)
           { keywords: { $elemMatch: { $regex: mainSearchRegex } } },
-          // Приоритет 6: Расширенный поиск в остальных полях
+          // Приоритет 2: Поиск по всем паттернам в keywords
+          ...searchRegexes.map(regex => ({ keywords: { $elemMatch: { $regex: regex } } })),
+          // Приоритет 3: Точный поиск в названии
+          { name: mainSearchRegex },
+          // Приоритет 4: Поиск по паттернам в названии
+          { name: { $in: searchRegexes } },
+          // Приоритет 5: Поиск по отдельным словам в названии
+          { name: { $regex: new RegExp(searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').split(/\s+/).join('|'), 'i') } },
+          // Приоритет 6: Точный поиск в описании
+          { description: mainSearchRegex },
+          // Приоритет 7: Поиск по паттернам в описании
           { description: { $in: searchRegexes } },
-          { category: { $in: searchRegexes } }
+          // Приоритет 8: Поиск по отдельным словам в описании
+          { description: { $regex: new RegExp(searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').split(/\s+/).join('|'), 'i') } },
+          // Приоритет 9: Поиск в категории
+          { category: mainSearchRegex },
+          { category: { $in: searchRegexes } },
+          { category: { $regex: new RegExp(searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').split(/\s+/).join('|'), 'i') } }
         ]
       })
       .lean()
