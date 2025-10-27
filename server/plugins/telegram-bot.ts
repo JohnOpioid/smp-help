@@ -17,6 +17,12 @@ export default defineNitroPlugin(async (nitroApp) => {
       
       // Для локальной разработки без URL используем polling
       try {
+        // Проверяем, не запущен ли уже polling
+        if (bot.isPolling?.()) {
+          console.log('⏭️ Polling уже запущен, пропускаем повторную инициализацию')
+          return
+        }
+        
         const webhookInfo = await bot.getWebHookInfo()
         console.log('  Текущий webhook:', webhookInfo.url)
         
@@ -87,14 +93,19 @@ export default defineNitroPlugin(async (nitroApp) => {
           console.log('  ✅ Webhook удален для локальной разработки')
         }
         
-        // Запускаем polling
-        bot.startPolling({
-          interval: 300,
-          params: {
-            allowed_updates: ['message', 'callback_query']
-          }
-        })
-        console.log('✅ Telegram бот работает в режиме polling (HTTP или dev порт)')
+        // Проверяем, не запущен ли уже polling
+        if (!bot.isPolling?.()) {
+          // Запускаем polling
+          bot.startPolling({
+            interval: 300,
+            params: {
+              allowed_updates: ['message', 'callback_query']
+            }
+          })
+          console.log('✅ Telegram бот работает в режиме polling (HTTP или dev порт)')
+        } else {
+          console.log('⏭️ Polling уже запущен, пропускаем повторную инициализацию')
+        }
       } catch (error) {
         console.error('❌ Ошибка запуска polling:', error)
       }

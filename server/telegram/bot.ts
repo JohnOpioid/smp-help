@@ -17,45 +17,53 @@ if (process.env.NODE_ENV !== 'production' && process.env.NODE_TLS_REJECT_UNAUTHO
 // Токен бота из переменных окружения
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || ''
 
-console.log('🤖 Инициализация Telegram бота:')
-console.log('  BOT_TOKEN:', BOT_TOKEN ? `${BOT_TOKEN.substring(0, 10)}...${BOT_TOKEN.substring(BOT_TOKEN.length - 5)}` : 'НЕ УСТАНОВЛЕН')
-console.log('  BOT_USERNAME:', process.env.TELEGRAM_BOT_USERNAME || 'НЕ УСТАНОВЛЕН')
+// Проверяем, был ли бот уже создан (для предотвращения повторного создания при hot-reload)
+if (!(globalThis as any).telegramBot) {
+  console.log('🤖 Инициализация Telegram бота:')
+  console.log('  BOT_TOKEN:', BOT_TOKEN ? `${BOT_TOKEN.substring(0, 10)}...${BOT_TOKEN.substring(BOT_TOKEN.length - 5)}` : 'НЕ УСТАНОВЛЕН')
+  console.log('  BOT_USERNAME:', process.env.TELEGRAM_BOT_USERNAME || 'НЕ УСТАНОВЛЕН')
 
-// Для локальной разработки (без HTTPS) всегда используем polling
-// Webhook требует HTTPS сертификат
+  // Для локальной разработки (без HTTPS) всегда используем polling
+  // Webhook требует HTTPS сертификат
 
-// Проверяем наличие токена
-if (!BOT_TOKEN) {
-  console.error('❌ ERROR: Telegram Bot Token не установлен!')
-  console.error('   Установите переменную окружения TELEGRAM_BOT_TOKEN')
+  // Проверяем наличие токена
+  if (!BOT_TOKEN) {
+    console.error('❌ ERROR: Telegram Bot Token не установлен!')
+    console.error('   Установите переменную окружения TELEGRAM_BOT_TOKEN')
+  }
+
+  // Создаем бота БЕЗ polling по умолчанию
+  // Polling будет запущен только если не установлен webhook
+  (globalThis as any).telegramBot = BOT_TOKEN ? new TelegramBot(BOT_TOKEN, { 
+    polling: false // Отключаем polling по умолчанию
+  }) : null
+
+  if ((globalThis as any).telegramBot) {
+    console.log('✅ Telegram бот инициализирован')
+  }
+} else {
+  console.log('⏭️ Telegram бот уже был инициализирован ранее, используем существующий экземпляр')
 }
 
-// Создаем бота БЕЗ polling по умолчанию
-// Polling будет запущен только если не установлен webhook
-export const bot = BOT_TOKEN ? new TelegramBot(BOT_TOKEN, { 
-  polling: false // Отключаем polling по умолчанию
-}) : null
-
-if (bot) {
-  console.log('✅ Telegram бот инициализирован')
-}
+// Экспортируем бота
+export const bot = (globalThis as any).telegramBot
 
 // Telegram бот инициализирован только если токен установлен
 
 // Обработка ошибок соединения (только если бот инициализирован)
 if (bot) {
-  bot.on('polling_error', (error) => {
+  bot.on('polling_error', (error: Error) => {
     console.error('❌ Ошибка polling:', error.message)
   })
 
-  bot.on('error', (error) => {
+  bot.on('error', (error: Error) => {
     console.error('❌ Ошибка бота:', error.message)
   })
 }
 
 // Обработчики команд (только если бот инициализирован)
 if (bot) {
-  bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
+  bot.onText(/\/start(?: (.+))?/, async (msg: any, match: RegExpMatchArray | null) => {
   const chatId = msg.chat.id
   const firstName = msg.from?.first_name || 'Пользователь'
   const command = match?.[1]
@@ -258,7 +266,7 @@ ID: ${userId}
   }
 })
 
-bot.onText(/\/help/, async (msg) => {
+bot.onText(/\/help/, async (msg: any) => {
   const chatId = msg.chat.id
   
   await bot.sendMessage(chatId, `
@@ -271,7 +279,7 @@ bot.onText(/\/help/, async (msg) => {
 })
 
 // Команда для просмотра избранного
-bot.onText(/\/favorites/, async (msg) => {
+bot.onText(/\/favorites/, async (msg: any) => {
   const chatId = msg.chat.id
   const telegramId = msg.from?.id
   
@@ -383,7 +391,7 @@ bot.onText(/\/favorites/, async (msg) => {
 
 
 // Обработчик callback для inline кнопок
-bot.on('callback_query', async (query) => {
+bot.on('callback_query', async (query: any) => {
   const chatId = query.message?.chat.id
   const messageId = query.message?.message_id
   const data = query.data
