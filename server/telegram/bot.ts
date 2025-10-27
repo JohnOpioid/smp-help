@@ -1,6 +1,17 @@
 import TelegramBot from 'node-telegram-bot-api'
 import { ofetch } from 'ofetch'
 
+// Подавляем предупреждение о небезопасном TLS для локального development
+if (process.env.NODE_ENV !== 'production' && process.env.NODE_TLS_REJECT_UNAUTHORIZED === '0') {
+  const originalEmitWarning = process.emitWarning
+  process.emitWarning = function(warning: any, ...args: any[]) {
+    if (warning && warning.toString().includes('NODE_TLS_REJECT_UNAUTHORIZED')) {
+      return
+    }
+    return originalEmitWarning.call(process, warning, ...args)
+  }
+}
+
 // Токен бота из переменных окружения
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || ''
 
@@ -13,14 +24,10 @@ if (!BOT_TOKEN) {
   console.error('   Установите переменную окружения TELEGRAM_BOT_TOKEN')
 }
 
+// Создаем бота БЕЗ polling по умолчанию
+// Polling будет запущен только если не установлен webhook
 export const bot = BOT_TOKEN ? new TelegramBot(BOT_TOKEN, { 
-  polling: {
-    interval: 300,
-    autoStart: true,
-    params: {
-      allowed_updates: ['message', 'callback_query']
-    }
-  }
+  polling: false // Отключаем polling по умолчанию
 }) : null
 
 // Telegram бот инициализирован только если токен установлен

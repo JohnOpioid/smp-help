@@ -63,10 +63,40 @@ async function resolveLastLabel() {
         customAlgoTrail.value = null
         return
       }
-      if (segs.length >= 3 && !/^[a-f0-9]{24}$/i.test(segs[2] || '')) {
-        const sectionSlug = segs[1]
-        const sectionName = sectionSlug === 'adults' ? 'Взрослые' : sectionSlug === 'pediatrics' ? 'Детские' : sectionSlug === 'onmp-children' ? 'ОНМП Дети' : 'ОНМП'
-        const categoryUrl = segs[2]
+      
+      const sectionSlug = segs[1]
+      const sectionName = sectionSlug === 'adults' ? 'Взрослые' : sectionSlug === 'pediatrics' ? 'Детские' : sectionSlug === 'onmp-children' ? 'ОНМП Дети' : 'ОНМП'
+      const categorySegment = segs[2]
+      const isCategoryObjectId = /^[a-f0-9]{24}$/i.test(categorySegment || '')
+      
+      // Если category - это ObjectId, загружаем категорию по ID
+      if (segs.length >= 3 && isCategoryObjectId) {
+        try {
+          const category: any = await $fetch(`/api/algorithms/categories/${categorySegment}`)
+          const algoId = segs[3]
+          
+          customAlgoTrail.value = {
+            sectionSlug,
+            sectionName,
+            categoryUrl: category?.item?.url || categorySegment,
+            categoryName: category?.item?.name || 'Категория'
+          }
+          
+          // Если есть ID алгоритма, загружаем его
+          if (algoId && /^[a-f0-9]{24}$/i.test(algoId)) {
+            const algoRes: any = await $fetch(`/api/algorithms/${algoId}`)
+            customLastLabel.value = algoRes?.item?.title || 'Алгоритм'
+            if (algoRes?.item?.title) (customAlgoTrail.value as any).algoTitle = algoRes.item.title
+          } else if (segs.length === 3) {
+            customLastLabel.value = category?.item?.name || 'Категория'
+          }
+          return
+        } catch {}
+      }
+      
+      // Если category - это URL, работаем как раньше
+      if (segs.length >= 3 && !isCategoryObjectId) {
+        const categoryUrl = categorySegment
         try {
           const byUrl: any = await $fetch(`/api/algorithms/categories/by-url/${categoryUrl}`)
           const category = byUrl?.item

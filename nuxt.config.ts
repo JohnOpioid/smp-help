@@ -17,7 +17,10 @@ export default defineNuxtConfig({
   },
   nitro: {
     preset: process.env.NODE_ENV === 'production' ? 'node-server' : 'static',
-    prerender: false // Временно отключаем prerender
+    prerender: false, // Временно отключаем prerender
+    experimental: {
+      emitRouteRules: true
+    }
   },
   ssr: process.env.NODE_ENV === 'production', // Включаем SSR для продакшна
   app: {

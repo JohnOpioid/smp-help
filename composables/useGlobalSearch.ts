@@ -11,7 +11,8 @@ const globalState = {
     ls: [],
     algorithm: [],
     drug: [],
-    substation: []
+    substation: [],
+    calculator: []
   })),
   orderedSections: useState('search.orderedSections', () => []),
   currentPageContext: useState('search.currentPageContext', () => ''),
@@ -92,7 +93,8 @@ export const useGlobalSearch = () => {
         ls: [],
         algorithm: [],
         drug: [],
-        substation: []
+        substation: [],
+        calculator: []
       }
     }
     
@@ -104,22 +106,25 @@ export const useGlobalSearch = () => {
     
     switch (context) {
       case 'algorithm':
-        groupOrder = ['algorithm', 'mkb', 'ls', 'drug', 'substation']
+        groupOrder = ['algorithm', 'mkb', 'ls', 'drug', 'substation', 'calculator']
         break
       case 'mkb':
-        groupOrder = ['mkb', 'algorithm', 'ls', 'drug', 'substation']
+        groupOrder = ['mkb', 'algorithm', 'ls', 'drug', 'substation', 'calculator']
         break
       case 'ls':
-        groupOrder = ['ls', 'mkb', 'algorithm', 'drug', 'substation']
+        groupOrder = ['ls', 'mkb', 'algorithm', 'drug', 'substation', 'calculator']
         break
       case 'drug':
-        groupOrder = ['drug', 'algorithm', 'mkb', 'ls', 'substation']
+        groupOrder = ['drug', 'algorithm', 'mkb', 'ls', 'substation', 'calculator']
         break
       case 'substation':
-        groupOrder = ['substation', 'mkb', 'ls', 'algorithm', 'drug']
+        groupOrder = ['substation', 'mkb', 'ls', 'algorithm', 'drug', 'calculator']
+        break
+      case 'calculator':
+        groupOrder = ['calculator', 'algorithm', 'mkb', 'ls', 'drug', 'substation']
         break
       default:
-        groupOrder = ['mkb', 'algorithm', 'ls', 'drug', 'substation']
+        groupOrder = ['mkb', 'algorithm', 'ls', 'drug', 'substation', 'calculator']
     }
     
     // Переупорядочиваем группы согласно приоритету
@@ -183,6 +188,16 @@ export const useGlobalSearch = () => {
   const hideSearchOnly = () => {
     if (!process.client) return
     
+    // Сохраняем текущие результаты в кэш перед скрытием
+    if (searchQuery.value && globalState.searchResults.value.length > 0) {
+      saveSearchCache(
+        searchQuery.value,
+        globalState.searchResults.value,
+        globalState.groupedResults.value,
+        globalState.orderedSections.value
+      )
+    }
+    
     globalState.isSearchActive.value = false
     globalState.searchResults.value = []
     globalState.isSearching.value = false
@@ -191,7 +206,8 @@ export const useGlobalSearch = () => {
       ls: [],
       algorithm: [],
       drug: [],
-      substation: []
+      substation: [],
+      calculator: []
     }
     globalState.orderedSections.value = []
     // НЕ очищаем searchQuery.value и localStorage
@@ -263,7 +279,8 @@ export const useGlobalSearch = () => {
       ls: [],
       algorithm: [],
       drug: [],
-      substation: []
+      substation: [],
+      calculator: []
     }
     globalState.orderedSections.value = []
     // НЕ очищаем globalState.searchQuery.value - оставляем текст в инпуте
@@ -364,7 +381,8 @@ export const useGlobalSearch = () => {
             ls: [],
             algorithm: [],
             drug: [],
-            substation: []
+            substation: [],
+            calculator: []
           },
           response.orderedSections || []
         )
@@ -424,25 +442,48 @@ export const useGlobalSearch = () => {
     let url = ''
     
     switch (result.type) {
-      case 'algorithm':
-        url = `/algorithms/${result.section?.url || result.section}/${result.category?.url || result.category}/${result._id}`
+      case 'algorithm': {
+        // Используем URL если доступны, иначе ID
+        const sectionUrl = result.sectionUrl || result.section
+        const categoryUrl = result.categoryUrl || result.category || result.categoryId
+        
+        if (sectionUrl && categoryUrl && result._id) {
+          url = `/algorithms/${sectionUrl}/${categoryUrl}/${result._id}`
+        } else if (result.section && result.category && result._id) {
+          // Используем ID напрямую если URL нет
+          url = `/algorithms/${result.section}/${result.category}/${result._id}`
+        } else {
+          url = `/algorithms/unknown/unknown/${result._id}`
+        }
         break
-      case 'mkb':
-        url = `/codifier/${result.url || result._id}`
+      }
+      case 'mkb': {
+        // Пытаемся получить category url для правильного URL
+        const mkbCatUrl = result.category?.url || result.categoryUrl || 'unknown'
+        const mkbId = result._id || result.id
+        url = mkbCatUrl && mkbId ? `/codifier/${mkbCatUrl}?id=${mkbId}` : `/codifier/${result.url || result._id}`
         break
-      case 'ls':
-        url = `/local-statuses/${result.url || result._id}`
+      }
+      case 'ls': {
+        // Пытаемся получить category url для правильного URL
+        const catUrl = result.category?.url || result.categoryUrl || 'unknown'
+        const lsId = result._id || result.id
+        url = catUrl && lsId ? `/local-statuses/${catUrl}?id=${lsId}` : `/local-statuses/${result.url || result._id}`
         break
+      }
       case 'drug':
         url = `/drugs?id=${result._id}`
         break
       case 'substation':
-        url = `/substations?select=${encodeURIComponent(result.name)}`
+        url = `/substations?select=${encodeURIComponent(result.name || result.title)}`
+        break
+      case 'calculator':
+        url = result.url || `/calculators/${result._id}`
         break
     }
     
     if (url) {
-      deactivateSearch()
+      hideSearchOnly()
       navigateTo(url)
     }
   }

@@ -1,0 +1,121 @@
+import { defineEventHandler } from 'h3'
+import connectDB from '~/server/utils/mongodb'
+import Calculator from '~/server/models/Calculator'
+
+export default defineEventHandler(async (event) => {
+  try {
+    await connectDB()
+
+    // Данные калькуляторов из pages/calculators/index.vue
+    const calculators = [
+      // Сознание
+      {
+        name: 'Шкала комы Глазго (GCS)',
+        description: 'Оценка уровня сознания',
+        url: '/calculators/gcs',
+        category: 'Сознание',
+        keywords: ['глазго', 'gcs', 'шкала комы', 'сознание', 'кома', 'оглушение', 'сопор', 'glasgow', 'coma scale', 'шкала']
+      },
+      {
+        name: 'Шкала FOUR',
+        description: 'Глубина комы у интубированных',
+        url: '/calculators/four',
+        category: 'Сознание',
+        keywords: ['four', 'шкала four', 'интубированные', 'кома', 'сознание', 'фоур']
+      },
+      {
+        name: 'Шкала RASS',
+        description: 'Возбуждение–седация (реанимация/ИТ)',
+        url: '/calculators/rass',
+        category: 'Сознание',
+        keywords: ['rass', 'седация', 'возбуждение', 'реанимация', 'ит', 'ричмонд', 'расс', 'шкала расс']
+      },
+      
+      // Клинические состояния
+      {
+        name: 'Шкала ШОКС',
+        description: 'Хроническая сердечная недостаточность',
+        url: '/calculators/shoks',
+        category: 'Клинические состояния',
+        keywords: ['шокс', 'хсн', 'сердечная недостаточность', 'хроническая', 'функциональный класс', 'шкала шокс', 'шок']
+      },
+      {
+        name: 'Шкала NEWS',
+        description: 'Оценка тяжести состояния при COVID-19',
+        url: '/calculators/news',
+        category: 'Клинические состояния',
+        keywords: ['news', 'early warning', 'тяжесть', 'ковид', 'covid', 'состояние', 'нюс', 'ньюс', 'шкала ньюс']
+      },
+      {
+        name: 'Интенсивность боли',
+        description: 'ВАШ и шкала Вонга–Бейкера',
+        url: '/calculators/pain-vas',
+        category: 'Клинические состояния',
+        keywords: ['боль', 'ваш', 'визуальная аналоговая шкала', 'вонг бейкер', 'боль у детей', 'vas', 'боль пациента', 'оценка боли', 'болевой синдром']
+      },
+      {
+        name: 'Шкала LAMS',
+        description: 'Догоспитальная диагностика инсульта',
+        url: '/calculators/lams',
+        category: 'Клинические состояния',
+        keywords: ['lams', 'инсульт', 'диагностика', 'догоспитальная', 'ламс', 'шкала ламс', 'цвб', 'цереброваскулярное']
+      },
+      {
+        name: 'Шкала оценки вероятности ТЭЛА',
+        description: 'Женевская шкала',
+        url: '/calculators/geneva-pe',
+        category: 'Клинические состояния',
+        keywords: ['тэла', 'геневская шкала', 'тромбоэмболия', 'легочная эмболия', 'geneva', 'тела', 'эмболия', 'легочная']
+      },
+      {
+        name: 'Калькулятор срока беременности',
+        description: 'Определение предполагаемой даты родов',
+        url: '/calculators/pregnancy-due-date',
+        category: 'Клинические состояния',
+        keywords: ['беременность', 'роды', 'пдр', 'срок беременности', 'дата родов', 'гестация', 'срок', 'дата', 'родоразрешение', 'недель']
+      },
+      
+      // Педиатрические
+      {
+        name: 'Физиологические возрастные нормы',
+        description: 'Нормы ЧДД, ЧСС, АД у детей',
+        url: '/calculators/pediatric-norms',
+        category: 'Педиатрические',
+        keywords: ['педиатрия', 'дети', 'нормы', 'чдд', 'чсс', 'ад', 'возрастные нормы', 'дыхание', 'пульс', 'давление', 'частота дыхания', 'частота сердцебиения']
+      },
+      {
+        name: 'Детская шкала Глазго',
+        description: 'Оценка сознания у детей до 1 года и 1-4 лет',
+        url: '/calculators/gcs-pediatric',
+        category: 'Педиатрические',
+        keywords: ['детская глазго', 'дети глазго', 'педиатрия глазго', 'сознание детей']
+      },
+      {
+        name: 'Шкала Апгар',
+        description: 'Оценка состояния новорожденного',
+        url: '/calculators/apgar',
+        category: 'Педиатрические',
+        keywords: ['апгар', 'новорожденный', 'оценка новорожденного', 'шкала апгар', 'атгар', 'атгар', 'ребенок', 'новорожденные']
+      }
+    ]
+
+    // Очищаем коллекцию перед вставкой
+    await Calculator.deleteMany({})
+
+    // Вставляем калькуляторы
+    const result = await Calculator.insertMany(calculators)
+
+    return {
+      success: true,
+      message: `Загружено калькуляторов: ${result.length}`,
+      count: result.length
+    }
+  } catch (error: any) {
+    console.error('Ошибка загрузки калькуляторов:', error)
+    return {
+      success: false,
+      message: error.message
+    }
+  }
+})
+

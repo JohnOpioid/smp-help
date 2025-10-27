@@ -14,8 +14,10 @@ export default defineEventHandler(async (event) => {
     const { title, startTime, endTime, color } = body || {}
     if (!startTime) return { success: false, message: 'Неверные данные' }
     const doc = await ShiftTemplate.create({ userId: decoded.userId, title, startTime, endTime, color })
+    console.log(`[POST /api/shifts/templates] Created template for user ${decoded.userId}:`, doc._id, doc.title)
     return { success: true, item: doc }
-  } catch {
+  } catch (e) {
+    console.error('Error creating template:', e)
     return { success: false, message: 'Ошибка создания шаблона' }
   }
 })

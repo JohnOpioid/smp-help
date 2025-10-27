@@ -11,8 +11,10 @@ export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig()
     const decoded = jwt.verify(token, config.jwtSecret) as { userId: string }
     const items = await ShiftTemplate.find({ userId: decoded.userId }).sort({ createdAt: -1 }).lean()
+    console.log(`[GET /api/shifts/templates] User: ${decoded.userId}, Found: ${items.length} items`)
     return { success: true, items }
-  } catch {
+  } catch (e) {
+    console.error('Error fetching templates:', e)
     return { success: false, items: [] }
   }
 })

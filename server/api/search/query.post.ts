@@ -4,9 +4,12 @@ import LocalStatus from '~/server/models/LocalStatus'
 import LocalStatusCategory from '~/server/models/LocalStatusCategory'
 import MKB from '~/server/models/MKB'
 import Algorithm from '~/server/models/Algorithm'
+import AlgorithmCategory from '~/server/models/AlgorithmCategory'
+import AlgorithmSection from '~/server/models/AlgorithmSection'
 import Drug from '~/server/models/Drug'
 import DrugCategory from '~/server/models/DrugCategory'
 import Substation from '~/server/models/Substation'
+import Calculator from '~/server/models/Calculator'
 
 export default defineEventHandler(async (event) => {
   let query = '' // Объявляем переменную в начале функции
@@ -26,7 +29,8 @@ export default defineEventHandler(async (event) => {
           ls: [],
           algorithm: [],
           drug: [],
-          substation: []
+          substation: [],
+          calculator: []
         },
         totalResults: 0,
         query: query || ''
@@ -116,8 +120,24 @@ export default defineEventHandler(async (event) => {
     // Функция для определения приоритета результата
     const getResultPriority = (item: any, query: string, patterns: string[]) => {
       let priority = 0
-      const searchFields = ['title', 'name', 'description', 'note', 'content', 'mkbCode', 'stationCode', 'localis', 'latinName', 'synonyms', 'analogs', 'address', 'phones']
+      const searchFields = ['title', 'name', 'description', 'note', 'content', 'mkbCode', 'stationCode', 'localis', 'latinName', 'synonyms', 'analogs', 'address', 'phones', 'category', 'keywords']
       const queryLower = query.toLowerCase()
+      
+      // Специальная обработка для калькуляторов с keywords
+      if (item.type === 'calculator' && item.keywords && Array.isArray(item.keywords)) {
+        const keywords = item.keywords.join(' ').toLowerCase()
+        if (keywords.includes(queryLower)) {
+          priority += 5000 // Очень высокий приоритет для совпадения в keywords
+        }
+        // Также проверяем каждое ключевое слово отдельно
+        item.keywords.forEach((keyword: string) => {
+          if (keyword.toLowerCase() === queryLower.trim()) {
+            priority += 8000 // Максимальный приоритет для точного совпадения ключевого слова
+          } else if (keyword.toLowerCase().includes(queryLower.trim())) {
+            priority += 3000 // Высокий приоритет для частичного совпадения
+          }
+        })
+      }
       
       // Специальная обработка для подстанций с номерами
       if (item.type === 'substation' && /^\d+\s+подстанция/i.test(query)) {
@@ -195,12 +215,10 @@ export default defineEventHandler(async (event) => {
       ]
     }
     
-    const [mkbResults, lsResults, algorithmResults, drugResults, substationResults] = await Promise.all([
+    const [mkbResults, lsResults, algorithmResults, drugResults, substationResults, calculatorResults] = await Promise.all([
       // Поиск по МКБ - сначала точный поиск в заголовках, потом в остальных полях
       MKB.find(mkbQuery)
-      // Временно убираем populate для избежания ошибки LocalStatusCategory
-      // .populate('category', 'name url')
-      // Лимит убран для получения всех результатов
+      .populate('category', 'name url')
       .lean(),
       
       // Поиск по локальным статусам
@@ -228,9 +246,7 @@ export default defineEventHandler(async (event) => {
           { anamnesis: { $in: searchRegexes } }
         ]
       })
-      // Временно убираем populate для избежания ошибки LocalStatusCategory
-      // .populate('category', 'name url')
-      // Лимит убран для получения всех результатов
+      .populate('category', 'name url')
       .lean(),
       
       // Поиск по алгоритмам
@@ -254,10 +270,6 @@ export default defineEventHandler(async (event) => {
           { mkbExclusions: { $in: searchRegexes } }
         ]
       })
-      // Временно убираем populate для избежания ошибки LocalStatusCategory
-      // .populate('category', 'name url')
-      // .populate('section', 'name url')
-      // Лимит убран для получения всех результатов
       .lean(),
       
       // Поиск по препаратам
@@ -327,33 +339,74 @@ export default defineEventHandler(async (event) => {
       // Временно убираем populate для избежания ошибки LocalStatusCategory
       // .populate('region', 'name')
       // Лимит убран для получения всех результатов
+      .lean(),
+
+      // Поиск по калькуляторам
+      Calculator.find({
+        $or: [
+          // Приоритет 1: Точный поиск в названиях
+          { name: mainSearchRegex },
+          // Приоритет 2: Расширенный поиск в названиях
+          { name: { $in: searchRegexes } },
+          // Приоритет 3: Поиск по отдельным словам в названии
+          { name: { $regex: new RegExp(searchQuery.split(/\s+/).join('|'), 'i') } },
+          // Приоритет 4: Точный поиск в остальных полях
+          { description: mainSearchRegex },
+          { category: mainSearchRegex },
+          { keywords: mainSearchRegex },
+          // Приоритет 5: Расширенный поиск в остальных полях
+          { description: { $in: searchRegexes } },
+          { category: { $in: searchRegexes } },
+          { keywords: { $in: searchRegexes } }
+        ]
+      })
       .lean()
     ])
+    
 
     // Добавляем тип и приоритет к каждому результату
-    const mkbWithType = mkbResults.map(item => ({ 
+    const mkbWithType = mkbResults.map((item: any) => ({ 
       ...item, 
       type: 'mkb',
       priority: getResultPriority(item, searchQuery, searchPatterns)
     }))
-    const lsWithType = lsResults.map(item => ({ 
+    const lsWithType = lsResults.map((item: any) => ({ 
       ...item, 
       type: 'ls',
       priority: getResultPriority(item, searchQuery, searchPatterns)
     }))
-    const algorithmWithType = algorithmResults.map(item => ({ 
-      ...item, 
-      type: 'algorithm',
-      priority: getResultPriority(item, searchQuery, searchPatterns)
+    // Получаем названия и URL для алгоритмов
+    const algorithmWithType = await Promise.all(algorithmResults.map(async (item: any) => {
+      // Загружаем данные категории и секции
+      const [category, section] = await Promise.all([
+        AlgorithmCategory.findById(item.category).lean().catch(() => null),
+        AlgorithmSection.findById(item.section).lean().catch(() => null)
+      ])
+      
+      return {
+        ...item,
+        type: 'algorithm',
+        priority: getResultPriority(item, searchQuery, searchPatterns),
+        // Добавляем названия для хлебных крошек
+        categoryName: (category as any)?.name || '',
+        categoryUrl: (category as any)?.url || '',
+        sectionName: (section as any)?.name || '',
+        sectionUrl: (section as any)?.url || ''
+      }
     }))
-    const drugWithType = drugResults.map(item => ({ 
+    const drugWithType = drugResults.map((item: any) => ({ 
       ...item, 
       type: 'drug',
       priority: getResultPriority(item, searchQuery, searchPatterns)
     }))
-    const substationWithType = substationResults.map(item => ({ 
+    const substationWithType = substationResults.map((item: any) => ({ 
       ...item, 
       type: 'substation',
+      priority: getResultPriority(item, searchQuery, searchPatterns)
+    }))
+    const calculatorWithType = calculatorResults.map((item: any) => ({ 
+      ...item, 
+      type: 'calculator',
       priority: getResultPriority(item, searchQuery, searchPatterns)
     }))
     
@@ -365,7 +418,8 @@ export default defineEventHandler(async (event) => {
       ...lsWithType,
       ...algorithmWithType,
       ...drugWithType,
-      ...substationWithType
+      ...substationWithType,
+      ...calculatorWithType
     ].sort((a, b) => b.priority - a.priority)
     
     // Объединяем все результаты
@@ -378,8 +432,10 @@ export default defineEventHandler(async (event) => {
       ls: sortedResults.filter(item => item.type === 'ls'),
       algorithm: sortedResults.filter(item => item.type === 'algorithm'),
       drug: sortedResults.filter(item => item.type === 'drug'),
-      substation: sortedResults.filter(item => item.type === 'substation')
+      substation: sortedResults.filter(item => item.type === 'substation'),
+      calculator: sortedResults.filter(item => item.type === 'calculator')
     }
+    
     
     // Дополнительная сортировка внутри группы подстанций для точных совпадений
     if (/^\d+\s+подстанция/i.test(searchQuery)) {
@@ -450,12 +506,12 @@ export default defineEventHandler(async (event) => {
       timestamp: Date.now()
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Ошибка серверного поиска:', error)
     console.error('❌ Error details:', {
-      message: error.message,
-      stack: error.stack,
-      name: error.name
+      message: error?.message,
+      stack: error?.stack,
+      name: error?.name
     })
     
     // Возвращаем пустые результаты вместо ошибки, чтобы поиск не падал
@@ -467,11 +523,12 @@ export default defineEventHandler(async (event) => {
         ls: [],
         algorithm: [],
         drug: [],
-        substation: []
+        substation: [],
+        calculator: []
       },
       totalResults: 0,
       query: query || '',
-      error: error.message, // Добавляем информацию об ошибке для отладки
+      error: error?.message, // Добавляем информацию об ошибке для отладки
       timestamp: Date.now()
     }
   }

@@ -25,7 +25,9 @@ export interface SearchItem {
     name?: string
   }
   regionName?: string
-  type: 'mkb' | 'ls' | 'algorithm' | 'drug' | 'substation'
+  type: 'mkb' | 'ls' | 'algorithm' | 'drug' | 'substation' | 'calculator'
+  url?: string
+  category?: string
 }
 
 export const useFuseSearch = () => {

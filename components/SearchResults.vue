@@ -584,6 +584,62 @@
                 </div>
               </div>
             </template>
+
+            <!-- Калькуляторы -->
+            <template v-if="group.key === 'calculator'">
+              <div class="space-y-3">
+                <div v-for="result in getDisplayedResults('calculator', groupedResults.calculator)"
+                  :key="result._id || result.id"
+                  class="bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
+                  <div class="p-3">
+                    <div class="flex items-start justify-between">
+                      <div class="flex-1">
+                        <h4 class="font-medium text-slate-900 dark:text-white"
+                          v-html="highlightText(result.name || result.title, searchQuery)">
+                        </h4>
+                        <p v-if="result.description"
+                          class="text-sm text-slate-600 dark:text-slate-300 mt-1"
+                          v-html="highlightText(truncateToApproximateLines(result.description, 3), searchQuery)">
+                        </p>
+                        <p v-if="result.category"
+                          class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                          {{ result.category }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Разделитель между шапкой и контентом -->
+                  <div class="border-t border-slate-100 dark:border-slate-600"></div>
+
+                  <div
+                    class="px-3 pb-3 pt-0 border-t border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
+                    <div class="flex flex-wrap gap-1 pt-2">
+                      <button @click="openCalculator(result.url)"
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-cyan-100 dark:bg-cyan-900 text-cyan-700 dark:text-cyan-300 rounded-full text-sm hover:bg-cyan-200 dark:hover:bg-cyan-800 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide-calculator" class="w-4 h-4" />Открыть калькулятор
+                      </button>
+                      <button
+                        @click="copyToClipboard((result.name || result.title) + ': ' + (result.description || ''))"
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide-copy" class="w-4 h-4" />Копировать
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Кнопка "Показать еще" для калькуляторов -->
+                <div v-if="groupedResults.calculator.length > 3" class="flex justify-center pt-2">
+                  <button @click="toggleGroup('calculator')"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-1000 transition-colors border-0 cursor-pointer">
+                    <UIcon :name="expandedGroups.calculator ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+                      class="w-4 h-4" />
+                    {{ expandedGroups.calculator ? 'Скрыть' : `Показать еще ${getHiddenCount('calculator',
+                      groupedResults.calculator)} результатов` }}
+                  </button>
+                </div>
+              </div>
+            </template>
           </template>
         </div>
       </div>
@@ -663,6 +719,9 @@ const getFoundSections = () => {
   if (groupedResults.value.substation && groupedResults.value.substation.length > 0) {
     sections.push('Подстанции')
   }
+  if (groupedResults.value.calculator && groupedResults.value.calculator.length > 0) {
+    sections.push('Калькуляторы')
+  }
 
   return sections.join(', ')
 }
@@ -684,14 +743,15 @@ const groupDisplayOrder = computed(() => {
   
   // Если мы находимся на конкретной странице раздела, приоритет этому разделу
   if (context && context !== 'default' && context !== 'general') {
-    const contextOrder: Record<string, string[]> = {
-      'algorithm': ['algorithm', 'mkb', 'ls', 'drug', 'substation'],
-      'mkb': ['mkb', 'algorithm', 'ls', 'drug', 'substation'],
-      'ls': ['ls', 'mkb', 'algorithm', 'drug', 'substation'],
-      'drug': ['drug', 'algorithm', 'mkb', 'ls', 'substation'],
-      'substation': ['substation', 'mkb', 'ls', 'algorithm', 'drug']
-    }
-    return contextOrder[context] || ['mkb', 'algorithm', 'ls', 'drug', 'substation']
+      const contextOrder: Record<string, string[]> = {
+        'algorithm': ['algorithm', 'mkb', 'ls', 'drug', 'substation', 'calculator'],
+        'mkb': ['mkb', 'algorithm', 'ls', 'drug', 'substation', 'calculator'],
+        'ls': ['ls', 'mkb', 'algorithm', 'drug', 'substation', 'calculator'],
+        'drug': ['drug', 'algorithm', 'mkb', 'ls', 'substation', 'calculator'],
+        'substation': ['substation', 'mkb', 'ls', 'algorithm', 'drug', 'calculator'],
+        'calculator': ['calculator', 'algorithm', 'mkb', 'ls', 'drug', 'substation']
+      }
+      return contextOrder[context] || ['mkb', 'algorithm', 'ls', 'drug', 'substation', 'calculator']
   }
   
   // Для главной страницы используем порядок с сервера (отсортированный по количеству результатов)
@@ -706,7 +766,7 @@ const groupDisplayOrder = computed(() => {
   })
   
   // Добавляем разделы, которые есть в groupedResults, но не в serverOrder
-  const allSections = ['mkb', 'algorithm', 'ls', 'drug', 'substation']
+  const allSections = ['mkb', 'algorithm', 'ls', 'drug', 'substation', 'calculator']
   const remainingSections = allSections.filter(section => !serverOrder.includes(section))
   
   return [...serverOrder, ...remainingSections]
@@ -737,6 +797,9 @@ const orderedGroups = computed(() => {
         case 'substation':
           title = 'Подстанции'
           break
+        case 'calculator':
+          title = 'Калькуляторы'
+          break
       }
       groups.push({ key: groupKey, title, results })
     }
@@ -751,7 +814,8 @@ const expandedGroups = ref<Record<string, boolean>>({
   localStatus: false,
   algorithm: false,
   drug: false,
-  substation: false
+  substation: false,
+  calculator: false
 })
 
 // Функции для управления развертыванием групп
@@ -1517,11 +1581,10 @@ const preloadAndNavigate = async (to: string, preloadFn: () => Promise<void>) =>
 
 // Функции для открытия модалов (скопированы из BottomSearchPanel)
 const openMkbModal = (result: any) => {
-
+  // НЕ вызываем deactivateSearch() - сохраняем состояние поиска
   // Если в результате уже есть готовый url — используем его
   if (result.url) {
     const url = result.url
-    deactivateSearch()
     navigateTo(url)
     return
   }
@@ -1530,26 +1593,21 @@ const openMkbModal = (result: any) => {
   const categoryUrl = result.category?.url || result.data?.category?.url
   const mkbId = result._id || result.data?._id || result.id?.replace('mkb-', '')
 
-
   if (categoryUrl && mkbId) {
     const target = `/codifier/${categoryUrl}?id=${mkbId}`
-    deactivateSearch()
     navigateTo(target)
     return
   }
-
 }
 
 const openLocalStatusModal = (result: any) => {
-
+  // НЕ вызываем deactivateSearch() - сохраняем состояние поиска
   // Предпочтительно: собрать URL из полей результата
   const categoryUrl = result.category?.url || result.data?.category?.url
   const lsId = result._id || result.data?._id || result.id?.replace('ls-', '')
 
-
   if (categoryUrl && lsId) {
     const target = `/local-statuses/${categoryUrl}?id=${lsId}`
-    deactivateSearch()
     navigateTo(target)
     return
   }
@@ -1557,24 +1615,20 @@ const openLocalStatusModal = (result: any) => {
   // Fallback: если уже есть готовый url
   if (result.url) {
     const url = result.url
-    deactivateSearch()
     navigateTo(url)
     return
   }
-
 }
 
 const openAlgorithmModal = (result: any) => {
-
-  // Предпочтительно используем реальные поля объекта алгоритма из БД
-  const section = result?.section?.url || result?.section
-  const category = result?.category?.url || result?.category
+  // НЕ вызываем deactivateSearch() - сохраняем состояние поиска
+  // Используем sectionUrl и categoryUrl из результата поиска
+  const section = result?.sectionUrl || result?.section?.url
+  const category = result?.categoryUrl || result?.category?.url
   const algorithmId = result?._id || result?.id?.replace('algo-', '')
-
 
   if (section && category && algorithmId) {
     const target = `/algorithms/${section}/${category}/${algorithmId}`
-    deactivateSearch()
     navigateTo(target)
     return
   }
@@ -1582,19 +1636,17 @@ const openAlgorithmModal = (result: any) => {
   // Поддержка заранее собранного URL (если он есть)
   if (result.url) {
     const url = result.url
-    deactivateSearch()
     navigateTo(url)
     return
   }
-
 }
 
 const openDrugModal = (drugData: any) => {
+  // НЕ вызываем deactivateSearch() - сохраняем состояние поиска
   const raw = drugData?._id || drugData?.data?._id || drugData?.id
   const id = raw ? String(raw).replace(/^drug-/, '') : ''
 
   if (!id) {
-    deactivateSearch()
     navigateTo('/drugs')
     return
   }
@@ -1604,7 +1656,6 @@ const openDrugModal = (drugData: any) => {
 
   // Всегда переходим на страницу с query id для изменения URL
   const url = `/drugs?id=${id}`
-  deactivateSearch()
   navigateTo(url)
 }
 
@@ -1628,11 +1679,17 @@ const addDrugBookmark = async (drugData: any) => {
 }
 
 const openSubstationModal = (result: any) => {
+  // НЕ вызываем deactivateSearch() через preloadAndNavigate - сохраняем состояние поиска
   const name = result.title || result.data?.name
   if (name) {
-    preloadAndNavigate(`/substations?select=${name}`, async () => {
-      await $fetch('/api/substations').catch(() => { })
-    })
+    // Используем просто navigateTo без preloadAndNavigate
+    navigateTo(`/substations?select=${name}`)
+  }
+}
+
+const openCalculator = (url: string) => {
+  if (url) {
+    navigateTo(url)
   }
 }
 

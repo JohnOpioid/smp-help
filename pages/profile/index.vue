@@ -42,7 +42,11 @@
             <button type="button"
               class="max-w-xs w-full justify-start bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm flex items-center gap-2 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
               @click="templatePopoverOpen = !templatePopoverOpen">
-              <template v-if="selectedTemplateForEdit">
+              <template v-if="alternationToApply">
+                <UIcon name="i-heroicons-arrows-right-left" class="w-3.5 h-3.5 text-primary" />
+                {{ alternationToApply.title || 'Без названия' }}
+              </template>
+              <template v-else-if="selectedTemplateForEdit">
                 <span :style="{ backgroundColor: selectedTemplateForEdit.color || '#3B82F6' }"
                   class="w-2 h-2 rounded-full"></span>
                 {{ selectedTemplateForEdit.title || 'Без названия' }}
@@ -64,7 +68,7 @@
                 <div v-else>
                   <button v-for="template in templates" :key="template._id" type="button"
                     class="w-full text-left px-3 py-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800/60 text-sm flex items-center gap-2 cursor-pointer"
-                    @click="selectedTemplateForEdit = template; templatePopoverOpen = false">
+                    @click="selectedTemplateForEdit = template; alternationToApply = null; alternationRangeStart = ''; alternationRangeEnd = ''; templatePopoverOpen = false">
                     <span :style="{ backgroundColor: template.color || '#3B82F6' }"
                       class="w-2.5 h-2.5 rounded-full"></span>
                     <span class="truncate">{{ template.title || 'Без названия' }} · {{ template.startTime?.slice(0, 5) }}
@@ -75,7 +79,7 @@
                     <div class="text-[11px] text-slate-500 px-2 mb-1">Чередования</div>
                     <button v-for="a in alternations" :key="a._id" type="button"
                       class="w-full text-left px-3 py-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800/60 text-sm flex items-center gap-2 cursor-pointer"
-                      @click="alternationToApply = a; alternationRangeStart = ''; alternationRangeEnd = ''; templatePopoverOpen = false">
+                      @click="alternationToApply = a; selectedTemplateForEdit = null; alternationRangeStart = ''; alternationRangeEnd = ''; templatePopoverOpen = false">
                       <UIcon name="i-heroicons-arrows-right-left" class="w-3.5 h-3.5 text-slate-500" />
                       <span class="truncate">{{ a.title || 'Без названия' }}</span>
                     </button>
@@ -94,7 +98,7 @@
 
       <div class="">
         <div v-if="templatesOpen"
-          class="mb-3 p-2 border border-slate-200 dark:border-slate-700 rounded-md bg-slate-50 dark:bg-slate-800/40">
+          class="mb-3 p-2 border border-slate-100 dark:border-slate-700 rounded-md bg-slate-50 dark:bg-slate-800/40">
           <div class="flex items-center justify-between mb-2">
             <p class="text-xs text-slate-600 dark:text-slate-300">Шаблоны смен (быстрый доступ)</p>
             <UButton size="xs" variant="ghost" color="neutral" icon="i-heroicons-x-mark" class="cursor-pointer"
@@ -112,39 +116,37 @@
             </div>
           </div>
         </div>
+        <!-- Дни недели -->
+        <div class="grid grid-cols-7 gap-0 border-b border-slate-100 dark:border-slate-700">
+          <div v-for="(day, idx) in ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']" :key="day"
+            class="px-2 py-2 text-center text-xs font-medium"
+            :class="idx >= 5 ? 'text-red-600 dark:text-red-400' : 'text-slate-600 dark:text-slate-400'">
+            {{ day }}
+          </div>
+        </div>
         <div class="grid grid-cols-7 gap-0">
           <div v-for="(day, i) in calendarDays" :key="day.key" :class="[
-            'relative border-r border-b border-slate-200 dark:border-slate-700 pt-2 min-h-[110px] cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50 flex flex-col',
+            'relative border-r border-b border-slate-100 dark:border-slate-700 min-h-[110px] cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50 flex flex-col',
             (i % 7 === 6) ? 'border-r-0' : '',
             (i >= calendarDays.length - 7) ? 'border-b-0' : '',
             editMode && selectedTemplateForEdit ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20 border-blue-200 dark:border-blue-700' : ''
-          ]" @click="
-                alternationToApply
-                  ? (alternationRangeStart ? (alternationRangeEnd ? null : (alternationRangeEnd = day.dateStr, applyAlternationRange()))
-                    : (alternationRangeStart = day.dateStr))
-                  : (editMode ? (day.shifts?.length ? toggleShiftOneClick(day) : (selectedTemplateForEdit ? addShiftOneClick(day) : (templatePopoverOpen = true))) : openAddShiftForDate(day.dateStr))
-                "
+          ]" @click="handleDayClick(day)"
             @mouseenter="alternationToApply && alternationRangeStart && !alternationRangeEnd ? (alternationHoverDate = day.dateStr) : null"
             @mouseleave="alternationToApply && alternationRangeStart && !alternationRangeEnd ? (alternationHoverDate = '') : null">
-            <!-- Маленькое число в углу, если есть смены -->
-            <div class="flex items-start justify-between h-6 px-2">
-              <span class="text-xs" :class="day.isToday
-                  ? ((day.isWeekend || day.isHoliday) ? 'text-red-700 dark:text-red-300' : 'text-slate-900 dark:text-white')
-                  : ((day.isWeekend || day.isHoliday) ? 'text-red-600 dark:text-red-400' : 'text-slate-500')
-                ">{{ day.label }}</span>
-              <!-- Индикатор режима редактирования -->
-              <div class="flex items-center gap-1">
-              </div>
-              <span v-if="day.shifts.length > 0" class="text-base font-extrabold px-1.5 rounded leading-none" :class="day.outside
-                  ? ((day.isWeekend || day.isHoliday) ? 'text-red-200 dark:text-red-800' : 'text-slate-200 dark:text-slate-800')
-                  : ((day.isWeekend || day.isHoliday) ? 'text-red-300 dark:text-red-500' : (day.isToday ? 'text-slate-800 dark:text-white' : 'text-slate-400 dark:text-slate-300'))
-                ">
+            <!-- Число в ячейке сверху -->
+            <div class="flex items-center justify-center px-2 py-1">
+              <span class="text-base md:text-lg" :class="[
+                day.isToday ? 'font-black text-lg md:text-xl' : 'font-semibold',
+                day.isToday
+                  ? ((day.isWeekend || day.isHoliday) ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-white')
+                  : (
+                    day.outside
+                      ? ((day.isWeekend || day.isHoliday) ? 'text-red-200 dark:text-red-800' : 'text-slate-200 dark:text-slate-800')
+                      : ((day.isWeekend || day.isHoliday) ? 'text-red-300 dark:text-red-500' : 'text-slate-400 dark:text-slate-300')
+                  )
+              ]">
                 {{ day.dayNumber }}
               </span>
-              <span v-else class="text-base font-extrabold px-1.5 rounded leading-none invisible" :class="day.outside
-                  ? ((day.isWeekend || day.isHoliday) ? 'text-red-200 dark:text-red-800' : 'text-slate-200 dark:text-slate-800')
-                  : ((day.isWeekend || day.isHoliday) ? 'text-red-300 dark:text-red-500' : 'text-slate-400 dark:text-slate-300')
-                ">00</span>
             </div>
             <!-- Выделение диапазона применения чередования -->
             <div v-if="alternationToApply && (alternationRangeStart || alternationRangeEnd || alternationHoverDate) &&
@@ -152,41 +154,29 @@
               day.dateStr <= ((alternationRangeEnd || alternationHoverDate) || day.dateStr)"
               class="absolute inset-0 pointer-events-none rounded-sm"
               :class="alternationRangeEnd ? 'ring-2 ring-primary/40' : 'bg-blue-100/40 dark:bg-blue-900/20'"></div>
-            <!-- Большое число фоном, если пусто -->
-            <div v-if="day.shifts.length === 0"
-              class="absolute inset-0 flex items-center justify-center select-none pointer-events-none">
-              <span class="text-xl md:text-4xl font-bold" :class="(day.isToday)
-                  ? ((day.isWeekend || day.isHoliday) ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-white')
-                  : (
-                    day.outside
-                      ? ((day.isWeekend || day.isHoliday) ? 'text-red-200 dark:text-red-800' : 'text-slate-200 dark:text-slate-800')
-                      : ((day.isWeekend || day.isHoliday) ? 'text-red-300 dark:text-red-500' : 'text-slate-400 dark:text-slate-300')
-                  )
-                ">
-                {{ day.dayNumber }}
-              </span>
-            </div>
-            <ul class="mt-2 space-y-1 flex-1">
-              <li v-for="shift in day.shifts" :key="shift._id"
-                class="px-2 py-1 text-center flex items-center justify-center"
-                :class="{ 'h-full': day.shifts.length === 1 }" :style="getShiftStyle(shift)">
-                <!-- Desktop/tablet: в одну строку с тире -->
-                <div class="hidden md:block truncate text-xs">
-                  <template v-if="shift.title">
-                    <div class="font-medium truncate mb-0.5">{{ shift.title }}</div>
-                  </template>
-                  <div>
-                    {{ formatShiftTime(shift.startTime) }}<template v-if="shift.endTime"> – {{
-                      formatShiftTime(shift.endTime) }}</template>
+            <div class="flex-1 flex flex-col justify-end">
+              <ul class="space-y-1 p-1 md:p-2">
+                <li v-for="shift in day.shifts" :key="shift._id"
+                  class="rounded overflow-hidden mx-auto md:w-fit"
+                  :class="{ 'h-full': day.shifts.length === 1 }">
+                  <!-- Верхний блок - начало смены -->
+                  <div class="px-2 py-1 text-center flex items-center justify-center"
+                    :style="getShiftStyle(shift)">
+                    <div class="text-xs font-semibold whitespace-nowrap">
+                      {{ formatShiftTime(shift.startTime) }}
+                    </div>
                   </div>
-                </div>
-                <!-- Mobile: в столбец без тире -->
-                <div class="flex flex-col md:hidden leading-tight">
-                  <span class="text-xs font-semibold">{{ formatShiftTime(shift.startTime) }}</span>
-                  <span v-if="shift.endTime" class="text-xs">{{ formatShiftTime(shift.endTime) }}</span>
-                </div>
-              </li>
-            </ul>
+                  <!-- Нижний блок - конец смены -->
+                  <div v-if="shift.endTime" 
+                    class="px-2 py-0.5 text-center flex items-center justify-center"
+                    :style="getShiftEndStyle(shift)">
+                    <div class="text-xs whitespace-nowrap">
+                      {{ formatShiftTime(shift.endTime) }}
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
             <!-- Превью смены по чередованию: точка у нижнего края -->
             <div v-if="getAlternationPreviewFor(day.dateStr) && !alternationRangeEnd"
               class="absolute bottom-1 left-1/2 -translate-x-1/2 pointer-events-none">
@@ -208,7 +198,7 @@
         :ui="{ overlay: 'bg-slate-700/50', content: 'sm:max-w-sm', body: 'p-0', footer: 'p-4 border-t border-slate-200 dark:border-slate-700' }"
         @update:open="onTemplatesSlideoverToggle">
         <template #body>
-          <div class="space-y-4 flex-1 overflow-y-auto sm:p-6 p-4">
+          <div class="space-y-4 flex-1">
             <!-- Вкладки: Смены / Чередование -->
             <nav
               class="flex space-x-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 w-full justify-start items-start text-left">
@@ -232,8 +222,8 @@
                   class="w-10 h-10 mx-auto text-slate-400 dark:text-slate-500" />
                 <div class="text-base text-slate-600 dark:text-slate-300">Пока нет чередований</div>
               </div>
-              <div v-else class="space-y-2">
-                <div v-for="a in alternations" :key="a._id"
+              <div v-else class="space-y-2" :key="`alternations-list-${alternations.length}`">
+                <div v-for="(a, idx) in alternations" :key="`alternation-${a._id}-${idx}`"
                   class="group py-3 px-3 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800/60 flex items-center justify-between cursor-pointer transition-colors"
                   @click="openAlternationFromList(a)">
                   <div class="flex items-center gap-3 min-w-0">
@@ -300,9 +290,9 @@
                 </div>
               </div>
             </div>
-            <div class="space-y-2" v-if="activeTemplatesTab === 'templates' && !alternationOpen">
+            <div class="space-y-2" v-if="activeTemplatesTab === 'templates' && !alternationOpen" :key="`templates-list-${templates.length}`">
               <template v-if="(templates || []).length > 0">
-                <div v-for="t in templates" :key="t._id"
+                <div v-for="(t, idx) in templates" :key="`template-${t._id}-${idx}`"
                   class="group py-3 px-3 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800/60 flex items-center justify-between cursor-pointer transition-colors"
                   @click="openTemplateEditor(t)">
                   <div class="flex items-center gap-3 min-w-0">
@@ -898,6 +888,7 @@ const alternationOpen = ref(false)
 const alternationTitle = ref('')
 const alternationDays = ref<Array<{ templateId?: string; free?: boolean }>>(Array.from({ length: 14 }, () => ({ templateId: undefined, free: undefined })))
 const alternationSelectedTemplate = ref<any>(null)
+const editingAlternationId = ref<string | undefined>(undefined)
 const alternations = ref<Array<{ _id: string; title: string; days: Array<{ templateId?: string }> }>>([])
 const alternationToApply = ref<any>(null)
 const alternationRangeStart = ref('') // YYYY-MM-DD
@@ -912,20 +903,44 @@ function openAlternationSetup() {
   alternationTitle.value = ''
   alternationDays.value = Array.from({ length: 14 }, () => ({ templateId: undefined, free: undefined }))
   alternationSelectedTemplate.value = null
+  editingAlternationId.value = undefined // Новое создание
   // Закрываем форму шаблонов, если была открыта
   templateEditorOpen.value = false
 }
 
 async function saveAlternation() {
-  // Локальное сохранение (без бэкенда)
   try {
     const body = { title: alternationTitle.value || '', days: alternationDays.value }
-    const res: any = await $fetch('/api/shifts/alternations', { method: 'POST', body })
-    if (res?.success) {
-      await fetchAlternations()
-      alternationOpen.value = false
+    let res: any
+    
+    if (editingAlternationId.value) {
+      console.log('📝 Редактирование чередования:', editingAlternationId.value)
+      res = await $fetch(`/api/shifts/alternations/${editingAlternationId.value}`, { method: 'PATCH', body })
+      console.log('📝 Результат (PATCH):', res, 'item:', res?.item)
+    } else {
+      console.log('➕ Создание чередования:', alternationTitle.value)
+      res = await $fetch('/api/shifts/alternations', { method: 'POST', body })
+      console.log('➕ Результат (POST):', res, 'item:', res?.item)
     }
-  } catch { }
+    
+    if (res?.success) {
+      // Закрываем форму
+      alternationOpen.value = false
+      // Сбрасываем ID редактирования
+      editingAlternationId.value = undefined
+      // Принудительно обновляем UI
+      await nextTick()
+      // Добавляем задержку для сервера
+      await new Promise(resolve => setTimeout(resolve, 300))
+      console.log('🔄 Загружаем чередования после сохранения...')
+      await fetchAlternations()
+      console.log('✅ Список чередований обновлен, всего:', alternations.value.length)
+      // Еще один тик для гарантии отрисовки
+      await nextTick()
+    }
+  } catch (e) {
+    console.error('❌ Ошибка сохранения чередования:', e)
+  }
 }
 
 function onAlternationCellClick(idx: number) {
@@ -948,9 +963,29 @@ function onAlternationCellClick(idx: number) {
 
 async function fetchAlternations() {
   try {
-    const res: any = await $fetch('/api/shifts/alternations')
-    if (res?.success) alternations.value = res.items || []
-  } catch { }
+    // Отключаем кэш и добавляем timestamp для принудительного получения свежих данных
+    const timestamp = Date.now()
+    const res: any = await $fetch(`/api/shifts/alternations?t=${timestamp}`, { 
+      method: 'GET',
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    })
+    if (res?.success) {
+      // Полностью очищаем и создаем новый массив для принудительной реактивности
+      alternations.value.length = 0
+      alternations.value.push(...(res.items || []))
+      console.log('✅ Чередования загружены:', alternations.value.length, 'шт', alternations.value.map(a => a.title))
+      // Принудительно вызываем обновление
+      await nextTick()
+    } else {
+      console.log('⚠️ API не вернул success:', res)
+    }
+  } catch (e) {
+    console.error('❌ Ошибка загрузки чередований:', e)
+  }
 }
 
 function getAlternationFirstColor(a: any) {
@@ -964,6 +999,7 @@ function getAlternationFirstColor(a: any) {
 
 function openAlternationFromList(a: any) {
   try {
+    editingAlternationId.value = a?._id // Сохраняем ID для редактирования
     alternationTitle.value = a?.title || ''
     alternationDays.value = Array.isArray(a?.days) ? (a.days as any[]).map((d: any) => (d ? { templateId: d.templateId, free: !!d.free } : { templateId: undefined, free: undefined })) : Array.from({ length: 14 }, () => ({ templateId: undefined, free: undefined }))
     // открыть форму редактирования внутри сайдовера
@@ -976,6 +1012,7 @@ function openAlternationFromList(a: any) {
     alternationRangeEnd.value = ''
     alternationHoverDate.value = ''
   } catch {
+    editingAlternationId.value = undefined
     alternationTitle.value = ''
     alternationDays.value = Array.from({ length: 14 }, () => ({ templateId: undefined, free: undefined }))
     activeTemplatesTab.value = 'alternations'
@@ -993,6 +1030,7 @@ async function applyAlternationRange() {
     const a = alternationToApply.value
     const s = alternationRangeStart.value
     const e = alternationRangeEnd.value
+    console.log('🔄 applyAlternationRange:', { a, s, e })
     if (!a || !s || !e) return
     // генерируем массив дат от s до e включительно
     const start = new Date(s)
@@ -1000,16 +1038,29 @@ async function applyAlternationRange() {
     if (end.getTime() < start.getTime()) return
     // последовательность шаблона (только явные элементы: templateId или free)
     const sequence: any[] = (a.days || []).filter((d: any) => d && (d.templateId || d.free))
+    console.log('📋 Последовательность:', sequence)
     if (sequence.length === 0) return
     const created: any[] = []
     const defaultColor = '#3B82F6'
+    console.log('📅 templates.value:', templates.value)
     for (let d = new Date(start); d.getTime() <= end.getTime(); d.setDate(d.getDate() + 1)) {
       const stepIndex = Math.floor((d.getTime() - start.getTime()) / (24 * 60 * 60 * 1000))
       const pattern = sequence[stepIndex % sequence.length] || {}
-      if (pattern.free) continue // свободный день — пропускаем
-      if (!pattern.templateId) continue
+      console.log('🔍 stepIndex:', stepIndex, 'pattern:', pattern)
+      if (pattern.free) {
+        console.log('⏭ Пропускаем свободный день')
+        continue // свободный день — пропускаем
+      }
+      if (!pattern.templateId) {
+        console.log('⏭ Нет templateId')
+        continue
+      }
       const t = (templates.value as any[]).find(x => x._id === pattern.templateId)
-      if (!t) continue
+      console.log('🔍 Найден шаблон:', t)
+      if (!t) {
+        console.log('❌ Шаблон не найден для templateId:', pattern.templateId)
+        continue
+      }
       const dateStr = toLocalISO(new Date(d))
       // создаём смену на дату по шаблону
       const body: any = {
@@ -1019,13 +1070,42 @@ async function applyAlternationRange() {
         endTime: t.endTime,
         color: t.color || defaultColor
       }
+      console.log('✅ Добавляем смену:', body)
       created.push(body)
     }
     // последовательно создаём (можно батчем, но API по одному)
     alternationLastCreatedIds.value = []
+    console.log('🔄 Создаем смены по чередованию, всего:', created.length)
     for (const body of created) {
-      try { const res: any = await $fetch('/api/shifts', { method: 'POST', body }); if (res?.success && res.item?._id) alternationLastCreatedIds.value.push(res.item._id) } catch { }
+      try { 
+        // Создаем даты с учетом времени из шаблона
+        const startDateTime = new Date(`${body.date}T${body.startTime}:00`)
+        const endDateTime = new Date(`${body.date}T${body.endTime}:00`)
+        
+        // Если время окончания раньше времени начала, добавляем день
+        if (endDateTime <= startDateTime) {
+          endDateTime.setDate(endDateTime.getDate() + 1)
+        }
+        
+        const shiftData = {
+          title: body.title,
+          date: body.date,
+          startTime: startDateTime.toISOString(),
+          endTime: endDateTime.toISOString(),
+          color: body.color
+        }
+        
+        const res: any = await $fetch('/api/shifts', { method: 'POST', body: shiftData })
+        if (res?.success && res.item?._id) alternationLastCreatedIds.value.push(res.item._id)
+      } catch (e) {
+        console.error('Ошибка создания смены из чередования:', e)
+      }
     }
+    
+    console.log('✅ Создано смен по чередованию:', alternationLastCreatedIds.value.length)
+    
+    // Добавляем задержку для сервера после создания всех смен
+    await new Promise(resolve => setTimeout(resolve, 200))
     await fetchShifts()
   } finally {
     // сбрасываем режим применения
@@ -1261,7 +1341,15 @@ function onTimeTouchEnd() {
     }
   }
   const nt = formatTimeHHMM(dt)
-  if (which === 'start') { tempStartTime.value = nt; newShiftStartDate.value = toLocalISO(dt) } else { tempEndTime.value = nt; newShiftEndDate.value = toLocalISO(dt) }
+  if (which === 'start') { 
+    tempStartTime.value = nt
+    newShiftStartDate.value = toLocalISO(dt)
+    startInputText.value = formatDateTimePlaceholder(toLocalISO(dt), nt)
+  } else { 
+    tempEndTime.value = nt
+    newShiftEndDate.value = toLocalISO(dt)
+    endInputText.value = formatDateTimePlaceholder(toLocalISO(dt), nt)
+  }
 
   touchState = null
 }
@@ -1361,6 +1449,42 @@ async function deleteCurrentShift() {
   } catch { }
 }
 
+// Обработчик клика по дню календаря
+function handleDayClick(day: any) {
+  // Приоритет 1: Применение чередования (работает в любом режиме)
+  if (alternationToApply.value) {
+    if (alternationRangeStart.value) {
+      if (alternationRangeEnd.value) {
+        // Уже применено, ничего не делаем
+        return
+      } else {
+        // Устанавливаем конец диапазона и применяем
+        alternationRangeEnd.value = day.dateStr
+        applyAlternationRange()
+      }
+    } else {
+      // Устанавливаем начало диапазона
+      alternationRangeStart.value = day.dateStr
+    }
+    return
+  }
+  
+  // Приоритет 2: Режим редактирования
+  if (editMode.value) {
+    if (day.shifts?.length) {
+      toggleShiftOneClick(day)
+    } else if (selectedTemplateForEdit.value) {
+      addShiftOneClick(day)
+    } else {
+      templatePopoverOpen.value = true
+    }
+    return
+  }
+  
+  // Приоритет 3: Обычный режим
+  openAddShiftForDate(day.dateStr)
+}
+
 // Режим редактирования календаря
 const toggleEditMode = async () => {
   editMode.value = !editMode.value
@@ -1418,6 +1542,8 @@ const addShiftOneClick = async (day: any) => {
       body: shiftData
     })
 
+    // Добавляем задержку для сервера
+    await new Promise(resolve => setTimeout(resolve, 100))
     await fetchShifts()
   } catch (error) {
     console.error('Ошибка при добавлении смены:', error)
@@ -1429,7 +1555,10 @@ const toggleShiftOneClick = async (day: any) => {
   const shiftsOnDate = (day?.shifts && Array.isArray(day.shifts) ? day.shifts : shifts.value.filter((s: any) => (s.date || '').slice(0, 10) === day.dateStr))
   if (shiftsOnDate.length > 0) {
     try {
-      await deleteShift(shiftsOnDate[0]._id)
+      await $fetch(`/api/shifts/${shiftsOnDate[0]._id}`, { method: 'DELETE' })
+      // Добавляем задержку для сервера
+      await new Promise(resolve => setTimeout(resolve, 100))
+      await fetchShifts()
       return
     } catch { }
   }
@@ -1439,8 +1568,26 @@ const toggleShiftOneClick = async (day: any) => {
 async function fetchShifts() {
   const startISO = toLocalISO(start.value as any)
   const endISO = toLocalISO(end.value as any)
-  const res: any = await $fetch('/api/shifts', { params: { start: startISO, end: endISO } })
-  if (res?.success) shifts.value = (res.items || []).map((s: any) => ({ ...s, date: (s.date ? new Date(s.date).toISOString().slice(0, 10) : '') }))
+  const timestamp = Date.now()
+  
+  // Отключаем кэш для получения свежих данных
+  const res: any = await $fetch(`/api/shifts?t=${timestamp}`, { 
+    params: { start: startISO, end: endISO },
+    method: 'GET',
+    cache: 'no-store',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache'
+    }
+  })
+  
+  if (res?.success) {
+    // Полностью очищаем и создаем новый массив для принудительной реактивности
+    shifts.value.length = 0
+    shifts.value.push(...((res.items || []).map((s: any) => ({ ...s, date: (s.date ? new Date(s.date).toISOString().slice(0, 10) : '') }))))
+    console.log('✅ Смены загружены:', shifts.value.length)
+    await nextTick()
+  }
 }
 
 async function addShift() {
@@ -1571,6 +1718,20 @@ function getShiftStyle(shift: any) {
   if (color.startsWith('#')) bg = hexToRgba(color, 0.12)
   else if (color.startsWith('rgb')) bg = color.replace(/rgba?\(([^)]+)\)/, 'rgba($1, 0.12)')
   else bg = color
+  return { backgroundColor: bg, color: text }
+}
+
+function getShiftEndStyle(shift: any) {
+  const raw = (shift?.color || '').trim()
+  const color = raw || '#3B82F6'
+  let bg = ''
+  let text = color
+  // Делаем тусклее - используем меньшую прозрачность для фона
+  if (color.startsWith('#')) bg = hexToRgba(color, 0.06)
+  else if (color.startsWith('rgb')) bg = color.replace(/rgba?\(([^)]+)\)/, 'rgba($1, 0.06)')
+  else bg = color
+  // Делаем текст тусклее
+  if (color.startsWith('#')) text = hexToRgba(color, 0.6)
   return { backgroundColor: bg, color: text }
 }
 
@@ -1993,9 +2154,29 @@ function openAddShiftForDate(dateStr: string) {
 
 async function fetchTemplates() {
   try {
-    const res: any = await $fetch('/api/shifts/templates')
-    if (res?.success) templates.value = res.items || []
-  } catch { }
+    // Отключаем кэш и добавляем timestamp для принудительного получения свежих данных
+    const timestamp = Date.now()
+    const res: any = await $fetch(`/api/shifts/templates?t=${timestamp}`, { 
+      method: 'GET',
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    })
+    if (res?.success) {
+      // Полностью очищаем и создаем новый массив для принудительной реактивности
+      templates.value.length = 0
+      templates.value.push(...(res.items || []))
+      console.log('✅ Шаблоны загружены:', templates.value.length, 'шт', templates.value.map(t => t.title))
+      // Принудительно вызываем обновление
+      await nextTick()
+    } else {
+      console.log('⚠️ API не вернул success:', res)
+    }
+  } catch (e) { 
+    console.error('❌ Ошибка загрузки шаблонов:', e)
+  }
 }
 
 async function saveCurrentAsTemplate() {
@@ -2172,14 +2353,33 @@ function onTemplateTimeWheel(part: 'hours' | 'minutes', which: 'start' | 'end', 
 
 async function saveTemplate() {
   try {
+    let res: any
     if (templateForm.id) {
-      const res: any = await $fetch(`/api/shifts/templates/${templateForm.id}`, { method: 'PATCH', body: { title: templateForm.title, startTime: templateForm.startTime, endTime: templateForm.endTime || undefined, color: templateForm.color || undefined } })
-      if (res?.success) { templateEditorOpen.value = false; await fetchTemplates() }
+      console.log('📝 Редактирование шаблона:', templateForm)
+      res = await $fetch(`/api/shifts/templates/${templateForm.id}`, { method: 'PATCH', body: { title: templateForm.title, startTime: templateForm.startTime, endTime: templateForm.endTime || undefined, color: templateForm.color || undefined } })
+      console.log('📝 Результат (PATCH):', res)
     } else {
-      const res: any = await $fetch('/api/shifts/templates', { method: 'POST', body: { title: templateForm.title, startTime: templateForm.startTime, endTime: templateForm.endTime || undefined, color: templateForm.color || undefined } })
-      if (res?.success) { templateEditorOpen.value = false; await fetchTemplates() }
+      console.log('➕ Создание нового шаблона:', templateForm)
+      res = await $fetch('/api/shifts/templates', { method: 'POST', body: { title: templateForm.title, startTime: templateForm.startTime, endTime: templateForm.endTime || undefined, color: templateForm.color || undefined } })
+      console.log('➕ Результат (POST):', res, 'item:', res?.item)
     }
-  } catch { }
+    
+    if (res?.success) { 
+      // Закрываем редактор
+      templateEditorOpen.value = false
+      // Принудительно обновляем UI
+      await nextTick()
+      // Добавляем задержку для сервера
+      await new Promise(resolve => setTimeout(resolve, 300))
+      console.log('🔄 Загружаем шаблоны после сохранения...')
+      await fetchTemplates()
+      console.log('✅ Список шаблонов обновлен, всего:', templates.value.length)
+      // Еще один тик для гарантии отрисовки
+      await nextTick()
+    }
+  } catch (e) {
+    console.error('❌ Ошибка сохранения шаблона:', e)
+  }
 }
 
 async function onBottomTemplateButtonClick() {
@@ -2200,8 +2400,11 @@ function resetTemplateForm() {
   templateEndNextDay.value = true
 }
 
-function onTemplatesSlideoverToggle(open: boolean) {
-  if (!open) {
+async function onTemplatesSlideoverToggle(open: boolean) {
+  if (open) {
+    // Загружаем данные при открытии
+    await Promise.all([fetchTemplates(), fetchAlternations()])
+  } else {
     templateEditorOpen.value = false
     alternationOpen.value = false
     templateStartOpen.value = false
@@ -2229,6 +2432,8 @@ async function deleteShift(id: string) {
   try {
     const res: any = await $fetch(`/api/shifts/${id}`, { method: 'DELETE' })
     if (res?.success) {
+      // Добавляем задержку для сервера
+      await new Promise(resolve => setTimeout(resolve, 100))
       await fetchShifts()
     }
   } catch { }
