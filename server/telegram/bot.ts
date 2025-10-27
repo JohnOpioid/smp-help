@@ -76,50 +76,61 @@ ID: ${userId}
     }
     
     try {
-      // Вызываем API для подключения Telegram
-      const apiUrl = process.env.NUXT_PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || (process.env.NODE_ENV === 'development' ? 'https://192.168.1.40:3000' : '')
-      if (!apiUrl) {
-        console.error('❌ NUXT_PUBLIC_APP_URL не установлена в переменных окружения')
-        await bot.sendMessage(chatId, '❌ Ошибка конфигурации сервера')
+      // Проверяем наличие ID
+      if (!msg.from?.id) {
+        await bot.sendMessage(chatId, '❌ Ошибка: не удалось получить ID пользователя')
         return
       }
-      const response = await ofetch(`${apiUrl}/api/auth/connect-telegram`, {
-        method: 'POST',
-        body: {
-          userId,
-          telegramId: msg.from?.id,
-          username: msg.from?.username,
-          firstName: msg.from?.first_name,
-          lastName: msg.from?.last_name,
-          photo_url: (msg.from as any)?.photo_url || ''
-        },
-        rejectUnauthorized: false
-      } as any)
       
-      if (response.success) {
-        const settingsUrl = `${apiUrl}/profile/settings?telegram_connected=true`
-        
-        await bot.sendMessage(chatId, `✅ Telegram успешно подключен к вашему аккаунту!
-
-👤 Ваш аккаунт: ${msg.from?.first_name} ${msg.from?.last_name || ''}
-
-Теперь вы можете входить через Telegram.
-
-🔗 Откройте настройки:`, {
-          reply_markup: {
-            inline_keyboard: [
-              [{ text: '⚙️ Открыть настройки', url: settingsUrl }],
-              [{ text: '📚 Помощь', callback_data: 'help' }]
-            ]
-          }
-        })
-      } else {
-        await bot.sendMessage(chatId, `❌ ${response.message || 'Ошибка подключения'}`)
+      // Генерируем 6-значный код для подключения
+      const telegramUserId = String(msg.from.id)
+      const firstName = msg.from?.first_name || 'User'
+      const username = msg.from?.username
+      const { generateTelegramAuthCode } = await import('~/server/utils/telegram-auth-helpers')
+      
+      // @ts-ignore - username может быть undefined, что соответствует сигнатуре функции
+      const connectCode = await generateTelegramAuthCode(telegramUserId, firstName, username)
+      
+      // Проверяем успешность генерации кода
+      if (!connectCode.success || !connectCode.code) {
+        await bot.sendMessage(chatId, '❌ Ошибка при генерации кода')
+        return
       }
-    } catch (error: any) {
-      console.error('❌ Ошибка подключения Telegram:', error)
       
-      let errorMessage = 'Ошибка подключения Telegram'
+      // Сохраняем код для проверки через API
+      const { addConnectCode } = await import('~/server/api/auth/verify-telegram-connect-code.post')
+      addConnectCode(connectCode.code, telegramUserId)
+      
+      const apiUrl = process.env.NUXT_PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || (process.env.NODE_ENV === 'development' ? 'https://192.168.1.40:3000' : '')
+      
+      // Экранируем все специальные символы для MarkdownV2
+      const escapeMarkdown = (text: string) => {
+        return text.replace(/([_*\[\]()~`>#+=|{}.!-])/g, '\\$1')
+      }
+      
+      const codeValue = connectCode.code
+      const connectMessage = `🔐 Код для подключения Telegram
+
+Ваш код для подключения к аккаунту:
+🔢 ||\`${codeValue}\`||
+
+⏱ Код действителен 10 минут
+
+✅ Страница ввода кода откроется автоматически
+
+💡 Нажмите на код для раскрытия и копирования`
+      
+      await bot.sendMessage(chatId, connectMessage, {
+        parse_mode: 'MarkdownV2',
+        reply_markup: {
+          inline_keyboard: []
+        }
+      })
+      
+    } catch (error: any) {
+      console.error('❌ Ошибка генерирования кода:', error)
+      
+      let errorMessage = 'Ошибка при генерации кода'
       
       if (error.data?.statusMessage) {
         errorMessage = error.data.statusMessage
@@ -129,13 +140,7 @@ ID: ${userId}
       
       await bot.sendMessage(chatId, `❌ ${errorMessage}
 
-Попробуйте еще раз или обратитесь в поддержку.`, {
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: '🔄 Попробовать снова', callback_data: `auth_${msg.from?.id}` }]
-          ]
-        }
-      })
+Попробуйте еще раз или обратитесь в поддержку.`)
     }
     return
   }
@@ -437,13 +442,14 @@ bot.on('callback_query', async (query) => {
           let loginMessage = `🔐 Код авторизации
 
 Ваш код для входа на сайт:
-🔢 ||\`${response.code}\`||
+
+\`${response.code}\`
 
 ⏱ Код действителен 10 минут
 
 ✅ Страница ввода кода откроется автоматически в вашей вкладке браузера\\!
 
-💡 Нажмите на код для раскрытия и копирования`
+💡 Нажмите на код для копирования`
           
           await bot.editMessageText(
             loginMessage,

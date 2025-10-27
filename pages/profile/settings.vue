@@ -127,14 +127,12 @@
                       class="fixed bg-white dark:bg-slate-800 rounded-lg overflow-hidden shadow-lg border border-slate-200 dark:border-slate-600 z-[9999] min-w-40"
                       :style="telegramMenuStyle"
                       @click.stop>
-                 <a :href="telegramLink" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                    @click="telegramMenuOpen = false">
+                 <button @click="openTelegramConnectModal"
+                         class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 w-full text-left cursor-pointer"
+                         @click.stop="telegramMenuOpen = false">
                    <UIcon name="i-heroicons-pencil" class="w-4 h-4" />
                    Изменить
-                 </a>
+                 </button>
                  <button @click="disconnectTelegram"
                          class="flex items-center gap-2 px-4 py-2 text-sm text-error hover:bg-error/10 w-full text-left cursor-pointer"
                          @click.stop="telegramMenuOpen = false">
@@ -149,10 +147,8 @@
          
          <!-- Если не подключен - показываем кнопку подключить -->
          <li v-else class="p-4 hover:bg-slate-100 dark:hover:bg-slate-700/40">
-           <a :href="telegramLink" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              class="flex items-center justify-between gap-2 w-full">
+           <button @click="openTelegramConnectModal" 
+                   class="flex items-center justify-between gap-2 w-full">
              <div class="flex items-center gap-2">
                <UIcon name="i-logos-telegram" class="w-5 h-5" />
                <div>
@@ -167,10 +163,17 @@
              <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
              </svg>
-           </a>
+           </button>
          </li>
        </ul>
     </div>
+    
+    <!-- Модальное окно для подключения Telegram -->
+    <TelegramConnectModal
+      v-model="showTelegramModal"
+      :telegram-id="telegramId"
+      @success="handleTelegramConnectSuccess"
+    />
   </div>
 </template>
 
@@ -184,6 +187,8 @@ const pwd = reactive({ currentPassword: '', newPassword: '' })
 const telegramMenuOpen = ref(false)
 const telegramMenuRef = ref<HTMLElement | null>(null)
 const telegramMenuStyle = ref({ top: '0px', left: '0px' })
+const showTelegramModal = ref(false)
+const telegramId = ref('')
 
 // Функция для вычисления позиции меню
 const getTelegramMenuStyle = () => {
@@ -245,15 +250,38 @@ const user = computed(() => data.value?.user)
 // Текущий пользователь из data
 const currentUser = computed(() => data.value?.user)
 
-// Ссылка для подключения Telegram
-const config = useRuntimeConfig()
-const telegramLink = computed(() => {
-  const siteUrl = process.env.NUXT_PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || 'https://helpsmp.ru'
-  const userId = currentUser.value?._id || currentUser.value?.id || 'unknown'
-  const botUsername = config.public.telegramBotUsername || 'helpssmp_bot'
+// Функция для открытия модального окна подключения Telegram
+const openTelegramConnectModal = () => {
+  telegramMenuOpen.value = false
   
-  return `https://t.me/${botUsername}?start=connect_${userId}`
-})
+  if (!currentUser.value?.id && !currentUser.value?._id) {
+    console.error('❌ Не найден ID пользователя')
+    return
+  }
+  
+  // Открываем бота в новой вкладке
+  const config = useRuntimeConfig()
+  const userId = currentUser.value._id || currentUser.value.id
+  const botUsername = config.public.telegramBotUsername || 'helpssmp_bot'
+  const botUrl = `https://t.me/${botUsername}?start=connect_${userId}`
+  
+  window.open(botUrl, '_blank')
+  
+  // Открываем модальное окно через небольшую задержку
+  setTimeout(() => {
+    showTelegramModal.value = true
+  }, 500)
+}
+
+// Обработчик успешного подключения
+const handleTelegramConnectSuccess = async () => {
+  // @ts-ignore
+  const toast = useToast?.()
+  toast?.add?.({ title: 'Telegram успешно подключен!', color: 'success' })
+  
+  // Обновляем данные пользователя
+  await refresh()
+}
 
 // Проверяем, подключен ли Telegram
 const isTelegramConnected = computed(() => {
