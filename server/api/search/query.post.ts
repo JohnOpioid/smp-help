@@ -353,11 +353,11 @@ export default defineEventHandler(async (event) => {
           // Приоритет 4: Точный поиск в остальных полях
           { description: mainSearchRegex },
           { category: mainSearchRegex },
-          { keywords: mainSearchRegex },
-          // Приоритет 5: Расширенный поиск в остальных полях
+          // Приоритет 5: Поиск по keywords как массиву строк (ВАЖНО!)
+          { keywords: { $elemMatch: { $regex: mainSearchRegex } } },
+          // Приоритет 6: Расширенный поиск в остальных полях
           { description: { $in: searchRegexes } },
-          { category: { $in: searchRegexes } },
-          { keywords: { $in: searchRegexes } }
+          { category: { $in: searchRegexes } }
         ]
       })
       .lean()
