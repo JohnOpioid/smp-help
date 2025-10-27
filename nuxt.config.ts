@@ -20,6 +20,11 @@ export default defineNuxtConfig({
     prerender: false, // Временно отключаем prerender
     experimental: {
       emitRouteRules: true
+    },
+    // Отключаем внешние запросы при сборке
+    compressPublicAssets: {
+      gzip: true,
+      brotli: true
     }
   },
   ssr: process.env.NODE_ENV === 'production', // Включаем SSR для продакшна
