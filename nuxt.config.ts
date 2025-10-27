@@ -4,16 +4,23 @@
 process.env.NUXT_PUBLIC_UNFONT_PROVIDER_DISABLED = 'true'
 process.env.UNFONT_PROVIDER_DISABLED = 'true'
 
+// Принудительно блокируем использование 0.0.0.0
+if (typeof process !== 'undefined' && process.argv) {
+  const hostIndex = process.argv.indexOf('--host')
+  if (hostIndex !== -1 && process.argv[hostIndex + 1] === '0.0.0.0') {
+    process.argv[hostIndex + 1] = 'localhost'
+  }
+  // Удаляем все упоминания 0.0.0.0
+  process.argv = process.argv.filter(arg => arg !== '0.0.0.0')
+}
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: false },
   devServer: { 
-    port: 3000, 
-    host: '0.0.0.0',
-    https: {
-      key: './cert/localhost-key.pem',
-      cert: './cert/localhost.pem'
-    }
+    port: 3000,
+    host: 'localhost'
+    // Убираем SSL для простоты в dev режиме
   },
   modules: ['@nuxt/ui'],
   ui: {

@@ -1,6 +1,12 @@
 import { bot } from '~/server/telegram/bot'
 
 export default defineNitroPlugin(async (nitroApp) => {
+  // В development без токена бота не запускаем ничего
+  if (!process.env.TELEGRAM_BOT_TOKEN && process.env.NODE_ENV !== 'production') {
+    console.log('⚠️ TELEGRAM_BOT_TOKEN не установлен, Telegram бот не будет работать')
+    return
+  }
+  
   if (bot) {
     const siteUrl = process.env.NUXT_PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || (process.env.NODE_ENV === 'development' ? 'https://192.168.1.40:3000' : '')
     console.log('🔍 Telegram Bot Configuration:')

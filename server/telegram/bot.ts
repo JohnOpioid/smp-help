@@ -3,16 +3,7 @@ import { ofetch } from 'ofetch'
 import { generateTelegramAuthCode, checkTelegramAuth as checkTelegramAuthDirect } from '~/server/utils/telegram-auth-helpers'
 import { storeAuthCodeWithChat, storeAuthCodeForSync } from '~/server/utils/telegram-auth-codes'
 
-// Подавляем предупреждение о небезопасном TLS для локального development
-if (process.env.NODE_ENV !== 'production' && process.env.NODE_TLS_REJECT_UNAUTHORIZED === '0') {
-  const originalEmitWarning = process.emitWarning
-  process.emitWarning = function(warning: any, ...args: any[]) {
-    if (warning && warning.toString().includes('NODE_TLS_REJECT_UNAUTHORIZED')) {
-      return
-    }
-    return originalEmitWarning.call(process, warning, ...args)
-  }
-}
+// SSL/TLS отключен для локальной разработки
 
 // Токен бота из переменных окружения
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || ''

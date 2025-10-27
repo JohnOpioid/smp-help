@@ -7,8 +7,12 @@
       "script": "dev",
       "problemMatcher": [],
       "presentation": {
-        "reveal": "always",
-        "panel": "new"
+        "reveal": "never",
+        "panel": "shared",
+        "close": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
       }
     }
   ]

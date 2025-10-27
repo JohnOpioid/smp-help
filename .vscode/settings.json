@@ -1,6 +1,14 @@
 {
   "task.automationProfile": "off",
   "task.autoDetect": "off",
-  "task.runTaskOnFolderOpen": "never"
+  "task.runTaskOnFolderOpen": "never",
+  "extensions.autoCheckUpdates": false,
+  "extensions.autoUpdate": false,
+  "files.autoSave": "off",
+  "files.watcherExclude": {
+    "**/0.0.0.0/**": true,
+    "**/.output/**": true,
+    "**/node_modules/**": true
+  }
 }
 
