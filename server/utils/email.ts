@@ -7,20 +7,53 @@ interface EmailOptions {
   html?: string
 }
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: process.env.SMTP_PORT === '465',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
+// Настройка транспорта в зависимости от переменных окружения
+const getTransporter = () => {
+  // Если используется внешний SMTP сервис (SendGrid, Mailgun, etc)
+  if (process.env.SMTP_SERVICE && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    return nodemailer.createTransport({
+      service: process.env.SMTP_SERVICE, // 'gmail', 'yahoo', 'sendgrid', 'mailgun'
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      }
+    })
   }
-})
+  
+  // Если указан конкретный SMTP хост
+  if (process.env.SMTP_HOST) {
+    return nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: process.env.SMTP_PORT === '465',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      },
+      // Для локального Postfix
+      tls: {
+        rejectUnauthorized: false
+      }
+    })
+  }
+  
+  // Fallback: используем localhost Postfix
+  return nodemailer.createTransport({
+    host: 'localhost',
+    port: 587,
+    secure: false,
+    tls: {
+      rejectUnauthorized: false
+    }
+  })
+}
+
+const transporter = getTransporter()
 
 export async function sendEmail(options: EmailOptions): Promise<boolean> {
   try {
     const mailOptions = {
-      from: process.env.SMTP_USER,
+      from: process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@helpsmp.ru',
       to: options.to,
       subject: options.subject,
       text: options.text,
@@ -28,6 +61,7 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
     }
 
     await transporter.sendMail(mailOptions)
+    console.log('✅ Email sent successfully to:', options.to)
     return true
   } catch (error) {
     console.error('❌ Error sending email:', error)
@@ -124,5 +158,3 @@ ${code}
     html
   })
 }
-
-

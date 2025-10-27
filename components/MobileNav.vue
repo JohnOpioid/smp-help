@@ -119,7 +119,7 @@ const primaryItems = [
   { to: '/', icon: 'i-lucide-home', label: 'Главная' },
   { to: '/algorithms', icon: 'i-lucide-list-tree', label: 'Алгоритмы' },
   { to: '/codifier', icon: 'i-lucide-box', label: 'Кодификатор' },
-  { to: '/favorites', icon: 'i-lucide-heart', label: 'Избранное' }
+  { to: '/profile/bookmarks', icon: 'i-lucide-heart', label: 'Избранное' }
 ]
 
 // Дополнительные пункты (в выпадающем меню) — те же иконки, что в шапке
