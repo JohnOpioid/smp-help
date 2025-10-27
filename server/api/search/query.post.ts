@@ -41,6 +41,9 @@ export default defineEventHandler(async (event) => {
     
     const searchQuery = query.trim()
     
+    // Логируем для отладки (только для калькуляторов)
+    console.log('🔍 Поиск калькуляторов:', searchQuery)
+    
     // Создаем различные варианты поискового запроса для более гибкого поиска
     const createSearchPatterns = (query: string) => {
       const patterns = []
@@ -348,8 +351,10 @@ export default defineEventHandler(async (event) => {
           { name: mainSearchRegex },
           // Приоритет 2: Расширенный поиск в названиях
           { name: { $in: searchRegexes } },
-          // Приоритет 3: Поиск по отдельным словам в названии
-          { name: { $regex: new RegExp(searchQuery.split(/\s+/).join('|'), 'i') } },
+          // Приоритет 3: Поиск по отдельным словам в названии, описании и категории
+          { name: { $regex: new RegExp(searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').split(/\s+/).join('|'), 'i') } },
+          { description: { $regex: new RegExp(searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').split(/\s+/).join('|'), 'i') } },
+          { category: { $regex: new RegExp(searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').split(/\s+/).join('|'), 'i') } },
           // Приоритет 4: Точный поиск в остальных полях
           { description: mainSearchRegex },
           { category: mainSearchRegex },
@@ -409,6 +414,9 @@ export default defineEventHandler(async (event) => {
       type: 'calculator',
       priority: getResultPriority(item, searchQuery, searchPatterns)
     }))
+    
+    // Логируем результаты калькуляторов для отладки
+    console.log(`📊 Найдено калькуляторов: ${calculatorResults.length}`, calculatorResults.length > 0 ? calculatorResults[0].name : 'нет результатов')
     
     
     

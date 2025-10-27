@@ -1,4 +1,9 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+
+// Отключаем fontshare чтобы избежать таймаутов при сборке
+process.env.NUXT_PUBLIC_UNFONT_PROVIDER_DISABLED = 'true'
+process.env.UNFONT_PROVIDER_DISABLED = 'true'
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: false },
@@ -57,7 +62,9 @@ export default defineNuxtConfig({
       realmAppId: process.env.REALM_APP_ID || '', // Отключаем Realm для локальной работы
       // Для мобильного приложения используем IP адрес вместо localhost
       apiUrl: process.env.NODE_ENV === 'production' ? 'https://your-domain.com' : 'http://10.0.2.2:3000',
-      telegramBotUsername: process.env.TELEGRAM_BOT_USERNAME || 'helpssmp_bot'
+      telegramBotUsername: process.env.TELEGRAM_BOT_USERNAME || 'helpssmp_bot',
+      // Отключаем Fontshare provider
+      UNFONT_PROVIDER_DISABLED: true
     }
   },
   css: ['~/assets/css/main.css'],
