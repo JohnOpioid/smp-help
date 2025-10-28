@@ -30,7 +30,7 @@
               </tr>
               <tr v-else v-for="u in users" :key="u._id">
                 <td class="px-4 py-3 text-sm">
-                  <UAvatar :src="u.avatarUrl || u.telegram?.photo_url" :alt="(u.firstName + ' ' + u.lastName).trim()" size="md" :ui="{ root: 'rounded-full', image: 'object-cover', fallback: 'rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300' }">
+                  <UAvatar :src="u.displayAvatar || u.avatarUrl || u.telegram?.photo_url" :alt="(u.firstName + ' ' + u.lastName).trim()" size="md" :ui="{ root: 'rounded-full', image: 'object-cover', fallback: 'rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300' }">
                     <span class="font-semibold">{{ ((u.firstName||'').trim()[0] || '') + ((u.lastName||'').trim()[0] || '') }}</span>
                   </UAvatar>
                 </td>
@@ -163,15 +163,15 @@ async function onDelete(user: any) {
 async function onFillAvatars() {
   try {
     const res: any = await $fetch('/api/admin/users/fill-avatars', { method: 'POST' })
-    useToast()?.add?.({ title: `Обновлено аватаров: ${res?.updated ?? 0}`, color: 'success' })
-    // Перезагружаем текущие страницы
+    useToast()?.add?.({ title: `Обновлено аватаров: ${Number(res?.updated || 0)}`, color: 'success' })
+    // Перезагружаем текущие страницы и доподтягиваем уже загруженных пользователей
+    const pagesToRefetch = Math.max(1, Math.ceil(users.value.length / limit))
     page.value = 1
-    items.value = []
-    loading.value = true
-    try {
-      items.value = await fetchPage(page.value)
-    } finally {
-      loading.value = false
+    items.value = await fetchPage(1)
+    for (let p = 2; p <= pagesToRefetch; p++) {
+      const next = await fetchPage(p)
+      items.value = items.value.concat(next)
+      page.value = p
     }
   } catch {
     useToast()?.add?.({ title: 'Не удалось подтянуть аватары', color: 'error' })

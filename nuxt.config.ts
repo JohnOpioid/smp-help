@@ -63,9 +63,7 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'shortcut icon', href: '/favicon.svg', type: 'image/svg+xml' }
       ],
-      script: [
-        { src: 'https://telegram.org/js/telegram-web-app.js', async: true }
-      ]
+      script: []
     }
   },
   runtimeConfig: {
@@ -97,6 +95,7 @@ export default defineNuxtConfig({
     ...(process.env.REALM_APP_ID ? ['~/plugins/realm.client.ts'] : ['~/plugins/mongodb-local.client.ts']),
     '~/plugins/capacitor.client.ts',
     '~/plugins/mobile-ui.client.ts',
+    '~/plugins/telegram.client.ts',
     '~/plugins/fetch.client.ts'
   ]
 })

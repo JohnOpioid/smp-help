@@ -144,7 +144,7 @@
             <div class="relative flex items-center" ref="profileRef">
               <button @click="toggleMenu"
                 class="shrink-0 h-10 w-10 rounded-full bg-slate-600 text-white flex items-center justify-center text-center text-lg font-semibold hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 cursor-pointer transition-all duration-700 ease-in-out overflow-hidden">
-                <img v-if="user?.avatarUrl" :src="user?.avatarUrl" alt="avatar" class="h-full w-full object-cover" />
+                <img v-if="user?.avatarUrl || user?.telegram?.photo_url" :src="user?.avatarUrl || user?.telegram?.photo_url" alt="avatar" class="h-full w-full object-cover" />
                 <span v-else>{{ initials }}</span>
               </button>
 

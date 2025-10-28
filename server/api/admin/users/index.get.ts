@@ -16,5 +16,11 @@ export default defineEventHandler(async (event) => {
     User.find({}, { password: 0 }).sort({ createdAt: -1 }).skip(skip).limit(limit).lean()
   ])
 
-  return { success: true, items, page, limit, total }
+  // Добавляем поле displayAvatar на стороне API для удобства клиента
+  const mapped = items.map((u: any) => ({
+    ...u,
+    displayAvatar: u.avatarUrl || u.telegram?.photo_url || u.telegram?.photoUrl || ''
+  }))
+
+  return { success: true, items: mapped, page, limit, total }
 })
