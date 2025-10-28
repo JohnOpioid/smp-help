@@ -762,6 +762,15 @@ copy_files() {
         exit 1
     fi
     
+    # Копируем директорию pages/calculators для доступа к исходным файлам калькуляторов
+    if [ -d "$PROJECT_DIR/pages/calculators" ]; then
+        mkdir -p $WORK_DIR/pages
+        cp -r $PROJECT_DIR/pages/calculators $WORK_DIR/pages/
+        log "✅ Директория pages/calculators скопирована"
+    else
+        warn "Директория pages/calculators не найдена"
+    fi
+    
     # Восстанавливаем конфигурацию PM2 если была сохранена
     # (для режимов update это важно, чтобы не потерять настройки)
     if [ -f "/tmp/ecosystem.config.cjs.backup" ]; then
@@ -1319,6 +1328,13 @@ if [ -d ".output/public" ]; then
     cp -r .output/public/* \$WORK_DIR/ 2>/dev/null || true
 fi
 
+# Копируем директорию pages/calculators для доступа к исходным файлам калькуляторов
+if [ -d "pages/calculators" ]; then
+    mkdir -p \$WORK_DIR/pages
+    cp -r pages/calculators \$WORK_DIR/pages/
+    echo "✅ Директория pages/calculators скопирована"
+fi
+
 # Восстанавливаем конфигурацию
 cp /tmp/eco.backup \$WORK_DIR/ecosystem.config.cjs 2>/dev/null || true
 
@@ -1630,6 +1646,13 @@ main() {
             fi
             if [ -d ".output/public" ]; then
                 cp -r .output/public/* $WORK_DIR/ 2>/dev/null || true
+            fi
+            
+            # Копируем директорию pages/calculators для доступа к исходным файлам калькуляторов
+            if [ -d "pages/calculators" ]; then
+                mkdir -p $WORK_DIR/pages
+                cp -r pages/calculators $WORK_DIR/pages/
+                log "✅ Директория pages/calculators скопирована"
             fi
             
             # Восстанавливаем конфигурацию PM2

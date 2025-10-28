@@ -18,8 +18,9 @@ export default defineEventHandler(async (event) => {
     // Подключаемся к БД
     await connectDB()
 
-    // Путь к директории pages/calculators
-    const calculatorsDir = join(process.cwd(), 'pages', 'calculators')
+    // Получаем путь к директории pages/calculators
+    const projectRoot = process.cwd()
+    const calculatorsDir = join(projectRoot, 'pages', 'calculators')
     
     // Получаем список файлов
     const files = await readdir(calculatorsDir)

@@ -1,7 +1,6 @@
 import { defineEventHandler, readBody } from 'h3'
 import connectDB from '~/server/utils/mongodb'
 import Feedback from '~/server/models/Feedback'
-import { ollamaAI } from '~/server/utils/ai/ollama-medical-ai'
 
 export default defineEventHandler(async (event) => {
   await connectDB()
@@ -253,31 +252,12 @@ async function analyzeFeedbackWithAI(originalQuery: string, aiResponse: string, 
 }
 `
 
-  try {
-    const response = await ollamaAI.ollama.chat({
-      model: ollamaAI.model,
-      messages: [{ role: 'user', content: prompt }],
-      options: { temperature: 0.1 }
-    })
-
-    const content = response.message.content
-    const parsed = JSON.parse(content)
-    
-    return {
-      issues: parsed.issues || [],
-      improvements: parsed.improvements || [],
-      intent: parsed.intent || 'general',
-      confidence: parsed.confidence || 0.5
-    }
-
-  } catch (error) {
-    console.error('Ошибка анализа обратной связи:', error)
-    return {
-      issues: ['Ошибка анализа'],
-      improvements: ['Улучшить анализ запроса'],
-      intent: 'general',
-      confidence: 0.1
-    }
+  // AI анализ отключен
+  return {
+    issues: ['AI анализ отключен'],
+    improvements: ['Улучшить анализ запроса'],
+    intent: 'general',
+    confidence: 0.1
   }
 }
 
@@ -304,19 +284,8 @@ ${JSON.stringify(analysis, null, 2)}
 - Конструктивный подход
 `
 
-  try {
-    const response = await ollamaAI.ollama.chat({
-      model: ollamaAI.model,
-      messages: [{ role: 'user', content: prompt }],
-      options: { temperature: 0.7 }
-    })
-
-    return response.message.content
-
-  } catch (error) {
-    console.error('Ошибка генерации ответа на обратную связь:', error)
-    return 'Спасибо за обратную связь! Я учту ваши замечания для улучшения ответов в будущем. 😊'
-  }
+  // AI генерация отключена
+  return 'Спасибо за обратную связь! Я учту ваши замечания для улучшения ответов в будущем. 😊'
 }
 
 async function analyzeChatForLearning(chatHistory: any[]) {
@@ -329,41 +298,16 @@ async function analyzeChatForLearning(chatHistory: any[]) {
 
 Диалог: ${chatHistory.map(msg => `${msg.isUser ? 'Пользователь' : 'ИИ'}: ${msg.text}`).join(' | ')}`
 
-  try {
-    const response = await ollamaAI.ollama.chat({
-      model: ollamaAI.model,
-      messages: [{ role: 'user', content: prompt }],
-      options: { temperature: 0.1 }
-    })
-
-    const content = response.message.content
-    const parsed = JSON.parse(content)
-    
-    console.log('🧠 ИИ анализ для обучения:', parsed)
-    
-    return {
-      intent: parsed.intent || 'general',
-      confidence: parsed.confidence || 0.8,
-      issues: [],
-      improvements: [],
-      textAnalysis: parsed.textAnalysis || 'Успешный диалог с медицинским контентом',
-      medicalTerms: parsed.medicalTerms || [],
-      keywords: parsed.keywords || [],
-      context: parsed.context || 'Медицинская консультация'
-    }
-
-  } catch (error) {
-    console.error('Ошибка анализа чата для обучения:', error)
-    return {
-      intent: 'general',
-      confidence: 0.5,
-      issues: [],
-      improvements: [],
-      textAnalysis: 'Успешный диалог с медицинским контентом',
-      medicalTerms: [],
-      keywords: [],
-      context: 'Медицинская консультация'
-    }
+  // AI анализ отключен
+  return {
+    intent: 'general',
+    confidence: 0.5,
+    issues: [],
+    improvements: [],
+    textAnalysis: 'Успешный диалог с медицинским контентом',
+    medicalTerms: [],
+    keywords: [],
+    context: 'Медицинская консультация'
   }
 }
 

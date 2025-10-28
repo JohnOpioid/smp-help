@@ -1,6 +1,5 @@
 import { defineEventHandler, readBody } from 'h3'
 import connectDB from '~/server/utils/mongodb'
-import { ollamaAI } from '~/server/utils/ai/ollama-medical-ai'
 import MKB from '~/server/models/MKB'
 import LocalStatus from '~/server/models/LocalStatus'
 import Algorithm from '~/server/models/Algorithm'
@@ -249,7 +248,7 @@ export default defineEventHandler(async (event) => {
   const history = Array.isArray(body?.history) ? body!.history!.slice(-5) : []
   if (!query) return { message: 'Пустой запрос', results: [] }
 
-  console.log('🤖 Ollama AI: Обрабатываем запрос:', query)
+  console.log('🔍 Обрабатываем запрос:', query)
 
   // Детекция запросов на показ конкретного раздела (из быстрых кнопок)
   const queryLower = query.toLowerCase()
@@ -328,7 +327,7 @@ export default defineEventHandler(async (event) => {
 
   console.log('🔍 Fuse результаты:', fuseResults.length)
 
-  // Простое определение намерения без ИИ для ускорения
+  // Простое определение намерения для ускорения
   let simpleIntent = 'general'
   if (queryLower.includes('мкб') || queryLower.includes('код') || queryLower.includes('диагноз') || isStationCode || isMkbCode) {
     simpleIntent = 'mkb'
@@ -342,7 +341,7 @@ export default defineEventHandler(async (event) => {
     simpleIntent = 'substation'
   }
 
-  // Обрабатываем follow-up запросы ПЕРЕД точным поиском (без ИИ для скорости)
+  // Обрабатываем follow-up запросы ПЕРЕД точным поиском
   if (askAlgo || askLs || askMkb || askDrug) {
     const selectedSection = askAlgo ? 'algo' : (askLs ? 'ls' : (askMkb ? 'mkb' : 'drug'))
     
@@ -351,7 +350,7 @@ export default defineEventHandler(async (event) => {
     // Извлекаем название диагноза из истории или из предыдущего результата
     let diagnosisName = ''
     if (history && history.length > 0) {
-      // Ищем последний AI ответ с диагнозом
+      // Ищем последний ответ с диагнозом
       for (let i = history.length - 1; i >= 0; i--) {
         const msg = history[i]
         if (msg.role === 'assistant' && msg.text) {
@@ -442,7 +441,7 @@ export default defineEventHandler(async (event) => {
     // Сначала извлекаем МКБ код из исходного диагноза для более точного поиска
     let mkbCodeForSearch = ''
     if (history && history.length > 0) {
-      // Ищем МКБ код в последнем AI ответе
+      // Ищем МКБ код в последнем ответе
       for (let i = history.length - 1; i >= 0; i--) {
         const msg = history[i]
         if (msg.role === 'assistant' && msg.text) {
@@ -708,7 +707,7 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // Точный поиск по кодам станций и МКБ (приоритет над AI анализом)
+  // Точный поиск по кодам станций и МКБ
   if (isStationCode || isMkbCode) {
     console.log('🎯 Точный поиск по коду:', effectiveQuery)
     
@@ -855,16 +854,8 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // Используем ИИ только для сложных запросов или когда есть хорошие результаты Fuse
-  const shouldUseAI = fuseResults.length > 0 && fuseResults.some(r => r.score < 0.4) && !isStationCode && !isMkbCode
-  
-  if (shouldUseAI) {
-    console.log('🤖 Используем ИИ для анализа результатов')
-    const aiResponse = await ollamaAI.analyzeQuery(query, fuseResults, history)
-    console.log('🤖 Ollama AI ответ получен:', aiResponse.message)
-    return aiResponse
-  } else {
-    console.log('⚡ Используем быстрый режим без ИИ')
+  // Отключен AI анализ
+  console.log('⚡ Используем быстрый режим без ИИ')
     // Простой ответ на основе результатов Fuse
     const results = fuseResults.map(item => ({
       id: String(item._id),
@@ -903,5 +894,4 @@ export default defineEventHandler(async (event) => {
       aiIntent: simpleIntent,
       aiConfidence: 0.8
     }
-  }
 })
