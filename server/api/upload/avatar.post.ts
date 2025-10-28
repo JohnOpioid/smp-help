@@ -1,6 +1,4 @@
 import { defineEventHandler, readMultipartFormData, createError } from 'h3'
-import { promises as fsp } from 'fs'
-import { join } from 'path'
 import { nanoid } from 'nanoid'
 
 export default defineEventHandler(async (event) => {
@@ -30,11 +28,11 @@ export default defineEventHandler(async (event) => {
   }
 
   const name = `${nanoid(16)}${ext || ''}`
-  const dir = join(process.cwd(), 'public', 'uploads', 'avatars')
-  await fsp.mkdir(dir, { recursive: true })
-
-  const dest = join(dir, name)
-  await fsp.writeFile(dest, (filePart as any).data)
+  // Сохраняем через Nitro storage в публичную директорию, чтобы корректно работало в проде
+  // Эквивалент пути public/uploads/avatars/<name>
+  // @ts-ignore
+  const storage = useStorage('public')
+  await storage.setItemRaw(`uploads/avatars/${name}`, (filePart as any).data)
 
   const url = `/uploads/avatars/${name}`
   return { success: true, url }
