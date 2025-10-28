@@ -22,7 +22,7 @@
             class="w-8 h-8 p-0 cursor-pointer inline-flex items-center justify-center" @click="goNextMonth"
             aria-label="Следующий месяц" />
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex md:items-center gap-2">
           <UButton icon="i-heroicons-squares-2x2" variant="ghost" color="neutral" size="sm"
             class="w-8 h-8 p-0 cursor-pointer inline-flex items-center justify-center"
             @click="templatesSlideoverOpen = true; fetchTemplates()" aria-label="Шаблоны" />
