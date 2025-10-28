@@ -140,7 +140,7 @@
         <!-- Справочная таблица -->
 
         <!-- Формулы расчета АД -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Формулы расчета АД для детей 1-10 лет</div>
           </div>

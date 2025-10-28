@@ -34,7 +34,7 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
         <!-- 1. Одышка -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Одышка</div>
           </div>
@@ -54,7 +54,7 @@
         </div>
 
         <!-- 2. Вес за неделю -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Изменение веса за неделю</div>
           </div>
@@ -74,7 +74,7 @@
         </div>
 
         <!-- 3. Перебои сердца -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Перебои в работе сердца</div>
           </div>
@@ -94,7 +94,7 @@
         </div>
 
         <!-- 4. Положение в постели -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Положение в постели</div>
           </div>
@@ -114,7 +114,7 @@
         </div>
 
         <!-- 5. Набухшие шейные вены -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Набухшие шейные вены</div>
           </div>
@@ -134,7 +134,7 @@
         </div>
 
         <!-- 6. Хрипы в легких -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Хрипы в лёгких</div>
           </div>
@@ -154,7 +154,7 @@
         </div>
 
         <!-- 7. Ритм галопа -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Ритм галопа</div>
           </div>
@@ -174,7 +174,7 @@
         </div>
 
         <!-- 8. Печень -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Печень</div>
           </div>
@@ -194,7 +194,7 @@
         </div>
 
         <!-- 9. Отеки -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Отеки</div>
           </div>
@@ -214,7 +214,7 @@
         </div>
 
         <!-- 10. САД -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Систолическое АД</div>
           </div>
@@ -235,7 +235,7 @@
       </div>
 
       <!-- Результат -->
-      <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+      <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
         <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
           <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Результат</div>
         </div>

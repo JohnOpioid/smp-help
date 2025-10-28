@@ -33,7 +33,7 @@
     <div class="max-w-5xl mx-auto px-2 md:px-4 py-8 space-y-6">
 
       <!-- Блок с инпутами и чекбоксами -->
-      <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+      <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
         <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
           <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Параметры пациента</div>
         </div>
@@ -145,7 +145,7 @@
       </div>
 
       <!-- Блок с результатом и интерпретацией -->
-      <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+      <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
         <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
           <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Результат и интерпретация</div>
         </div>

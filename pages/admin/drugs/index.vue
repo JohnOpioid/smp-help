@@ -1,8 +1,7 @@
 <template>
   <div>
     <main class="flex-1">
-  <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
-    <AdminSubnav title="Лекарства" />
+      <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
 
         <div class="mb-6 flex items-center justify-between">
           <div class="text-sm text-slate-600 dark:text-slate-300">Управление препаратами</div>
@@ -123,7 +122,7 @@
 <script setup lang="ts">
 import { h, resolveComponent } from 'vue'
 
-definePageMeta({ middleware: 'admin', headerTitle: 'Лекарства' })
+definePageMeta({ middleware: 'admin', layout: 'admin', headerTitle: 'Лекарства' })
 
 const { data, refresh, pending } = await useFetch('/api/drugs')
 const rows = computed(() => (data.value as any)?.items || [])

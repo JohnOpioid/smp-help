@@ -34,7 +34,7 @@
 
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Открывание глаз</div>
           </div>
@@ -60,7 +60,7 @@
           </div>
         </div>
 
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Речевая реакция</div>
           </div>
@@ -86,7 +86,7 @@
           </div>
         </div>
 
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Двигательная реакция</div>
           </div>
@@ -113,7 +113,7 @@
         </div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+      <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
         <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
           <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Результат</div>
         </div>

@@ -34,7 +34,7 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
         <!-- E: Глазные реакции -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Глазные реакции (E)</div>
           </div>
@@ -61,7 +61,7 @@
         </div>
 
         <!-- M: Двигательные реакции -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Двигательные реакции (M)</div>
           </div>
@@ -88,7 +88,7 @@
         </div>
 
         <!-- B: Стволовые рефлексы -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Стволовые рефлексы (B)</div>
           </div>
@@ -115,7 +115,7 @@
         </div>
 
         <!-- R: Дыхательный паттерн -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Дыхательный паттерн (R)</div>
           </div>
@@ -143,7 +143,7 @@
       </div>
 
       <!-- Результат -->
-      <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+      <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
         <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
           <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Результат</div>
         </div>

@@ -7,6 +7,9 @@ import MKB from '~/server/models/MKB'
 import Instruction from '~/server/models/Instruction'
 import LocalStatus from '~/server/models/LocalStatus'
 import LocalStatusCategory from '~/server/models/LocalStatusCategory'
+import Calculator from '~/server/models/Calculator'
+import Algorithm from '~/server/models/Algorithm'
+import Drug from '~/server/models/Drug'
 
 export default defineEventHandler(async () => {
   await connectDB()
@@ -21,6 +24,9 @@ export default defineEventHandler(async () => {
     totalInstructions,
     totalLocalStatus,
     totalLocalStatusCategories,
+    totalCalculators,
+    totalAlgorithms,
+    totalDrugs
   ] = await Promise.all([
     User.countDocuments({}),
     User.aggregate([
@@ -39,7 +45,10 @@ export default defineEventHandler(async () => {
     MKB.countDocuments({}),
     Instruction.countDocuments({}),
     LocalStatus.countDocuments({}),
-    LocalStatusCategory.countDocuments({})
+    LocalStatusCategory.countDocuments({}),
+    Calculator.countDocuments({}),
+    Algorithm.countDocuments({}),
+    Drug.countDocuments({})
   ])
 
   // Топ-10 подстанций и пользователей
@@ -57,7 +66,11 @@ export default defineEventHandler(async () => {
       substations: { total: totalSubstations },
       codifier: { categories: totalCategories, mkb: totalMkb },
       localStatuses: { categories: totalLocalStatusCategories, items: totalLocalStatus },
-      instructions: { total: totalInstructions }
+      instructions: { total: totalInstructions },
+      calculators: { total: totalCalculators },
+      algorithms: { total: totalAlgorithms },
+      drugs: { total: totalDrugs },
+      apps: { total: 0 }
     }
   }
 })

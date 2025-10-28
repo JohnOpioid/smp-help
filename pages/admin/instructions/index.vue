@@ -2,7 +2,6 @@
   <div>
     <main class="flex-1">
       <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
-        <AdminSubnav title="Инструкции" />
 
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Список инструкций ({{ total }})</h3>
@@ -81,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ middleware: 'admin' })
+definePageMeta({ middleware: 'admin', layout: 'admin' })
 
 // Markdown превью убран по требованию
 

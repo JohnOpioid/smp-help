@@ -32,8 +32,28 @@
     <!-- Основной контент -->
     <div class="max-w-5xl mx-auto px-2 md:px-4 py-8 space-y-6">
 
+      <!-- Навигация вкладок: ВАШ / Вонга–Бейкера -->
+      <nav class="flex space-x-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 w-full justify-start items-start text-left mt-6">
+        <button
+          class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer"
+          :class="activeTab === 'vas' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'"
+          @click="activeTab = 'vas'"
+          type="button"
+        >
+          ВАШ
+        </button>
+        <button
+          class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer"
+          :class="activeTab === 'wb' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'"
+          @click="activeTab = 'wb'"
+          type="button"
+        >
+          Вонга–Бейкера
+        </button>
+      </nav>
+
       <div class="grid grid-cols-1 gap-6">
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div v-if="activeTab === 'vas'" class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">ВАШ</div>
           </div>
@@ -56,21 +76,12 @@
             </div>
             <div class="px-4 py-3 space-y-2">
               <div>
-                <div class="font-medium text-slate-700 dark:text-slate-300">Проявления</div>
-                <ul class="mt-1 space-y-1 text-slate-700 dark:text-slate-300">
-                  <li v-for="(v,i) in descriptionItems" :key="i" class="flex items-start gap-2">
-                    <UIcon name="i-heroicons-check-20-solid" class="mt-1 shrink-0 w-4 h-4 text-green-600 dark:text-green-400" />
-                    <span>{{ v }}</span>
-                  </li>
-                </ul>
-              </div>
-              <div>
                 <div class="font-medium text-slate-700 dark:text-slate-300">Рекомендуемая фармакотерапия</div>
                 <p class="text-slate-700 dark:text-slate-300">
                   <template v-for="(item, i) in therapyTokens" :key="i">
                     <template v-if="item.type === 'drug'">
                       <a href="#" class="algocclink cursor-pointer"
-                        @click.prevent="drugsQuery = (item.name||''); drugsOpen = true">{{ item.display }}</a>
+                        @click.prevent="openDrugModal(item.name||'')">{{ item.display }}</a>
                     </template>
                     <template v-else>
                       <span>{{ item.display }}</span>
@@ -80,20 +91,42 @@
               </div>
             </div>
           </div>
-          <div class="px-4 py-3 border-t border-slate-100 dark:border-slate-600 space-y-2">
-            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          
+        </div>
+
+        <!-- ВАШ: отдельный блок маскота + результат -->
+        <div v-if="activeTab === 'vas'" class="flex items-start gap-3">
+          <div class="flex-shrink-0">
+            <Mascot :is-active="true" size="lg" />
+          </div>
+          <div class="w-fit max-w-full bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
+            <div class="p-4 space-y-3">
               <div class="text-3xl font-bold">
                 <span :class="resultTextClass">{{ score }}</span>
                 <span class="text-base font-medium text-slate-500 dark:text-slate-400"> — <span :class="resultTextClass">{{ label }}</span></span>
               </div>
-              <span :class="resultPillClass" class="font-medium inline-flex items-center text-sm px-2 py-1 gap-1.5 rounded-md">{{ label }}</span>
+              <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                <span><span class="font-semibold text-emerald-600 dark:text-emerald-400">0</span> — нет нарушений</span>
+                <span><span class="font-semibold text-blue-600 dark:text-blue-400">1–3</span> — лёгкая боль</span>
+                <span><span class="font-semibold text-amber-600 dark:text-amber-400">4–6</span> — умеренная</span>
+                <span><span class="font-semibold text-red-600 dark:text-red-400">7–8</span> — выраженная</span>
+                <span><span class="font-semibold text-red-600 dark:text-red-400">9–10</span> — невыносимая</span>
+              </div>
+              <div>
+                <div class="font-medium text-slate-700 dark:text-slate-300">Описание по группам</div>
+                <ul class="mt-1 space-y-1 text-slate-700 dark:text-slate-300">
+                  <li v-for="(v,i) in descriptionItems" :key="'vas-desc-'+i" class="flex items-start gap-2">
+                    <UIcon name="i-heroicons-check-20-solid" class="mt-1 shrink-0 w-4 h-4 text-green-600 dark:text-green-400" />
+                    <span>{{ v }}</span>
+                  </li>
+                </ul>
+              </div>
             </div>
-            <p class="text-slate-700 dark:text-slate-300">0 — нет нарушений; 1–3 — лёгкая боль; 4–6 — умеренная; 7–8 — выраженная; 9–10 — невыносимая.</p>
           </div>
         </div>
 
         <!-- Шкала Вонга — Бейкера -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div v-if="activeTab === 'wb'" class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Шкала Вонга — Бейкера (0–10)</div>
           </div>
@@ -105,7 +138,7 @@
                 size="sm"
                 variant="soft"
                 :class="[
-                  'rounded-none !px-0 !py-3 w-full justify-center border-r border-b bg-transparent cursor-pointer text-default',
+                  'rounded-none !px-0 !py-3 w-full justify-center border-r bg-transparent cursor-pointer text-default',
                   'border-slate-100 dark:border-slate-700',
                   ((idx % 5)===4) ? 'border-r-0' : '',
                   (wbScore===opt.value) ? [wbSelectedTextClass, wbSelectedBgClass, wbSelectedHoverClass] : 'hover:bg-slate-100 dark:hover:bg-slate-700'
@@ -119,7 +152,21 @@
                 </span>
               </UButton>
             </div>
-            <div class="px-4 py-3 space-y-2">
+          </div>
+          
+        </div>
+
+        <!-- Вонга–Бейкера: отдельный блок маскота + результат -->
+        <div v-if="activeTab === 'wb'" class="flex items-start gap-3">
+          <div class="flex-shrink-0">
+            <Mascot :is-active="true" size="lg" />
+          </div>
+          <div class="w-fit max-w-full bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
+            <div class="p-4 space-y-3">
+              <div class="text-3xl font-bold">
+                <span :class="wbResultTextClass">{{ wbDisplayScore }}</span>
+                <span class="text-base font-medium text-slate-500 dark:text-slate-400"> — <span :class="wbResultTextClass">{{ wbLabel }}</span></span>
+              </div>
               <div>
                 <div class="font-medium text-slate-700 dark:text-slate-300">Описание по группам</div>
                 <ul class="mt-1 space-y-1 text-slate-700 dark:text-slate-300">
@@ -131,16 +178,7 @@
               </div>
             </div>
           </div>
-          <div class="px-4 py-3 border-t border-slate-100 dark:border-slate-600 space-y-2">
-            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div class="text-3xl font-bold">
-                <span :class="wbResultTextClass">{{ wbDisplayScore }}</span>
-                <span class="text-base font-medium text-slate-500 dark:text-slate-400"> — <span :class="wbResultTextClass">{{ wbLabel }}</span></span>
-              </div>
-              <span :class="wbResultPillClass" class="font-medium inline-flex items-center text-sm px-2 py-1 gap-1.5 rounded-md">{{ wbLabel }}</span>
-            </div>
-            
-          </div>
+        </div>
         </div>
       </div>
       
@@ -624,15 +662,20 @@
       <!-- Глобальная модалка препаратов -->
       <SDrugsModal v-model:open="drugsOpen" :query-name="drugsQuery" />
     </div>
-  </div>
 </template>
 
 <script setup lang="ts">
+import Mascot from '~/components/Mascot.vue'
+const activeTab = ref<'vas' | 'wb'>('vas')
 import { ref, computed, watch } from 'vue'
 const { isMobile } = useIsMobile()
 definePageMeta({ middleware: 'auth', headerTitle: 'ВАШ (шкала боли)' })
 const drugsOpen = ref(false)
 const drugsQuery = ref<string>('')
+function openDrugModal(name: string) {
+  drugsQuery.value = name
+  drugsOpen.value = true
+}
 
 const score = ref<number>(0)
 

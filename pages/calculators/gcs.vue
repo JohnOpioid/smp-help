@@ -33,7 +33,7 @@
     <div class="max-w-5xl mx-auto px-2 md:px-4 py-8 space-y-6">
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Открывание глаз</div>
           </div>
@@ -59,7 +59,7 @@
           </div>
         </div>
 
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Речевая реакция</div>
           </div>
@@ -85,7 +85,7 @@
           </div>
         </div>
 
-        <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
+        <div class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
             <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Двигательная реакция</div>
           </div>
@@ -112,31 +112,36 @@
         </div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 overflow-hidden md:rounded-lg hover:shadow-sm transition-all duration-300 border border-slate-100 dark:border-slate-600">
-        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-600">
-          <div class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">Результат</div>
+      <div class="flex items-start gap-3">
+        <!-- Маскот слева -->
+        <div class="flex-shrink-0">
+          <Mascot :is-active="true" size="lg" />
         </div>
-        <div class="p-4 h-full flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div class="space-y-1">
-            <div class="text-3xl font-bold">
-              <span :class="resultTextClass">{{ totalScore }}</span>
-              <span class="text-base font-medium text-slate-500 dark:text-slate-400">
-                (Г <span :class="eyeTextClass">{{ eyeOpening }}</span>
-                + Р <span :class="verbalTextClass">{{ verbalResponse }}</span>
-                + Д <span :class="motorTextClass">{{ motorResponse }}</span>)
-              </span>
+
+        <!-- Блок с результатом справа -->
+        <div class="w-fit max-w-full bg-white dark:bg-slate-800 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-600">
+          <div class="p-4 h-full flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="space-y-1">
+              <div class="text-3xl font-bold">
+                <span :class="resultTextClass">{{ totalScore }}</span>
+                <span class="text-base font-medium text-slate-500 dark:text-slate-400">
+                  (Г <span :class="eyeTextClass">{{ eyeOpening }}</span>
+                  + Р <span :class="verbalTextClass">{{ verbalResponse }}</span>
+                  + Д <span :class="motorTextClass">{{ motorResponse }}</span>)
+                </span>
+              </div>
+              <div class="text-sm font-medium" :class="resultTextClass">{{ interpretation }}</div>
             </div>
           </div>
-          <span :class="resultPillClass" class="font-medium inline-flex items-center text-sm px-2 py-1 gap-1.5 rounded-md">{{ interpretation }}</span>
-        </div>
-        <div class="px-4 py-3 border-t border-slate-100 dark:border-slate-600">
-          <p class="text-slate-700 dark:text-slate-300">
-            Интерпретация:
-            <span class="font-semibold text-emerald-600 dark:text-emerald-400">15</span> — ясное сознание;
-            <span class="font-semibold text-amber-300 dark:text-amber-300">13–14</span> — оглушение;
-            <span class="font-semibold text-amber-500 dark:text-amber-500">9–12</span> — сопор;
-            <span class="font-semibold text-red-600 dark:text-red-400">3–8</span> — кома.
-          </p>
+          <div class="px-4 py-3 border-t border-slate-100 dark:border-slate-600">
+            <div class="text-sm text-slate-700 dark:text-slate-300 mb-1">Интерпретация:</div>
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+              <span><span class="font-semibold text-emerald-600 dark:text-emerald-400">15</span> — ясное сознание</span>
+              <span><span class="font-semibold text-amber-300 dark:text-amber-300">13–14</span> — оглушение</span>
+              <span><span class="font-semibold text-amber-500 dark:text-amber-500">9–12</span> — сопор</span>
+              <span><span class="font-semibold text-red-600 dark:text-red-400">3–8</span> — кома</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -147,6 +152,7 @@
 
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth', headerTitle: 'Шкала Глазго' })
+import Mascot from '~/components/Mascot.vue'
 
 const eyeOptions = [
   { value: 4, label: 'Произвольное' },

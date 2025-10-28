@@ -2,7 +2,6 @@
   <div>
     <main class="flex-1">
       <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
-        <AdminSubnav title="Подстанции" />
 
         <!-- Секция регионов -->
         <div class="mb-8">
@@ -254,7 +253,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch, h, resolveComponent, nextTick } from 'vue'
-definePageMeta({ middleware: 'admin' })
+definePageMeta({ middleware: 'admin', layout: 'admin' })
 
 const open = ref(false)
 const isEdit = ref(false)

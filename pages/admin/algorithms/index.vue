@@ -1,8 +1,8 @@
 <template>
   <div>
     <main class="flex-1">
-  <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
-    <AdminSubnav title="Алгоритмы" />
+      <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
+        
 
         <!-- Таблица разделов алгоритмов -->
         <div class="mb-8">
@@ -268,7 +268,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch, h, onMounted } from 'vue'
-definePageMeta({ middleware: 'admin' })
+definePageMeta({ middleware: 'admin', layout: 'admin' })
 
 const sections = ['Взрослые', 'Детские', 'ОНМП', 'ОНМП Дети']
 

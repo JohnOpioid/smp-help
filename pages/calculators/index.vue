@@ -77,7 +77,15 @@ const sections = ref<CalculatorSection[]>([
           items: [
             { title: 'Физиологические возрастные нормы', subtitle: 'Нормы ЧДД, ЧСС, АД у детей', url: '/calculators/pediatric-norms' },
             { title: 'Детская шкала Глазго', subtitle: 'Оценка сознания у детей до 1 года и 1-4 лет', url: '/calculators/gcs-pediatric' },
-            { title: 'Шкала Апгар', subtitle: 'Оценка состояния новорожденного', url: '/calculators/apgar' }
+            { title: 'Шкала Апгар', subtitle: 'Оценка состояния новорожденного', url: '/calculators/apgar' },
+            { title: 'Шкала FLACC', subtitle: 'Оценка боли у детей до 7 лет', url: '/calculators/flacc' }
+          ]
+        },
+        {
+          title: 'Другие',
+          items: [
+            { title: 'Шкала CIWA-AR', subtitle: 'Тяжесть алкогольного абстинентного синдрома', url: '/calculators/ciwa-ar' },
+            { title: 'ШОРС', subtitle: 'Шкала оценки риска суицида', url: '/calculators/shors' }
           ]
         }
 ])

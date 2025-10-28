@@ -2,7 +2,6 @@
   <div>
     <main class="flex-1">
       <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
-        <AdminSubnav title="Кодификатор" />
 
         <!-- Таблица категорий -->
         <div class="mb-8">
@@ -261,7 +260,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch, h, resolveComponent, onMounted } from 'vue'
-definePageMeta({ middleware: 'admin' })
+definePageMeta({ middleware: 'admin', layout: 'admin' })
 
 // Категории
 const categorySlideoverOpen = ref(false)

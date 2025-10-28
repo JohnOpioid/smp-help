@@ -57,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ middleware: 'admin', headerTitle: 'Загрузка калькуляторов' })
+definePageMeta({ middleware: 'admin', layout: 'admin', headerTitle: 'Загрузка калькуляторов' })
 
 const loading = ref(false)
 const result = ref<any>(null)
@@ -77,8 +77,7 @@ async function loadCalculators() {
       const toast = useToast?.()
       toast?.add?.({
         title: 'Калькуляторы успешно загружены',
-        color: 'green',
-        timeout: 3000
+        color: 'success'
       })
     }
   } catch (error: any) {
@@ -91,8 +90,7 @@ async function loadCalculators() {
     toast?.add?.({
       title: 'Ошибка загрузки',
       description: error.message,
-      color: 'red',
-      timeout: 5000
+      color: 'error'
     })
   } finally {
     loading.value = false

@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
   if (typeof body?.email === 'string') update.email = body.email.trim().toLowerCase()
   if (typeof body?.city === 'string') update.city = body.city.trim()
   if (typeof body?.substation === 'string') update.substation = body.substation.trim()
+  if (typeof body?.avatarUrl === 'string') update.avatarUrl = body.avatarUrl.trim()
 
   const user = await User.findByIdAndUpdate(sessionUser._id, update, { new: true }).select('-password').lean()
   return { success: true, user }

@@ -1,19 +1,4 @@
 {
   "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "dev",
-      "type": "npm",
-      "script": "dev",
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "never",
-        "panel": "shared",
-        "close": true
-      },
-      "runOptions": {
-        "instanceLimit": 1
-      }
-    }
-  ]
+  "tasks": []
 }
