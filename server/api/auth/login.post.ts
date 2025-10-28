@@ -77,6 +77,14 @@ export default defineEventHandler(async (event) => {
       maxAge: 60 * 60 * 24 * 7 // 7 дней
     })
 
+    // Авто-подстановка аватара из Telegram, если не установлен вручную
+    if (!user.avatarUrl && user.telegram?.photo_url) {
+      try {
+        user.avatarUrl = user.telegram.photo_url
+        await user.save()
+      } catch {}
+    }
+
     return {
       success: true,
       message: 'Успешная авторизация',
@@ -86,6 +94,7 @@ export default defineEventHandler(async (event) => {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        avatarUrl: user.avatarUrl || '',
         role: user.role
       }
     }

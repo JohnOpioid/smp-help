@@ -2,9 +2,14 @@
   <div class="flex-1">
     <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
       <div class="bg-white dark:bg-slate-800 rounded-lg">
-        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
-          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Пользователи</h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Управление ролями, блокировками и удалением</p>
+        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-2">
+          <div>
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Пользователи</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Управление ролями, блокировками и удалением</p>
+          </div>
+          <UButton color="primary" variant="soft" size="sm" class="cursor-pointer" @click="onFillAvatars">
+            Подтянуть аватары из Telegram
+          </UButton>
         </div>
         <div class="relative overflow-auto">
           <table class="min-w-full overflow-clip">
@@ -106,6 +111,14 @@ async function onDelete(user: any) {
     useToast()?.add?.({ title: 'Не удалось удалить', color: 'error' })
   }
 }
+async function onFillAvatars() {
+  try {
+    const res: any = await $fetch('/api/admin/users/fill-avatars', { method: 'POST' })
+    useToast()?.add?.({ title: `Обновлено аватаров: ${res?.updated ?? 0}`, color: 'success' })
+    await refreshUsers()
+  } catch {
+    useToast()?.add?.({ title: 'Не удалось подтянуть аватары', color: 'error' })
+  }
+}
 </script>
-
-
+ 

@@ -57,6 +57,11 @@ export default defineEventHandler(async (event) => {
       auth_date: Date.now()
     }
     
+    // Если у пользователя нет кастомного аватара, подтягиваем из Telegram
+    if (!user.avatarUrl && user.telegram.photo_url) {
+      user.avatarUrl = user.telegram.photo_url
+    }
+
     await user.save()
     
     console.log(`✅ Telegram ${telegramId} подключен к пользователю ${userId}`)
@@ -69,7 +74,8 @@ export default defineEventHandler(async (event) => {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        telegram: user.telegram
+        telegram: user.telegram,
+        avatarUrl: user.avatarUrl || ''
       }
     }
 
