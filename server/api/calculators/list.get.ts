@@ -19,8 +19,28 @@ export default defineEventHandler(async (event) => {
     await connectDB()
 
     // Получаем путь к директории pages/calculators
+    // Попробуем несколько возможных путей
     const projectRoot = process.cwd()
-    const calculatorsDir = join(projectRoot, 'pages', 'calculators')
+    console.log('[Calculators] Current working directory:', projectRoot)
+    
+    let calculatorsDir = join(projectRoot, 'pages', 'calculators')
+    console.log('[Calculators] Trying path:', calculatorsDir)
+    
+    // Проверяем существование директории
+    const fs = await import('fs')
+    if (!await fs.promises.access(calculatorsDir).then(() => true).catch(() => false)) {
+      // Пробуем альтернативный путь для продакшена
+      calculatorsDir = '/home/smp-help/smp-help/pages/calculators'
+      console.log('[Calculators] Trying alternative path:', calculatorsDir)
+      
+      if (!await fs.promises.access(calculatorsDir).then(() => true).catch(() => false)) {
+        // Пробуем еще один путь
+        calculatorsDir = '/var/www/html/helpsmp.ru/pages/calculators'
+        console.log('[Calculators] Trying another alternative path:', calculatorsDir)
+      }
+    }
+    
+    console.log('[Calculators] Using path:', calculatorsDir)
     
     // Получаем список файлов
     const files = await readdir(calculatorsDir)
