@@ -78,7 +78,8 @@ const sections = ref<CalculatorSection[]>([
             { title: 'Физиологические возрастные нормы', subtitle: 'Нормы ЧДД, ЧСС, АД у детей', url: '/calculators/pediatric-norms' },
             { title: 'Детская шкала Глазго', subtitle: 'Оценка сознания у детей до 1 года и 1-4 лет', url: '/calculators/gcs-pediatric' },
             { title: 'Шкала Апгар', subtitle: 'Оценка состояния новорожденного', url: '/calculators/apgar' },
-            { title: 'Шкала FLACC', subtitle: 'Оценка боли у детей до 7 лет', url: '/calculators/flacc' }
+            { title: 'Шкала FLACC', subtitle: 'Оценка боли у детей до 7 лет', url: '/calculators/flacc' },
+            { title: 'Площадь ожоговой поверхности (Лунд–Браудер)', subtitle: 'Расчет по возрасту с кликабельными сегментами', url: '/calculators/burn-area' }
           ]
         },
         {

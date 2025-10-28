@@ -28,11 +28,22 @@ export default defineEventHandler(async (event) => {
   }
 
   const name = `${nanoid(16)}${ext || ''}`
-  // Сохраняем через Nitro storage в публичную директорию, чтобы корректно работало в проде
-  // Эквивалент пути public/uploads/avatars/<name>
-  // @ts-ignore
-  const storage = useStorage('public')
-  await storage.setItemRaw(`uploads/avatars/${name}`, (filePart as any).data)
+  
+  // В продакшене сохраняем в /var/www/html/public/uploads/avatars/
+  const uploadDir = '/var/www/html/public/uploads/avatars/'
+  const fs = await import('fs').then(m => m.promises)
+  
+  try {
+    // Создаем директорию если её нет
+    await fs.mkdir(uploadDir, { recursive: true })
+    
+    // Сохраняем файл
+    const filePath = `${uploadDir}${name}`
+    await fs.writeFile(filePath, (filePart as any).data)
+  } catch (error: any) {
+    console.error('Error saving avatar:', error)
+    throw createError({ statusCode: 500, statusMessage: 'Failed to save file' })
+  }
 
   const url = `/uploads/avatars/${name}`
   return { success: true, url }

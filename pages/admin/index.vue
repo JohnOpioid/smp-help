@@ -136,11 +136,17 @@ const mapCenter = computed<[number, number] | null>(() => subsUsers.value[0]?.co
 const mapPlacemarks = computed(() => subsUsers.value.map(s => {
   const avatars = Array.isArray(s.avatars) ? s.avatars.slice(0, 8) : []
   const avatarsHtml = avatars.map((a: any) => {
-    const src = a?.avatar || '/mascot.png'
+    // Используем аватар, если есть, иначе fallback на initials или дефолтный аватар
+    const src = a?.avatar || a?.telegram?.photo_url || ''
     const name = [a?.firstName, a?.lastName].filter(Boolean).join(' ') || a?.fullName || a?.name || a?.initials || 'Пользователь'
     const username = a?.telegram?.username || a?.username
     const title = username ? `${name}, @${username}` : name
-    return `<span title="${title}" aria-label="${title}" style=\"display:inline-block;margin-left:-6px;\"><img src="${src}" alt="" class=\"inline-block h-10 w-10 rounded-full ring-2 ring-white dark:ring-slate-700 object-cover\" /></span>`
+    // Если нет аватара, показываем span с initials, иначе img
+    if (src) {
+      return `<span title="${title}" aria-label="${title}" style=\"display:inline-block;margin-left:-6px;\"><img src="${src}" alt="" class=\"inline-block h-10 w-10 rounded-full ring-2 ring-white dark:ring-slate-700 object-cover\" /></span>`
+    } else {
+      return `<span title="${title}" aria-label="${title}" style=\"display:inline-block;margin-left:-6px;\"><span class=\"inline-flex items-center justify-center shrink-0 select-none align-middle bg-slate-200 dark:bg-slate-700 size-10 text-xs rounded-full ring-2 ring-white dark:ring-slate-700\"><span class=\"font-semibold text-slate-600 dark:text-slate-300\">${a?.initials || 'U'}</span></span></span>`
+    }
   }).join('')
 
   return {
