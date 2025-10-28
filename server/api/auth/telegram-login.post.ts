@@ -55,7 +55,7 @@ export default defineEventHandler(async (event) => {
         email: telegramEmail,
         password: crypto.randomBytes(32).toString('hex'), // Генерируем случайный пароль
         firstName: firstName,
-        lastName: lastName || firstName,
+        lastName: lastName || '',
         role: 'user',
         telegram: {
           id: telegramId,
@@ -66,13 +66,13 @@ export default defineEventHandler(async (event) => {
     } else {
       // Обновляем данные пользователя
       user.firstName = firstName
-      user.lastName = lastName || firstName
-        user.telegram = {
-          id: telegramId,
-          username: username || '',
-          photo_url: photo_url || ''
-        }
-        await user.save()
+      user.lastName = lastName || ''
+      user.telegram = {
+        id: telegramId,
+        username: username || '',
+        photo_url: photo_url || ''
+      }
+      await user.save()
     }
 
     // Создание JWT токена
