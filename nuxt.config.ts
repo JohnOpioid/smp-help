@@ -47,7 +47,15 @@ export default defineNuxtConfig({
       'ready': (nitro) => {
         console.log('Nitro hooks loaded')
       }
-    }
+    },
+    // Настройка статических файлов для аватарок
+    publicAssets: [
+      {
+        baseURL: '/uploads/',
+        dir: process.env.NODE_ENV === 'production' ? '/var/www/html/public/uploads' : 'public/uploads',
+        maxAge: 60 * 60 * 24 * 365 // 1 year
+      }
+    ]
   },
   ssr: process.env.NODE_ENV === 'production', // Включаем SSR для продакшна
   app: {

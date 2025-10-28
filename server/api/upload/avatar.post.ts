@@ -29,8 +29,10 @@ export default defineEventHandler(async (event) => {
 
   const name = `${nanoid(16)}${ext || ''}`
   
-  // В продакшене сохраняем в /var/www/html/public/uploads/avatars/
-  const uploadDir = '/var/www/html/public/uploads/avatars/'
+  // В продакшене используем путь относительно рабочей директории проекта
+  const uploadDir = process.env.NODE_ENV === 'production' 
+    ? process.cwd() + '/uploads/avatars/'
+    : 'public/uploads/avatars/'
   const fs = await import('fs').then(m => m.promises)
   
   try {

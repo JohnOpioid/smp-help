@@ -771,6 +771,10 @@ copy_files() {
         warn "Директория pages/calculators не найдена"
     fi
     
+    # Создаем директорию uploads для аватарок
+    mkdir -p $WORK_DIR/uploads/avatars
+    log "✅ Директория uploads создана"
+    
     # Восстанавливаем конфигурацию PM2 если была сохранена
     # (для режимов update это важно, чтобы не потерять настройки)
     if [ -f "/tmp/ecosystem.config.cjs.backup" ]; then
@@ -1234,6 +1238,14 @@ server {
         alias WORK_DIR_PLACEHOLDER/_nuxt/;
         expires 1y;
         add_header Cache-Control "public, immutable";
+        access_log off;
+    }
+    
+    # Статические файлы uploads (аватарки)
+    location /uploads/ {
+        alias WORK_DIR_PLACEHOLDER/uploads/;
+        expires 30d;
+        add_header Cache-Control "public";
         access_log off;
     }
     
