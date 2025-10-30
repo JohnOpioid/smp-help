@@ -85,3 +85,7 @@ cert/
 */0.0.0.0/
 # IP address directories
 [0-9]*.[0-9]*.[0-9]*.[0-9]*/
+
+# User-uploaded avatars
+public/uploads/avatars/
+uploads/avatars/
