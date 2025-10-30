@@ -94,6 +94,16 @@ export const useCalculatorBookmarks = () => {
       title: 'Площадь ожоговой поверхности',
       description: 'Определение площади ожогов (правило ладони и правило девяток).',
       category: 'Клинические состояния'
+    },
+    'sexual-formula': {
+      title: 'Половая формула (Танер)',
+      description: 'Ma/P/Ax/Me (девочки) и P/Ax/V (мальчики) по стадиям Танера.',
+      category: 'Педиатрические'
+    },
+    'westley-croup': {
+      title: 'Шкала Westley Croup',
+      description: 'Оценка тяжести крупа у детей по 5 признакам (итерактивные пункты).',
+      category: 'Педиатрические'
     }
   }
 

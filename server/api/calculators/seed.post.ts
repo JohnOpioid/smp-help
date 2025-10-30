@@ -120,6 +120,21 @@ export default defineEventHandler(async (event) => {
       }
       ,
       {
+        name: 'Половая формула (Танер)',
+        description: 'Ma/P/Ax/Me (девочки) и P/Ax/V (мальчики) по стадиям Танера.',
+        url: '/calculators/sexual-formula',
+        category: 'Педиатрические',
+        keywords: ['танер', 'tanner', 'половая формула', 'puberty', 'ma', 'ax', 'p', 'v', 'менархе', 'pubic hair', 'genital stage']
+      },
+      {
+        name: 'Шкала Westley Croup',
+        description: 'Оценка тяжести крупа у детей по 5 признакам',
+        url: '/calculators/westley-croup',
+        category: 'Педиатрические',
+        keywords: ['круп', 'westley', 'уэстли', 'stridor', 'цианоз', 'втяжение', 'дыхание', 'дети', 'laryngitis', 'tracheitis']
+      }
+      ,
+      {
         name: 'Правило «девяток» (TBSA)',
         description: 'Оценка площади ожогов у взрослых по анатомическим зонам, кратным 9%.',
         url: '/calculators/rule-of-nines',
