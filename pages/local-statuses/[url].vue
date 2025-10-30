@@ -52,7 +52,7 @@
           <li v-if="!initialLoading && filteredItems.length === 0 && otherGroups.length === 0" class="p-6 border-b-0">
             <p class="text-sm text-slate-600 dark:text-slate-300">Статусы не найдены</p>
           </li>
-          <div v-if="loadingMore" ref="sentinel" class="h-1 md:col-span-2"></div>
+          <div v-show="items.length < total" ref="sentinel" class="h-1 md:col-span-2"></div>
         </ul>
 
         <!-- Блоки результатов из других категорий -->

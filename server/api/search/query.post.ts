@@ -220,7 +220,9 @@ export default defineEventHandler(async (event) => {
     
     const [mkbResults, lsResults, algorithmResults, drugResults, substationResults, calculatorResults] = await Promise.all([
       // Поиск по МКБ - сначала точный поиск в заголовках, потом в остальных полях
-      MKB.find(mkbQuery).lean(),
+      MKB.find(mkbQuery)
+        .populate('category', 'name url')
+        .lean(),
       
       // Поиск по локальным статусам
       LocalStatus.find({
@@ -246,7 +248,9 @@ export default defineEventHandler(async (event) => {
           { complaints: { $in: searchRegexes } },
           { anamnesis: { $in: searchRegexes } }
         ]
-      }).lean(),
+      })
+      .populate('category', 'name url')
+      .lean(),
       
       // Поиск по алгоритмам
       Algorithm.find({
