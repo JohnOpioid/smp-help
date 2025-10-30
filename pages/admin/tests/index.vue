@@ -22,7 +22,7 @@
             <tbody>
               <tr v-for="cat in items" :key="cat._id" class="border-t border-slate-100 dark:border-slate-700/60">
                 <td class="p-3">
-                  <NuxtLink :to="`/tests/${cat._id}`" class="text-slate-900 dark:text-white hover:underline">{{ cat.name }}</NuxtLink>
+                  <NuxtLink :to="`/admin/tests/${cat._id}`" class="text-slate-900 dark:text-white hover:underline">{{ cat.name }}</NuxtLink>
                 </td>
                 <td class="p-3 text-slate-600 dark:text-slate-300">/{{ cat.url }}</td>
                 <td class="p-3 text-right">

@@ -5,7 +5,7 @@
         <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-2">
           <div>
             <div class="mb-1">
-              <NuxtLink to="/tests" class="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
+              <NuxtLink to="/admin/tests" class="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
                 <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
                 <span>Назад к категориям</span>
               </NuxtLink>

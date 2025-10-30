@@ -75,7 +75,7 @@ const navLinks = [
   { label: 'Кодификатор', icon: 'i-heroicons-document-text', to: '/admin/codifier' },
   { label: 'Локальные статусы', icon: 'i-lucide-list-checks', to: '/admin/local-statuses' },
   { label: 'Калькуляторы', icon: 'i-lucide-calculator', to: '/admin/calculators' },
-  { label: 'Тесты', icon: 'i-lucide-check-circle-2', to: '/tests', activeMatch: '/tests' },
+  { label: 'Тесты', icon: 'i-lucide-check-circle-2', to: '/admin/tests', activeMatch: '/admin/tests' },
   { label: 'Лекарства', icon: 'i-lucide-pill', to: '/admin/drugs' },
   { label: 'Приложения', icon: 'i-lucide-smartphone', to: '/admin/apps' }
 ]

@@ -125,11 +125,11 @@ export default defineEventHandler(async (event) => {
         console.log('📝 Обновляем сообщение в боте:', { chatId: codeInfo.chatId, messageId: codeInfo.messageId })
         
         await bot.editMessageText(
-          `👋 Добро пожаловать в справочник СМП\\!\n\n✅ Вы уже авторизованы в системе\\.\n\nДоступные команды:\n/favorites \\- Показать избранное\n/help \\- Справка\n\nИли выберите действие:`,
+          `👋 Добро пожаловать в справочник СМП!\n\n✅ Вы уже авторизованы в системе.\n\nДоступные команды:\n/favorites - Показать избранное\n/help - Справка\n\nИли выберите действие:`,
           {
             chat_id: codeInfo.chatId,
             message_id: codeInfo.messageId,
-            parse_mode: 'MarkdownV2',
+            parse_mode: 'HTML',
             reply_markup: {
               inline_keyboard: [
                 [{ text: '⭐ Избранное', callback_data: 'favorites_category_all' }],
