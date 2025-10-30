@@ -8,8 +8,8 @@
 
         <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-6">
           <div v-for="card in dashboardCards as any[]" :key="card.key" class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg">
-            <div class="px-2 py-4 sm:px-4 h-full flex flex-col">
-              <div class="flex flex-col sm:flex-row items-center sm:items-start mb-2">
+            <div class="h-full flex flex-col">
+              <div class="flex flex-col sm:flex-row items-center sm:items-start p-2 border-b border-slate-100 dark:border-slate-700">
                 <div class="flex-shrink-0 mb-3 sm:mb-0">
                   <div :class="[card.iconBg, 'w-12 h-12 rounded-lg flex items-center justify-center']">
                     <UIcon :name="card.icon" :class="[card.iconColor, 'w-6 h-6 sm:w-8 sm:h-8']" />
@@ -21,8 +21,8 @@
                 </div>
               </div>
 
-              <div v-if="card.type === 'single'" class="flex items-center gap-6 justify-center sm:justify-start text-base text-slate-600 dark:text-slate-300">
-                <div>
+              <div v-if="card.type === 'single'" class="flex items-center gap-6 justify-center text-base text-slate-600 dark:text-slate-300 p-2">
+                <div class="text-center">
                   <p class="text-xs text-slate-500">{{ card.singleLabel }}</p>
                   <p class="text-xl font-semibold">
                     <USkeleton v-if="pendingStats" class="h-6 w-16" />
@@ -31,15 +31,15 @@
                 </div>
               </div>
 
-              <div v-else-if="card.type === 'dual'" class="flex items-center gap-6 justify-center sm:justify-start text-base text-slate-600 dark:text-slate-300">
-                <div>
+              <div v-else-if="card.type === 'dual'" class="flex items-center gap-6 justify-center text-base text-slate-600 dark:text-slate-300 p-2">
+                <div class="text-center">
                   <p class="text-xs text-slate-500">{{ card.dual?.leftLabel }}</p>
                   <p class="text-xl font-semibold">
                     <USkeleton v-if="pendingStats" class="h-6 w-16" />
                     <span v-else>{{ card.dual?.left() }}</span>
                   </p>
                 </div>
-                <div>
+                <div class="text-center">
                   <p class="text-xs text-slate-500">{{ card.dual?.rightLabel }}</p>
                   <p class="text-xl font-semibold">
                     <USkeleton v-if="pendingStats" class="h-6 w-16" />
@@ -48,8 +48,8 @@
                 </div>
               </div>
 
-              <div v-else-if="card.type === 'users'" class="flex items-center gap-6 justify-center sm:justify-start text-base text-slate-600 dark:text-slate-300">
-                <div>
+              <div v-else-if="card.type === 'users'" class="flex items-center gap-6 justify-center text-base text-slate-600 dark:text-slate-300 p-2">
+                <div class="text-center">
                   <p class="text-xs text-slate-500">Всего</p>
                   <p class="text-xl font-semibold">
                     <USkeleton v-if="pendingStats" class="h-6 w-16" />
@@ -57,7 +57,7 @@
                   </p>
                 </div>
                 <template v-if="!pendingStats && Array.isArray(stats.users.byRole) && stats.users.byRole.length">
-                  <div v-for="r in stats.users.byRole" :key="r.role">
+                  <div v-for="r in stats.users.byRole" :key="r.role" class="text-center">
                     <p class="text-xs text-slate-500">{{ r.role }}</p>
                     <p class="text-xl font-semibold"><span>{{ r.count }}</span></p>
                   </div>
@@ -206,7 +206,7 @@ const dashboardCards = computed(() => [
     type: 'dual',
     dual: {
       leftLabel: 'Категории',
-      rightLabel: 'Диагнозы (МКБ)',
+      rightLabel: 'Диагнозы',
       left: () => toNum((stats.value as any)?.codifier?.categories),
       right: () => toNum((stats.value as any)?.codifier?.mkb)
     }
