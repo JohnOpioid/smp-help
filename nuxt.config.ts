@@ -52,7 +52,10 @@ export default defineNuxtConfig({
     publicAssets: [
       {
         baseURL: '/uploads/',
-        dir: process.env.NODE_ENV === 'production' ? '/var/www/html/public/uploads' : 'public/uploads',
+        // Абсолютный путь, чтобы избежать проблем с резолвом на Windows
+        dir: process.env.NODE_ENV === 'production'
+          ? '/var/www/html/public/uploads'
+          : require('node:path').join(process.cwd(), 'public', 'uploads'),
         maxAge: 60 * 60 * 24 * 365 // 1 year
       }
     ]
