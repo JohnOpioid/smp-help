@@ -9,19 +9,19 @@
         <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-6">
           <div v-for="card in dashboardCards as any[]" :key="card.key" class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg">
             <div class="h-full flex flex-col">
-              <div class="flex flex-col sm:flex-row items-center sm:items-start p-2 border-b border-slate-100 dark:border-slate-700">
+              <div class="flex flex-col sm:flex-row items-center sm:items-start p-3 border-b border-slate-100 dark:border-slate-700">
                 <div class="flex-shrink-0 mb-3 sm:mb-0">
                   <div :class="[card.iconBg, 'w-12 h-12 rounded-lg flex items-center justify-center']">
                     <UIcon :name="card.icon" :class="[card.iconColor, 'w-6 h-6 sm:w-8 sm:h-8']" />
                   </div>
                 </div>
-                <div class="text-center sm:text-left sm:ml-6">
+                <div class="text-center sm:text-left sm:ml-3">
                   <h3 class="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white line-clamp-1">{{ card.title }}</h3>
                   <p class="text-sm text-slate-500 dark:text-slate-400">{{ card.subtitle }}</p>
                 </div>
               </div>
 
-              <div v-if="card.type === 'single'" class="flex items-center gap-6 justify-center text-base text-slate-600 dark:text-slate-300 p-2">
+              <div v-if="card.type === 'single'" class="flex items-center gap-6 justify-center text-base text-slate-600 dark:text-slate-300 p-3">
                 <div class="text-center">
                   <p class="text-xs text-slate-500">{{ card.singleLabel }}</p>
                   <p class="text-xl font-semibold">
@@ -31,7 +31,7 @@
                 </div>
               </div>
 
-              <div v-else-if="card.type === 'dual'" class="flex items-center gap-6 justify-center text-base text-slate-600 dark:text-slate-300 p-2">
+              <div v-else-if="card.type === 'dual'" class="flex items-center gap-6 justify-center text-base text-slate-600 dark:text-slate-300 p-3">
                 <div class="text-center">
                   <p class="text-xs text-slate-500">{{ card.dual?.leftLabel }}</p>
                   <p class="text-xl font-semibold">
@@ -48,7 +48,7 @@
                 </div>
               </div>
 
-              <div v-else-if="card.type === 'users'" class="flex items-center gap-6 justify-center text-base text-slate-600 dark:text-slate-300 p-2">
+              <div v-else-if="card.type === 'users'" class="flex items-center gap-6 justify-center text-base text-slate-600 dark:text-slate-300 p-3">
                 <div class="text-center">
                   <p class="text-xs text-slate-500">Всего</p>
                   <p class="text-xl font-semibold">
