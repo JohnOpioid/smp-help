@@ -12,7 +12,7 @@
       <nav class="space-y-1">
         <NuxtLink v-for="item in navLinks" :key="item.to" :to="item.to" @click="onNavigate"
           class="group flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors"
-          :class="isActive(item.to)
+          :class="isActive(item)
             ? 'bg-slate-100 text-slate-900 dark:bg-slate-700 dark:text-white'
             : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-700'">
           <UIcon :name="item.icon" class="w-4 h-4" />
@@ -75,12 +75,18 @@ const navLinks = [
   { label: 'Кодификатор', icon: 'i-heroicons-document-text', to: '/admin/codifier' },
   { label: 'Локальные статусы', icon: 'i-lucide-list-checks', to: '/admin/local-statuses' },
   { label: 'Калькуляторы', icon: 'i-lucide-calculator', to: '/admin/calculators' },
+  { label: 'Тесты', icon: 'i-lucide-check-circle-2', to: '/tests', activeMatch: '/tests' },
   { label: 'Лекарства', icon: 'i-lucide-pill', to: '/admin/drugs' },
   { label: 'Приложения', icon: 'i-lucide-smartphone', to: '/admin/apps' }
 ]
 
 const route = useRoute()
-const isActive = (to: string) => route.path === to
+const isActive = (item: any) => {
+  const to = item.to
+  if (route.path === to) return true
+  if (item.activeMatch && (route.path === item.activeMatch || route.path.startsWith(item.activeMatch + '/'))) return true
+  return false
+}
 
 const { user, logout } = useAuth()
 const initials = computed(() => {
