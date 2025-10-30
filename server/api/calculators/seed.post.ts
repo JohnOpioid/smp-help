@@ -118,6 +118,14 @@ export default defineEventHandler(async (event) => {
         category: 'Другие',
         keywords: ['шорс', 'suicide', 'суицид', 'риск', 'оценка риска', 'депрессия', 'суицидальный', 'suicidal', 'шкала суицида']
       }
+      ,
+      {
+        name: 'Правило «девяток» (TBSA)',
+        description: 'Оценка площади ожогов у взрослых по анатомическим зонам, кратным 9%.',
+        url: '/calculators/rule-of-nines',
+        category: 'Другие',
+        keywords: ['ожог', 'правило девяток', 'tbsa', 'burns', 'rule of nines', 'ожоги', 'термические ожоги', 'площадь ожогов']
+      }
     ]
 
     // Очищаем коллекцию перед вставкой

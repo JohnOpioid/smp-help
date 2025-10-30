@@ -100,6 +100,13 @@ const CALCULATORS_METADATA = {
     category: 'Клинические состояния',
     keywords: ['ожог', 'площадь ожога', 'ожоговая поверхность', 'правило ладони', 'правило девяток', 'lund browder', 'ожоги', 'ожоговая травма', 'термическая травма', 'burn', 'burn area']
   }
+  ,
+  'rule-of-nines': {
+    name: 'Правило «девяток» (TBSA)',
+    description: 'Оценка площади ожогов у взрослых по анатомическим зонам, кратным 9%.',
+    category: 'Другие',
+    keywords: ['ожог', 'правило девяток', 'tbsa', 'burns', 'rule of nines', 'ожоги', 'термические ожоги', 'площадь ожогов']
+  }
 }
 
 export default defineEventHandler(async (event) => {
