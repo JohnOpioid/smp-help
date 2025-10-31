@@ -53,8 +53,9 @@ export default defineNuxtConfig({
       {
         baseURL: '/uploads/',
         // Абсолютный путь, чтобы избежать проблем с резолвом на Windows
+        // В продакшене файлы сохраняются в process.cwd() + '/uploads/avatars/'
         dir: process.env.NODE_ENV === 'production'
-          ? '/var/www/html/public/uploads'
+          ? require('node:path').join(process.cwd(), 'uploads')
           : require('node:path').join(process.cwd(), 'public', 'uploads'),
         maxAge: 60 * 60 * 24 * 365 // 1 year
       }
