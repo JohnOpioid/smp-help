@@ -1,14 +1,11 @@
 <template>
   <div>
     <main class="flex-1">
-      <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
-
-        
-
+      <div class="max-w-5xl mx-auto px-2 md:px-4 py-4 md:py-8">
 
         <!-- Таблица пользователей перенесена на /admin/users -->
 
-        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-6">
+        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           <div v-for="card in dashboardCards as any[]" :key="card.key" class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg">
             <div class="h-full flex flex-col">
               <div class="flex flex-col sm:flex-row items-center sm:items-start p-3 border-b border-slate-100 dark:border-slate-700">

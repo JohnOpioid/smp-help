@@ -21,16 +21,24 @@ export default defineEventHandler(async (event) => {
     const [major = '0', minor = '0'] = base.split('.')
     function resolveGit(): string {
       const envGit = process.env.GIT_BIN || process.env.GIT_PATH
+      try {
+        const whereOut = child.execSync(process.platform === 'win32' ? 'where git' : 'which git', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
+        const first = whereOut.split(/\r?\n/).find(Boolean)
+        if (first) return first.includes(' ') ? `"${first}"` : first
+      } catch {}
       const candidates = [
         envGit,
-        'C://Program Files//Git//bin//git.exe',
-        'C://Program Files//Git//cmd//git.exe',
-        'C://Program Files (x86)//Git//bin//git.exe',
+        'C:/Program Files/Git/bin/git.exe',
+        'C:/Program Files/Git/cmd/git.exe',
+        'C:/Program Files (x86)/Git/bin/git.exe',
+        'C:\\Program Files\\Git\\bin\\git.exe',
+        'C:\\Program Files\\Git\\cmd\\git.exe',
+        'C:\\Program Files (x86)\\Git\\bin\\git.exe',
         'git'
       ].filter(Boolean) as string[]
       for (const c of candidates) {
         try {
-          child.execSync(`"${c}" --version`, { stdio: ['ignore', 'pipe', 'ignore'] })
+          child.execSync(`${c.includes(' ') ? `"${c}"` : c} --version`, { stdio: ['ignore', 'pipe', 'ignore'] })
           return c.includes(' ') ? `"${c}"` : c
         } catch {}
       }
