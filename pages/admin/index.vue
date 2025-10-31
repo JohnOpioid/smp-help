@@ -349,9 +349,14 @@ async function recomputeVersion() {
     recomputeLoading.value = true
     const res: any = await $fetch('/api/version/recompute', { method: 'POST' })
     serverVersion.value = String(res?.version || '')
-    clientVersionState.value = serverVersion.value
-    if (process.client) localStorage.setItem('app_version', serverVersion.value)
-    try { (useToast as any)?.().add?.({ title: 'Версия пересчитана', description: `Новая версия: v${serverVersion.value}`, color: 'primary' }) } catch {}
+    if (res?.updated) {
+      clientVersionState.value = serverVersion.value
+      if (process.client) localStorage.setItem('app_version', serverVersion.value)
+      try { (useToast as any)?.().add?.({ title: 'Версия обновлена', description: `Новая версия: v${serverVersion.value}`, color: 'primary' }) } catch {}
+    } else {
+      const reason = res?.reason === 'no_new_commit' ? 'Новых коммитов не найдено' : 'Git недоступен'
+      try { (useToast as any)?.().add?.({ title: 'Версия не изменилась', description: reason, color: 'neutral' }) } catch {}
+    }
   } finally {
     recomputeLoading.value = false
   }

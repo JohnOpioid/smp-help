@@ -11,6 +11,7 @@ export default defineEventHandler(async (event) => {
   // Сначала пробуем git
   let version = ''
   let updated = false
+  let reason: string | undefined
   try {
     const path = await import('node:path')
     const child = await import('node:child_process')
@@ -18,7 +19,12 @@ export default defineEventHandler(async (event) => {
     const pkg = require(path.join(process.cwd(), 'package.json')) as { version?: string }
     const base = String(pkg?.version || '0.0.0')
     const [major = '0', minor = '0'] = base.split('.')
-    const sha = child.execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
+    let sha = ''
+    try {
+      sha = child.execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
+    } catch {
+      reason = 'git_unavailable'
+    }
     await connectDB()
     const doc = await AppMeta.findOne({ key: 'app_version' })
     const lastSha = (doc as any)?.lastCommit || ''
@@ -40,6 +46,7 @@ export default defineEventHandler(async (event) => {
     } else {
       // без нового коммита — оставляем текущую версию
       version = (doc as any)?.version || `${major}.${minor}.0`
+      if (!reason) reason = sha ? 'no_new_commit' : 'git_unavailable'
     }
   } catch {}
 
@@ -62,7 +69,7 @@ export default defineEventHandler(async (event) => {
 
   // Вернём и обновим кэш
   await getAppVersion(true)
-  return { success: true, version, updated, timestamp: Date.now() }
+  return { success: true, version, updated, reason, timestamp: Date.now() }
 })
 
 
