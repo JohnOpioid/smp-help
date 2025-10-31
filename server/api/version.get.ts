@@ -21,10 +21,15 @@ export default defineEventHandler(async () => {
       if (fs.existsSync(appVersionFile)) {
         const v = fs.readFileSync(appVersionFile, 'utf8').trim()
         if (v) {
-          version = v.split(' ')[0] || v // берём семвер до пробела, если есть
-          cachedVersion = version
-          cachedAt = now
-          return { success: true, version: cachedVersion, timestamp: Date.now() }
+          const fromFile = (v.split(' ')[0] || v).trim()
+          const isDev = process.env.NODE_ENV !== 'production'
+          // В dev игнорируем 0.0.0 из файла и продолжаем считать от git
+          if (!(isDev && (!fromFile || fromFile === '0.0.0'))) {
+            version = fromFile
+            cachedVersion = version
+            cachedAt = now
+            return { success: true, version: cachedVersion, timestamp: Date.now() }
+          }
         }
       }
     } catch {}
