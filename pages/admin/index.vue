@@ -3,40 +3,7 @@
     <main class="flex-1">
       <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
 
-        <!-- Управление версиями -->
-        <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden mb-6">
-          <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-            <div>
-              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Управление версиями</h3>
-              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Текущая серверная и клиентская версии приложения</p>
-            </div>
-            <div class="flex items-center gap-2">
-              <UButton size="sm" color="neutral" variant="soft" class="cursor-pointer" @click="refreshServerVersion" :loading="versionLoading">
-                <UIcon name="i-lucide-refresh-ccw" class="w-4 h-4 mr-1" />Обновить с сервера
-              </UButton>
-              <UButton size="sm" color="primary" class="cursor-pointer" @click="recomputeVersion" :loading="recomputeLoading">
-                <UIcon name="i-lucide-rocket" class="w-4 h-4 mr-1" />Пересчитать из Git
-              </UButton>
-              <UButton size="sm" color="warning" variant="soft" class="cursor-pointer" @click="reloadClient">
-                <UIcon name="i-lucide-refresh-ccw" class="w-4 h-4 mr-1" />Перезагрузить клиент
-              </UButton>
-            </div>
-          </div>
-          <div class="px-4 py-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="text-sm">
-              <div class="text-slate-500 dark:text-slate-400">Серверная версия</div>
-              <div class="mt-1 text-base font-semibold text-slate-900 dark:text-white">
-                <USkeleton v-if="versionLoading" class="h-5 w-24" />
-                <span v-else>v{{ serverVersion || '—' }}</span>
-              </div>
-            </div>
-            <div class="text-sm">
-              <div class="text-slate-500 dark:text-slate-400">Клиентская версия</div>
-              <div class="mt-1 text-base font-semibold text-slate-900 dark:text-white">v{{ clientVersion || '—' }}</div>
-              <div v-if="clientOutdated" class="mt-1 text-xs text-amber-600 dark:text-amber-400">Клиент отстаёт от сервера — перезагрузите клиент</div>
-            </div>
-          </div>
-        </div>
+        
 
 
         <!-- Таблица пользователей перенесена на /admin/users -->
@@ -120,6 +87,41 @@
                   </UAvatarGroup>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Управление версиями -->
+        <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden mb-6 mt-6">
+          <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Управление версиями</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Текущая серверная и клиентская версии приложения</p>
+          </div>
+          <div class="px-4 py-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="text-sm">
+              <div class="text-slate-500 dark:text-slate-400">Серверная версия</div>
+              <div class="mt-1 text-base font-semibold text-slate-900 dark:text-white">
+                <USkeleton v-if="versionLoading" class="h-5 w-24" />
+                <span v-else>v{{ serverVersion || '—' }}</span>
+              </div>
+            </div>
+            <div class="text-sm">
+              <div class="text-slate-500 dark:text-slate-400">Клиентская версия</div>
+              <div class="mt-1 text-base font-semibold text-slate-900 dark:text-white">v{{ clientVersion || '—' }}</div>
+              <div v-if="clientOutdated" class="mt-1 text-xs text-amber-600 dark:text-amber-400">Клиент отстаёт от сервера — перезагрузите клиент</div>
+            </div>
+          </div>
+          <div class="px-4 py-3 border-t border-slate-100 dark:border-slate-700">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+              <UButton size="lg" color="neutral" variant="soft" class="cursor-pointer w-full sm:w-auto" @click="refreshServerVersion" :loading="versionLoading">
+                <UIcon name="i-lucide-refresh-ccw" class="w-4 h-4 mr-1" />Обновить с сервера
+              </UButton>
+              <UButton size="lg" color="primary" class="cursor-pointer w-full sm:w-auto" @click="recomputeVersion" :loading="recomputeLoading">
+                <UIcon name="i-lucide-rocket" class="w-4 h-4 mr-1" />Пересчитать из Git
+              </UButton>
+              <UButton size="lg" color="warning" variant="soft" class="cursor-pointer w-full sm:w-auto" @click="reloadClient">
+                <UIcon name="i-lucide-refresh-ccw" class="w-4 h-4 mr-1" />Перезагрузить клиент
+              </UButton>
             </div>
           </div>
         </div>

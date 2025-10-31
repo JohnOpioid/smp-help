@@ -14,6 +14,20 @@ export async function getAppVersion(forceRefresh = false): Promise<string> {
   const appVersionFile = path.join(root, '.app-version')
   let version = '0.0.0'
 
+  // 0) Пробуем взять версию из БД (источник правды после пересчёта из админки)
+  try {
+    const connectDB = (await import('~/server/utils/mongodb')).default
+    const AppMeta = (await import('~/server/models/AppMeta')).default as any
+    await connectDB()
+    const doc = await AppMeta.findOne({ key: 'app_version' }).lean()
+    if (doc?.version) {
+      version = String(doc.version)
+      cachedVersion = version
+      cachedAt = now
+      return version
+    }
+  } catch {}
+
   try {
     if (!forceRefresh && fs.existsSync(appVersionFile)) {
       const v = fs.readFileSync(appVersionFile, 'utf8').trim()
@@ -43,12 +57,28 @@ export async function getAppVersion(forceRefresh = false): Promise<string> {
     } catch {}
     version = `${major}.${minor}.${count}`
   } catch {
+    // Fallback: пробуем взять версию из БД, если там уже есть
     try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const pkg = require(path.join(root, 'package.json')) as { version?: string }
-      version = String(pkg?.version || '0.0.0')
+      const connectDB = (await import('~/server/utils/mongodb')).default
+      const AppMeta = (await import('~/server/models/AppMeta')).default as any
+      await connectDB()
+      const doc = await AppMeta.findOne({ key: 'app_version' }).lean()
+      if (doc?.version) {
+        version = String(doc.version)
+      } else {
+        // Ещё один фоллбек: package.json
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const pkg = require(path.join(root, 'package.json')) as { version?: string }
+        version = String(pkg?.version || '0.0.0')
+      }
     } catch {
-      version = '0.0.0'
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const pkg = require(path.join(root, 'package.json')) as { version?: string }
+        version = String(pkg?.version || '0.0.0')
+      } catch {
+        version = '0.0.0'
+      }
     }
   }
 
