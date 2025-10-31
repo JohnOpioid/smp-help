@@ -3,6 +3,41 @@
     <main class="flex-1">
       <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
 
+        <!-- Управление версиями -->
+        <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden mb-6">
+          <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+            <div>
+              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Управление версиями</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Текущая серверная и клиентская версии приложения</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <UButton size="sm" color="neutral" variant="soft" class="cursor-pointer" @click="refreshServerVersion" :loading="versionLoading">
+                <UIcon name="i-lucide-refresh-ccw" class="w-4 h-4 mr-1" />Обновить с сервера
+              </UButton>
+              <UButton size="sm" color="primary" class="cursor-pointer" @click="recomputeVersion" :loading="recomputeLoading">
+                <UIcon name="i-lucide-rocket" class="w-4 h-4 mr-1" />Пересчитать из Git
+              </UButton>
+              <UButton size="sm" color="warning" variant="soft" class="cursor-pointer" @click="reloadClient">
+                <UIcon name="i-lucide-refresh-ccw" class="w-4 h-4 mr-1" />Перезагрузить клиент
+              </UButton>
+            </div>
+          </div>
+          <div class="px-4 py-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="text-sm">
+              <div class="text-slate-500 dark:text-slate-400">Серверная версия</div>
+              <div class="mt-1 text-base font-semibold text-slate-900 dark:text-white">
+                <USkeleton v-if="versionLoading" class="h-5 w-24" />
+                <span v-else>v{{ serverVersion || '—' }}</span>
+              </div>
+            </div>
+            <div class="text-sm">
+              <div class="text-slate-500 dark:text-slate-400">Клиентская версия</div>
+              <div class="mt-1 text-base font-semibold text-slate-900 dark:text-white">v{{ clientVersion || '—' }}</div>
+              <div v-if="clientOutdated" class="mt-1 text-xs text-amber-600 dark:text-amber-400">Клиент отстаёт от сервера — перезагрузите клиент</div>
+            </div>
+          </div>
+        </div>
+
 
         <!-- Таблица пользователей перенесена на /admin/users -->
 
@@ -284,4 +319,45 @@ const dashboardCards = computed(() => [
 ])
 
 // Таблица пользователей вынесена на /admin/users
+
+// -------- Версии приложения (admin toolbar) --------
+const versionLoading = ref(false)
+const recomputeLoading = ref(false)
+const serverVersion = ref<string>('')
+const clientVersionState = useState<string>('app_version', () => '')
+const clientVersion = computed(() => clientVersionState.value || (process.client ? (localStorage.getItem('app_version') || '') : ''))
+const clientOutdated = computed(() => !!serverVersion.value && !!clientVersion.value && serverVersion.value !== clientVersion.value)
+
+async function fetchServerVersion() {
+  try {
+    versionLoading.value = true
+    const res: any = await $fetch('/api/version', { cache: 'no-cache' as any })
+    serverVersion.value = String(res?.version || '')
+  } finally {
+    versionLoading.value = false
+  }
+}
+
+async function refreshServerVersion() {
+  await fetchServerVersion()
+}
+
+async function recomputeVersion() {
+  try {
+    recomputeLoading.value = true
+    const res: any = await $fetch('/api/version/recompute', { method: 'POST' })
+    serverVersion.value = String(res?.version || '')
+    clientVersionState.value = serverVersion.value
+    if (process.client) localStorage.setItem('app_version', serverVersion.value)
+    try { (useToast as any)?.().add?.({ title: 'Версия пересчитана', description: `Новая версия: v${serverVersion.value}`, color: 'primary' }) } catch {}
+  } finally {
+    recomputeLoading.value = false
+  }
+}
+
+function reloadClient() {
+  if (process.client) window.location.reload()
+}
+
+onMounted(() => { fetchServerVersion() })
 </script>
