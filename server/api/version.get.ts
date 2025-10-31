@@ -2,9 +2,12 @@
 
 // Кэшируем вычисленную версию на время жизни процесса, чтобы не было дребезга
 let cachedVersion: string | null = null
+let cachedAt = 0
+const CACHE_TTL_MS = 30_000
 
 export default defineEventHandler(async () => {
-  if (!cachedVersion) {
+  const now = Date.now()
+  if (!cachedVersion || now - cachedAt > CACHE_TTL_MS) {
     const fs = await import('node:fs')
     const path = await import('node:path')
     const child = await import('node:child_process')
@@ -20,6 +23,7 @@ export default defineEventHandler(async () => {
         if (v) {
           version = v.split(' ')[0] || v // берём семвер до пробела, если есть
           cachedVersion = version
+          cachedAt = now
           return { success: true, version: cachedVersion, timestamp: Date.now() }
         }
       }
@@ -49,6 +53,7 @@ export default defineEventHandler(async () => {
     }
 
     cachedVersion = version
+    cachedAt = now
   }
   return { success: true, version: cachedVersion, timestamp: Date.now() }
 })

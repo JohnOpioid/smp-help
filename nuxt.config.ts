@@ -108,6 +108,7 @@ export default defineNuxtConfig({
     '~/plugins/capacitor.client.ts',
     '~/plugins/mobile-ui.client.ts',
     '~/plugins/telegram.client.ts',
-    '~/plugins/fetch.client.ts'
+    '~/plugins/fetch.client.ts',
+    '~/plugins/version.client.ts'
   ]
 })
