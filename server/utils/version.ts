@@ -18,7 +18,7 @@ export async function getAppVersion(forceRefresh = false): Promise<string> {
     const envGit = process.env.GIT_BIN || process.env.GIT_PATH
     // Try discovery via where/which
     try {
-      const whereOut = child.execSync(process.platform === 'win32' ? 'where git' : 'which git', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
+      const whereOut = child.execSync(process.platform === 'win32' ? 'where.exe git' : 'which git', { stdio: ['ignore', 'pipe', 'ignore'], shell: process.platform === 'win32' }).toString().trim()
       const first = whereOut.split(/\r?\n/).find(Boolean)
       if (first) return first.includes(' ') ? `"${first}"` : first
     } catch {}
@@ -34,7 +34,7 @@ export async function getAppVersion(forceRefresh = false): Promise<string> {
     ].filter(Boolean) as string[]
     for (const c of candidates) {
       try {
-        child.execSync(`${c.includes(' ') ? `"${c}"` : c} --version`, { stdio: ['ignore', 'pipe', 'ignore'] })
+        child.execSync(`${c.includes(' ') ? `"${c}"` : c} --version`, { stdio: ['ignore', 'pipe', 'ignore'], shell: process.platform === 'win32' })
         return c.includes(' ') ? `"${c}"` : c
       } catch {}
     }
@@ -79,8 +79,21 @@ export async function getAppVersion(forceRefresh = false): Promise<string> {
     const base = String(pkg?.version || '0.0.0')
     const [major = '0', minor = '0'] = base.split('.')
     let count = 0
+    // Найдём корень репозитория для корректного выполнения git-команд
+    function findGitRoot(startDir: string): string | null {
+      const fs = require('node:fs') as typeof import('node:fs')
+      let dir = startDir
+      for (let i = 0; i < 8; i++) {
+        try { if (fs.existsSync(path.join(dir, '.git'))) return dir } catch {}
+        const parent = path.dirname(dir)
+        if (parent === dir) break
+        dir = parent
+      }
+      return null
+    }
+    const cwd = findGitRoot(process.cwd()) || process.cwd()
     try {
-      const out = child.execSync(`${git} rev-list --count HEAD`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
+      const out = child.execSync(`${git} rev-list --count HEAD`, { stdio: ['ignore', 'pipe', 'ignore'], cwd, shell: process.platform === 'win32' }).toString().trim()
       count = Number(out) || 0
     } catch {}
     version = `${major}.${minor}.${count}`

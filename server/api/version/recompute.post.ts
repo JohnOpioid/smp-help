@@ -12,6 +12,7 @@ export default defineEventHandler(async (event) => {
   let version = ''
   let updated = false
   let reason: string | undefined
+  let diagnostics: Record<string, any> = {}
   try {
     const path = await import('node:path')
     const child = await import('node:child_process')
@@ -21,8 +22,13 @@ export default defineEventHandler(async (event) => {
     const [major = '0', minor = '0'] = base.split('.')
     function resolveGit(): string {
       const envGit = process.env.GIT_BIN || process.env.GIT_PATH
+      // 1) If git is on PATH
       try {
-        const whereOut = child.execSync(process.platform === 'win32' ? 'where git' : 'which git', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
+        child.execSync('git --version', { stdio: ['ignore', 'pipe', 'ignore'], shell: process.platform === 'win32' })
+        return 'git'
+      } catch {}
+      try {
+        const whereOut = child.execSync(process.platform === 'win32' ? 'where.exe git' : 'which git', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
         const first = whereOut.split(/\r?\n/).find(Boolean)
         if (first) return first.includes(' ') ? `"${first}"` : first
       } catch {}
@@ -45,11 +51,60 @@ export default defineEventHandler(async (event) => {
       return 'git'
     }
     const git = resolveGit()
+    diagnostics.git = git
+    // Найдём корень репозитория для корректного выполнения git-команд
+    function findGitRoot(startDir: string): string | null {
+      const fs = require('node:fs') as typeof import('node:fs')
+      let dir = startDir
+      for (let i = 0; i < 8; i++) {
+        try {
+          if (fs.existsSync(path.join(dir, '.git'))) return dir
+        } catch {}
+        const parent = path.dirname(dir)
+        if (parent === dir) break
+        dir = parent
+      }
+      return null
+    }
+    const cwd = findGitRoot(process.cwd())
+    diagnostics.cwd = cwd
     let sha = ''
     try {
-      sha = child.execSync(`${git} rev-parse --short HEAD`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
+      if (!cwd) throw new Error('not_a_git_repo')
+      sha = child.execSync(`${git} rev-parse --short HEAD`, { stdio: ['ignore', 'pipe', 'ignore'], cwd, shell: process.platform === 'win32' }).toString().trim()
     } catch {
-      reason = 'git_unavailable'
+      reason = !cwd ? 'not_a_git_repo' : 'git_unavailable'
+    }
+    // Fallback: пытаемся прочитать SHA напрямую из .git без бинаря git
+    if (!sha && cwd) {
+      try {
+        const fs = require('node:fs') as typeof import('node:fs')
+        const headPath = path.join(cwd, '.git', 'HEAD')
+        if (fs.existsSync(headPath)) {
+          const head = fs.readFileSync(headPath, 'utf8').trim()
+          if (head.startsWith('ref:')) {
+            const ref = head.split(' ')[1]
+            const refPath = path.join(cwd, '.git', ref)
+            if (fs.existsSync(refPath)) {
+              sha = fs.readFileSync(refPath, 'utf8').trim().slice(0, 7)
+            } else {
+              // попробуем packed-refs
+              const packed = path.join(cwd, '.git', 'packed-refs')
+              if (fs.existsSync(packed)) {
+                const lines = fs.readFileSync(packed, 'utf8').split(/\r?\n/)
+                const line = lines.find(l => l && !l.startsWith('#') && l.endsWith(ref))
+                if (line) sha = line.split(' ')[0].slice(0, 7)
+              }
+            }
+          } else if (/^[0-9a-fA-F]{7,40}$/.test(head)) {
+            sha = head.slice(0, 7)
+          }
+        }
+      } catch {}
+      if (sha) {
+        diagnostics.shaSource = 'filesystem'
+        reason = undefined
+      }
     }
     await connectDB()
     const doc = await AppMeta.findOne({ key: 'app_version' })
@@ -95,7 +150,7 @@ export default defineEventHandler(async (event) => {
 
   // Вернём и обновим кэш
   await getAppVersion(true)
-  return { success: true, version, updated, reason, timestamp: Date.now() }
+  return { success: true, version, updated, reason, diagnostics, timestamp: Date.now() }
 })
 
 

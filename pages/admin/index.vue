@@ -116,6 +116,9 @@
               <UButton size="lg" color="primary" class="cursor-pointer w-full sm:w-auto" @click="recomputeVersion" :loading="recomputeLoading">
                 <UIcon name="i-lucide-rocket" class="w-4 h-4 mr-1" />Пересчитать из Git
               </UButton>
+              <UButton size="lg" color="primary" variant="soft" class="cursor-pointer w-full sm:w-auto" @click="incrementVersion" :loading="incrementLoading">
+                <UIcon name="i-lucide-plus" class="w-4 h-4 mr-1" />Увеличить версию
+              </UButton>
               <UButton size="lg" color="warning" variant="soft" class="cursor-pointer w-full sm:w-auto" @click="reloadClient">
                 <UIcon name="i-lucide-refresh-ccw" class="w-4 h-4 mr-1" />Перезагрузить клиент
               </UButton>
@@ -364,4 +367,19 @@ function reloadClient() {
 }
 
 onMounted(() => { fetchServerVersion() })
+
+// Ручной инкремент версии без git
+const incrementLoading = ref(false)
+async function incrementVersion() {
+  try {
+    incrementLoading.value = true
+    const res: any = await $fetch('/api/version/increment', { method: 'POST' })
+    serverVersion.value = String(res?.version || '')
+    clientVersionState.value = serverVersion.value
+    if (process.client) localStorage.setItem('app_version', serverVersion.value)
+    try { (useToast as any)?.().add?.({ title: 'Версия увеличена', description: `Новая версия: v${serverVersion.value}`, color: 'primary' }) } catch {}
+  } finally {
+    incrementLoading.value = false
+  }
+}
 </script>
