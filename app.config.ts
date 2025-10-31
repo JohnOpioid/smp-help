@@ -29,6 +29,9 @@ export default defineAppConfig({
           base: 'ring ring-inset ring-accented focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary'
         }
       }
+    },
+    button: {
+      base: 'cursor-pointer'
     }
   }
 })

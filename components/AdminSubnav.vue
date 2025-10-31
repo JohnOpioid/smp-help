@@ -50,6 +50,7 @@ const adminNav = [
   { to: '/admin/local-statuses', label: 'Локальные статусы', icon: 'i-lucide-list-checks' },
   { to: '/admin/calculators', label: 'Калькуляторы', icon: 'i-lucide-calculator' },
   { to: '/admin/drugs', label: 'Лекарства', icon: 'i-lucide-pill' },
+  { to: '/admin/news', label: 'Новости', icon: 'i-lucide-newspaper' },
   { to: '/admin/apps', label: 'Приложения', icon: 'i-lucide-smartphone' }
 ]
 </script>

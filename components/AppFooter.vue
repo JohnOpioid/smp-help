@@ -47,6 +47,7 @@ if (process.client && !appVersionState.value) {
 const footerLinks = [
   { name: 'О проекте', to: '/about' },
   { name: 'Контакты', to: '/contacts' },
+  { name: 'Обновления', to: '/updates' },
   { name: 'Помощь', to: '/help' },
   { name: 'Политика конфиденциальности', to: '/privacy' }
 ]
