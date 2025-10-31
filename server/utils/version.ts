@@ -13,6 +13,25 @@ export async function getAppVersion(forceRefresh = false): Promise<string> {
   const root = process.cwd()
   const appVersionFile = path.join(root, '.app-version')
   let version = '0.0.0'
+  
+  function resolveGit(): string {
+    const envGit = process.env.GIT_BIN || process.env.GIT_PATH
+    const candidates = [
+      envGit,
+      'C://Program Files//Git//bin//git.exe',
+      'C://Program Files//Git//cmd//git.exe',
+      'C://Program Files (x86)//Git//bin//git.exe',
+      'git'
+    ].filter(Boolean) as string[]
+    for (const c of candidates) {
+      try {
+        child.execSync(`"${c}" --version`, { stdio: ['ignore', 'pipe', 'ignore'] })
+        return c.includes(' ') ? `"${c}"` : c
+      } catch {}
+    }
+    return 'git'
+  }
+  const git = resolveGit()
 
   // 0) Пробуем взять версию из БД (источник правды после пересчёта из админки)
   try {
@@ -52,7 +71,7 @@ export async function getAppVersion(forceRefresh = false): Promise<string> {
     const [major = '0', minor = '0'] = base.split('.')
     let count = 0
     try {
-      const out = child.execSync('git rev-list --count HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
+      const out = child.execSync(`${git} rev-list --count HEAD`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
       count = Number(out) || 0
     } catch {}
     version = `${major}.${minor}.${count}`

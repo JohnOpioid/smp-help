@@ -19,9 +19,27 @@ export default defineEventHandler(async (event) => {
     const pkg = require(path.join(process.cwd(), 'package.json')) as { version?: string }
     const base = String(pkg?.version || '0.0.0')
     const [major = '0', minor = '0'] = base.split('.')
+    function resolveGit(): string {
+      const envGit = process.env.GIT_BIN || process.env.GIT_PATH
+      const candidates = [
+        envGit,
+        'C://Program Files//Git//bin//git.exe',
+        'C://Program Files//Git//cmd//git.exe',
+        'C://Program Files (x86)//Git//bin//git.exe',
+        'git'
+      ].filter(Boolean) as string[]
+      for (const c of candidates) {
+        try {
+          child.execSync(`"${c}" --version`, { stdio: ['ignore', 'pipe', 'ignore'] })
+          return c.includes(' ') ? `"${c}"` : c
+        } catch {}
+      }
+      return 'git'
+    }
+    const git = resolveGit()
     let sha = ''
     try {
-      sha = child.execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
+      sha = child.execSync(`${git} rev-parse --short HEAD`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
     } catch {
       reason = 'git_unavailable'
     }
