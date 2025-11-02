@@ -4,6 +4,26 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return
   }
   
+  // Пропускаем авторизацию для ботов социальных сетей, чтобы они могли читать мета-теги
+  if (process.server) {
+    const headers = useRequestHeaders()
+    const userAgent = (headers['user-agent'] || '').toLowerCase()
+    const isBot = userAgent.includes('facebookexternalhit') || 
+                 userAgent.includes('whatsapp') || 
+                 userAgent.includes('telegrambot') || 
+                 userAgent.includes('twitterbot') ||
+                 userAgent.includes('linkedinbot') ||
+                 userAgent.includes('slackbot') ||
+                 userAgent.includes('bingbot') ||
+                 userAgent.includes('googlebot') ||
+                 userAgent.includes('crawler') ||
+                 userAgent.includes('spider')
+    
+    if (isBot) {
+      return // Пропускаем ботов без авторизации
+    }
+  }
+  
   const { user, isLoggedIn } = useAuth()
   
   // Если пользователь не авторизован на клиенте, перенаправляем на страницу входа

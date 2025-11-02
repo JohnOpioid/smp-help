@@ -61,7 +61,7 @@ export default defineNuxtConfig({
       }
     ]
   },
-  ssr: process.env.NODE_ENV === 'production', // Включаем SSR для продакшна
+  ssr: true, // Включаем SSR для всех режимов (необходимо для OG мета-тегов)
   app: {
     head: {
       title: 'Справочник СМП',

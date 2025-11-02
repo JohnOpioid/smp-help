@@ -11,7 +11,7 @@ export interface IPromoWinner extends Document {
 
 const PromoWinnerSchema = new Schema<IPromoWinner>({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-  eventId: { type: Schema.Types.ObjectId, ref: 'PromoEvent', required: true, index: true },
+  eventId: { type: Schema.Types.ObjectId, ref: 'PromoEvent', required: true },
   prizeId: { type: Schema.Types.ObjectId, ref: 'PromoPrize', required: true, index: true },
   drawnAt: { type: Date, default: Date.now }
 }, { timestamps: true })
