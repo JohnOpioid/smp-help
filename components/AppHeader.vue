@@ -14,11 +14,21 @@
               v-model:open="logoTooltipOpen"
               :ui="{ content: 'tooltip-logo' }"
             >
-              <img ref="logoRef" :src="logoUrl" alt="Логотип"
-                class="h-9 w-9 cursor-pointer transition-all duration-700 ease-in-out" :class="{
-                  'scale-110': dropdownMenuOpen,
-                  'animate-spin': isContentLoading
-                }" @click="navigateToHome" @contextmenu.prevent="openDropdownMenu" />
+              <div class="flex items-center gap-2">
+                <template v-if="activePromo && (activePromo.themeLogo || activePromo.spriteIcon)">
+                  <img v-if="isImageUrl(activePromo.themeLogo)" ref="logoRef" :src="activePromo.themeLogo" alt="Логотип"
+                    class="h-9 w-9 cursor-pointer transition-all duration-700 ease-in-out" :class="{
+                      'scale-110': dropdownMenuOpen,
+                      'animate-spin': isContentLoading
+                    }" @click="navigateToHome" @contextmenu.prevent="openDropdownMenu" />
+                  <UIcon v-else :name="activePromo.themeLogo || activePromo.spriteIcon" class="w-7 h-7 text-orange-500 animate-bounce cursor-pointer" @click="navigateToHome" />
+                </template>
+                <img v-else ref="logoRef" :src="logoUrl" alt="Логотип"
+                  class="h-9 w-9 cursor-pointer transition-all duration-700 ease-in-out" :class="{
+                    'scale-110': dropdownMenuOpen,
+                    'animate-spin': isContentLoading
+                  }" @click="navigateToHome" @contextmenu.prevent="openDropdownMenu" />
+              </div>
             </UTooltip>
 
             <!-- Выпадающее меню из логотипа-кнопки -->
@@ -143,9 +153,11 @@
           <ClientOnly>
             <div class="relative flex items-center" ref="profileRef">
               <button @click="toggleMenu"
-                class="shrink-0 h-10 w-10 rounded-full bg-slate-600 text-white flex items-center justify-center text-center text-lg font-semibold hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 cursor-pointer transition-all duration-700 ease-in-out overflow-hidden">
-                <img v-if="user?.avatarUrl || user?.telegram?.photo_url" :src="user?.avatarUrl || user?.telegram?.photo_url" alt="avatar" class="h-full w-full object-cover" />
+                class="shrink-0 h-10 w-10 rounded-full bg-slate-600 text-white flex items-center justify-center text-center text-lg font-semibold hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 cursor-pointer transition-all duration-700 ease-in-out overflow-visible relative">
+                <img v-if="user?.avatarUrl || user?.telegram?.photo_url" :src="user?.avatarUrl || user?.telegram?.photo_url" alt="avatar" class="h-full w-full object-cover rounded-full" />
                 <span v-else>{{ initials }}</span>
+                <!-- Шапка на верхнем краю кнопки - только в день рождения -->
+                <img v-if="isBirthday" :src="hatUrl" alt="hat" class="absolute -top-1.5 right-1.5 -translate-y-1/2 translate-x-1/2 h-12 w-12 object-contain pointer-events-none scale-60 rotate-[30deg]" />
               </button>
 
               <div v-if="menuOpen"
@@ -235,6 +247,29 @@ onMounted(() => {
       }, 5000)
     }
   }
+  // Подстраховка: если активный промо не загружен плагином, загрузим тут
+  if (process.client && !activePromo.value) {
+    try {
+      const cached = localStorage.getItem('active_promo_item')
+      if (cached) activePromo.value = JSON.parse(cached)
+    } catch {}
+    // fallback to native fetch
+    fetch('/api/promo/active', { cache: 'no-store' })
+      .then(r => r.json())
+      .then((res: any) => { if (res?.item) activePromo.value = res.item })
+      .catch(() => {})
+    // и слушаем обновления из админки
+    window.addEventListener('storage', () => {
+      try {
+        const cached = localStorage.getItem('active_promo_item')
+        if (cached) activePromo.value = JSON.parse(cached)
+      } catch {}
+      fetch('/api/promo/active', { cache: 'no-store' })
+        .then(r => r.json())
+        .then((res: any) => { activePromo.value = res?.item || null })
+        .catch(() => {})
+    })
+  }
 })
 
 // Функция закрытия tooltip с сохранением в кеш
@@ -251,6 +286,16 @@ const closeLogoTooltip = () => {
 // @ts-ignore
 import logoSrc from '~/assets/svg/logo.svg'
 const logoUrl = computed(() => logoSrc)
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import hatSrc from '~/assets/svg/hat.svg'
+const hatUrl = computed(() => hatSrc)
+const activePromo = useState<any>('active_promo', () => null)
+
+function isImageUrl(v: any): boolean {
+  if (!v || typeof v !== 'string') return false
+  return v.startsWith('/uploads/') || v.startsWith('http://') || v.startsWith('https://')
+}
 
 const onToggleTheme = () => {
   if (process.client) toggleTheme()
@@ -485,6 +530,27 @@ const initials = computed(() => {
   return (f + l).toUpperCase() || 'U'
 })
 
+// Проверяем, является ли сегодня день рождения пользователя
+const isBirthday = computed(() => {
+  if (!user.value?.dateOfBirth) return false
+  
+  try {
+    const today = new Date()
+    const birthDate = new Date(user.value.dateOfBirth)
+    
+    // Сравниваем месяц и день
+    const todayMonth = today.getMonth()
+    const todayDate = today.getDate()
+    const birthMonth = birthDate.getMonth()
+    const birthDateNum = birthDate.getDate()
+    
+    return todayMonth === birthMonth && todayDate === birthDateNum
+  } catch (e) {
+    console.error('Ошибка при проверке дня рождения:', e)
+    return false
+  }
+})
+
 
 const mapTitle: Record<string, string> = {
   '/': 'Справочник СМП',
@@ -624,7 +690,8 @@ watch(searchQuery, (newQuery, oldQuery) => {
         ls: [],
         algorithm: [],
         drug: [],
-        substation: []
+        substation: [],
+        calculator: []
       }
     }
     return
@@ -832,7 +899,8 @@ const handleSearchInput = () => {
       ls: [],
       algorithm: [],
       drug: [],
-      substation: []
+      substation: [],
+      calculator: []
     }
     return
   }
@@ -954,13 +1022,14 @@ const clearSearchInput = () => {
   }
   
   // Очищаем результаты поиска, но НЕ деактивируем поиск
-  const emptyGrouped = {
-    mkb: [],
-    ls: [],
-    algorithm: [],
-    drug: [],
-    substation: []
-  }
+      const emptyGrouped = {
+        mkb: [],
+        ls: [],
+        algorithm: [],
+        drug: [],
+        substation: [],
+        calculator: []
+      }
   updateSearchResults([], emptyGrouped, [])
   updateSearching(false)
   updateCacheStatus(false)
@@ -1093,7 +1162,6 @@ defineExpose({
   border: none !important;
   box-shadow: none !important;
   outline: none !important;
-  ring: none !important;
   border-width: 0 !important;
   border-style: none !important;
   border-color: transparent !important;
@@ -1104,7 +1172,6 @@ defineExpose({
   border: none !important;
   box-shadow: none !important;
   outline: none !important;
-  ring: none !important;
   --tw-ring-width: 0 !important;
   --tw-ring-color: transparent !important;
 }
@@ -1114,7 +1181,6 @@ defineExpose({
   border: none !important;
   box-shadow: none !important;
   outline: none !important;
-  ring: none !important;
 }
 
 /* Убираем padding у UInput */

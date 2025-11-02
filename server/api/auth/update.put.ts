@@ -14,9 +14,27 @@ export default defineEventHandler(async (event) => {
   if (typeof body?.city === 'string') update.city = body.city.trim()
   if (typeof body?.substation === 'string') update.substation = body.substation.trim()
   if (typeof body?.avatarUrl === 'string') update.avatarUrl = body.avatarUrl.trim()
+  if ('dateOfBirth' in body) {
+    if (body.dateOfBirth && typeof body.dateOfBirth === 'string' && body.dateOfBirth.trim() !== '') {
+      const date = new Date(body.dateOfBirth)
+      if (!isNaN(date.getTime())) {
+        update.dateOfBirth = date
+      }
+    } else {
+      update.dateOfBirth = null
+    }
+  }
 
   const user = await User.findByIdAndUpdate(sessionUser._id, update, { new: true }).select('-password').lean()
-  return { success: true, user }
+  
+  // Убеждаемся, что dateOfBirth включен в ответ
+  return {
+    success: true,
+    user: {
+      ...user,
+      dateOfBirth: user.dateOfBirth || undefined
+    }
+  }
 })
 
 

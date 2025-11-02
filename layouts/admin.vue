@@ -47,6 +47,7 @@ const navLinks = [
   { label: 'Калькуляторы', icon: 'i-lucide-calculator', to: '/admin/calculators' },
   { label: 'Лекарства', icon: 'i-lucide-pill', to: '/admin/drugs' },
   { label: 'Новости', icon: 'i-lucide-newspaper', to: '/admin/news' },
+  { label: 'Промо', icon: 'i-lucide-gift', to: '/admin/promo' },
   { label: 'Приложения', icon: 'i-lucide-smartphone', to: '/admin/apps' }
 ]
 

@@ -26,7 +26,7 @@ export default defineNuxtConfig({
   ui: {
     global: true,
     icons: ['heroicons'],
-    safelistColors: ['primary'],
+    safelistColors: ['primary','slate','gray','zinc','neutral','stone','red','orange','amber','yellow','lime','green','emerald','teal','cyan','sky','blue','indigo','violet','purple','fuchsia','pink','rose'],
     safelistOptions: {
       timeout: 1000
     }
@@ -109,6 +109,7 @@ export default defineNuxtConfig({
     '~/plugins/mobile-ui.client.ts',
     '~/plugins/telegram.client.ts',
     '~/plugins/fetch.client.ts',
+    '~/plugins/promo.client.ts',
     '~/plugins/version.client.ts'
   ]
 })

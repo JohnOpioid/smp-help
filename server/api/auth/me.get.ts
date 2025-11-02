@@ -19,6 +19,7 @@ export default defineEventHandler(async (event) => {
       city: user.city || '',
       substation: user.substation || '',
       avatarUrl: user.avatarUrl || '',
+      dateOfBirth: user.dateOfBirth || undefined,
       role: user.role,
       telegram: user.telegram || undefined
     }
