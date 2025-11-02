@@ -238,6 +238,98 @@ definePageMeta({ middleware: 'auth', headerTitle: 'Кодификатор' })
 const route = useRoute()
 const url = route.params.url as string
 
+// Загружаем элемент на сервере для установки мета-тегов
+const itemId = route.query.id as string | undefined
+let serverItem: any = null
+
+// Получаем абсолютный URL для изображения
+const getBaseUrl = () => {
+  if (process.server) {
+    const headers = useRequestHeaders()
+    const host = headers.host || 'localhost:3000'
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
+    return `${protocol}://${host}`
+  }
+  if (process.client) {
+    return `${window.location.protocol}//${window.location.host}`
+  }
+  return process.env.NODE_ENV === 'production' ? 'https://smp-help.ru' : 'http://localhost:3000'
+}
+
+if (itemId && process.server) {
+  try {
+    const { connectDB } = await import('~/server/utils/mongodb')
+    const MKB = (await import('~/server/models/MKB')).default
+    await connectDB()
+    serverItem = await MKB.findById(itemId)
+      .populate('category', 'name url')
+      .lean()
+    
+    // Устанавливаем мета-теги на сервере
+    if (serverItem) {
+      const baseUrl = getBaseUrl()
+      const ogImageUrl = `${baseUrl}/api/codifier/og-image/${itemId}`
+      
+      // Используем useHead напрямую для гарантии установки мета-тегов
+      useHead({
+        title: `${serverItem.name} — Кодификатор`,
+        meta: [
+          {
+            name: 'description',
+            content: serverItem.note || `МКБ-10: ${serverItem.mkbCode}${serverItem.stationCode ? ` | Код станции: ${serverItem.stationCode}` : ''}`
+          },
+          {
+            property: 'og:title',
+            content: `${serverItem.name} — Кодификатор`
+          },
+          {
+            property: 'og:description',
+            content: serverItem.note || `МКБ-10: ${serverItem.mkbCode}${serverItem.stationCode ? ` | Код станции: ${serverItem.stationCode}` : ''}`
+          },
+          {
+            property: 'og:image',
+            content: ogImageUrl
+          },
+          {
+            property: 'og:image:width',
+            content: '1200'
+          },
+          {
+            property: 'og:image:height',
+            content: '630'
+          },
+          {
+            property: 'og:type',
+            content: 'website'
+          },
+          {
+            property: 'og:url',
+            content: baseUrl + route.fullPath
+          },
+          {
+            name: 'twitter:card',
+            content: 'summary_large_image'
+          },
+          {
+            name: 'twitter:title',
+            content: `${serverItem.name} — Кодификатор`
+          },
+          {
+            name: 'twitter:description',
+            content: serverItem.note || `МКБ-10: ${serverItem.mkbCode}${serverItem.stationCode ? ` | Код станции: ${serverItem.stationCode}` : ''}`
+          },
+          {
+            name: 'twitter:image',
+            content: ogImageUrl
+          }
+        ]
+      })
+    }
+  } catch (e) {
+    console.error('Ошибка загрузки элемента на сервере:', e)
+  }
+}
+
 // Состояние для ленивой загрузки
 const allItems = ref<any[]>([])
 const currentPage = ref(1)
@@ -367,23 +459,30 @@ onMounted(async () => {
     const found = items.value.find((i: any) => i.mkbCode === mkbCode)
     if (found) openModal(found)
   } else if (itemId) {
-    // Если есть itemId при загрузке страницы, обрабатываем его здесь
-    const checkAndOpenItem = () => {
-      if (items.value.length > 0) {
-        const found = items.value.find((i: any) => String(i._id) === String(itemId))
-        if (found) {
-          selectedItem.value = found
-          modalOpen.value = true
-          updateIsBookmarked()
+    // Если есть itemId при загрузке страницы и мы на сервере загрузили элемент, используем его
+    if (serverItem) {
+      selectedItem.value = serverItem
+      modalOpen.value = true
+      updateIsBookmarked()
+    } else {
+      // Если на клиенте, загружаем элемент
+      const checkAndOpenItem = () => {
+        if (items.value.length > 0) {
+          const found = items.value.find((i: any) => String(i._id) === String(itemId))
+          if (found) {
+            selectedItem.value = found
+            modalOpen.value = true
+            updateIsBookmarked()
+          } else {
+            loadSpecificItem(itemId)
+          }
         } else {
-          loadSpecificItem(itemId)
+          console.log('⏳ Данные еще загружаются при загрузке, повторяем через 100мс')
+          setTimeout(checkAndOpenItem, 100)
         }
-      } else {
-        console.log('⏳ Данные еще загружаются при загрузке, повторяем через 100мс')
-        setTimeout(checkAndOpenItem, 100)
       }
+      checkAndOpenItem()
     }
-    checkAndOpenItem()
   }
 })
 
@@ -447,6 +546,40 @@ const modalOpen = ref(false)
 const selectedItem = ref<any>(null)
 const isBookmarked = ref(false)
 const userBookmarks = ref<any[]>([])
+
+// Мета-теги для OG изображения
+const ogImageUrl = computed(() => {
+  const itemId = route.query.id as string | undefined
+  if (!itemId) return undefined
+  const baseUrl = getBaseUrl()
+  return `${baseUrl}/api/codifier/og-image/${itemId}`
+})
+
+// Обновляем мета-теги на клиенте при изменении selectedItem или route.query.id
+if (process.client) {
+  watch([selectedItem, () => route.query.id, ogImageUrl], ([item, itemId, imageUrl]) => {
+    if (!item || !itemId || !imageUrl) {
+      return
+    }
+    
+    // Используем useSeoMeta для правильной установки мета-тегов
+    useSeoMeta({
+      title: `${item.name} — Кодификатор`,
+      description: item.note || `МКБ-10: ${item.mkbCode}${item.stationCode ? ` | Код станции: ${item.stationCode}` : ''}`,
+      ogTitle: `${item.name} — Кодификатор`,
+      ogDescription: item.note || `МКБ-10: ${item.mkbCode}${item.stationCode ? ` | Код станции: ${item.stationCode}` : ''}`,
+      ogImage: imageUrl,
+      ogImageWidth: '1200',
+      ogImageHeight: '630',
+      ogType: 'website',
+      ogUrl: window.location.href,
+      twitterCard: 'summary_large_image',
+      twitterTitle: `${item.name} — Кодификатор`,
+      twitterDescription: item.note || `МКБ-10: ${item.mkbCode}${item.stationCode ? ` | Код станции: ${item.stationCode}` : ''}`,
+      twitterImage: imageUrl,
+    })
+  }, { immediate: true })
+}
 
 
 
@@ -555,10 +688,29 @@ async function toggleBookmark() {
 async function shareItem() {
   if (!selectedItem.value) return
   
+  // Убеждаемся, что мета-теги установлены перед отправкой
+  // Важно: изображение должно быть уже сгенерировано на сервере
+  // и доступно по URL в мета-тегах og:image
+  const shareUrl = window.location.href
+  const imageUrl = ogImageUrl.value
+  
+  // Проверяем, что изображение доступно (опционально - предзагрузка)
+  if (imageUrl) {
+    // Предзагружаем изображение, чтобы убедиться, что оно сгенерировано
+    try {
+      await fetch(imageUrl, { method: 'HEAD' }).catch(() => {
+        // Если не удалось загрузить, пробуем GET запрос для генерации
+        return fetch(imageUrl).catch(() => null)
+      })
+    } catch (e) {
+      console.warn('Предзагрузка изображения не удалась, но продолжаем:', e)
+    }
+  }
+  
   const shareData = {
-    title: selectedItem.value.name,
+    title: `${selectedItem.value.name} — Кодификатор`,
     text: `МКБ-10: ${selectedItem.value.mkbCode}${selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''}`,
-    url: window.location.href
+    url: shareUrl
   }
   
   try {
@@ -566,7 +718,7 @@ async function shareItem() {
       await navigator.share(shareData)
     } else {
       // Fallback - копируем URL в буфер обмена
-      await navigator.clipboard.writeText(window.location.href)
+      await navigator.clipboard.writeText(shareUrl)
       // @ts-ignore
       const toast = useToast?.()
       toast?.add?.({ title: 'Ссылка скопирована в буфер обмена', color: 'primary' })

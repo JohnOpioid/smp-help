@@ -157,7 +157,7 @@
                 <img v-if="user?.avatarUrl || user?.telegram?.photo_url" :src="user?.avatarUrl || user?.telegram?.photo_url" alt="avatar" class="h-full w-full object-cover rounded-full" />
                 <span v-else>{{ initials }}</span>
                 <!-- Шапка на верхнем краю кнопки - только в день рождения -->
-                <img v-if="isBirthday" :src="hatUrl" alt="hat" class="absolute -top-1.5 right-1.5 -translate-y-1/2 translate-x-1/2 h-12 w-12 object-contain pointer-events-none scale-60 rotate-[30deg]" />
+                <img v-if="isBirthday" :src="hatUrl" alt="hat" class="absolute -top-1.5 right-1.5 -translate-y-1/2 translate-x-1/2 h-12 w-12 object-contain pointer-events-none scale-60 rotate-[30deg] hat-slate-800" />
               </button>
 
               <div v-if="menuOpen"
@@ -1251,5 +1251,10 @@ defineExpose({
 
 .dark .relative.flex-1.rounded-lg {
   background-color: #1e293b; /* slate-800 */
+}
+
+/* Фильтр для перекрашивания колпака в slate-800 */
+.hat-slate-800 {
+  filter: brightness(0) saturate(100%) invert(11%) sepia(11%) saturate(490%) hue-rotate(177deg) brightness(92%) contrast(92%);
 }
 </style>
