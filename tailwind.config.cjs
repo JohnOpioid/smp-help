@@ -1,6 +1,16 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: 'class',
+  safelist: [
+    // динамические классы для промо-лендингов
+    ...['slate','gray','zinc','neutral','stone','red','orange','amber','yellow','lime','green','emerald','teal','cyan','sky','blue','indigo','violet','purple','fuchsia','pink','rose']
+      .flatMap(c => [
+        `bg-${c}-50`, `bg-${c}-100`,
+        `bg-${c}-600`, `bg-${c}-700`,
+        `hover:bg-${c}-700`,
+        `text-${c}-500`, `text-${c}-600`
+      ])
+  ],
   content: [
     './components/**/*.{vue,js,ts}',
     './layouts/**/*.vue',

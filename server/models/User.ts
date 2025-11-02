@@ -8,6 +8,7 @@ export interface IUser extends Document {
   lastName: string
   city?: string
   substation?: string
+  dateOfBirth?: Date
   role: 'admin' | 'user'
   resetPasswordToken?: string
   resetPasswordExpires?: Date
@@ -93,6 +94,10 @@ const UserSchema = new Schema<IUser>({
     required: false,
     trim: true,
     default: ''
+  },
+  dateOfBirth: {
+    type: Date,
+    required: false
   },
   role: {
     type: String,

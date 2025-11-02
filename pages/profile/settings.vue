@@ -38,7 +38,7 @@
       </div>
       <div class="p-4 sm:p-6">
         <UForm :state="form" @submit.prevent="onSubmit" class="space-y-4">
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <UFormField label="Имя" required>
               <UInput v-model="form.firstName" placeholder="Ваше имя" class="w-full" size="xl"
                 :input-class="'px-4 py-3'" />
@@ -46,6 +46,10 @@
             <UFormField label="Фамилия" required>
               <UInput v-model="form.lastName" placeholder="Ваша фамилия" class="w-full" size="xl"
                 :input-class="'px-4 py-3'" />
+            </UFormField>
+            <UFormField label="Дата рождения">
+              <UInput v-model="form.dateOfBirth" type="date" class="w-full" size="xl" :input-class="'px-4 py-3'" :disabled="hasSavedDateOfBirth" />
+              <span v-if="hasSavedDateOfBirth" class="text-xs text-slate-500 dark:text-slate-400 mt-1 block">Дата рождения не может быть изменена после сохранения</span>
             </UFormField>
           </div>
           <UFormField label="Email" required>
@@ -204,7 +208,7 @@
 definePageMeta({ middleware: 'auth', headerTitle: 'Настройки профиля', layout: 'profile' })
 
 const pending = ref(false)
-const form = reactive<{ firstName: string; lastName: string; email: string; city: string; substation: string; avatarUrl: string }>({ firstName: '', lastName: '', email: '', city: '', substation: '', avatarUrl: '' })
+const form = reactive<{ firstName: string; lastName: string; email: string; city: string; substation: string; avatarUrl: string; dateOfBirth: string }>({ firstName: '', lastName: '', email: '', city: '', substation: '', avatarUrl: '', dateOfBirth: '' })
 const fileInput = ref<HTMLInputElement | null>(null)
 const isDragging = ref(false)
 const rightBoxRef = ref<HTMLElement | null>(null)
@@ -330,6 +334,12 @@ const user = computed(() => (data.value as any)?.user)
 // Текущий пользователь из data
 const currentUser = computed(() => (data.value as any)?.user)
 
+// Проверяем, есть ли уже сохраненная дата рождения
+const hasSavedDateOfBirth = computed(() => {
+  const u: any = data.value?.user
+  return !!(u?.dateOfBirth)
+})
+
 // Функция для открытия модального окна подключения Telegram
 const openTelegramConnectModal = () => {
   telegramMenuOpen.value = false
@@ -377,6 +387,7 @@ watchEffect(() => {
     form.city = u.city || ''
     form.substation = (typeof u.substation === 'string' ? u.substation : String(u.substation || ''))
     form.avatarUrl = u.avatarUrl || ''
+    form.dateOfBirth = u.dateOfBirth ? new Date(u.dateOfBirth).toISOString().substring(0, 10) : ''
   }
 })
 
@@ -389,20 +400,36 @@ function resetForm() {
     form.city = u.city || ''
     form.substation = (typeof u.substation === 'string' ? u.substation : String(u.substation || ''))
     form.avatarUrl = u.avatarUrl || ''
+    form.dateOfBirth = u.dateOfBirth ? new Date(u.dateOfBirth).toISOString().substring(0, 10) : ''
   }
 }
 
 async function onSubmit() {
   pending.value = true
   try {
-    const res: any = await $fetch('/api/auth/update', { method: 'PUT', body: form })
-    if (res?.success) {
+    // Создаем копию формы для отправки, исключая dateOfBirth если оно уже было сохранено
+    const body: any = { ...form }
+    if (hasSavedDateOfBirth.value) {
+      delete body.dateOfBirth
+    }
+    const res: any = await $fetch('/api/auth/update', { method: 'PUT', body })
+    if (res?.success && res.user) {
       // @ts-ignore
       const toast = useToast?.()
       toast?.add?.({ title: 'Профиль сохранён', color: 'neutral' })
       // Обновляем глобального пользователя для реактивного обновления шапки
       const { user: authUser } = useAuth()
       authUser.value = res.user
+      // Обновляем локальные данные пользователя
+      if (data.value) {
+        data.value.user = res.user
+      }
+      // Обновляем форму из ответа, чтобы убедиться, что дата корректно отображается
+      if (res.user.dateOfBirth) {
+        form.dateOfBirth = new Date(res.user.dateOfBirth).toISOString().substring(0, 10)
+      } else {
+        form.dateOfBirth = ''
+      }
       if (process.client) {
         window.dispatchEvent(new Event('auth-updated'))
       }

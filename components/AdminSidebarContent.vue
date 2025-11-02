@@ -78,6 +78,7 @@ const navLinks = [
   { label: 'Тесты', icon: 'i-lucide-check-circle-2', to: '/admin/tests', activeMatch: '/admin/tests' },
   { label: 'Лекарства', icon: 'i-lucide-pill', to: '/admin/drugs' },
   { label: 'Новости', icon: 'i-lucide-newspaper', to: '/admin/news' },
+  { label: 'Промо', icon: 'i-lucide-gift', to: '/admin/promo', activeMatch: '/admin/promo' },
   { label: 'Приложения', icon: 'i-lucide-smartphone', to: '/admin/apps' }
 ]
 
