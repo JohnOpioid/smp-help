@@ -3,7 +3,7 @@ import satori from 'satori'
 import { Resvg } from '@resvg/resvg-js'
 import connectDB from '~/server/utils/mongodb'
 import MKB from '~/server/models/MKB'
-import { readFileSync } from 'fs'
+import { readFileSync, existsSync } from 'fs'
 import { join } from 'path'
 
 export default defineEventHandler(async (event) => {
@@ -64,52 +64,93 @@ export default defineEventHandler(async (event) => {
       console.warn('Не удалось загрузить TTF шрифты из GitHub, пробуем локальные:', e)
     }
     
-    // Если не удалось загрузить из интернета, загружаем локальные TTF из public/fonts/
+    // Если не удалось загрузить из интернета, загружаем локальные TTF
+    // Пробуем несколько возможных путей (dev: public/fonts/, prod: fonts/)
     if (!fontDataRegular) {
-      const ttfPath = join(process.cwd(), 'public', 'fonts', 'Roboto-Regular.ttf')
-      try {
-        const ttfBuffer = readFileSync(ttfPath)
-        // Проверяем, что это валидный TTF (должен начинаться с заголовка TTF)
-        const header = ttfBuffer.slice(0, 4).toString('binary')
-        if (header !== 'OTTO' && header !== '\x00\x01\x00\x00') {
-          throw new Error('Файл не является валидным TTF/OTF шрифтом')
+      const possiblePaths = [
+        join(process.cwd(), 'public', 'fonts', 'Roboto-Regular.ttf'), // dev
+        join(process.cwd(), 'fonts', 'Roboto-Regular.ttf'), // prod
+        '/var/www/html/helpsmp.ru/fonts/Roboto-Regular.ttf', // prod absolute
+      ]
+      
+      let loaded = false
+      let lastError: Error | null = null
+      
+      for (const ttfPath of possiblePaths) {
+        try {
+          if (!existsSync(ttfPath)) {
+            continue
+          }
+          const ttfBuffer = readFileSync(ttfPath)
+          // Проверяем, что это валидный TTF (должен начинаться с заголовка TTF)
+          const header = ttfBuffer.slice(0, 4).toString('binary')
+          if (header !== 'OTTO' && header !== '\x00\x01\x00\x00') {
+            throw new Error('Файл не является валидным TTF/OTF шрифтом')
+          }
+          // Конвертируем Buffer в ArrayBuffer правильно
+          fontDataRegular = ttfBuffer.buffer.slice(
+            ttfBuffer.byteOffset, 
+            ttfBuffer.byteOffset + ttfBuffer.byteLength
+          )
+          console.log('✓ Загружен шрифт Roboto-Regular.ttf из:', ttfPath, 'размер:', ttfBuffer.length, 'байт')
+          loaded = true
+          break
+        } catch (e) {
+          lastError = e as Error
+          continue
         }
-        // Конвертируем Buffer в ArrayBuffer правильно
-        fontDataRegular = ttfBuffer.buffer.slice(
-          ttfBuffer.byteOffset, 
-          ttfBuffer.byteOffset + ttfBuffer.byteLength
-        )
-        console.log('✓ Загружен шрифт Roboto-Regular.ttf из:', ttfPath, 'размер:', ttfBuffer.length, 'байт')
-      } catch (e) {
-        console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: не удалось загрузить шрифт Roboto-Regular.ttf из:', ttfPath)
-        console.error('Ошибка:', (e as Error).message)
-        console.error('Убедитесь, что файл существует и является валидным TTF в public/fonts/')
+      }
+      
+      if (!loaded) {
+        console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: не удалось загрузить шрифт Roboto-Regular.ttf')
+        console.error('Пробовали пути:', possiblePaths)
+        console.error('Последняя ошибка:', lastError?.message)
         // satori требует хотя бы один шрифт, поэтому бросаем ошибку
-        throw new Error(`Не удалось загрузить шрифт для генерации изображения. Файл должен быть в: ${ttfPath}. Ошибка: ${(e as Error).message}`)
+        throw new Error(`Не удалось загрузить шрифт для генерации изображения. Пробовали пути: ${possiblePaths.join(', ')}. Ошибка: ${lastError?.message}`)
       }
     }
     
     if (!fontDataBold) {
-      const ttfPath = join(process.cwd(), 'public', 'fonts', 'Roboto-Bold.ttf')
-      try {
-        const ttfBuffer = readFileSync(ttfPath)
-        // Проверяем размер файла
-        if (ttfBuffer.length < 100) {
-          throw new Error('Файл слишком мал для валидного TTF шрифта')
+      const possiblePaths = [
+        join(process.cwd(), 'public', 'fonts', 'Roboto-Bold.ttf'), // dev
+        join(process.cwd(), 'fonts', 'Roboto-Bold.ttf'), // prod
+        '/var/www/html/helpsmp.ru/fonts/Roboto-Bold.ttf', // prod absolute
+      ]
+      
+      let loaded = false
+      let lastError: Error | null = null
+      
+      for (const ttfPath of possiblePaths) {
+        try {
+          if (!existsSync(ttfPath)) {
+            continue
+          }
+          const ttfBuffer = readFileSync(ttfPath)
+          // Проверяем размер файла
+          if (ttfBuffer.length < 100) {
+            throw new Error('Файл слишком мал для валидного TTF шрифта')
+          }
+          
+          // Создаем новый ArrayBuffer из Buffer (правильная конвертация)
+          const arrayBuffer = new ArrayBuffer(ttfBuffer.length)
+          const view = new Uint8Array(arrayBuffer)
+          for (let i = 0; i < ttfBuffer.length; i++) {
+            view[i] = ttfBuffer[i]
+          }
+          fontDataBold = arrayBuffer
+          
+          console.log('✓ Загружен шрифт Roboto-Bold.ttf из:', ttfPath, 'размер:', ttfBuffer.length, 'байт')
+          loaded = true
+          break
+        } catch (e) {
+          lastError = e as Error
+          continue
         }
-        
-        // Создаем новый ArrayBuffer из Buffer (правильная конвертация)
-        const arrayBuffer = new ArrayBuffer(ttfBuffer.length)
-        const view = new Uint8Array(arrayBuffer)
-        for (let i = 0; i < ttfBuffer.length; i++) {
-          view[i] = ttfBuffer[i]
-        }
-        fontDataBold = arrayBuffer
-        
-        console.log('✓ Загружен шрифт Roboto-Bold.ttf из:', ttfPath, 'размер:', ttfBuffer.length, 'байт')
-      } catch (e) {
+      }
+      
+      if (!loaded) {
         // Если bold не загрузился, используем regular для bold тоже
-        console.warn('⚠ Не удалось загрузить Roboto-Bold.ttf, используем Regular:', (e as Error).message)
+        console.warn('⚠ Не удалось загрузить Roboto-Bold.ttf, используем Regular. Пробовали пути:', possiblePaths)
         fontDataBold = fontDataRegular
       }
     }
