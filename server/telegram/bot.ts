@@ -124,7 +124,7 @@ if (bot) {
   bot.help(async (ctx) => {
     const chatId = ctx.chat?.id
     if (!chatId) return
-    await bot.telegram.sendMessage(chatId, `\n📚 Справочник СМП\n\nИспользуйте /start для авторизации и начала работы с ботом.\n\nДля работы с полным функционалом перейдите на сайт.\n  `)
+    await bot.telegram.sendMessage(chatId, `\n📚 Справочник СМП\n\nИспользуйте /start для авторизации и начала работы с ботом.\n\nДля работы с полным функционалом перейдите на сайт.\n  `, { reply_markup: { inline_keyboard: [[{ text: '◀️ Назад', callback_data: 'help_back' }]] } } as any)
   })
 
   // /favorites
@@ -149,7 +149,7 @@ if (bot) {
       const favorites = await ofetch(`${apiUrl}/api/bookmarks`, { method: 'GET', query: { userId }, rejectUnauthorized: false } as any)
 
       if (!favorites?.items || favorites.items.length === 0) {
-        if (chatId) await bot.telegram.sendMessage(chatId, `📌 У вас пока нет избранного\n\nДобавьте закладки на сайте для использования функционала избранного.`, { reply_markup: { inline_keyboard: [[{ text: '🌐 Открыть сайт', url: `${siteUrl}/favorites` }]] } } as any)
+        if (chatId) await bot.telegram.sendMessage(chatId, `📌 У вас пока нет избранного\n\nДобавьте закладки на сайте для использования функционала избранного.`, { reply_markup: { inline_keyboard: [[{ text: '🌐 Открыть сайт', url: `${siteUrl}/favorites` }],[{ text: '◀️ Назад', callback_data: `favorites_back|${chatId}` }]] } } as any)
         return
       }
 
@@ -173,12 +173,13 @@ if (bot) {
         buttons.push([{ text: `${categoryName} (${(items as any[]).length})`, callback_data: `favorites_category_${type}|${chatId}` }])
       }
       buttons.push([{ text: '🌐 Открыть на сайте', url: `${siteUrl}/profile/bookmarks` }])
+      buttons.push([{ text: '◀️ Назад', callback_data: `favorites_back|${chatId}` }])
 
       if (chatId) await bot.telegram.sendMessage(chatId, message, { reply_markup: { inline_keyboard: buttons } } as any)
     } catch (error: any) {
       console.error('❌ Ошибка при получении избранного:', error)
       const chatId = ctx.chat?.id
-      if (chatId) await bot.telegram.sendMessage(chatId, `❌ Ошибка при загрузке избранного\n\nИспользуйте /start для авторизации.`)
+      if (chatId) await bot.telegram.sendMessage(chatId, `❌ Ошибка при загрузке избранного\n\nИспользуйте /start для авторизации.`, { reply_markup: { inline_keyboard: [[{ text: '◀️ Назад', callback_data: `favorites_back|${chatId}` }]] } } as any)
     }
   })
 
@@ -326,20 +327,22 @@ if (bot) {
         }
         const userCheck = await ofetch(`${apiUrl}/api/auth/find-by-telegram/${userId}`, { method: 'GET', rejectUnauthorized: false } as any)
         if (!userCheck?.user) {
+          const kb = { reply_markup: { inline_keyboard: [[{ text: '◀️ Назад', callback_data: `favorites_back|${chatId}` }]] } } as any
           if (messageId) {
-            await bot.telegram.editMessageText(chatId, messageId, undefined, '❌ Вы не авторизованы\n\nНеобходимо авторизоваться для доступа к избранному.')
+            await bot.telegram.editMessageText(chatId, messageId, undefined, '❌ Вы не авторизованы\n\nНеобходимо авторизоваться для доступа к избранному.', kb)
           } else {
-            await bot.telegram.sendMessage(chatId, '❌ Вы не авторизованы\n\nНеобходимо авторизоваться для доступа к избранному.')
+            await bot.telegram.sendMessage(chatId, '❌ Вы не авторизованы\n\nНеобходимо авторизоваться для доступа к избранному.', kb)
           }
           return
         }
         const favorites = await ofetch(`${apiUrl}/api/bookmarks`, { method: 'GET', query: { userId: userCheck.user._id }, rejectUnauthorized: false } as any)
         if (!favorites?.items || favorites.items.length === 0) {
           const emptyMsg = `📌 У вас пока нет избранного\n\nДобавьте закладки на сайте для использования функционала избранного.`
+          const kb = { reply_markup: { inline_keyboard: [[{ text: '🌐 Открыть сайт', url: `${siteUrl}/profile/bookmarks` }],[{ text: '◀️ Назад', callback_data: `favorites_back|${chatId}` }]] } } as any
           if (messageId) {
-            await bot.telegram.editMessageText(chatId, messageId, undefined, emptyMsg, { reply_markup: { inline_keyboard: [[{ text: '🌐 Открыть сайт', url: `${siteUrl}/profile/bookmarks` }]] } } as any)
+            await bot.telegram.editMessageText(chatId, messageId, undefined, emptyMsg, kb)
           } else {
-            await bot.telegram.sendMessage(chatId, emptyMsg, { reply_markup: { inline_keyboard: [[{ text: '🌐 Открыть сайт', url: `${siteUrl}/profile/bookmarks` }]] } } as any)
+            await bot.telegram.sendMessage(chatId, emptyMsg, kb)
           }
           return
         }
@@ -374,10 +377,11 @@ if (bot) {
       } catch (error) {
         console.error('❌ Ошибка:', error)
         const errorMsg = '❌ Ошибка при загрузке избранного'
+        const kb = { reply_markup: { inline_keyboard: [[{ text: '◀️ Назад', callback_data: `favorites_back|${chatId}` }]] } } as any
         if (messageId) {
-          await bot.telegram.editMessageText(chatId, messageId, undefined, errorMsg)
+          await bot.telegram.editMessageText(chatId, messageId, undefined, errorMsg, kb)
         } else {
-          await bot.telegram.sendMessage(chatId, errorMsg)
+          await bot.telegram.sendMessage(chatId, errorMsg, kb)
         }
       }
       return
