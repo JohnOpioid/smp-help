@@ -310,22 +310,24 @@ const getBaseUrl = () => {
 }
 
 // Ставим базовые OG-теги сразу (даже если БД недоступна)
-if (itemId && process.server) {
+if (process.server) {
   const baseUrl = getBaseUrl()
-  const minimalOg = `${baseUrl}/__og-image__/codifier/${itemId}?v=${itemId}`
+  const itemIdForOg = itemId
+  const image = itemIdForOg
+    ? `${baseUrl}/__og-image__/codifier/${itemIdForOg}?v=${itemIdForOg}`
+    : `${baseUrl}/mascot.png`
   useServerHead({
     meta: [
       { property: 'og:type', content: 'website' },
       { property: 'og:url', content: baseUrl + route.fullPath },
-      { property: 'og:image', content: minimalOg },
-      { property: 'og:image:secure_url', content: minimalOg },
+      { property: 'og:site_name', content: 'Справочник СМП' },
+      { property: 'og:image', content: image },
+      { property: 'og:image:secure_url', content: image },
       { property: 'og:image:type', content: 'image/png' },
-      { property: 'og:image:width', content: '900' },
-      { property: 'og:image:height', content: '600' },
       { name: 'twitter:card', content: 'summary_large_image' },
-      { name: 'twitter:image', content: minimalOg }
+      { name: 'twitter:image', content: image }
     ],
-    link: [ { rel: 'image_src', href: minimalOg } ]
+    link: [ { rel: 'image_src', href: image } ]
   })
 }
 

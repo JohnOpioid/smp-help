@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { h } from 'vue'
 import MKB from '~/server/models/MKB'
+import '~/server/models/MKBCategory'
 import connectDB from '~/server/utils/mongodb'
 
 const route = useRoute()

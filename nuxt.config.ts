@@ -30,6 +30,23 @@ export default defineNuxtConfig({
       height: 600
     }
   },
+  seo: {
+    siteName: 'Справочник СМП',
+    language: 'ru',
+    trailingSlash: false,
+    robots: process.env.NODE_ENV === 'production' ? true : undefined
+  },
+  schemaOrg: {
+    host: process.env.NUXT_PUBLIC_SITE_URL || 'https://helpsmp.ru',
+    inLanguage: 'ru-RU',
+    defaults: {
+      name: 'Справочник СМП'
+    }
+  },
+  site: {
+    url: process.env.NUXT_PUBLIC_SITE_URL || 'https://helpsmp.ru',
+    name: 'Справочник СМП'
+  },
   ui: {
     global: true,
     icons: ['heroicons'],
