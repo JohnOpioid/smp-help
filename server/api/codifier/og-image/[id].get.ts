@@ -16,6 +16,11 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    // Гарантируем регистрацию зависимых моделей перед populate
+    try {
+      await import('~/server/models/MKBCategory')
+    } catch {}
+
     // Загружаем данные элемента из БД
     const item = await MKB.findById(id)
       .populate('category', 'name url')
