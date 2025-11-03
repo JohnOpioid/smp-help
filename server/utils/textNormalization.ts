@@ -67,6 +67,52 @@ export function slugifyForUrl(text: string): string {
     .replace(/^-|-$|_/g, '')
 }
 
+// Функция для создания regex паттерна, который матчит похожие кириллические и латинские буквы
+export function createCyrillicLatinRegex(pattern: string): string {
+  if (!pattern) return pattern
+  
+  // Маппинг похожих букв (кириллица <-> латиница)
+  const similarChars: { [key: string]: string } = {
+    // Одинаковые по виду
+    'О': '[ОO]', 'о': '[оo]',
+    'Р': '[РP]', 'р': '[рp]',
+    'Т': '[ТT]', 'т': '[тt]',
+    'С': '[СC]', 'с': '[сc]',
+    'Н': '[НH]', 'н': '[нh]',
+    'А': '[АA]', 'а': '[аa]',
+    'В': '[ВB]', 'в': '[вb]',
+    'Е': '[ЕE]', 'е': '[еe]',
+    'К': '[КK]', 'к': '[кk]',
+    'М': '[МM]', 'м': '[мm]',
+    'Х': '[ХX]', 'х': '[хx]',
+    'У': '[УY]', 'у': '[уy]',
+    'И': '[ИI]', 'и': '[иi]',
+    'З': '[ЗZ]', 'з': '[зz]',
+    'Г': '[ГG]', 'г': '[гg]',
+    'Д': '[ДD]', 'д': '[дd]',
+    'Л': '[ЛL]', 'л': '[лl]',
+    'П': '[ПP]', 'п': '[пp]',
+    'Ф': '[ФF]', 'ф': '[фf]',
+  }
+  
+  let result = ''
+  
+  // Обрабатываем каждый символ отдельно
+  for (let i = 0; i < pattern.length; i++) {
+    const char = pattern[i]
+    
+    // Если это похожий символ, заменяем на группу
+    if (similarChars[char]) {
+      result += similarChars[char]
+    } else {
+      // Экранируем специальные символы regex
+      result += char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    }
+  }
+  
+  return result
+}
+
 // Функция для создания MongoDB поисковых условий с учетом нормализации
 export function createNormalizedSearchConditions(search: string, fields: string[]) {
   if (!search.trim()) return {}

@@ -10,6 +10,7 @@ import Drug from '~/server/models/Drug'
 import DrugCategory from '~/server/models/DrugCategory'
 import Substation from '~/server/models/Substation'
 import Calculator from '~/server/models/Calculator'
+import { createCyrillicLatinRegex } from '~/server/utils/textNormalization'
 
 export default defineEventHandler(async (event) => {
   let query = '' // Объявляем переменную в начале функции
@@ -111,14 +112,15 @@ export default defineEventHandler(async (event) => {
     
     // Логирование отключено для производительности
     
-    // Создаем регулярные выражения для каждого паттерна
-    const searchRegexes = searchPatterns.map(pattern => 
-      new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')
-    )
+    // Создаем регулярные выражения для каждого паттерна с учетом похожих кириллических/латинских букв
+    const searchRegexes = searchPatterns.map(pattern => {
+      const normalizedPattern = createCyrillicLatinRegex(pattern)
+      return new RegExp(normalizedPattern, 'i')
+    })
     
     
-    // Создаем основной поисковый запрос для точного поиска
-    const mainSearchRegex = new RegExp(searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')
+    // Создаем основной поисковый запрос для точного поиска с учетом похожих букв
+    const mainSearchRegex = new RegExp(createCyrillicLatinRegex(searchQuery), 'i')
     
     // Функция для определения приоритета результата
     const getResultPriority = (item: any, query: string, patterns: string[]) => {
