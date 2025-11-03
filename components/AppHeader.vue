@@ -316,8 +316,31 @@ const onToggleTheme = () => {
   if (process.client) toggleTheme()
 }
 
+// Публичные пути, где не нужно дергать /api/auth/me без токена
+const isPublicPath = computed(() => {
+  const p = route.path
+  return p === '/' || p.startsWith('/algorithms') || p.startsWith('/codifier')
+})
+
+function hasAuthToken() {
+  if (process.server) {
+    const headers = useRequestHeaders(['cookie'])
+    const cookie = (headers.cookie || '') as string
+    return cookie.includes('token=')
+  }
+  if (process.client) {
+    return document.cookie.includes('token=')
+  }
+  return false
+}
+
 // Гарантируем наличие данных пользователя после перезагрузки (SSR/CSR)
 if (!user.value) {
+  // На публичных страницах без токена не запрашиваем /api/auth/me, чтобы избежать 401 в консоли
+  if (isPublicPath.value && !hasAuthToken()) {
+    // Явно очищаем состояние на всякий случай
+    clearAuth()
+  } else {
   const opts: any = { credentials: 'include' }
   if (process.server) {
     const headers = useRequestHeaders(['cookie'])
@@ -333,11 +356,6 @@ if (!user.value) {
   }, { immediate: true })
   
   // Обрабатываем ошибки авторизации: на публичных разделах не редиректим
-  const currentRoute = useRoute()
-  const isPublicPath = computed(() => {
-    const p = currentRoute.path
-    return p === '/' || p.startsWith('/algorithms') || p.startsWith('/codifier')
-  })
   watch(meError, (error) => {
     if (error && process.client) {
       // Если 401 — на публичных страницах просто чистим состояние без редиректа
@@ -349,6 +367,7 @@ if (!user.value) {
       }
     }
   }, { immediate: true })
+  }
 }
 
 const menuOpen = ref(false)
