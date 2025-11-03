@@ -312,7 +312,7 @@ const getBaseUrl = () => {
 // Ставим базовые OG-теги сразу (даже если БД недоступна)
 if (itemId && process.server) {
   const baseUrl = getBaseUrl()
-  const minimalOg = `${baseUrl}/api/codifier/og-image/${itemId}?v=${itemId}`
+  const minimalOg = `${baseUrl}/__og-image__/codifier/${itemId}?v=${itemId}`
   useServerHead({
     meta: [
       { property: 'og:type', content: 'website' },
@@ -320,8 +320,8 @@ if (itemId && process.server) {
       { property: 'og:image', content: minimalOg },
       { property: 'og:image:secure_url', content: minimalOg },
       { property: 'og:image:type', content: 'image/png' },
-      { property: 'og:image:width', content: '1200' },
-      { property: 'og:image:height', content: '630' },
+      { property: 'og:image:width', content: '900' },
+      { property: 'og:image:height', content: '600' },
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:image', content: minimalOg }
     ],
@@ -341,82 +341,32 @@ if (itemId && process.server) {
     // Устанавливаем мета-теги на сервере
     if (serverItem) {
       const baseUrl = getBaseUrl()
-      // Добавляем стабильный параметр версии, чтобы платформы не использовали устаревший кеш
-      const ogImageUrl = `${baseUrl}/api/codifier/og-image/${itemId}?v=${itemId}`
-      
-      // Используем useHead напрямую для гарантии установки мета-тегов
+      const ogImageUrl = `${baseUrl}/__og-image__/codifier/${itemId}?v=${itemId}`
+
       useServerHead({
         title: `${serverItem.name} — Кодификатор`,
         meta: [
           { property: 'og:locale', content: 'ru_RU' },
-          {
-            name: 'description',
-            content: serverItem.note || `МКБ-10: ${serverItem.mkbCode}${serverItem.stationCode ? ` | Код станции: ${serverItem.stationCode}` : ''}`
-          },
-          {
-            property: 'og:title',
-            content: `${serverItem.name} — Кодификатор`
-          },
-          {
-            property: 'og:description',
-            content: serverItem.note || `МКБ-10: ${serverItem.mkbCode}${serverItem.stationCode ? ` | Код станции: ${serverItem.stationCode}` : ''}`
-          },
-          {
-            property: 'og:image',
-            content: ogImageUrl
-          },
-          {
-            property: 'og:image:secure_url',
-            content: ogImageUrl
-          },
-          {
-            property: 'og:image:type',
-            content: 'image/png'
-          },
-          {
-            property: 'og:image:alt',
-            content: serverItem.name || 'Кодификатор'
-          },
-          {
-            property: 'og:image:width',
-            content: '1200'
-          },
-          {
-            property: 'og:image:height',
-            content: '630'
-          },
-          {
-            property: 'og:site_name',
-            content: 'Справочник СМП'
-          },
-          {
-            property: 'og:type',
-            content: 'website'
-          },
-          {
-            property: 'og:url',
-            content: baseUrl + route.fullPath
-          },
-          {
-            name: 'twitter:card',
-            content: 'summary_large_image'
-          },
-          {
-            name: 'twitter:title',
-            content: `${serverItem.name} — Кодификатор`
-          },
-          {
-            name: 'twitter:description',
-            content: serverItem.note || `МКБ-10: ${serverItem.mkbCode}${serverItem.stationCode ? ` | Код станции: ${serverItem.stationCode}` : ''}`
-          },
-          {
-            name: 'twitter:image',
-            content: ogImageUrl
-          }
+          { name: 'description', content: serverItem.note || `МКБ-10: ${serverItem.mkbCode}${serverItem.stationCode ? ` | Код станции: ${serverItem.stationCode}` : ''}` },
+          { property: 'og:title', content: `${serverItem.name} — Кодификатор` },
+          { property: 'og:description', content: serverItem.note || `МКБ-10: ${serverItem.mkbCode}${serverItem.stationCode ? ` | Код станции: ${serverItem.stationCode}` : ''}` },
+          { property: 'og:image', content: ogImageUrl },
+          { property: 'og:image:secure_url', content: ogImageUrl },
+          { property: 'og:image:type', content: 'image/png' },
+          { property: 'og:image:alt', content: serverItem.name || 'Кодификатор' },
+          { property: 'og:image:width', content: '900' },
+          { property: 'og:image:height', content: '600' },
+          { property: 'og:site_name', content: 'Справочник СМП' },
+          { property: 'og:type', content: 'website' },
+          { property: 'og:url', content: baseUrl + route.fullPath },
+          { name: 'twitter:card', content: 'summary_large_image' },
+          { name: 'twitter:title', content: `${serverItem.name} — Кодификатор` },
+          { name: 'twitter:description', content: serverItem.note || `МКБ-10: ${serverItem.mkbCode}${serverItem.stationCode ? ` | Код станции: ${serverItem.stationCode}` : ''}` },
+          { name: 'twitter:image', content: ogImageUrl }
         ],
         link: [
-          { rel: 'canonical', href: baseUrl + route.fullPath },
-          { rel: 'image_src', href: ogImageUrl }
+          { rel: 'image_src', href: ogImageUrl },
+          { rel: 'canonical', href: baseUrl + route.fullPath }
         ]
       })
     }

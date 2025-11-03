@@ -22,7 +22,14 @@ export default defineNuxtConfig({
     host: 'localhost'
     // Убираем SSL для простоты в dev режиме
   },
-  modules: ['@nuxt/ui'],
+  modules: ['@nuxt/ui', 'nuxt-og-image', '@nuxtjs/seo'],
+  ogImage: {
+    provider: 'satori',
+    defaults: {
+      width: 900,
+      height: 600
+    }
+  },
   ui: {
     global: true,
     icons: ['heroicons'],
