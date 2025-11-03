@@ -3,6 +3,7 @@ import satori from 'satori'
 import { Resvg } from '@resvg/resvg-js'
 import connectDB from '~/server/utils/mongodb'
 import MKB from '~/server/models/MKB'
+import '~/server/models/MKBCategory'
 import { readFileSync, existsSync } from 'fs'
 import { join } from 'path'
 
