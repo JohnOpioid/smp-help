@@ -895,20 +895,39 @@ async function shareImage() {
 
   // Фолбэк: сохраняем изображение в фоне и показываем уведомление, что подпись уже скопирована
   if (file) {
-    const url = URL.createObjectURL(file)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'codifier-og.png'
-    a.style.display = 'none'
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    URL.revokeObjectURL(url)
+    await downloadBlob(file, 'codifier-og.png')
   }
 
   // @ts-ignore
   const toast = useToast?.()
   toast?.add?.({ title: 'Готово к отправке', description: 'Изображение сохранено, подпись скопирована. Вставьте текст и прикрепите файл в мессенджере.', color: 'primary' })
+}
+
+// Безопасная загрузка файла, не триггеря глобальные обработчики навигации
+async function downloadBlob(file: Blob, filename: string) {
+  try {
+    const url = URL.createObjectURL(file)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.target = '_self'
+    a.rel = 'noopener noreferrer'
+    a.style.display = 'none'
+    // Блокируем всплытие клика, чтобы usePreloader не перехватывал
+    a.addEventListener('click', (e) => { e.stopPropagation() }, { capture: true, once: true })
+    document.body.appendChild(a)
+    // Программный клик без всплытия
+    a.dispatchEvent(new MouseEvent('click', { bubbles: false, cancelable: true, view: window }))
+    // Запасной вызов
+    if (typeof a.click === 'function') a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  } catch (e) {
+    // Фолбэк: открываем системный диалог сохранения через новый таб запрещен, поэтому показываем подсказку
+    // @ts-ignore
+    const toast = useToast?.()
+    toast?.add?.({ title: 'Не удалось скачать', description: 'Попробуйте ещё раз или используйте «Поделиться».', color: 'error' })
+  }
 }
 
 // Явная загрузка изображения по запросу пользователя
@@ -920,14 +939,7 @@ async function downloadImage() {
     toast?.add?.({ title: 'Не удалось получить изображение', color: 'error' })
     return
   }
-  const url = URL.createObjectURL(file)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'codifier-og.png'
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
-  URL.revokeObjectURL(url)
+  await downloadBlob(file, 'codifier-og.png')
 }
 
 // Авто-открытие по query ?open=<id> или ?mkb=<code>
