@@ -925,32 +925,10 @@ async function downloadBlob(file: Blob, filename: string) {
     a.download = filename
     a.target = '_self'
     a.rel = 'noopener noreferrer'
-    a.style.display = 'none'
-
-    // Глобальный «щит» от document-level capture listeners (например, usePreloader)
-    const shield = (e: Event) => {
-      e.stopImmediatePropagation()
-      e.stopPropagation()
-    }
-    document.addEventListener('click', shield, true)
-    document.addEventListener('pointerdown', shield, true)
-    document.addEventListener('mousedown', shield, true)
-
-    try {
-      document.body.appendChild(a)
-      // Клик по ссылке без фаз распространения
-      a.dispatchEvent(new MouseEvent('click', { bubbles: false, cancelable: true, view: window }))
-      if (typeof a.click === 'function') a.click()
-    } finally {
-      a.remove()
-      URL.revokeObjectURL(url)
-      // Снимаем «щит» в следующем тике
-      setTimeout(() => {
-        document.removeEventListener('click', shield, true)
-        document.removeEventListener('pointerdown', shield, true)
-        document.removeEventListener('mousedown', shield, true)
-      }, 0)
-    }
+    // Не вставляем в DOM и не диспатчим событие — прямой вызов a.click()
+    if (typeof a.click === 'function') a.click()
+    // Небольшая задержка перед очисткой URL, чтобы скачать успело начаться
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
   } catch (e) {
     // Фолбэк: открываем системный диалог сохранения через новый таб запрещен, поэтому показываем подсказку
     // @ts-ignore
