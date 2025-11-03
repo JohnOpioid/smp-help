@@ -4,7 +4,7 @@
       <div class="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <button type="button" aria-label="Поделиться календарем смен"
-            class="rounded-md font-medium disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors text-xs gap-1.5 text-default hover:bg-elevated active:bg-elevated focus:outline-none focus-visible:bg-elevated hover:disabled:bg-transparent dark:hover:disabled:bg-transparent hover:aria-disabled:bg-transparent dark:hover:aria-disabled:bg-transparent w-8 h-8 p-0 cursor-pointer inline-flex items-center justify-center"
+            class="rounded-md font-medium disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors text-xs gap-1.5 text-default hover:bg-slate-200 dark:bg-slate-700 active:bg-slate-200 dark:bg-slate-700 focus:outline-none focus-visible:bg-slate-200 dark:bg-slate-700 hover:disabled:bg-transparent dark:hover:disabled:bg-transparent hover:aria-disabled:bg-transparent dark:hover:aria-disabled:bg-transparent w-8 h-8 p-0 cursor-pointer inline-flex items-center justify-center"
             @click="generateCalendarPDF" title="Скачать календарь смен в PDF">
             <UIcon name="i-heroicons:share" class="w-4 h-4" />
           </button>

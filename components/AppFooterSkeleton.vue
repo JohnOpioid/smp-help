@@ -8,7 +8,7 @@
         </div>
         
         <!-- Правая часть - скелетон ссылок -->
-        <div class="flex items-center gap-4">
+        <div class="flex flex-wrap justify-center items-center gap-4">
           <USkeleton v-for="i in 4" :key="i" class="h-4 w-20 bg-slate-200 dark:bg-slate-700" />
         </div>
       </div>

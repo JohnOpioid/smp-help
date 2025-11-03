@@ -14,7 +14,7 @@
         <div class="relative overflow-auto">
           <table class="min-w-full overflow-clip">
             <thead class="relative">
-              <tr class="data-[selected=true]:bg-elevated/50">
+              <tr class="data-[selected=true]:bg-slate-200 dark:bg-slate-700/50">
                 <th scope="col" class="px-4 py-3.5 text-sm text-highlighted text-left font-semibold">Аватар</th>
                 <th scope="col" class="px-4 py-3.5 text-sm text-highlighted text-left font-semibold">ФИО</th>
                 <th scope="col" class="px-4 py-3.5 text-sm text-highlighted text-left font-semibold">E‑mail</th>

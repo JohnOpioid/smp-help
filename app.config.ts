@@ -21,7 +21,7 @@ export default defineAppConfig({
       ]
     },
     skeleton: {
-      base: 'animate-pulse rounded-md bg-elevated'
+      base: 'animate-pulse rounded-md bg-slate-200 dark:bg-slate-700'
     },
     input: {
       variants: {

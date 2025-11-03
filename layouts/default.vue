@@ -37,7 +37,7 @@
         </div>
       
       <!-- Скелетон контента при первичной загрузке (только для других страниц) -->
-      <div v-if="isInitialLoading && route.path !== '/'" class="max-w-5xl mx-auto px-4 py-8 space-y-4">
+      <div v-if="isInitialLoading && route.path !== '/'" class="max-w-5xl mx-auto px-2 md:px-4 py-8 space-y-4">
         <USkeleton class="h-6 w-1/3 bg-slate-200 dark:bg-slate-700" />
         <USkeleton class="h-4 w-2/3 bg-slate-200 dark:bg-slate-700" />
         <div class="space-y-2">
