@@ -628,7 +628,12 @@ const shareMenuOpen = ref(false)
 const shareRef = ref<HTMLElement | null>(null)
 const shareImageLoaded = ref(false)
 const shareFile = ref<File | null>(null)
-const canShareNow = computed(() => !!selectedItem.value && !!shareFile.value)
+const canShareNow = computed(() => {
+  if (!selectedItem.value) return false
+  const hasWebShare = typeof navigator !== 'undefined' && typeof (navigator as any).share === 'function'
+  // На мобильных ждём готовности файла, на десктопе позволяем запускать фолбэк сразу
+  return hasWebShare ? !!shareFile.value : true
+})
 
 function onGlobalClick(e: MouseEvent) {
   const root = shareRef.value
