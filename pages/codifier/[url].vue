@@ -233,7 +233,7 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 
-definePageMeta({ middleware: 'auth', headerTitle: 'Кодификатор' })
+definePageMeta({ headerTitle: 'Кодификатор' })
 
 const route = useRoute()
 const url = route.params.url as string
