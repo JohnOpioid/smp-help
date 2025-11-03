@@ -165,7 +165,7 @@
               title="Копировать"
               :disabled="!selectedItem"
               @click="copyDescription"
-              class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer w-12 h-12 p-0 flex items-center justify-center"
+              class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer aspect-square flex items-center justify-center min-w-[2.5rem]"
             >
               <UIcon name="i-heroicons-clipboard" class="w-4 h-4" />
             </button>
