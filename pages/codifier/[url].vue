@@ -291,6 +291,14 @@ if (itemId && process.server) {
             content: ogImageUrl
           },
           {
+            property: 'og:image:secure_url',
+            content: ogImageUrl
+          },
+          {
+            property: 'og:image:type',
+            content: 'image/png'
+          },
+          {
             property: 'og:image:width',
             content: '1200'
           },

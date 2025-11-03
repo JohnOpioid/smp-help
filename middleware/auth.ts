@@ -23,6 +23,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
       return // Пропускаем ботов без авторизации
     }
   }
+
+  // Публичный доступ для предпросмотра шеринга кодификатора по ссылке с id
+  // Нужен, чтобы соцсети и неавторизованные пользователи могли получить OG-мета и og:image
+  if (to.path.startsWith('/codifier') && typeof to.query.id === 'string' && to.query.id.length > 0) {
+    return
+  }
   
   const { user, isLoggedIn } = useAuth()
   
