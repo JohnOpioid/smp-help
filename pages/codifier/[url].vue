@@ -256,6 +256,26 @@ const getBaseUrl = () => {
   return process.env.NODE_ENV === 'production' ? 'https://smp-help.ru' : 'http://localhost:3000'
 }
 
+// Ставим базовые OG-теги сразу (даже если БД недоступна)
+if (itemId && process.server) {
+  const baseUrl = getBaseUrl()
+  const minimalOg = `${baseUrl}/api/codifier/og-image/${itemId}?v=${itemId}`
+  useHead({
+    meta: [
+      { property: 'og:type', content: 'website' },
+      { property: 'og:url', content: baseUrl + route.fullPath },
+      { property: 'og:image', content: minimalOg },
+      { property: 'og:image:secure_url', content: minimalOg },
+      { property: 'og:image:type', content: 'image/png' },
+      { property: 'og:image:width', content: '1200' },
+      { property: 'og:image:height', content: '630' },
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:image', content: minimalOg }
+    ],
+    link: [ { rel: 'image_src', href: minimalOg } ]
+  })
+}
+
 if (itemId && process.server) {
   try {
     const { connectDB } = await import('~/server/utils/mongodb')
@@ -339,6 +359,9 @@ if (itemId && process.server) {
             name: 'twitter:image',
             content: ogImageUrl
           }
+        ],
+        link: [
+          { rel: 'image_src', href: ogImageUrl }
         ]
       })
     }
