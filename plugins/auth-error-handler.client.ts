@@ -1,6 +1,10 @@
 export default defineNuxtPlugin(() => {
   // Глобальный обработчик ошибок авторизации
   if (process.client) {
+    const isPublicPath = (path: string) => {
+      return path === '/' || path.startsWith('/algorithms') || path.startsWith('/codifier')
+    }
+
     // Обрабатываем ошибки 401 в ответах API
     const originalFetch = window.fetch
     window.fetch = async (...args) => {
@@ -15,8 +19,8 @@ export default defineNuxtPlugin(() => {
             const { clearAuth } = useAuth()
             clearAuth()
             
-            // Перенаправляем на страницу входа только если мы не на ней уже
-            if (!window.location.pathname.includes('/auth/')) {
+            // На публичных страницах не перенаправляем
+            if (!isPublicPath(window.location.pathname) && !window.location.pathname.includes('/auth/')) {
               await navigateTo('/auth/login')
             }
           }
@@ -43,8 +47,8 @@ export default defineNuxtPlugin(() => {
               const { clearAuth } = useAuth()
               clearAuth()
               
-              // Перенаправляем на страницу входа только если мы не на ней уже
-              if (!window.location.pathname.includes('/auth/')) {
+              // На публичных страницах не перенаправляем
+              if (!isPublicPath(window.location.pathname) && !window.location.pathname.includes('/auth/')) {
                 await navigateTo('/auth/login')
               }
             }

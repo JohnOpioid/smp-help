@@ -268,7 +268,8 @@ if (itemId && process.server) {
     // Устанавливаем мета-теги на сервере
     if (serverItem) {
       const baseUrl = getBaseUrl()
-      const ogImageUrl = `${baseUrl}/api/codifier/og-image/${itemId}`
+      // Добавляем стабильный параметр версии, чтобы платформы не использовали устаревший кеш
+      const ogImageUrl = `${baseUrl}/api/codifier/og-image/${itemId}?v=${itemId}`
       
       // Используем useHead напрямую для гарантии установки мета-тегов
       useHead({
@@ -299,12 +300,20 @@ if (itemId && process.server) {
             content: 'image/png'
           },
           {
+            property: 'og:image:alt',
+            content: serverItem.name || 'Кодификатор'
+          },
+          {
             property: 'og:image:width',
             content: '1200'
           },
           {
             property: 'og:image:height',
             content: '630'
+          },
+          {
+            property: 'og:site_name',
+            content: 'Справочник СМП'
           },
           {
             property: 'og:type',
@@ -560,7 +569,8 @@ const ogImageUrl = computed(() => {
   const itemId = route.query.id as string | undefined
   if (!itemId) return undefined
   const baseUrl = getBaseUrl()
-  return `${baseUrl}/api/codifier/og-image/${itemId}`
+  // Клиентская версия с версионированием, чтобы платформа не брала старый кеш
+  return `${baseUrl}/api/codifier/og-image/${itemId}?v=${itemId}`
 })
 
 // Обновляем мета-теги на клиенте при изменении selectedItem или route.query.id
@@ -577,6 +587,7 @@ if (process.client) {
       ogTitle: `${item.name} — Кодификатор`,
       ogDescription: item.note || `МКБ-10: ${item.mkbCode}${item.stationCode ? ` | Код станции: ${item.stationCode}` : ''}`,
       ogImage: imageUrl,
+      ogImageAlt: item.name || 'Кодификатор',
       ogImageWidth: '1200',
       ogImageHeight: '630',
       ogType: 'website',
