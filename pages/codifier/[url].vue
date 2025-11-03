@@ -851,53 +851,18 @@ async function getOgImageFile(): Promise<File | null> {
 }
 
 // Поделиться изображением через Web Share API (если поддерживается)
-async function shareImage() {
-  if (!selectedItem.value) return
-  // Закроем поповер, чтобы сохранить «жест пользователя» и не мешать системному окну
-  if (shareMenuOpen.value) shareMenuOpen.value = false
+const { shareToTelegram, shareToWhatsApp, shareNative } = useShare()
+const { isSupported: wshareSupported, shareFiles: wshareFiles } = useWebShare()
 
-  const file = shareFile.value || await getOgImageFile()
-  const name = selectedItem.value.name || 'Кодификатор'
-  const mkb = selectedItem.value.mkbCode ? `МКБ-10: ${selectedItem.value.mkbCode}` : ''
-  const station = selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''
-  const text = `${name}\n${mkb}${station}\n\n${window.location.href}`
-
-  // Пытаемся открыть нативное окно шаринга с файлом и подписью (без отдельного url — включаем ссылку в text)
-  if (file && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-    try {
-      await navigator.share({ title: `${name} — Кодификатор`, text, files: [file] as any })
-      return
-    } catch (err) {
-      // Если пользователь отменил диалог — просто выходим без фолбэка
-      if ((err as any)?.name === 'AbortError' || (err as any)?.name === 'NotAllowedError') {
-        return
-      }
-      // Для прочих ошибок перейдём к фолбэку
-    }
-  }
-
-  // Фолбэк: копируем подпись и сохраняем файл «в фоне»
-  try { await navigator.clipboard?.writeText?.(text) } catch {}
-  if (file) {
-    await downloadBlob(file, 'codifier-og.png')
-  }
-  // @ts-ignore
-  const toast = useToast?.()
-  toast?.add?.({ title: 'Готово к отправке', description: 'Откройте мессенджер: подпись скопирована, файл сохранён.', color: 'primary' })
-}
-
-// Линки шаринга, чтобы мессенджеры сами генерировали предпросмотр (OG)
 function shareViaWhatsApp() {
   if (!selectedItem.value) return
   const name = selectedItem.value.name || 'Кодификатор'
   const mkb = selectedItem.value.mkbCode ? `МКБ-10: ${selectedItem.value.mkbCode}` : ''
   const station = selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''
-  // Формируем абсолютный URL с id, чтобы OG теги гарантированно подхватились ботами
   const base = getBaseUrl()
   const shareUrl = `${base}${route.path}?id=${selectedItem.value._id}`
-  const text = `${name}\n${mkb}${station}\n\n${shareUrl}`
-  const url = `https://wa.me/?text=${encodeURIComponent(text)}`
-  window.open(url, '_blank', 'noopener,noreferrer')
+  const description = `${mkb}${station}`.trim()
+  shareToWhatsApp({ url: shareUrl, title: name, description })
 }
 
 function shareViaTelegram() {
@@ -907,10 +872,8 @@ function shareViaTelegram() {
   const station = selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''
   const base = getBaseUrl()
   const shareUrl = `${base}${route.path}?id=${selectedItem.value._id}`
-  // В text НЕ передаём ссылку, чтобы в сообщении не было сырой ссылки сверху — превью придёт из url
-  const text = `${name}\n${mkb}${station}`
-  const url = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(text)}`
-  window.open(url, '_blank', 'noopener,noreferrer')
+  const description = `${mkb}${station}`.trim()
+  shareToTelegram({ url: shareUrl, title: name, description })
 }
 
 // Безопасная загрузка файла, не триггеря глобальные обработчики навигации
