@@ -295,6 +295,7 @@ if (itemId && process.server) {
       useHead({
         title: `${serverItem.name} — Кодификатор`,
         meta: [
+          { property: 'og:locale', content: 'ru_RU' },
           {
             name: 'description',
             content: serverItem.note || `МКБ-10: ${serverItem.mkbCode}${serverItem.stationCode ? ` | Код станции: ${serverItem.stationCode}` : ''}`
@@ -361,6 +362,7 @@ if (itemId && process.server) {
           }
         ],
         link: [
+          { rel: 'canonical', href: baseUrl + route.fullPath },
           { rel: 'image_src', href: ogImageUrl }
         ]
       })
