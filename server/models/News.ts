@@ -5,6 +5,7 @@ export interface INews extends Document {
   description?: string
   date?: Date
   icon?: string
+  version?: string
   // link removed
   published: boolean
   createdAt: Date
@@ -16,6 +17,7 @@ const NewsSchema = new Schema<INews>({
   description: { type: String, trim: true },
   date: { type: Date },
   icon: { type: String, trim: true, default: 'i-lucide-newspaper' },
+  version: { type: String, trim: true },
   published: { type: Boolean, default: true }
 }, { timestamps: true })
 

@@ -39,13 +39,38 @@
                 <UInput v-model="form.title" placeholder="Заголовок" size="lg" class="w-full" />
               </UFormField>
               <UFormField label="Описание">
-                <UTextarea v-model="form.description" :rows="6" placeholder="Краткий текст" size="lg" class="w-full" />
+                <UTextarea 
+                  v-model="form.description" 
+                  :rows="6" 
+                  placeholder="Поддерживается Markdown: **жирный**, *курсив*, `код`, списки и т.д." 
+                  size="lg" 
+                  class="w-full" 
+                />
+                <template #hint>
+                  <span class="text-xs text-slate-500 dark:text-slate-400">Поддерживается Markdown разметка</span>
+                </template>
               </UFormField>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <UFormField label="Дата">
                   <UInput v-model="form.date" type="date" size="lg" class="w-full" />
                 </UFormField>
-                <UFormField label="Иконка (UIcon)">
+                <UFormField label="Версия">
+                  <div class="flex gap-2">
+                    <UInput v-model="form.version" placeholder="например, 1.2.3" size="lg" class="w-full" />
+                    <UButton 
+                      size="lg" 
+                      variant="soft" 
+                      color="neutral" 
+                      class="cursor-pointer shrink-0" 
+                      @click="loadCurrentVersion"
+                      title="Загрузить текущую версию"
+                    >
+                      <UIcon name="i-lucide-refresh-cw" class="w-4 h-4" />
+                    </UButton>
+                  </div>
+                </UFormField>
+              </div>
+              <UFormField label="Иконка (UIcon)">
                   <UInputMenu
                     :key="'icon-'+(form._id||'new')+'-'+(form.icon||'')"
                     v-model="iconDisplay"
@@ -55,8 +80,8 @@
                     searchable
                     clearable
                     placeholder="например, i-lucide-newspaper"
-                    :value-attribute="'value'"
-                    :option-attribute="'value'"
+                    value-attribute="value"
+                    option-attribute="value"
                     :ui="{ item: 'cursor-pointer' }"
                   >
                     <template #item="{ item }">
@@ -70,7 +95,6 @@
                     </template>
                   </UInputMenu>
                 </UFormField>
-              </div>
               <UCheckbox v-model="form.published" label="Опубликовано" />
             </UForm>
           </template>
@@ -99,13 +123,14 @@ const versions = computed(() => (items.value || []).map((n: any) => ({
   descriptionPlain: stripMarkdownToText(n.description || ''),
   date: (n.date || n.createdAt),
   icon: n.icon,
+  version: n.version,
   published: n.published,
-  badge: undefined
+  badge: n.version ? `v${n.version}` : undefined
 })))
 
 const formOpen = ref(false)
 const isEdit = ref(false)
-const form = reactive<any>({ _id: undefined, title: '', description: '', date: '', icon: '', published: true })
+const form = reactive<any>({ _id: undefined, title: '', description: '', date: '', icon: '', version: '', published: true })
 
 const iconPresetItems = [
   { label: 'Новости', value: 'i-lucide-newspaper', icon: 'i-lucide-newspaper' },
@@ -123,29 +148,51 @@ const iconMenuItems = computed<any[]>(() => {
   return base
 })
 
-// Отображаем в инпуте label для предустановленных иконок, иначе сам код
-const iconDisplay = computed<string>({
+// Computed для работы с UInputMenu - всегда возвращает строковое value
+const iconDisplay = computed({
   get() {
+    // Извлекаем строковое значение из form.icon
     const curr = form.icon as any
-    const value = curr && typeof curr === 'object' && 'value' in curr ? String(curr.value) : String(curr || '')
-    const preset = iconPresetItems.find(i => i.value === value)
-    return preset ? preset.label : value
+    if (typeof curr === 'string') {
+      return curr
+    }
+    if (curr && typeof curr === 'object' && 'value' in curr) {
+      return String(curr.value || '')
+    }
+    return String(curr || '')
   },
-  set(input: string) {
-    const byLabel = iconPresetItems.find(i => i.label === input)
-    const byValue = iconPresetItems.find(i => i.value === input)
-    form.icon = (byLabel?.value) || (byValue?.value) || String(input || '').trim()
+  set(input: any) {
+    // UInputMenu с value-attribute="value" возвращает строку value из items
+    // Но на всякий случай обрабатываем и объект
+    if (typeof input === 'string') {
+      form.icon = input.trim()
+    } else if (input && typeof input === 'object' && 'value' in input) {
+      form.icon = String(input.value || '').trim()
+    } else {
+      form.icon = ''
+    }
   }
 })
 
 
-function resetForm() {
+async function resetForm() {
   form._id = undefined
   form.title = ''
   form.description = ''
   form.date = ''
   form.icon = ''
+  form.version = ''
   form.published = true
+  
+  // Автоматически подтягиваем текущую версию приложения
+  try {
+    const res: any = await $fetch('/api/version', { cache: 'no-cache' as any })
+    if (res?.version) {
+      form.version = String(res.version).trim()
+    }
+  } catch (e) {
+    // Игнорируем ошибки, если версию не удалось получить
+  }
 }
 
 function formatDate(d: any) {
@@ -166,10 +213,23 @@ async function loadItems() {
   } finally { loading.value = false }
 }
 
-function openCreate() {
-  resetForm()
+async function openCreate() {
+  await resetForm()
   isEdit.value = false
   formOpen.value = true
+}
+
+async function loadCurrentVersion() {
+  try {
+    const res: any = await $fetch('/api/version', { cache: 'no-cache' as any })
+    if (res?.version) {
+      form.version = String(res.version).trim()
+    }
+  } catch (e) {
+    // @ts-ignore
+    const toast = useToast?.()
+    toast?.add?.({ title: 'Не удалось загрузить версию', color: 'error' })
+  }
 }
 
 function openEdit(n: any) {
@@ -178,6 +238,7 @@ function openEdit(n: any) {
   form.description = n.description || ''
   form.date = n.date ? new Date(n.date).toISOString().substring(0,10) : ''
   form.icon = typeof n.icon === 'string' ? n.icon.trim() : ''
+  form.version = typeof n.version === 'string' ? n.version.trim() : ''
   form.published = n.published ?? true
   isEdit.value = true
   formOpen.value = true
@@ -187,12 +248,28 @@ async function onSubmit() {
   try {
     // гарантируем строку с кодом иконки
     form.icon = typeof form.icon === 'object' && (form.icon as any)?.value ? (form.icon as any).value : String(form.icon || '').trim()
+    // Нормализуем версию
+    form.version = typeof form.version === 'string' ? form.version.trim() : ''
+    
+    let savedItem: any
     if (isEdit.value && form._id) {
-      await $fetch(`/api/news/${form._id}`, { method: 'PATCH', body: form })
+      const res: any = await $fetch(`/api/news/${form._id}`, { method: 'PATCH', body: form })
+      savedItem = res?.item
+      // Обновляем элемент в списке напрямую
+      const index = items.value.findIndex((n: any) => n._id === form._id)
+      if (index !== -1 && savedItem) {
+        items.value[index] = { ...items.value[index], ...savedItem }
+      }
     } else {
-      await $fetch('/api/news', { method: 'POST', body: form })
+      const res: any = await $fetch('/api/news', { method: 'POST', body: form })
+      savedItem = res?.item
+      // Добавляем новый элемент в начало списка
+      if (savedItem) {
+        items.value.unshift(savedItem)
+      }
     }
     formOpen.value = false
+    // Перезагружаем для гарантии актуальности данных
     await loadItems()
   } catch (e) {
     console.error(e)

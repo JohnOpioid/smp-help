@@ -4,8 +4,14 @@
 
     <div class="bg-white dark:bg-slate-800 rounded-lg p-4 md:p-6">
       <UTimeline orientation="vertical" size="lg" :items="timelineItems" class="w-full">
+        <template #date="{ item }">
+          <div class="flex flex-col gap-1">
+            <UBadge v-if="item.badge" variant="outline" size="sm" class="w-fit">{{ item.badge }}</UBadge>
+            <div class="text-dimmed text-xs/5">{{ item.date }}</div>
+          </div>
+        </template>
         <template #description="{ item }">
-          <div class="text-muted text-wrap text-sm" v-html="item.descriptionHtml" />
+          <div class="md-content text-wrap text-sm" v-html="item.descriptionHtml" />
         </template>
       </UTimeline>
     </div>
@@ -43,12 +49,14 @@ function toDateStr(d: any) {
 const timelineItems = computed<TimelineItem[]>(() => (items.value || []).map((n: any, idx: number, arr: any[]) => {
   const raw = (n.description || '').replace(/\r\n?/g, '\n')
   const html = sanitizeHtml(marked.parse(raw) as string)
+  const version = n.version && String(n.version).trim() ? String(n.version).trim() : null
   return {
     date: toDateStr(n.date || n.createdAt),
     title: n.title,
     description: '',
     icon: (n.icon && String(n.icon).trim() !== '') ? n.icon : 'i-lucide-newspaper',
     descriptionHtml: html,
+    badge: version ? `v${version}` : undefined,
     ui: idx === arr.length - 1 ? { wrapper: 'pb-0' } : undefined
   } as any
 }))
