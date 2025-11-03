@@ -24,20 +24,34 @@ export default defineEventHandler(async (event) => {
       return new Response('Элемент не найден', { status: 404 })
     }
 
-    // Загружаем логотип из файловой системы
+    // Загружаем логотип из файловой системы; если не найден, пробуем через HTTP
     let logoData: string | undefined
     try {
       const logoPath = join(process.cwd(), 'public', 'logo.svg')
       const logoBuffer = readFileSync(logoPath)
       logoData = `data:image/svg+xml;base64,${logoBuffer.toString('base64')}`
     } catch (e) {
-      console.warn('Не удалось загрузить логотип:', e)
+      console.warn('Не удалось загрузить логотип локально, пробуем HTTP:', e)
     }
 
     // Получаем базовый URL для использования в изображении
     const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
     const host = event.node.req.headers.host || 'localhost:3000'
     const baseUrl = `${protocol}://${host}`
+
+    if (!logoData) {
+      try {
+        const resp = await fetch(`${baseUrl}/logo.svg`).catch(() => null)
+        if (resp?.ok) {
+          const svgText = await resp.text()
+          const b64 = Buffer.from(svgText, 'utf-8').toString('base64')
+          logoData = `data:image/svg+xml;base64,${b64}`
+          console.log('✓ Логотип загружен по HTTP:', `${baseUrl}/logo.svg`)
+        }
+      } catch (e) {
+        console.warn('Не удалось загрузить логотип по HTTP:', e)
+      }
+    }
 
     // satori требует шрифты для рендеринга текста, но не поддерживает WOFF2
     // Используем прямой URL к TTF файлу или работаем без кастомных шрифтов
