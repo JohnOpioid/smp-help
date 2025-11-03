@@ -33,11 +33,25 @@ export default defineEventHandler(async (event) => {
     // Загружаем логотип из файловой системы; если не найден, пробуем через HTTP
     let logoData: string | undefined
     try {
-      const logoPath = join(process.cwd(), 'public', 'logo.svg')
-      const logoBuffer = readFileSync(logoPath)
-      logoData = `data:image/svg+xml;base64,${logoBuffer.toString('base64')}`
+      // Последовательность путей для прод/дев окружений
+      const candidates = [
+        '/var/www/html/helpsmp.ru/logo.svg',
+        '/var/www/html/helpsmp.ru/public/logo.svg',
+        join(process.cwd(), 'logo.svg'),
+        join(process.cwd(), 'public', 'logo.svg')
+      ]
+
+      for (const p of candidates) {
+        try {
+          if (!existsSync(p)) continue
+          const buf = readFileSync(p)
+          logoData = `data:image/svg+xml;base64,${buf.toString('base64')}`
+          console.log('✓ Логотип загружен из файла:', p)
+          break
+        } catch {}
+      }
     } catch (e) {
-      console.warn('Не удалось загрузить логотип локально, пробуем HTTP:', e)
+      console.warn('Ошибка при поиске логотипа локально:', e)
     }
 
     // Получаем базовый URL для использования в изображении
