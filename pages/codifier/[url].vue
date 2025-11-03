@@ -726,9 +726,14 @@ async function shareItem() {
     }
   }
   
+  const name = selectedItem.value.name || 'Кодификатор'
+  const mkb = selectedItem.value.mkbCode ? `МКБ-10: ${selectedItem.value.mkbCode}` : ''
+  const station = selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''
+  const text = `${name}\n${mkb}${station}\n\n${shareUrl}`
+
   const shareData = {
-    title: `${selectedItem.value.name} — Кодификатор`,
-    text: `МКБ-10: ${selectedItem.value.mkbCode}${selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''}`,
+    title: `${name} — Кодификатор`,
+    text,
     url: shareUrl
   }
   
