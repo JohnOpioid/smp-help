@@ -628,12 +628,8 @@ const shareMenuOpen = ref(false)
 const shareRef = ref<HTMLElement | null>(null)
 const shareImageLoaded = ref(false)
 const shareFile = ref<File | null>(null)
-const canShareNow = computed(() => {
-  if (!selectedItem.value) return false
-  const hasWebShare = typeof navigator !== 'undefined' && typeof (navigator as any).share === 'function'
-  // На мобильных ждём готовности файла, на десктопе позволяем запускать фолбэк сразу
-  return hasWebShare ? !!shareFile.value : true
-})
+// Кнопку «Поделиться» разрешаем при наличии элемента; файл подгрузим в обработчике при необходимости
+const canShareNow = computed(() => !!selectedItem.value)
 
 function onGlobalClick(e: MouseEvent) {
   const root = shareRef.value
@@ -872,7 +868,7 @@ async function shareItem() {
 
 // Получить File с OG-изображением (без сохранения на устройство)
 async function getOgImageFile(): Promise<File | null> {
-  const imageUrl = ogImageUrl.value
+  const imageUrl = shareOgUrl.value || ogImageUrl.value
   if (!imageUrl) return null
   try {
     const res = await fetch(imageUrl, { cache: 'no-store' })
