@@ -260,7 +260,7 @@ const getBaseUrl = () => {
 if (itemId && process.server) {
   const baseUrl = getBaseUrl()
   const minimalOg = `${baseUrl}/api/codifier/og-image/${itemId}?v=${itemId}`
-  useHead({
+  useServerHead({
     meta: [
       { property: 'og:type', content: 'website' },
       { property: 'og:url', content: baseUrl + route.fullPath },
@@ -292,7 +292,7 @@ if (itemId && process.server) {
       const ogImageUrl = `${baseUrl}/api/codifier/og-image/${itemId}?v=${itemId}`
       
       // Используем useHead напрямую для гарантии установки мета-тегов
-      useHead({
+      useServerHead({
         title: `${serverItem.name} — Кодификатор`,
         meta: [
           { property: 'og:locale', content: 'ru_RU' },
