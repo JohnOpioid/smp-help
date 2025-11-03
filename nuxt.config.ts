@@ -116,7 +116,11 @@ export default defineNuxtConfig({
       apiUrl: process.env.NODE_ENV === 'production' ? 'https://your-domain.com' : 'http://10.0.2.2:3000',
       telegramBotUsername: process.env.TELEGRAM_BOT_USERNAME || 'helpssmp_bot',
       // Отключаем Fontshare provider
-      UNFONT_PROVIDER_DISABLED: true
+      UNFONT_PROVIDER_DISABLED: true,
+      'seo-utils': {
+        canonicalQueryWhitelist: ['page','sort','filter','search','q','category','tag'],
+        canonicalLowercase: true
+      }
     }
   },
   css: ['~/assets/css/main.css'],

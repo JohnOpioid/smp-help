@@ -313,9 +313,10 @@ const getBaseUrl = () => {
 if (process.server) {
   const baseUrl = getBaseUrl()
   const itemIdForOg = itemId
+  const v = itemIdForOg || String(Date.now())
   const image = itemIdForOg
-    ? `${baseUrl}/__og-image__/codifier/${itemIdForOg}?v=${itemIdForOg}`
-    : `${baseUrl}/mascot.png`
+    ? `${baseUrl}/__og-image__/codifier/${itemIdForOg}?v=${v}`
+    : `${baseUrl}/__og-image__/codifier?v=${v}`
   useServerHead({
     meta: [
       { property: 'og:type', content: 'website' },
