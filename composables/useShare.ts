@@ -14,12 +14,15 @@ function openShareWindow(url: string) {
 
 export const useShare = () => {
   const shareToTelegram = (payload: SharePayload) => {
-    // Для Telegram: если description уже содержит полный текст (включая ссылку), используем его
-    // Иначе формируем из title + description + url
-    const fullText = payload.description || `${payload.title || ''}${payload.url ? `\n\n${payload.url}` : ''}`.trim()
+    // Избегаем дублирования ссылки: в Telegram используем ТОЛЬКО текст, содержащий ссылку
+    // Если description не задан, сформируем текст из title + url
+    const fullText = (payload.description && payload.description.trim().length > 0)
+      ? payload.description
+      : `${payload.title || ''}${payload.url ? `\n\n${payload.url}` : ''}`.trim()
+
     const text = encodeURIComponent(fullText)
-    const url = encodeURIComponent(payload.url || '')
-    const shareUrl = `https://t.me/share/url?url=${url}&text=${text}`
+    // Не передаем url параметр отдельно, чтобы Telegram не добавлял вторую ссылку
+    const shareUrl = `https://t.me/share/url?text=${text}`
     openShareWindow(shareUrl)
   }
 
