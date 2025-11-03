@@ -319,6 +319,7 @@ if (bot) {
       if (!chatId) return
       try {
         const apiUrl = process.env.NUXT_PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || (process.env.NODE_ENV === 'development' ? 'https://192.168.1.40:3000' : '')
+        const siteUrl = apiUrl && apiUrl.startsWith('https://') ? apiUrl : 'https://helpsmp.ru'
         if (!apiUrl) {
           await bot.telegram.sendMessage(chatId, '❌ Ошибка конфигурации сервера')
           return

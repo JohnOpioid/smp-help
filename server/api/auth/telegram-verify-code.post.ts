@@ -124,19 +124,19 @@ export default defineEventHandler(async (event) => {
       try {
         console.log('📝 Обновляем сообщение в боте:', { chatId: codeInfo.chatId, messageId: codeInfo.messageId })
         
-        await bot.editMessageText(
+        await bot.telegram.editMessageText(
+          codeInfo.chatId,
+          codeInfo.messageId,
+          undefined,
           `👋 Добро пожаловать в справочник СМП!\n\n✅ Вы уже авторизованы в системе.\n\nДоступные команды:\n/favorites - Показать избранное\n/help - Справка\n\nИли выберите действие:`,
           {
-            chat_id: codeInfo.chatId,
-            message_id: codeInfo.messageId,
-            parse_mode: 'HTML',
             reply_markup: {
               inline_keyboard: [
                 [{ text: '⭐ Избранное', callback_data: 'favorites_category_all' }],
                 [{ text: '📚 Помощь', callback_data: 'help' }]
               ]
             }
-          }
+          } as any
         )
         
         console.log('✅ Сообщение в боте успешно обновлено')
@@ -144,7 +144,35 @@ export default defineEventHandler(async (event) => {
         console.error('❌ Ошибка обновления сообщения в боте:', error)
       }
     } else {
-      console.error('❌ Не удалось обновить сообщение - недостаточно данных:', { hasBot: !!bot, hasChatId: !!codeInfo?.chatId, hasMessageId: !!codeInfo?.messageId })
+      // Если нет chatId/messageId, пробуем найти через telegramId
+      const telegramIdToUse = telegramId || getAuthCodeByCode(code)?.telegramId
+      if (bot && telegramIdToUse) {
+        const fallbackInfo = getAuthCodeWithChat(telegramIdToUse)
+        if (fallbackInfo?.chatId && fallbackInfo?.messageId) {
+          try {
+            await bot.telegram.editMessageText(
+              fallbackInfo.chatId,
+              fallbackInfo.messageId,
+              undefined,
+              `👋 Добро пожаловать в справочник СМП!\n\n✅ Вы уже авторизованы в системе.\n\nДоступные команды:\n/favorites - Показать избранное\n/help - Справка\n\nИли выберите действие:`,
+              {
+                reply_markup: {
+                  inline_keyboard: [
+                    [{ text: '⭐ Избранное', callback_data: 'favorites_category_all' }],
+                    [{ text: '📚 Помощь', callback_data: 'help' }]
+                  ]
+                }
+              } as any
+            )
+            console.log('✅ Сообщение в боте успешно обновлено (fallback)')
+          } catch (error) {
+            console.error('❌ Ошибка обновления сообщения в боте (fallback):', error)
+          }
+        }
+      }
+      if (!codeInfo?.chatId || !codeInfo?.messageId) {
+        console.error('❌ Не удалось обновить сообщение - недостаточно данных:', { hasBot: !!bot, hasChatId: !!codeInfo?.chatId, hasMessageId: !!codeInfo?.messageId, telegramId: telegramIdToUse })
+      }
     }
 
     return {
