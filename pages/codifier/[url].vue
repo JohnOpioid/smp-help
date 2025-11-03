@@ -156,11 +156,15 @@
               </button>
               <div v-if="shareMenuOpen" class="absolute right-0 bottom-full mb-2 z-50 w-72 sm:w-80 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg p-3">
                 <div class="rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                  <div v-if="!shareOgUrl" class="w-full aspect-[3/2] bg-slate-100 dark:bg-slate-700 animate-pulse" />
-                  <template v-else>
-                    <div v-show="!shareImageLoaded" class="w-full aspect-[3/2] bg-slate-100 dark:bg-slate-700 animate-pulse" />
-                    <img :src="shareOgUrl" alt="preview" class="w-full h-auto" v-show="shareImageLoaded" @load="shareImageLoaded = true" @error="shareImageLoaded = false" />
-                  </template>
+                  <div class="relative w-full aspect-[3/2]">
+                    <div v-if="!shareOgUrl || !shareImageLoaded" class="absolute inset-0 z-10 flex items-center justify-center bg-slate-50 dark:bg-slate-800 pointer-events-none">
+                      <div class="flex flex-col items-center gap-3">
+                        <div class="w-8 h-8 border-4 border-slate-200 dark:border-slate-700 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin"></div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Загрузка изображения...</p>
+                      </div>
+                    </div>
+                    <img :src="shareOgUrl" alt="preview" class="absolute inset-0 z-0 w-full h-full object-cover transition-opacity" :class="{ 'opacity-0': !shareImageLoaded, 'opacity-100': shareImageLoaded }" @load="shareImageLoaded = true" @error="shareImageLoaded = false" />
+                  </div>
                 </div>
                 <div class="mt-2 grid grid-cols-2 gap-2">
                   <button type="button" :disabled="!selectedItem" @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
@@ -260,11 +264,15 @@
                   </button>
               <div v-if="shareMenuOpen" class="absolute right-0 bottom-full mb-2 z-50 w-72 sm:w-80 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg p-3">
                     <div class="rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                      <div v-if="!shareOgUrl" class="w-full aspect-[3/2] bg-slate-100 dark:bg-slate-700 animate-pulse" />
-                      <template v-else>
-                        <div v-show="!shareImageLoaded" class="w-full aspect-[3/2] bg-slate-100 dark:bg-slate-700 animate-pulse" />
-                        <img :src="shareOgUrl" alt="preview" class="w-full h-auto" v-show="shareImageLoaded" @load="shareImageLoaded = true" @error="shareImageLoaded = false" />
-                      </template>
+                      <div class="relative w-full aspect-[3/2]">
+                        <div v-if="!shareOgUrl || !shareImageLoaded" class="absolute inset-0 z-10 flex items-center justify-center bg-slate-50 dark:bg-slate-800 pointer-events-none">
+                          <div class="flex flex-col items-center gap-3">
+                            <div class="w-8 h-8 border-4 border-slate-200 dark:border-slate-700 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin"></div>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Загрузка изображения...</p>
+                          </div>
+                        </div>
+                        <img v-if="shareOgUrl" :src="shareOgUrl" alt="preview" class="absolute inset-0 z-0 w-full h-full object-cover transition-opacity" :class="{ 'opacity-0': !shareImageLoaded, 'opacity-100': shareImageLoaded }" @load="shareImageLoaded = true" @error="shareImageLoaded = false" />
+                      </div>
                     </div>
                 
                     <div class="mt-3">
@@ -345,8 +353,8 @@ const baseUrlValue = getBaseUrl()
 const itemIdForOg = itemId
 const v = itemIdForOg || String(Date.now())
 const ogImageUrlBase = itemIdForOg
-  ? `${baseUrlValue}/api/codifier/og-image/${itemIdForOg}.png?v=${v}`
-  : `${baseUrlValue}/api/codifier/og-image/${v}.png`
+  ? `${baseUrlValue}/api/codifier/og-image/${itemIdForOg}?v=${v}`
+  : `${baseUrlValue}/api/codifier/og-image/${v}`
 
 // Устанавливаем базовые мета-теги через useSeoMeta (работает на сервере и клиенте)
 useSeoMeta({
@@ -378,7 +386,7 @@ if (itemId && process.server) {
     // Устанавливаем мета-теги на сервере через useSeoMeta
     if (serverItem) {
       const baseUrlValue = getBaseUrl()
-      const ogImageUrl = `${baseUrlValue}/api/codifier/og-image/${itemId}.png?v=${itemId}`
+      const ogImageUrl = `${baseUrlValue}/api/codifier/og-image/${itemId}?v=${itemId}`
       const description = serverItem.note || `МКБ-10: ${serverItem.mkbCode}${serverItem.stationCode ? ` | Код станции: ${serverItem.stationCode}` : ''}`
       const title = `${serverItem.name} — Кодификатор`
 
@@ -703,7 +711,7 @@ const ogImageUrl = computed(() => {
   if (!itemId) return undefined
   const baseUrl = getBaseUrl()
   // Клиентская версия с версионированием, чтобы платформа не брала старый кеш
-  return `${baseUrl}/api/codifier/og-image/${itemId}.png?v=${itemId}`
+  return `${baseUrl}/api/codifier/og-image/${itemId}?v=${itemId}`
 })
 
 // URL для превью в поповере: используем id из query либо из выбранного элемента
@@ -712,7 +720,7 @@ const shareOgUrl = computed(() => {
   const qid = route.query.id as string | undefined
   const sid = selectedItem.value?._id as string | undefined
   const id = qid || sid
-  return id ? `${baseUrl}/api/codifier/og-image/${id}.png?v=${id}&w=900&h=600` : undefined
+  return id ? `${baseUrl}/api/codifier/og-image/${id}?v=${id}&w=900&h=600` : undefined
 })
 
 // Обновляем мета-теги на клиенте при изменении selectedItem или route.query.id

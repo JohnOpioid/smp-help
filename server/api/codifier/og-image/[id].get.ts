@@ -80,6 +80,7 @@ export default defineEventHandler(async (event) => {
     // Используем прямой URL к TTF файлу или работаем без кастомных шрифтов
     let fontDataRegular: ArrayBuffer | null = null
     let fontDataBold: ArrayBuffer | null = null
+    let fontDataMono: ArrayBuffer | null = null
     
     try {
       // Список удалённых источников TTF (несколько зеркал)
@@ -90,6 +91,11 @@ export default defineEventHandler(async (event) => {
         ],
         notoBold: [
           'https://github.com/googlefonts/noto-fonts/blob/main/hinted/ttf/NotoSans/NotoSans-Bold.ttf?raw=1',
+        ],
+        mono: [
+          'https://fonts.gstatic.com/s/robotomono/v23/L0x7DF4xlVMF-BfR8bXMIjhGq3-OXAR1.ttf',
+          'https://raw.githubusercontent.com/google/fonts/main/apache/robotomono/RobotoMono-Regular.ttf',
+          'https://unpkg.com/@fontsource/roboto-mono@5.0.8/files/roboto-mono-latin-400-normal.ttf',
         ],
         robotoRegular: [
           'https://raw.githubusercontent.com/google/fonts/main/apache/roboto/Roboto-Regular.ttf',
@@ -120,6 +126,7 @@ export default defineEventHandler(async (event) => {
       // Сначала пробуем Noto Sans (кириллица)
       if (!fontDataRegular) fontDataRegular = await tryFetch(remoteFontSources.notoRegular)
       if (!fontDataBold) fontDataBold = await tryFetch(remoteFontSources.notoBold)
+      if (!fontDataMono) fontDataMono = await tryFetch(remoteFontSources.mono)
       // Затем Roboto как запасной вариант
       if (!fontDataRegular) fontDataRegular = await tryFetch(remoteFontSources.robotoRegular)
       if (!fontDataBold) fontDataBold = await tryFetch(remoteFontSources.robotoBold)
@@ -241,6 +248,7 @@ export default defineEventHandler(async (event) => {
     // satori может модифицировать буфер, поэтому нужны отдельные копии
     const regularArrayBuffer = fontDataRegular.slice(0)
     const boldArrayBuffer = (fontDataBold || fontDataRegular).slice(0)
+    const monoArrayBuffer = (fontDataMono || fontDataRegular).slice(0)
     
     const fonts = [
       // Предпочтительно Noto Sans (поддерживает кириллицу)
@@ -254,6 +262,13 @@ export default defineEventHandler(async (event) => {
         name: 'Noto Sans',
         data: boldArrayBuffer,
         weight: 600 as const,
+        style: 'normal' as const
+      },
+      // Моноширинный шрифт для кодов
+      {
+        name: 'Roboto Mono',
+        data: monoArrayBuffer,
+        weight: 400 as const,
         style: 'normal' as const
       },
       // Дополнительно Roboto как запасной вариант
@@ -381,7 +396,7 @@ export default defineEventHandler(async (event) => {
                                 props: {
                                   style: {
                                     fontSize: '28px',
-                                    fontFamily: 'monospace',
+                                    fontFamily: 'Roboto Mono, monospace',
                                     fontWeight: '600',
                                     color: '#0f172a',
                                   },
@@ -416,7 +431,7 @@ export default defineEventHandler(async (event) => {
                                 props: {
                                   style: {
                                     fontSize: '28px',
-                                    fontFamily: 'monospace',
+                                    fontFamily: 'Roboto Mono, monospace',
                                     fontWeight: '600',
                                     color: '#0f172a',
                                   },
