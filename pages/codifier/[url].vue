@@ -341,28 +341,30 @@ const getBaseUrl = () => {
 }
 
 // Ставим базовые OG-теги сразу (даже если БД недоступна)
-if (process.server) {
-  const baseUrl = getBaseUrl()
-  const itemIdForOg = itemId
-  const v = itemIdForOg || String(Date.now())
-  // Используем API-эндпоинт генерации PNG, который отдает корректный Content-Type
-  const image = itemIdForOg
-    ? `${baseUrl}/api/codifier/og-image/${itemIdForOg}.png?v=${v}`
-    : `${baseUrl}/api/codifier/og-image/${v}.png`
-  useServerHead({
-    meta: [
-      { property: 'og:type', content: 'website' },
-      { property: 'og:url', content: baseUrl + route.fullPath },
-      { property: 'og:site_name', content: 'Справочник СМП' },
-      { property: 'og:image', content: image },
-      { property: 'og:image:secure_url', content: image },
-      { property: 'og:image:type', content: 'image/png' },
-      { name: 'twitter:card', content: 'summary_large_image' },
-      { name: 'twitter:image', content: image }
-    ],
-    link: [ { rel: 'image_src', href: image } ]
-  })
-}
+const baseUrlValue = getBaseUrl()
+const itemIdForOg = itemId
+const v = itemIdForOg || String(Date.now())
+const ogImageUrlBase = itemIdForOg
+  ? `${baseUrlValue}/api/codifier/og-image/${itemIdForOg}.png?v=${v}`
+  : `${baseUrlValue}/api/codifier/og-image/${v}.png`
+
+// Устанавливаем базовые мета-теги через useSeoMeta (работает на сервере и клиенте)
+useSeoMeta({
+  ogType: 'website',
+  ogUrl: `${baseUrlValue}${route.fullPath}`,
+  ogSiteName: 'Справочник СМП',
+  ogImage: ogImageUrlBase,
+  ogImageSecureUrl: ogImageUrlBase,
+  ogImageType: 'image/png',
+  twitterCard: 'summary_large_image',
+  twitterImage: ogImageUrlBase,
+})
+
+useHead({
+  link: [
+    { rel: 'image_src', href: ogImageUrlBase }
+  ]
+})
 
 if (itemId && process.server) {
   try {
@@ -373,35 +375,38 @@ if (itemId && process.server) {
       .populate('category', 'name url')
       .lean()
     
-    // Устанавливаем мета-теги на сервере
+    // Устанавливаем мета-теги на сервере через useSeoMeta
     if (serverItem) {
-      const baseUrl = getBaseUrl()
-      const ogImageUrl = `${baseUrl}/api/codifier/og-image/${itemId}.png?v=${itemId}`
+      const baseUrlValue = getBaseUrl()
+      const ogImageUrl = `${baseUrlValue}/api/codifier/og-image/${itemId}.png?v=${itemId}`
+      const description = serverItem.note || `МКБ-10: ${serverItem.mkbCode}${serverItem.stationCode ? ` | Код станции: ${serverItem.stationCode}` : ''}`
+      const title = `${serverItem.name} — Кодификатор`
 
-      useServerHead({
-        title: `${serverItem.name} — Кодификатор`,
-        meta: [
-          { property: 'og:locale', content: 'ru_RU' },
-          { name: 'description', content: serverItem.note || `МКБ-10: ${serverItem.mkbCode}${serverItem.stationCode ? ` | Код станции: ${serverItem.stationCode}` : ''}` },
-          { property: 'og:title', content: `${serverItem.name} — Кодификатор` },
-          { property: 'og:description', content: serverItem.note || `МКБ-10: ${serverItem.mkbCode}${serverItem.stationCode ? ` | Код станции: ${serverItem.stationCode}` : ''}` },
-          { property: 'og:image', content: ogImageUrl },
-          { property: 'og:image:secure_url', content: ogImageUrl },
-          { property: 'og:image:type', content: 'image/png' },
-          { property: 'og:image:alt', content: serverItem.name || 'Кодификатор' },
-          { property: 'og:image:width', content: '900' },
-          { property: 'og:image:height', content: '600' },
-          { property: 'og:site_name', content: 'Справочник СМП' },
-          { property: 'og:type', content: 'website' },
-          { property: 'og:url', content: baseUrl + route.fullPath },
-          { name: 'twitter:card', content: 'summary_large_image' },
-          { name: 'twitter:title', content: `${serverItem.name} — Кодификатор` },
-          { name: 'twitter:description', content: serverItem.note || `МКБ-10: ${serverItem.mkbCode}${serverItem.stationCode ? ` | Код станции: ${serverItem.stationCode}` : ''}` },
-          { name: 'twitter:image', content: ogImageUrl }
-        ],
+      useSeoMeta({
+        title,
+        description,
+        ogLocale: 'ru_RU',
+        ogTitle: title,
+        ogDescription: description,
+        ogImage: ogImageUrl,
+        ogImageSecureUrl: ogImageUrl,
+        ogImageType: 'image/png',
+        ogImageAlt: serverItem.name || 'Кодификатор',
+        ogImageWidth: '900',
+        ogImageHeight: '600',
+        ogSiteName: 'Справочник СМП',
+        ogType: 'website',
+        ogUrl: `${baseUrlValue}${route.fullPath}`,
+        twitterCard: 'summary_large_image',
+        twitterTitle: title,
+        twitterDescription: description,
+        twitterImage: ogImageUrl,
+      })
+
+      useHead({
         link: [
           { rel: 'image_src', href: ogImageUrl },
-          { rel: 'canonical', href: baseUrl + route.fullPath }
+          { rel: 'canonical', href: `${baseUrlValue}${route.fullPath}` }
         ]
       })
     }
