@@ -356,9 +356,10 @@ if (process.server) {
   const baseUrl = getBaseUrl()
   const itemIdForOg = itemId
   const v = itemIdForOg || String(Date.now())
+  // Используем API-эндпоинт генерации PNG, который отдает корректный Content-Type
   const image = itemIdForOg
-    ? `${baseUrl}/__og-image__/codifier/${itemIdForOg}?v=${v}`
-    : `${baseUrl}/__og-image__/codifier?v=${v}`
+    ? `${baseUrl}/api/codifier/og-image/${itemIdForOg}?v=${v}`
+    : `${baseUrl}/api/codifier/og-image/${v}`
   useServerHead({
     meta: [
       { property: 'og:type', content: 'website' },
@@ -386,7 +387,7 @@ if (itemId && process.server) {
     // Устанавливаем мета-теги на сервере
     if (serverItem) {
       const baseUrl = getBaseUrl()
-      const ogImageUrl = `${baseUrl}/__og-image__/codifier/${itemId}?v=${itemId}`
+      const ogImageUrl = `${baseUrl}/api/codifier/og-image/${itemId}?v=${itemId}`
 
       useServerHead({
         title: `${serverItem.name} — Кодификатор`,
