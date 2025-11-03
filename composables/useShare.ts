@@ -14,14 +14,20 @@ function openShareWindow(url: string) {
 
 export const useShare = () => {
   const shareToTelegram = (payload: SharePayload) => {
-    const text = encodeURIComponent(`${payload.title || ''}\n\n${payload.description || ''}`.trim())
+    // Для Telegram: если description уже содержит полный текст (включая ссылку), используем его
+    // Иначе формируем из title + description + url
+    const fullText = payload.description || `${payload.title || ''}${payload.url ? `\n\n${payload.url}` : ''}`.trim()
+    const text = encodeURIComponent(fullText)
     const url = encodeURIComponent(payload.url || '')
     const shareUrl = `https://t.me/share/url?url=${url}&text=${text}`
     openShareWindow(shareUrl)
   }
 
   const shareToWhatsApp = (payload: SharePayload) => {
-    const text = encodeURIComponent(`${payload.title || ''}\n\n${payload.description || ''}\n\n${payload.url || ''}`.trim())
+    // Для WhatsApp: если description уже содержит полный текст (включая ссылку), используем его
+    // Иначе формируем из title + description + url
+    const fullText = payload.description || `${payload.title || ''}${payload.url ? `\n\n${payload.url}` : ''}`.trim()
+    const text = encodeURIComponent(fullText)
     const shareUrl = `https://wa.me/?text=${text}`
     openShareWindow(shareUrl)
   }

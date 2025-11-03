@@ -932,6 +932,8 @@ async function shareImage() {
 
   // 1) Нативный шаринг с файлом
   if (file && wshareSupported) {
+    // Подстраховка: копируем текст заранее, т.к. некоторые приложения игнорируют text с файлами
+    try { await navigator.clipboard?.writeText?.(text) } catch {}
     const res = await wshareFiles([file], { title: `${name} — Кодификатор`, text })
     if (res.success) return
   }
@@ -941,7 +943,7 @@ async function shareImage() {
     // @ts-ignore
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       // @ts-ignore
-      await navigator.share({ title: `${name} — Кодификатор`, text, url: window.location.href })
+      await navigator.share({ title: `${name} — Кодификатор`, text })
       return
     }
   } catch (_) {}
@@ -964,7 +966,9 @@ function shareViaWhatsApp() {
   const base = getBaseUrl()
   const shareUrl = `${base}${route.path}?id=${selectedItem.value._id}`
   const description = `${mkb}${station}`.trim()
-  shareToWhatsApp({ url: shareUrl, title: name, description })
+  // Передаем полный текст: название + коды + ссылка
+  const fullText = `${name}${description ? `\n${description}` : ''}\n\n${shareUrl}`
+  shareToWhatsApp({ url: shareUrl, title: name, description: fullText })
 }
 
 function shareViaTelegram() {
@@ -975,7 +979,9 @@ function shareViaTelegram() {
   const base = getBaseUrl()
   const shareUrl = `${base}${route.path}?id=${selectedItem.value._id}`
   const description = `${mkb}${station}`.trim()
-  shareToTelegram({ url: shareUrl, title: name, description })
+  // Передаем полный текст: название + коды + ссылка
+  const fullText = `${name}${description ? `\n${description}` : ''}\n\n${shareUrl}`
+  shareToTelegram({ url: shareUrl, title: name, description: fullText })
 }
 
 // Безопасная загрузка файла, не триггеря глобальные обработчики навигации
