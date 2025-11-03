@@ -133,7 +133,7 @@
           </div>
         </template>
         <template #footer>
-          <div class="flex gap-3 w-full">
+            <div class="flex gap-3 w-full">
             <button 
               type="button" 
               :title="isBookmarked ? 'В избранном' : 'В закладки'" 
@@ -144,17 +144,35 @@
               <UIcon :name="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'" class="w-4 h-4" />
               {{ isBookmarked ? 'В избранном' : 'В закладки' }}
             </button>
-            <button 
-              type="button" 
-              title="Поделиться"
-              :disabled="!selectedItem"
-              @click="shareItem"
-              class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer flex-1 justify-center items-center"
-            >
-              <UIcon name="i-heroicons-share" class="w-4 h-4" />
-              Поделиться
-            </button>
-          </div>
+            <div ref="shareRef" class="relative flex-1">
+              <button 
+                type="button" 
+                title="Поделиться"
+                @click="toggleShareMenu()"
+                class="w-full rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer justify-center items-center"
+              >
+                <UIcon name="i-heroicons-share" class="w-4 h-4" />
+                Поделиться
+              </button>
+              <div v-if="shareMenuOpen" class="absolute right-0 bottom-full mb-2 z-50 w-72 sm:w-80 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg p-3">
+                <div class="rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                  <div v-if="!shareOgUrl" class="w-full aspect-[1200/630] bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                  <template v-else>
+                    <div v-show="!shareImageLoaded" class="w-full aspect-[1200/630] bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                    <img :src="shareOgUrl" alt="preview" class="w-full h-auto" v-show="shareImageLoaded" @load="shareImageLoaded = true" @error="shareImageLoaded = false" />
+                  </template>
+                </div>
+                <div class="mt-3 grid grid-cols-2 gap-2">
+                  <button type="button" :disabled="!selectedItem" @click="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
+                    <UIcon name="i-heroicons-share" class="w-4 h-4" />Поделиться
+                  </button>
+                  <button type="button" :disabled="!selectedItem" @click="downloadImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
+                    <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />Сохранить
+                  </button>
+                </div>
+              </div>
+            </div>
+            </div>
         </template>
       </UModal>
     </template>
@@ -209,16 +227,34 @@
                   <UIcon :name="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'" class="w-4 h-4" />
                   {{ isBookmarked ? 'В избранном' : 'В закладки' }}
                 </button>
-                <button 
-                  type="button" 
-                  title="Поделиться"
-                  :disabled="!selectedItem"
-                  @click="shareItem"
-                  class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer flex-1 justify-center items-center"
-                >
-                  <UIcon name="i-heroicons-share" class="w-4 h-4" />
-                  Поделиться
-                </button>
+                <div ref="shareRef" class="relative flex-1">
+                  <button 
+                    type="button" 
+                    title="Поделиться"
+                    @click="toggleShareMenu()"
+                    class="w-full rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer justify-center items-center"
+                  >
+                    <UIcon name="i-heroicons-share" class="w-4 h-4" />
+                    Поделиться
+                  </button>
+                  <div v-if="shareMenuOpen" class="absolute right-0 bottom-full mb-2 z-50 w-72 sm:w-80 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg p-3">
+                    <div class="rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                      <div v-if="!shareOgUrl" class="w-full aspect-[1200/630] bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                      <template v-else>
+                        <div v-show="!shareImageLoaded" class="w-full aspect-[1200/630] bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                        <img :src="shareOgUrl" alt="preview" class="w-full h-auto" v-show="shareImageLoaded" @load="shareImageLoaded = true" @error="shareImageLoaded = false" />
+                      </template>
+                    </div>
+                    <div class="mt-3 grid grid-cols-2 gap-2">
+                      <button type="button" :disabled="!selectedItem" @click="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
+                        <UIcon name="i-heroicons-share" class="w-4 h-4" />Поделиться
+                      </button>
+                      <button type="button" :disabled="!selectedItem" @click="downloadImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
+                        <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />Сохранить
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -588,6 +624,37 @@ const modalOpen = ref(false)
 const selectedItem = ref<any>(null)
 const isBookmarked = ref(false)
 const userBookmarks = ref<any[]>([])
+const shareMenuOpen = ref(false)
+const shareRef = ref<HTMLElement | null>(null)
+const shareImageLoaded = ref(false)
+
+function onGlobalClick(e: MouseEvent) {
+  const root = shareRef.value
+  if (!root) return
+  const target = e.target as Node
+  if (shareMenuOpen.value && target && !root.contains(target)) {
+    shareMenuOpen.value = false
+  }
+}
+
+onMounted(() => {
+  if (process.client) {
+    document.addEventListener('click', onGlobalClick)
+  }
+})
+
+onUnmounted(() => {
+  if (process.client) {
+    document.removeEventListener('click', onGlobalClick)
+  }
+})
+
+function toggleShareMenu() {
+  shareMenuOpen.value = !shareMenuOpen.value
+  if (shareMenuOpen.value) {
+    shareImageLoaded.value = false
+  }
+}
 
 // Мета-теги для OG изображения
 const ogImageUrl = computed(() => {
@@ -596,6 +663,15 @@ const ogImageUrl = computed(() => {
   const baseUrl = getBaseUrl()
   // Клиентская версия с версионированием, чтобы платформа не брала старый кеш
   return `${baseUrl}/api/codifier/og-image/${itemId}?v=${itemId}`
+})
+
+// URL для превью в поповере: используем id из query либо из выбранного элемента
+const shareOgUrl = computed(() => {
+  const baseUrl = getBaseUrl()
+  const qid = route.query.id as string | undefined
+  const sid = selectedItem.value?._id as string | undefined
+  const id = qid || sid
+  return id ? `${baseUrl}/api/codifier/og-image/${id}?v=${id}` : undefined
 })
 
 // Обновляем мета-теги на клиенте при изменении selectedItem или route.query.id
@@ -778,6 +854,80 @@ async function shareItem() {
     const toast = useToast?.()
     toast?.add?.({ title: 'Не удалось поделиться', color: 'error' })
   }
+}
+
+// Получить File с OG-изображением (без сохранения на устройство)
+async function getOgImageFile(): Promise<File | null> {
+  const imageUrl = ogImageUrl.value
+  if (!imageUrl) return null
+  try {
+    const res = await fetch(imageUrl, { cache: 'no-store' })
+    if (!res.ok) return null
+    const blob = await res.blob()
+    return new File([blob], 'codifier-og.png', { type: 'image/png' })
+  } catch {
+    return null
+  }
+}
+
+// Поделиться изображением через Web Share API (если поддерживается)
+async function shareImage() {
+  if (!selectedItem.value) return
+  const file = await getOgImageFile()
+  const name = selectedItem.value.name || 'Кодификатор'
+  const mkb = selectedItem.value.mkbCode ? `МКБ-10: ${selectedItem.value.mkbCode}` : ''
+  const station = selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''
+  const text = `${name}\n${mkb}${station}\n\n${window.location.href}`
+
+  // Сначала копируем подпись в буфер, чтобы она была доступна в любом сценарии
+  try { await navigator.clipboard?.writeText?.(text) } catch {}
+
+  // Пытаемся поделиться через Web Share API (если есть navigator.share)
+  if (file && navigator.share) {
+    try {
+      // Не проверяем canShare, сразу пытаемся отправить файл и подпись
+      await navigator.share({ title: `${name} — Кодификатор`, text, files: [file] as any })
+      return
+    } catch {
+      // игнорируем и идём к фолбэку
+    }
+  }
+
+  // Фолбэк: сохраняем изображение в фоне и показываем уведомление, что подпись уже скопирована
+  if (file) {
+    const url = URL.createObjectURL(file)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'codifier-og.png'
+    a.style.display = 'none'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  }
+
+  // @ts-ignore
+  const toast = useToast?.()
+  toast?.add?.({ title: 'Готово к отправке', description: 'Изображение сохранено, подпись скопирована. Вставьте текст и прикрепите файл в мессенджере.', color: 'primary' })
+}
+
+// Явная загрузка изображения по запросу пользователя
+async function downloadImage() {
+  const file = await getOgImageFile()
+  if (!file) {
+    // @ts-ignore
+    const toast = useToast?.()
+    toast?.add?.({ title: 'Не удалось получить изображение', color: 'error' })
+    return
+  }
+  const url = URL.createObjectURL(file)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'codifier-og.png'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
 }
 
 // Авто-открытие по query ?open=<id> или ?mkb=<code>

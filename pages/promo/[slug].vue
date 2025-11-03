@@ -73,7 +73,7 @@
                 <span class="inline-flex items-center justify-center rounded-full shadow"
                   :style="{ backgroundColor: textSecondaryHex, width: '2rem', height: '2rem' }">
                   <template v-if="spriteIsUrl">
-                    <img :src="event.spriteIcon" alt="sprite" class="h-6 w-6 object-contain promo-wiggle" />
+                  <img :src="event.spriteIcon" alt="sprite" class="h-6 w-6 object-contain promo-wiggle" />
                   </template>
                   <template v-else>
                     <UIcon :name="event.spriteIcon || 'i-lucide-ghost'" class="w-4 h-4 promo-wiggle"
@@ -114,10 +114,10 @@
               <div class="rounded-lg p-4 text-white" :style="{ backgroundColor: secondaryHex600 }">
                 <div class="text-lg font-bold mb-4 text-center">🎉 Победители розыгрыша 🎉</div>
                 <div class="space-y-3">
-                  <div v-for="(winner, idx) in winners" :key="winner._id || idx"
-                    class="bg-white/10 rounded-lg p-3 flex items-center gap-3">
+                  <div v-for="(winner, idx) in winners" :key="winner._id || idx" 
+                       class="bg-white/10 rounded-lg p-3 flex items-center gap-3">
                     <div class="shrink-0">
-                      <UAvatar v-if="winner.userId?.avatarUrl" :src="winner.userId.avatarUrl"
+                      <UAvatar v-if="winner.userId?.avatarUrl" :src="winner.userId.avatarUrl" 
                         :alt="winner.userId?.firstName || winner.userId?.email || 'Победитель'" size="lg" />
                       <UAvatar v-else size="lg" :alt="winner.userId?.firstName || winner.userId?.email || 'Победитель'">
                         {{ ((winner.userId?.firstName?.[0] || winner.userId?.email?.[0] || 'П') || 'П').toUpperCase() }}
