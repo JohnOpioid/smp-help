@@ -1,4 +1,4 @@
-import { defineEventHandler, getRouterParam } from 'h3'
+import { defineEventHandler, getRouterParam, getQuery } from 'h3'
 import satori from 'satori'
 import { Resvg } from '@resvg/resvg-js'
 import connectDB from '~/server/utils/mongodb'
@@ -202,6 +202,21 @@ export default defineEventHandler(async (event) => {
     
     console.log('Подготовлено шрифтов:', fonts.length, 'Regular size:', regularArrayBuffer.byteLength, 'Bold size:', boldArrayBuffer.byteLength)
     
+    const query = getQuery(event)
+    const reqW = Number(query.w || query.width || 0)
+    const reqH = Number(query.h || query.height || 0)
+    const width = Number.isFinite(reqW) && reqW > 0 ? Math.min(Math.max(reqW, 50), 2000) : 900
+    const height = Number.isFinite(reqH) && reqH > 0 ? Math.min(Math.max(reqH, 50), 2000) : 600
+
+    // коэффициент масштабирования относительно базового макета 1200x630
+    const baseW = 1200
+    const baseH = 630
+    const scale = Math.min(width / baseW, height / baseH)
+    const sz = (n: number, min = 10) => Math.max(Math.round(n * scale), min)
+    // Усиливаем ТОЛЬКО размер шрифтов контента для лучшей читаемости
+    const contentBoost = 1.35
+    const szi = (n: number, min = 10) => Math.max(Math.round(n * scale * contentBoost), min)
+
     const svg = await satori(
       {
         type: 'div',
@@ -221,17 +236,17 @@ export default defineEventHandler(async (event) => {
                 style: {
                   display: 'flex',
                   alignItems: 'center',
-                  padding: '24px 32px',
+                  padding: `${sz(24)}px ${sz(32)}px`,
                   borderBottom: '1px solid #e2e8f0',
-                  gap: '16px',
+                  gap: `${sz(32)}px`,
                 },
                 children: [
                   logoData ? {
                     type: 'img',
                     props: {
                       src: logoData,
-                      width: 48,
-                      height: 48,
+                      width: sz(48),
+                      height: sz(48),
                       style: {
                         borderRadius: '8px',
                       },
@@ -241,11 +256,11 @@ export default defineEventHandler(async (event) => {
                     type: 'div',
                     props: {
                       style: {
-                        fontSize: '24px',
-                        fontWeight: '600',
+                            fontSize: `${sz(24, 14)}px`,
+                        fontWeight: '500',
                         color: '#62748E',
                       },
-                      children: 'Кодификатор',
+                      children: 'КОДИФИКАТОР',
                     },
                   },
                 ].filter(Boolean),
@@ -258,8 +273,8 @@ export default defineEventHandler(async (event) => {
                   display: 'flex',
                   flexDirection: 'column',
                   flex: 1,
-                  padding: '32px',
-                  gap: '24px',
+                  padding: `${sz(24)}px ${sz(32)}px`,
+                  gap: '28px',
                 },
                 children: [
                   {
@@ -267,7 +282,7 @@ export default defineEventHandler(async (event) => {
                     props: {
                       style: {
                         display: 'flex',
-                        gap: '24px',
+                        gap: '28px',
                       },
                       children: [
                         {
@@ -284,8 +299,8 @@ export default defineEventHandler(async (event) => {
                                   style: {
                                     fontSize: '14px',
                                     fontWeight: '500',
-                                    color: '#475569',
-                                    marginBottom: '8px',
+                                    color: '#64748b',
+                                    marginBottom: '4px',
                                   },
                                   children: 'Код МКБ-10',
                                 },
@@ -294,7 +309,7 @@ export default defineEventHandler(async (event) => {
                                 type: 'div',
                                 props: {
                                   style: {
-                                    fontSize: '24px',
+                                    fontSize: '28px',
                                     fontFamily: 'monospace',
                                     fontWeight: '600',
                                     color: '#0f172a',
@@ -319,8 +334,8 @@ export default defineEventHandler(async (event) => {
                                   style: {
                                     fontSize: '14px',
                                     fontWeight: '500',
-                                    color: '#475569',
-                                    marginBottom: '8px',
+                                    color: '#64748b',
+                                    marginBottom: '4px',
                                   },
                                   children: 'Код станции',
                                 },
@@ -329,7 +344,7 @@ export default defineEventHandler(async (event) => {
                                 type: 'div',
                                 props: {
                                   style: {
-                                    fontSize: '24px',
+                                    fontSize: '28px',
                                     fontFamily: 'monospace',
                                     fontWeight: '600',
                                     color: '#0f172a',
@@ -355,10 +370,10 @@ export default defineEventHandler(async (event) => {
                           type: 'div',
                           props: {
                             style: {
-                              fontSize: '14px',
+                            fontSize: '14px',
                               fontWeight: '500',
-                              color: '#475569',
-                              marginBottom: '8px',
+                              color: '#64748b',
+                            marginBottom: '4px',
                             },
                             children: 'Нозологическая форма',
                           },
@@ -367,7 +382,7 @@ export default defineEventHandler(async (event) => {
                           type: 'div',
                           props: {
                             style: {
-                              fontSize: '20px',
+                            fontSize: '28px',
                               fontWeight: '600',
                               color: '#0f172a',
                             },
@@ -391,8 +406,8 @@ export default defineEventHandler(async (event) => {
                             style: {
                               fontSize: '14px',
                               fontWeight: '500',
-                              color: '#475569',
-                              marginBottom: '8px',
+                              color: '#64748b',
+                              marginBottom: '4px',
                             },
                             children: 'Примечание',
                           },
@@ -400,8 +415,8 @@ export default defineEventHandler(async (event) => {
                         {
                           type: 'div',
                           props: {
-                            style: {
-                              fontSize: '16px',
+                              style: {
+                              fontSize: '18px',
                               color: '#475569',
                               lineHeight: '1.5',
                             },
@@ -425,8 +440,8 @@ export default defineEventHandler(async (event) => {
                             style: {
                               fontSize: '14px',
                               fontWeight: '500',
-                              color: '#475569',
-                              marginBottom: '8px',
+                              color: '#64748b',
+                              marginBottom: '4px',
                             },
                             children: 'Категория',
                           },
@@ -435,7 +450,7 @@ export default defineEventHandler(async (event) => {
                           type: 'div',
                           props: {
                             style: {
-                              fontSize: '16px',
+                              fontSize: '18px',
                               color: '#475569',
                             },
                             children: item.category.name || '—',
@@ -454,9 +469,9 @@ export default defineEventHandler(async (event) => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: '20px 32px',
+                  padding: `${sz(12)}px ${sz(16)}px`,
                   borderTop: '1px solid #e2e8f0',
-                  backgroundColor: '#f1f5f9',
+                  // backgroundColor убран по требованию — оставляем фон прозрачным
                 },
                 children: {
                   type: 'div',
@@ -476,8 +491,8 @@ export default defineEventHandler(async (event) => {
         },
       },
       {
-        width: 1200,
-        height: 630,
+        width,
+        height,
         fonts: fonts,
       }
     )
@@ -487,7 +502,7 @@ export default defineEventHandler(async (event) => {
       background: '#f8fafc',
       fitTo: {
         mode: 'width',
-        value: 1200,
+        value: width,
       },
     })
     
@@ -506,10 +521,14 @@ export default defineEventHandler(async (event) => {
     event.node.res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS')
     event.node.res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
     
+    // Управление кешем: если передан v (версионирование) — отключаем кеш для мгновенной проверки изменений
+    const queryForCache = getQuery(event)
+    const cacheHeader = queryForCache?.v ? 'no-store, max-age=0' : 'public, max-age=3600'
+
     return new Response(pngUint8Array, {
       headers: {
         'Content-Type': 'image/png',
-        'Cache-Control': 'public, max-age=3600',
+        'Cache-Control': cacheHeader,
         'Content-Length': pngBuffer.length.toString(),
       },
     })

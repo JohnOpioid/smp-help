@@ -156,9 +156,9 @@
               </button>
               <div v-if="shareMenuOpen" class="absolute right-0 bottom-full mb-2 z-50 w-72 sm:w-80 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg p-3">
                 <div class="rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                  <div v-if="!shareOgUrl" class="w-full aspect-[1200/630] bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                  <div v-if="!shareOgUrl" class="w-full aspect-[3/2] bg-slate-100 dark:bg-slate-700 animate-pulse" />
                   <template v-else>
-                    <div v-show="!shareImageLoaded" class="w-full aspect-[1200/630] bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                    <div v-show="!shareImageLoaded" class="w-full aspect-[3/2] bg-slate-100 dark:bg-slate-700 animate-pulse" />
                     <img :src="shareOgUrl" alt="preview" class="w-full h-auto" v-show="shareImageLoaded" @load="shareImageLoaded = true" @error="shareImageLoaded = false" />
                   </template>
                 </div>
@@ -239,9 +239,9 @@
                   </button>
                   <div v-if="shareMenuOpen" class="absolute right-0 bottom-full mb-2 z-50 w-72 sm:w-80 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg p-3">
                     <div class="rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                      <div v-if="!shareOgUrl" class="w-full aspect-[1200/630] bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                      <div v-if="!shareOgUrl" class="w-full aspect-[3/2] bg-slate-100 dark:bg-slate-700 animate-pulse" />
                       <template v-else>
-                        <div v-show="!shareImageLoaded" class="w-full aspect-[1200/630] bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                        <div v-show="!shareImageLoaded" class="w-full aspect-[3/2] bg-slate-100 dark:bg-slate-700 animate-pulse" />
                         <img :src="shareOgUrl" alt="preview" class="w-full h-auto" v-show="shareImageLoaded" @load="shareImageLoaded = true" @error="shareImageLoaded = false" />
                       </template>
                     </div>
@@ -681,7 +681,7 @@ const shareOgUrl = computed(() => {
   const qid = route.query.id as string | undefined
   const sid = selectedItem.value?._id as string | undefined
   const id = qid || sid
-  return id ? `${baseUrl}/api/codifier/og-image/${id}?v=${id}` : undefined
+  return id ? `${baseUrl}/api/codifier/og-image/${id}?v=${id}&w=900&h=600` : undefined
 })
 
 // Обновляем мета-теги на клиенте при изменении selectedItem или route.query.id
@@ -895,7 +895,7 @@ async function shareImage() {
   // Пытаемся открыть нативное окно шаринга с файлом и подписью
   if (file && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
     try {
-      await navigator.share({ title: `${name} — Кодификатор`, text, files: [file] as any })
+      await navigator.share({ title: `${name} — Кодификатор`, text, files: [file] as any, url: window.location.href })
       return
     } catch (err) {
       // Если пользователь отменил диалог — просто выходим без фолбэка
