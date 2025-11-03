@@ -9,11 +9,14 @@ import { join } from 'path'
 
 export default defineEventHandler(async (event) => {
   await connectDB()
-  const id = getRouterParam(event, 'id')
+  let id = getRouterParam(event, 'id')
   
   if (!id) {
     return new Response('ID не указан', { status: 400 })
   }
+
+  // Очищаем ID от расширения .png, если оно есть
+  id = id.replace(/\.png$/i, '')
 
   try {
     // Гарантируем регистрацию зависимых моделей перед populate
@@ -79,23 +82,49 @@ export default defineEventHandler(async (event) => {
     let fontDataBold: ArrayBuffer | null = null
     
     try {
-      // Используем raw.githubusercontent.com для прямого доступа к файлам
-      const regularUrl = 'https://raw.githubusercontent.com/google/fonts/main/apache/roboto/Roboto-Regular.ttf'
-      const boldUrl = 'https://raw.githubusercontent.com/google/fonts/main/apache/roboto/Roboto-Bold.ttf'
-      
-      const [regularResponse, boldResponse] = await Promise.all([
-        fetch(regularUrl).catch(() => null),
-        fetch(boldUrl).catch(() => null)
-      ])
-      
-      if (regularResponse?.ok && regularResponse.headers.get('content-type')?.includes('font')) {
-        fontDataRegular = await regularResponse.arrayBuffer()
+      // Список удалённых источников TTF (несколько зеркал)
+      // СТАВИМ Noto Sans первым, чтобы обеспечить кириллицу
+      const remoteFontSources = {
+        notoRegular: [
+          'https://github.com/googlefonts/noto-fonts/blob/main/hinted/ttf/NotoSans/NotoSans-Regular.ttf?raw=1',
+        ],
+        notoBold: [
+          'https://github.com/googlefonts/noto-fonts/blob/main/hinted/ttf/NotoSans/NotoSans-Bold.ttf?raw=1',
+        ],
+        robotoRegular: [
+          'https://raw.githubusercontent.com/google/fonts/main/apache/roboto/Roboto-Regular.ttf',
+          'https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxP.ttf',
+          'https://unpkg.com/@fontsource/roboto@5.0.8/files/roboto-latin-400-normal.ttf',
+        ],
+        robotoBold: [
+          'https://raw.githubusercontent.com/google/fonts/main/apache/roboto/Roboto-Bold.ttf',
+          'https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmWUlvAw.ttf',
+          'https://unpkg.com/@fontsource/roboto@5.0.8/files/roboto-latin-700-normal.ttf',
+        ]
       }
-      if (boldResponse?.ok && boldResponse.headers.get('content-type')?.includes('font')) {
-        fontDataBold = await boldResponse.arrayBuffer()
+
+      const tryFetch = async (urls: string[]): Promise<ArrayBuffer | null> => {
+        for (const u of urls) {
+          try {
+            const resp = await fetch(u).catch(() => null)
+            if (resp?.ok) {
+              // Некоторые CDN отдают generic content-type — не проверяем строго
+              const buf = await resp.arrayBuffer()
+              if (buf && buf.byteLength > 100000) return buf // фильтруем HTML-заглушки
+            }
+          } catch {}
+        }
+        return null
       }
+
+      // Сначала пробуем Noto Sans (кириллица)
+      if (!fontDataRegular) fontDataRegular = await tryFetch(remoteFontSources.notoRegular)
+      if (!fontDataBold) fontDataBold = await tryFetch(remoteFontSources.notoBold)
+      // Затем Roboto как запасной вариант
+      if (!fontDataRegular) fontDataRegular = await tryFetch(remoteFontSources.robotoRegular)
+      if (!fontDataBold) fontDataBold = await tryFetch(remoteFontSources.robotoBold)
     } catch (e) {
-      console.warn('Не удалось загрузить TTF шрифты из GitHub, пробуем локальные:', e)
+      console.warn('Не удалось загрузить TTF шрифты из удалённых источников:', e)
     }
     
     // Если не удалось загрузить из интернета, загружаем локальные TTF
@@ -136,11 +165,7 @@ export default defineEventHandler(async (event) => {
       }
       
       if (!loaded) {
-        console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: не удалось загрузить шрифт Roboto-Regular.ttf')
-        console.error('Пробовали пути:', possiblePaths)
-        console.error('Последняя ошибка:', lastError?.message)
-        // satori требует хотя бы один шрифт, поэтому бросаем ошибку
-        throw new Error(`Не удалось загрузить шрифт для генерации изображения. Пробовали пути: ${possiblePaths.join(', ')}. Ошибка: ${lastError?.message}`)
+        console.warn('Не удалось найти локальный Roboto-Regular.ttf, пробуем удалённые источники...')
       }
     }
     
@@ -191,6 +216,24 @@ export default defineEventHandler(async (event) => {
     
     // satori требует хотя бы один шрифт
     if (!fontDataRegular) {
+      // В dev окружении возвращаем плейсхолдер PNG, чтобы не падать 500
+      if (process.env.NODE_ENV !== 'production') {
+        const transparent1x1 = Buffer.from(
+          // 1x1 transparent PNG
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGMAAQAABQABLVn8xQAAAABJRU5ErkJggg==',
+          'base64'
+        )
+        event.node.res.setHeader('Access-Control-Allow-Origin', '*')
+        event.node.res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS')
+        event.node.res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+        return new Response(transparent1x1, {
+          headers: {
+            'Content-Type': 'image/png',
+            'Cache-Control': 'no-store, max-age=0',
+            'Content-Length': transparent1x1.length.toString(),
+          },
+        })
+      }
       throw new Error('Не удалось загрузить ни один шрифт для генерации изображения')
     }
     
@@ -200,6 +243,20 @@ export default defineEventHandler(async (event) => {
     const boldArrayBuffer = (fontDataBold || fontDataRegular).slice(0)
     
     const fonts = [
+      // Предпочтительно Noto Sans (поддерживает кириллицу)
+      {
+        name: 'Noto Sans',
+        data: regularArrayBuffer,
+        weight: 400 as const,
+        style: 'normal' as const
+      },
+      {
+        name: 'Noto Sans',
+        data: boldArrayBuffer,
+        weight: 600 as const,
+        style: 'normal' as const
+      },
+      // Дополнительно Roboto как запасной вариант
       {
         name: 'Roboto',
         data: regularArrayBuffer,
@@ -241,7 +298,7 @@ export default defineEventHandler(async (event) => {
             width: '100%',
             height: '100%',
             backgroundColor: '#f8fafc',
-            fontFamily: fonts.length > 0 ? 'Roboto' : 'sans-serif',
+            fontFamily: 'Noto Sans, Roboto, sans-serif',
           },
           children: [
             {
@@ -548,23 +605,27 @@ export default defineEventHandler(async (event) => {
     })
   } catch (error: any) {
     console.error('Ошибка генерации OG изображения:', error)
-    console.error('Stack:', error?.stack)
-    console.error('Message:', error?.message)
     
-    // Возвращаем более детальную информацию об ошибке
-    return new Response(
-      JSON.stringify({
-        error: 'Ошибка генерации изображения',
-        message: error?.message || String(error),
-        stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
-      }),
-      {
-        status: 500,
+    // В dev окружении — возвращаем прозрачный плейсхолдер вместо 500
+    if (process.env.NODE_ENV !== 'production') {
+      const transparent1x1 = Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGMAAQAABQABLVn8xQAAAABJRU5ErkJggg==',
+        'base64'
+      )
+      event.node.res.setHeader('Access-Control-Allow-Origin', '*')
+      event.node.res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS')
+      event.node.res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+      return new Response(transparent1x1, {
         headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    )
+          'Content-Type': 'image/png',
+          'Cache-Control': 'no-store, max-age=0',
+          'Content-Length': transparent1x1.length.toString(),
+        },
+      })
+    }
+
+    // Прод — оставляем 500, чтобы было видно проблему
+    return new Response('Internal Server Error', { status: 500 })
   }
 })
 

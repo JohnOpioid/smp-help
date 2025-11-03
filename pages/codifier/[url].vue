@@ -162,16 +162,8 @@
                     <img :src="shareOgUrl" alt="preview" class="w-full h-auto" v-show="shareImageLoaded" @load="shareImageLoaded = true" @error="shareImageLoaded = false" />
                   </template>
                 </div>
-                <div class="mt-3 grid grid-cols-2 gap-2">
-                  <button type="button" :disabled="!selectedItem" @click.stop="shareViaTelegram" class="rounded-md px-3 py-2 text-xs flex items-center justify-center gap-2 bg-sky-50 hover:bg-sky-100 text-sky-700 dark:bg-sky-900/20 dark:text-sky-300 cursor-pointer">
-                    <UIcon name="i-simple-icons-telegram" class="w-4 h-4" /> Telegram
-                  </button>
-                  <button type="button" :disabled="!selectedItem" @click.stop="shareViaWhatsApp" class="rounded-md px-3 py-2 text-xs flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300 cursor-pointer">
-                    <UIcon name="i-simple-icons-whatsapp" class="w-4 h-4" /> WhatsApp
-                  </button>
-                </div>
                 <div class="mt-2 grid grid-cols-2 gap-2">
-                  <button type="button" :disabled="!canShareNow" @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
+                  <button type="button" :disabled="!selectedItem" @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
                     <UIcon name="i-heroicons-share" class="w-4 h-4" />Поделиться
                   </button>
                   <button type="button" :disabled="!selectedItem" @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop.prevent="downloadImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
@@ -275,12 +267,9 @@
                       </template>
                     </div>
                 
-                    <div class="mt-3 grid grid-cols-2 gap-2">
-                      <button type="button" :disabled="!selectedItem" @click.stop="shareViaTelegram" class="rounded-md px-3 py-2 text-xs flex items-center justify-center gap-2 bg-sky-50 hover:bg-sky-100 text-sky-700 dark:bg-sky-900/20 dark:text-sky-300 cursor-pointer">
-                        <UIcon name="i-simple-icons-telegram" class="w-4 h-4" /> Telegram
-                      </button>
-                      <button type="button" :disabled="!selectedItem" @click.stop="shareViaWhatsApp" class="rounded-md px-3 py-2 text-xs flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300 cursor-pointer">
-                        <UIcon name="i-simple-icons-whatsapp" class="w-4 h-4" /> WhatsApp
+                    <div class="mt-3">
+                      <button type="button" :disabled="!selectedItem" @click.stop="shareImage" class="w-full rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
+                        <UIcon name="i-heroicons-share" class="w-4 h-4" /> Поделиться
                       </button>
                     </div>
                     <div class="mt-2 grid grid-cols-2 gap-2">
@@ -358,8 +347,8 @@ if (process.server) {
   const v = itemIdForOg || String(Date.now())
   // Используем API-эндпоинт генерации PNG, который отдает корректный Content-Type
   const image = itemIdForOg
-    ? `${baseUrl}/api/codifier/og-image/${itemIdForOg}?v=${v}`
-    : `${baseUrl}/api/codifier/og-image/${v}`
+    ? `${baseUrl}/api/codifier/og-image/${itemIdForOg}.png?v=${v}`
+    : `${baseUrl}/api/codifier/og-image/${v}.png`
   useServerHead({
     meta: [
       { property: 'og:type', content: 'website' },
@@ -387,7 +376,7 @@ if (itemId && process.server) {
     // Устанавливаем мета-теги на сервере
     if (serverItem) {
       const baseUrl = getBaseUrl()
-      const ogImageUrl = `${baseUrl}/api/codifier/og-image/${itemId}?v=${itemId}`
+      const ogImageUrl = `${baseUrl}/api/codifier/og-image/${itemId}.png?v=${itemId}`
 
       useServerHead({
         title: `${serverItem.name} — Кодификатор`,
@@ -709,7 +698,7 @@ const ogImageUrl = computed(() => {
   if (!itemId) return undefined
   const baseUrl = getBaseUrl()
   // Клиентская версия с версионированием, чтобы платформа не брала старый кеш
-  return `${baseUrl}/api/codifier/og-image/${itemId}?v=${itemId}`
+  return `${baseUrl}/api/codifier/og-image/${itemId}.png?v=${itemId}`
 })
 
 // URL для превью в поповере: используем id из query либо из выбранного элемента
@@ -718,7 +707,7 @@ const shareOgUrl = computed(() => {
   const qid = route.query.id as string | undefined
   const sid = selectedItem.value?._id as string | undefined
   const id = qid || sid
-  return id ? `${baseUrl}/api/codifier/og-image/${id}?v=${id}&w=900&h=600` : undefined
+  return id ? `${baseUrl}/api/codifier/og-image/${id}.png?v=${id}&w=900&h=600` : undefined
 })
 
 // Обновляем мета-теги на клиенте при изменении selectedItem или route.query.id
