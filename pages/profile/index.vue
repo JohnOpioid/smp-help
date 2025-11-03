@@ -977,11 +977,8 @@ async function fetchAlternations() {
       // Полностью очищаем и создаем новый массив для принудительной реактивности
       alternations.value.length = 0
       alternations.value.push(...(res.items || []))
-      console.log('✅ Чередования загружены:', alternations.value.length, 'шт', alternations.value.map(a => a.title))
       // Принудительно вызываем обновление
       await nextTick()
-    } else {
-      console.log('⚠️ API не вернул success:', res)
     }
   } catch (e) {
     console.error('❌ Ошибка загрузки чередований:', e)
@@ -1585,7 +1582,6 @@ async function fetchShifts() {
     // Полностью очищаем и создаем новый массив для принудительной реактивности
     shifts.value.length = 0
     shifts.value.push(...((res.items || []).map((s: any) => ({ ...s, date: (s.date ? new Date(s.date).toISOString().slice(0, 10) : '') }))))
-    console.log('✅ Смены загружены:', shifts.value.length)
     await nextTick()
   }
 }
@@ -2168,11 +2164,8 @@ async function fetchTemplates() {
       // Полностью очищаем и создаем новый массив для принудительной реактивности
       templates.value.length = 0
       templates.value.push(...(res.items || []))
-      console.log('✅ Шаблоны загружены:', templates.value.length, 'шт', templates.value.map(t => t.title))
       // Принудительно вызываем обновление
       await nextTick()
-    } else {
-      console.log('⚠️ API не вернул success:', res)
     }
   } catch (e) { 
     console.error('❌ Ошибка загрузки шаблонов:', e)

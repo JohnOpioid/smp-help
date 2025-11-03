@@ -1,6 +1,5 @@
 export default defineNuxtPlugin((nuxtApp) => {
   try {
-    console.log('[promo] plugin init')
     const promoState = useState<any>('active_promo', () => null)
     const userCompletedState = useState<boolean>('promo_user_completed', () => false)
 
@@ -15,12 +14,10 @@ export default defineNuxtPlugin((nuxtApp) => {
     }
 
     async function loadActive() {
-      console.log('[promo] loadActive: fetching /api/promo/active')
       try {
         const res: any = await $fetch('/api/promo/active', { cache: 'no-cache' as any })
         const event = res?.item
         promoState.value = event || null
-        console.log('[promo] loadActive: result', !!event ? { _id: event._id, slug: event.slug, spriteIcon: event.spriteIcon } : 'no active')
         try {
           if (event) localStorage.setItem('active_promo_item', JSON.stringify(event))
           else localStorage.removeItem('active_promo_item')
@@ -36,7 +33,6 @@ export default defineNuxtPlugin((nuxtApp) => {
         } catch {}
         return event
       } catch (err) {
-        console.error('[promo] loadActive failed', err)
         return null
       }
     }
@@ -47,7 +43,6 @@ export default defineNuxtPlugin((nuxtApp) => {
         const cached = JSON.parse(raw)
         if (isActiveByDate(cached)) {
           promoState.value = cached
-          console.log('[promo] init from localStorage:', { _id: cached._id, slug: cached.slug })
         }
       }
     } catch {}
@@ -55,14 +50,13 @@ export default defineNuxtPlugin((nuxtApp) => {
     // Реактивное обновление при изменении в админке (через localStorage)
     window.addEventListener('storage', async (e) => {
       if (e.key === 'promo_updated') {
-        console.log('[promo] storage promo_updated:', e.newValue)
         await loadActive()
       }
     })
 
     // Обновляем активный ивент при навигации по сайту
     const router = useRouter()
-    router.afterEach(() => { console.log('[promo] router.afterEach: reload active'); loadActive() })
+    router.afterEach(() => { loadActive() })
     // Периодический опрос, чтобы не зависеть от кешей/долгой сессии
     setInterval(() => { loadActive() }, 60_000)
 
@@ -141,21 +135,20 @@ export default defineNuxtPlugin((nuxtApp) => {
 
     async function spawnSprite() {
       const ev = promoState.value
-      if (!ev) { console.log('[promo] spawnSprite: no active event, skip'); return }
-      if (userCompletedState.value) { console.log('[promo] spawnSprite: user already completed, skip'); return }
+      if (!ev) { return }
+      if (userCompletedState.value) { return }
       // Проверим прогресс пользователя и остановим спаун, если всё собрано
       try {
         const { count, need } = await getProgress(ev)
         if (count >= need) {
           userCompletedState.value = true
           try { localStorage.setItem(`promo_completed_${ev._id}`, '1') } catch {}
-          console.log('[promo] spawnSprite: already completed by user')
           return
         }
       } catch {}
       // Не более одного одновременно
       const existing = document.querySelectorAll('[data-promo-sprite="1"]').length
-      if (existing >= 1) { console.log('[promo] spawnSprite: already on screen, skip'); return }
+      if (existing >= 1) { return }
 
       const id = `promo-sprite-${ev._id}-${Date.now()}-${Math.floor(Math.random()*1000)}`
       const btn = document.createElement('button')
@@ -180,7 +173,6 @@ export default defineNuxtPlugin((nuxtApp) => {
       btn.style.zIndex = '2147483647'
 
       const isImg = isImageUrl(ev.spriteIcon)
-      console.log('[promo] spawnSprite: creating', { id, isImg, icon: ev.spriteIcon })
       if (isImg) {
         const img = document.createElement('img')
         img.src = String(ev.spriteIcon)
@@ -204,7 +196,6 @@ export default defineNuxtPlugin((nuxtApp) => {
           btn.style.opacity = '0'
           btn.style.transform = 'scale(0.5)'
           setTimeout(() => btn.remove(), 300)
-          console.log('[promo] sprite clicked: increment sent')
           // Получим текущий прогресс пользователя и покажем уведомление
           try {
             const { count, need } = await getProgress(ev)
@@ -218,11 +209,10 @@ export default defineNuxtPlugin((nuxtApp) => {
               notify(`Собрано: ${count} из ${need}`)
             }
           } catch {}
-        } catch (err) { console.warn('[promo] increment failed', err) }
+        } catch (err) { }
       })
 
       document.body.appendChild(btn)
-      console.log('[promo] sprite appended to DOM')
       // Плавное появление после добавления в DOM
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -242,28 +232,23 @@ export default defineNuxtPlugin((nuxtApp) => {
 
     const ensureOneSprite = () => {
       const r = router.currentRoute.value
-      console.log('[promo] ensureOneSprite: route', r?.path)
       if (isAdminRoute()) {
-        console.log('[promo] ensureOneSprite: admin route, remove if exists')
         // на админ-страницах не показываем спрайты; удалим, если остались
         removeSprites(true)
         return
       }
       if (!promoState.value) {
-        console.log('[promo] ensureOneSprite: no promoState, skip')
         return
       }
       // Проверяем шанс спауна
       const chance = Number(promoState.value.spawnChance ?? 100)
       const roll = Math.random() * 100
       if (roll > chance) {
-        console.log('[promo] ensureOneSprite: spawn chance failed', { roll, chance })
         return
       }
       // если по каким-то причинам их больше одного — оставим первый, остальные плавно удалим
       const nodes = Array.from(document.querySelectorAll('[data-promo-sprite="1"]')) as HTMLElement[]
       if (nodes.length > 1) {
-        console.log('[promo] ensureOneSprite: too many, trimming', nodes.length)
         nodes.slice(1).forEach((n) => {
           const el = n as HTMLElement
           el.style.opacity = '0'
@@ -271,12 +256,11 @@ export default defineNuxtPlugin((nuxtApp) => {
           setTimeout(() => el.remove(), 300)
         })
       }
-      if (nodes.length === 0) { console.log('[promo] ensureOneSprite: spawn one'); spawnSprite() } else { console.log('[promo] ensureOneSprite: already present') }
+      if (nodes.length === 0) { spawnSprite() }
     }
 
     // После монтирования приложения загружаем и показываем спрайт
     nuxtApp.hook('app:mounted', async () => {
-      console.log('[promo] app:mounted: load active and ensure sprite')
       const ev = await loadActive()
       ensureOneSprite()
       // Повторные попытки если активный ивент ещё не готов
@@ -291,7 +275,6 @@ export default defineNuxtPlugin((nuxtApp) => {
     })
     
     // При старте (на случай если DOM уже готов)
-    console.log('[promo] init ensureOneSprite')
     if (typeof document !== 'undefined' && document.body) {
       ensureOneSprite()
     }
@@ -302,7 +285,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     })
     router.afterEach(() => {
       // небольшая задержка, чтобы не конфликтовать с переходной анимацией
-      setTimeout(() => { console.log('[promo] afterEach ensureOneSprite'); ensureOneSprite() }, 50)
+      setTimeout(() => { ensureOneSprite() }, 50)
     })
   } catch {}
 })

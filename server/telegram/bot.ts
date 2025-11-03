@@ -106,7 +106,7 @@ if (bot) {
       }
 
       if (isRegistered && !hasActiveSession) {
-        if (chatId) await bot.telegram.sendMessage(chatId, `👋 Привет, ${firstName}!\n\nДобро пожаловать в справочник СМП!\n\n🔐 Для доступа к полному функционалу необходимо авторизоваться на сайте.\n\nНажмите кнопку ниже для получения кода авторизации.`, {
+        if (chatId) await bot.telegram.sendMessage(chatId, `👋 Привет, ${firstName}!\n\nДобро пожаловать в справочник СМП!\n\n🔐 Для доступа к полному функционалу необходимо авторизоваться на сайте.\n\nНажмите кнопку ниже для получения кода авторизации. После того как получите код вернитесь на страницу авторизации и вставьте код в поле ввода.`, {
           reply_markup: { inline_keyboard: [[{ text: '🔐 Получить код авторизации', callback_data: `auth_${ctx.from?.id}` }], [{ text: '📚 Помощь', callback_data: 'help' }]] }
         } as any)
         return
@@ -453,6 +453,7 @@ if (bot) {
           if (chatId) await bot.telegram.sendMessage(chatId, '❌ Ошибка конфигурации сервера')
           return
         }
+        const siteUrl = apiUrl && apiUrl.startsWith('https://') ? apiUrl : 'https://helpsmp.ru'
         const userCheck = await ofetch(`${apiUrl}/api/auth/find-by-telegram/${userId}`, { method: 'GET', rejectUnauthorized: false } as any)
         if (!userCheck?.user) return
         const favorites = await ofetch(`${apiUrl}/api/bookmarks`, { method: 'GET', query: { userId: userCheck.user._id }, rejectUnauthorized: false } as any)
