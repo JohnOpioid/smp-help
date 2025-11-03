@@ -854,6 +854,42 @@ async function getOgImageFile(): Promise<File | null> {
 const { shareToTelegram, shareToWhatsApp, shareNative } = useShare()
 const { isSupported: wshareSupported, shareFiles: wshareFiles } = useWebShare()
 
+async function shareImage() {
+  if (!selectedItem.value) return
+  if (shareMenuOpen.value) shareMenuOpen.value = false
+
+  const file = shareFile.value || await getOgImageFile()
+  const name = selectedItem.value.name || 'Кодификатор'
+  const mkb = selectedItem.value.mkbCode ? `МКБ-10: ${selectedItem.value.mkbCode}` : ''
+  const station = selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''
+  const text = `${name}\n${mkb}${station}\n\n${window.location.href}`
+
+  // 1) Нативный шаринг с файлом
+  if (file && wshareSupported) {
+    const res = await wshareFiles([file], { title: `${name} — Кодификатор`, text })
+    if (res.success) return
+  }
+
+  // 2) Нативный шаринг без файла (текст + ссылка)
+  try {
+    // @ts-ignore
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      // @ts-ignore
+      await navigator.share({ title: `${name} — Кодификатор`, text, url: window.location.href })
+      return
+    }
+  } catch (_) {}
+
+  // 3) Фолбэк: копируем подпись и сохраняем файл «в фоне»
+  try { await navigator.clipboard?.writeText?.(text) } catch {}
+  if (file) {
+    await downloadBlob(file, 'codifier-og.png')
+  }
+  // @ts-ignore
+  const toast = useToast?.()
+  toast?.add?.({ title: 'Готово к отправке', description: 'Откройте мессенджер: подпись скопирована, файл сохранён.', color: 'primary' })
+}
+
 function shareViaWhatsApp() {
   if (!selectedItem.value) return
   const name = selectedItem.value.name || 'Кодификатор'
