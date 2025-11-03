@@ -163,7 +163,7 @@
                   </template>
                 </div>
                 <div class="mt-3 grid grid-cols-2 gap-2">
-                  <button type="button" :disabled="!selectedItem" @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
+                  <button type="button" :disabled="!canShareNow" @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
                     <UIcon name="i-heroicons-share" class="w-4 h-4" />Поделиться
                   </button>
                   <button type="button" :disabled="!selectedItem" @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop.prevent="downloadImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
@@ -246,7 +246,7 @@
                       </template>
                     </div>
                     <div class="mt-3 grid grid-cols-2 gap-2">
-                      <button type="button" :disabled="!selectedItem" @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
+                      <button type="button" :disabled="!canShareNow" @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
                         <UIcon name="i-heroicons-share" class="w-4 h-4" />Поделиться
                       </button>
                       <button type="button" :disabled="!selectedItem" @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop.prevent="downloadImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
@@ -627,6 +627,8 @@ const userBookmarks = ref<any[]>([])
 const shareMenuOpen = ref(false)
 const shareRef = ref<HTMLElement | null>(null)
 const shareImageLoaded = ref(false)
+const shareFile = ref<File | null>(null)
+const canShareNow = computed(() => !!selectedItem.value && !!shareFile.value)
 
 function onGlobalClick(e: MouseEvent) {
   const root = shareRef.value
@@ -653,6 +655,13 @@ function toggleShareMenu() {
   shareMenuOpen.value = !shareMenuOpen.value
   if (shareMenuOpen.value) {
     shareImageLoaded.value = false
+    shareFile.value = null
+    // Предзагрузка файла для сохранения «жеста» на шаринг
+    getOgImageFile().then((f) => {
+      if (f) {
+        shareFile.value = f
+      }
+    }).catch(() => {})
   }
 }
 
@@ -876,7 +885,7 @@ async function shareImage() {
   // Закроем поповер, чтобы сохранить «жест пользователя» и не мешать системному окну
   if (shareMenuOpen.value) shareMenuOpen.value = false
 
-  const file = await getOgImageFile()
+  const file = shareFile.value || await getOgImageFile()
   const name = selectedItem.value.name || 'Кодификатор'
   const mkb = selectedItem.value.mkbCode ? `МКБ-10: ${selectedItem.value.mkbCode}` : ''
   const station = selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''
