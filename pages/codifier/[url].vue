@@ -163,10 +163,10 @@
                   </template>
                 </div>
                 <div class="mt-3 grid grid-cols-2 gap-2">
-                  <button type="button" :disabled="!selectedItem" @click="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
+                  <button type="button" :disabled="!selectedItem" @click.stop="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
                     <UIcon name="i-heroicons-share" class="w-4 h-4" />Поделиться
                   </button>
-                  <button type="button" :disabled="!selectedItem" @click="downloadImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
+                  <button type="button" :disabled="!selectedItem" @click.stop.prevent="downloadImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
                     <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />Сохранить
                   </button>
                 </div>
@@ -246,10 +246,10 @@
                       </template>
                     </div>
                     <div class="mt-3 grid grid-cols-2 gap-2">
-                      <button type="button" :disabled="!selectedItem" @click="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
+                      <button type="button" :disabled="!selectedItem" @click.stop="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
                         <UIcon name="i-heroicons-share" class="w-4 h-4" />Поделиться
                       </button>
-                      <button type="button" :disabled="!selectedItem" @click="downloadImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
+                      <button type="button" :disabled="!selectedItem" @click.stop.prevent="downloadImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
                         <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />Сохранить
                       </button>
                     </div>
@@ -873,34 +873,37 @@ async function getOgImageFile(): Promise<File | null> {
 // Поделиться изображением через Web Share API (если поддерживается)
 async function shareImage() {
   if (!selectedItem.value) return
+  // Закроем поповер, чтобы сохранить «жест пользователя» и не мешать системному окну
+  if (shareMenuOpen.value) shareMenuOpen.value = false
+
   const file = await getOgImageFile()
   const name = selectedItem.value.name || 'Кодификатор'
   const mkb = selectedItem.value.mkbCode ? `МКБ-10: ${selectedItem.value.mkbCode}` : ''
   const station = selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''
   const text = `${name}\n${mkb}${station}\n\n${window.location.href}`
 
-  // Сначала копируем подпись в буфер, чтобы она была доступна в любом сценарии
-  try { await navigator.clipboard?.writeText?.(text) } catch {}
-
-  // Пытаемся поделиться через Web Share API (если есть navigator.share)
-  if (file && navigator.share) {
+  // Пытаемся открыть нативное окно шаринга с файлом и подписью
+  if (file && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
     try {
-      // Не проверяем canShare, сразу пытаемся отправить файл и подпись
       await navigator.share({ title: `${name} — Кодификатор`, text, files: [file] as any })
       return
-    } catch {
-      // игнорируем и идём к фолбэку
+    } catch (err) {
+      // Если пользователь отменил диалог — просто выходим без фолбэка
+      if ((err as any)?.name === 'AbortError' || (err as any)?.name === 'NotAllowedError') {
+        return
+      }
+      // Для прочих ошибок перейдём к фолбэку
     }
   }
 
-  // Фолбэк: сохраняем изображение в фоне и показываем уведомление, что подпись уже скопирована
+  // Фолбэк: копируем подпись и сохраняем файл «в фоне»
+  try { await navigator.clipboard?.writeText?.(text) } catch {}
   if (file) {
     await downloadBlob(file, 'codifier-og.png')
   }
-
   // @ts-ignore
   const toast = useToast?.()
-  toast?.add?.({ title: 'Готово к отправке', description: 'Изображение сохранено, подпись скопирована. Вставьте текст и прикрепите файл в мессенджере.', color: 'primary' })
+  toast?.add?.({ title: 'Готово к отправке', description: 'Откройте мессенджер: подпись скопирована, файл сохранён.', color: 'primary' })
 }
 
 // Безопасная загрузка файла, не триггеря глобальные обработчики навигации
