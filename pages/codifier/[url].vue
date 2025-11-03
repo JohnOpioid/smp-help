@@ -892,10 +892,10 @@ async function shareImage() {
   const station = selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''
   const text = `${name}\n${mkb}${station}\n\n${window.location.href}`
 
-  // Пытаемся открыть нативное окно шаринга с файлом и подписью
+  // Пытаемся открыть нативное окно шаринга с файлом и подписью (без отдельного url — включаем ссылку в text)
   if (file && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
     try {
-      await navigator.share({ title: `${name} — Кодификатор`, text, files: [file] as any, url: window.location.href })
+      await navigator.share({ title: `${name} — Кодификатор`, text, files: [file] as any })
       return
     } catch (err) {
       // Если пользователь отменил диалог — просто выходим без фолбэка
