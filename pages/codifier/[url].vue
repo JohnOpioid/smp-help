@@ -954,8 +954,8 @@ function shareViaTelegram() {
   const station = selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''
   const base = getBaseUrl()
   const shareUrl = `${base}${route.path}?id=${selectedItem.value._id}`
-  const text = `${name}\n${mkb}${station}\n\n${shareUrl}`
-  // Telegram: указываем и url, и text, чтобы открывался композер и генерировалось превью
+  // В text НЕ передаём ссылку, чтобы в сообщении не было сырой ссылки сверху — превью придёт из url
+  const text = `${name}\n${mkb}${station}`
   const url = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(text)}`
   window.open(url, '_blank', 'noopener,noreferrer')
 }
