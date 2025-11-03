@@ -964,7 +964,9 @@ function shareViaWhatsApp() {
   const mkb = selectedItem.value.mkbCode ? `МКБ-10: ${selectedItem.value.mkbCode}` : ''
   const station = selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''
   const base = getBaseUrl()
-  const shareUrl = `${base}${route.path}?id=${selectedItem.value._id}`
+  // Версионируем саму страницу, чтобы боты заново подтянули OG (обход кеша Telegram/WhatsApp)
+  const v = selectedItem.value._id || Date.now()
+  const shareUrl = `${base}${route.path}?id=${selectedItem.value._id}&v=${v}`
   const description = `${mkb}${station}`.trim()
   // Передаем полный текст: название + коды + ссылка
   const fullText = `${name}${description ? `\n${description}` : ''}\n\n${shareUrl}`
@@ -977,7 +979,8 @@ function shareViaTelegram() {
   const mkb = selectedItem.value.mkbCode ? `МКБ-10: ${selectedItem.value.mkbCode}` : ''
   const station = selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''
   const base = getBaseUrl()
-  const shareUrl = `${base}${route.path}?id=${selectedItem.value._id}`
+  const v = selectedItem.value._id || Date.now()
+  const shareUrl = `${base}${route.path}?id=${selectedItem.value._id}&v=${v}`
   const description = `${mkb}${station}`.trim()
   // Передаем полный текст: название + коды + ссылка
   const fullText = `${name}${description ? `\n${description}` : ''}\n\n${shareUrl}`

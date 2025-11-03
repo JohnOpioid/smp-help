@@ -513,7 +513,12 @@ watch(codifierChildren, (children) => {
   }
 }, { immediate: true })
 
-const isActive = (to: string) => route.path === to
+const isActive = (to: string) => {
+  // Для главной страницы — только точное совпадение
+  if (to === '/') return route.path === '/'
+  // Для остальных — проверяем, что путь начинается с to
+  return route.path.startsWith(to)
+}
 
 const goBackToMainMenu = () => {
   currentView.value = 'main'

@@ -89,7 +89,7 @@ export default defineNuxtConfig({
   app: {
     head: {
       title: 'Справочник СМП',
-      titleTemplate: '%s — Справочник СМП',
+      titleTemplate: '%s',
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' },
         { name: 'description', content: 'Справочник СМП: алгоритмы, инструкции, кодификаторы и медицинские калькуляторы.' },
@@ -138,6 +138,7 @@ export default defineNuxtConfig({
     '~/plugins/telegram.client.ts',
     '~/plugins/fetch.client.ts',
     '~/plugins/promo.client.ts',
-    '~/plugins/version.client.ts'
+    '~/plugins/version.client.ts',
+    '~/plugins/seo-titles.global'
   ]
 })
