@@ -163,10 +163,10 @@
                   </template>
                 </div>
                 <div class="mt-3 grid grid-cols-2 gap-2">
-                  <button type="button" :disabled="!selectedItem" @click.stop="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
+                  <button type="button" :disabled="!selectedItem" @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
                     <UIcon name="i-heroicons-share" class="w-4 h-4" />Поделиться
                   </button>
-                  <button type="button" :disabled="!selectedItem" @click.stop.prevent="downloadImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
+                  <button type="button" :disabled="!selectedItem" @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop.prevent="downloadImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
                     <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />Сохранить
                   </button>
                 </div>
@@ -246,10 +246,10 @@
                       </template>
                     </div>
                     <div class="mt-3 grid grid-cols-2 gap-2">
-                      <button type="button" :disabled="!selectedItem" @click.stop="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
+                      <button type="button" :disabled="!selectedItem" @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
                         <UIcon name="i-heroicons-share" class="w-4 h-4" />Поделиться
                       </button>
-                      <button type="button" :disabled="!selectedItem" @click.stop.prevent="downloadImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
+                      <button type="button" :disabled="!selectedItem" @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop.prevent="downloadImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
                         <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />Сохранить
                       </button>
                     </div>
@@ -916,15 +916,31 @@ async function downloadBlob(file: Blob, filename: string) {
     a.target = '_self'
     a.rel = 'noopener noreferrer'
     a.style.display = 'none'
-    // Блокируем всплытие клика, чтобы usePreloader не перехватывал
-    a.addEventListener('click', (e) => { e.stopPropagation() }, { capture: true, once: true })
-    document.body.appendChild(a)
-    // Программный клик без всплытия
-    a.dispatchEvent(new MouseEvent('click', { bubbles: false, cancelable: true, view: window }))
-    // Запасной вызов
-    if (typeof a.click === 'function') a.click()
-    a.remove()
-    URL.revokeObjectURL(url)
+
+    // Глобальный «щит» от document-level capture listeners (например, usePreloader)
+    const shield = (e: Event) => {
+      e.stopImmediatePropagation()
+      e.stopPropagation()
+    }
+    document.addEventListener('click', shield, true)
+    document.addEventListener('pointerdown', shield, true)
+    document.addEventListener('mousedown', shield, true)
+
+    try {
+      document.body.appendChild(a)
+      // Клик по ссылке без фаз распространения
+      a.dispatchEvent(new MouseEvent('click', { bubbles: false, cancelable: true, view: window }))
+      if (typeof a.click === 'function') a.click()
+    } finally {
+      a.remove()
+      URL.revokeObjectURL(url)
+      // Снимаем «щит» в следующем тике
+      setTimeout(() => {
+        document.removeEventListener('click', shield, true)
+        document.removeEventListener('pointerdown', shield, true)
+        document.removeEventListener('mousedown', shield, true)
+      }, 0)
+    }
   } catch (e) {
     // Фолбэк: открываем системный диалог сохранения через новый таб запрещен, поэтому показываем подсказку
     // @ts-ignore
