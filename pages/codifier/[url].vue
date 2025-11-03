@@ -163,6 +163,14 @@
                   </template>
                 </div>
                 <div class="mt-3 grid grid-cols-2 gap-2">
+                  <button type="button" :disabled="!selectedItem" @click.stop="shareViaTelegram" class="rounded-md px-3 py-2 text-xs flex items-center justify-center gap-2 bg-sky-50 hover:bg-sky-100 text-sky-700 dark:bg-sky-900/20 dark:text-sky-300 cursor-pointer">
+                    <UIcon name="i-simple-icons-telegram" class="w-4 h-4" /> Telegram
+                  </button>
+                  <button type="button" :disabled="!selectedItem" @click.stop="shareViaWhatsApp" class="rounded-md px-3 py-2 text-xs flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300 cursor-pointer">
+                    <UIcon name="i-simple-icons-whatsapp" class="w-4 h-4" /> WhatsApp
+                  </button>
+                </div>
+                <div class="mt-2 grid grid-cols-2 gap-2">
                   <button type="button" :disabled="!canShareNow" @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
                     <UIcon name="i-heroicons-share" class="w-4 h-4" />Поделиться
                   </button>
@@ -237,7 +245,7 @@
                     <UIcon name="i-heroicons-share" class="w-4 h-4" />
                     Поделиться
                   </button>
-                  <div v-if="shareMenuOpen" class="absolute right-0 bottom-full mb-2 z-50 w-72 sm:w-80 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg p-3">
+              <div v-if="shareMenuOpen" class="absolute right-0 bottom-full mb-2 z-50 w-72 sm:w-80 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg p-3">
                     <div class="rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
                       <div v-if="!shareOgUrl" class="w-full aspect-[3/2] bg-slate-100 dark:bg-slate-700 animate-pulse" />
                       <template v-else>
@@ -245,7 +253,16 @@
                         <img :src="shareOgUrl" alt="preview" class="w-full h-auto" v-show="shareImageLoaded" @load="shareImageLoaded = true" @error="shareImageLoaded = false" />
                       </template>
                     </div>
+                
                     <div class="mt-3 grid grid-cols-2 gap-2">
+                      <button type="button" :disabled="!selectedItem" @click.stop="shareViaTelegram" class="rounded-md px-3 py-2 text-xs flex items-center justify-center gap-2 bg-sky-50 hover:bg-sky-100 text-sky-700 dark:bg-sky-900/20 dark:text-sky-300 cursor-pointer">
+                        <UIcon name="i-simple-icons-telegram" class="w-4 h-4" /> Telegram
+                      </button>
+                      <button type="button" :disabled="!selectedItem" @click.stop="shareViaWhatsApp" class="rounded-md px-3 py-2 text-xs flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300 cursor-pointer">
+                        <UIcon name="i-simple-icons-whatsapp" class="w-4 h-4" /> WhatsApp
+                      </button>
+                    </div>
+                    <div class="mt-2 grid grid-cols-2 gap-2">
                       <button type="button" :disabled="!canShareNow" @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
                         <UIcon name="i-heroicons-share" class="w-4 h-4" />Поделиться
                       </button>
@@ -314,7 +331,7 @@ if (itemId && process.server) {
 
 if (itemId && process.server) {
   try {
-    const { connectDB } = await import('~/server/utils/mongodb')
+    const { default: connectDB } = await import('~/server/utils/mongodb')
     const MKB = (await import('~/server/models/MKB')).default
     await connectDB()
     serverItem = await MKB.findById(itemId)
@@ -914,6 +931,28 @@ async function shareImage() {
   // @ts-ignore
   const toast = useToast?.()
   toast?.add?.({ title: 'Готово к отправке', description: 'Откройте мессенджер: подпись скопирована, файл сохранён.', color: 'primary' })
+}
+
+// Линки шаринга, чтобы мессенджеры сами генерировали предпросмотр (OG)
+function shareViaWhatsApp() {
+  if (!selectedItem.value) return
+  const name = selectedItem.value.name || 'Кодификатор'
+  const mkb = selectedItem.value.mkbCode ? `МКБ-10: ${selectedItem.value.mkbCode}` : ''
+  const station = selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''
+  const text = `${name}\n${mkb}${station}\n\n${window.location.href}`
+  const url = `https://wa.me/?text=${encodeURIComponent(text)}`
+  window.open(url, '_blank', 'noopener,noreferrer')
+}
+
+function shareViaTelegram() {
+  if (!selectedItem.value) return
+  const name = selectedItem.value.name || 'Кодификатор'
+  const mkb = selectedItem.value.mkbCode ? `МКБ-10: ${selectedItem.value.mkbCode}` : ''
+  const station = selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''
+  const text = `${name}\n${mkb}${station}\n\n${window.location.href}`
+  // Передаём только text, чтобы ссылка была именно на новой строке в сообщении
+  const url = `https://t.me/share/url?text=${encodeURIComponent(text)}`
+  window.open(url, '_blank', 'noopener,noreferrer')
 }
 
 // Безопасная загрузка файла, не триггеря глобальные обработчики навигации
