@@ -14,7 +14,7 @@
               <div class="flex items-center justify-between gap-3 mb-2">
                 <div class="flex items-center gap-3 min-w-0">
                   <div class="text-sm/6 text-slate-500 dark:text-slate-400 truncate">{{ formatDate(v.date) }}</div>
-                  <UBadge v-if="v.badge" variant="outline" size="sm">{{ v.badge }}</UBadge>
+                  <UBadge v-if="v.badge" size="sm" class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-0">{{ v.badge }}</UBadge>
                 </div>
                 <div class="shrink-0 flex items-center gap-2">
                   <UButton size="sm" color="neutral" variant="soft" class="cursor-pointer !p-0 size-7 rounded-md !flex !items-center !justify-center" @click="openEdit(v)">

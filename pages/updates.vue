@@ -6,7 +6,7 @@
       <UTimeline orientation="vertical" size="lg" :items="timelineItems" class="w-full">
         <template #date="{ item }">
           <div class="flex flex-col gap-1">
-            <UBadge v-if="item.badge" variant="outline" size="sm" class="w-fit">{{ item.badge }}</UBadge>
+            <UBadge v-if="item.badge" size="sm" class="w-fit bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-0">{{ item.badge }}</UBadge>
             <div class="text-dimmed text-xs/5">{{ item.date }}</div>
           </div>
         </template>

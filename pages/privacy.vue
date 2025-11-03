@@ -81,7 +81,7 @@
             <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-3">7. Контактная информация</h2>
             <p class="text-slate-600 dark:text-slate-300">
               По вопросам обработки персональных данных обращайтесь по адресу: 
-              <a href="mailto:privacy@smp-help.ru" class="text-indigo-600 hover:text-indigo-700">privacy@smp-help.ru</a>
+              <a href="mailto:message@johnone.ru" class="text-indigo-600 hover:text-indigo-700">message@johnone.ru</a>
             </p>
           </section>
 
