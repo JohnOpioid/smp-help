@@ -939,7 +939,10 @@ function shareViaWhatsApp() {
   const name = selectedItem.value.name || 'Кодификатор'
   const mkb = selectedItem.value.mkbCode ? `МКБ-10: ${selectedItem.value.mkbCode}` : ''
   const station = selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''
-  const text = `${name}\n${mkb}${station}\n\n${window.location.href}`
+  // Формируем абсолютный URL с id, чтобы OG теги гарантированно подхватились ботами
+  const base = getBaseUrl()
+  const shareUrl = `${base}${route.path}?id=${selectedItem.value._id}`
+  const text = `${name}\n${mkb}${station}\n\n${shareUrl}`
   const url = `https://wa.me/?text=${encodeURIComponent(text)}`
   window.open(url, '_blank', 'noopener,noreferrer')
 }
@@ -949,9 +952,11 @@ function shareViaTelegram() {
   const name = selectedItem.value.name || 'Кодификатор'
   const mkb = selectedItem.value.mkbCode ? `МКБ-10: ${selectedItem.value.mkbCode}` : ''
   const station = selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''
-  const text = `${name}\n${mkb}${station}\n\n${window.location.href}`
-  // Передаём только text, чтобы ссылка была именно на новой строке в сообщении
-  const url = `https://t.me/share/url?text=${encodeURIComponent(text)}`
+  const base = getBaseUrl()
+  const shareUrl = `${base}${route.path}?id=${selectedItem.value._id}`
+  const text = `${name}\n${mkb}${station}\n\n${shareUrl}`
+  // Telegram: указываем и url, и text, чтобы открывался композер и генерировалось превью
+  const url = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(text)}`
   window.open(url, '_blank', 'noopener,noreferrer')
 }
 
