@@ -155,6 +155,7 @@
               <button @click="toggleMenu"
                 class="shrink-0 h-10 w-10 rounded-full bg-slate-600 text-white flex items-center justify-center text-center text-lg font-semibold hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 cursor-pointer transition-all duration-700 ease-in-out overflow-visible relative">
                 <img v-if="user?.avatarUrl || user?.telegram?.photo_url" :src="user?.avatarUrl || user?.telegram?.photo_url" alt="avatar" class="h-full w-full object-cover rounded-full" />
+                <UIcon v-else-if="!user" name="i-heroicons-user" class="w-6 h-6 text-white" />
                 <span v-else>{{ initials }}</span>
                 <!-- Шапка на верхнем краю кнопки - только в день рождения -->
                 <img v-if="isBirthday" :src="hatUrl" alt="hat" class="absolute -top-1.5 right-1.5 -translate-y-1/2 translate-x-1/2 h-12 w-12 object-contain pointer-events-none scale-60 rotate-[30deg] hat-slate-800" />
@@ -162,7 +163,7 @@
 
               <div v-if="menuOpen"
                 class="absolute right-0 top-full mt-2 w-56 rounded-md border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 shadow-xl z-100">
-                <div class="px-3 py-2 border-b border-slate-100 dark:border-slate-700">
+                <div v-if="user" class="px-3 py-2 border-b border-slate-100 dark:border-slate-700">
                   <p class="text-sm font-medium text-slate-900 dark:text-white">{{ user?.firstName }} {{ user?.lastName
                   }}</p>
                   <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
@@ -174,7 +175,7 @@
                     </span>
                   </p>
                 </div>
-                <nav class="py-1">
+                <nav v-if="user" class="py-1">
                   <NuxtLink to="/profile"
                     class="flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
                     @click="menuOpen = false">
@@ -204,6 +205,20 @@
                     @click="menuOpen = false">Админка</NuxtLink>
                   <button @click="menuOpen = false; logout()"
                     class="w-full text-left px-3 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 cursor-pointer">Выйти</button>
+                </nav>
+                <nav v-else class="py-1">
+                  <NuxtLink to="/auth/register"
+                    class="flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                    @click="menuOpen = false">
+                    <UIcon name="i-heroicons-user-plus" class="w-4 h-4 text-slate-500" />
+                    <span>Регистрация</span>
+                  </NuxtLink>
+                  <NuxtLink to="/auth/login"
+                    class="flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                    @click="menuOpen = false">
+                    <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-4 h-4 text-slate-500" />
+                    <span>Авторизация</span>
+                  </NuxtLink>
                 </nav>
               </div>
             </div>
@@ -317,14 +332,20 @@ if (!user.value) {
     }
   }, { immediate: true })
   
-  // Обрабатываем ошибки авторизации
+  // Обрабатываем ошибки авторизации: на публичных разделах не редиректим
+  const currentRoute = useRoute()
+  const isPublicPath = computed(() => {
+    const p = currentRoute.path
+    return p === '/' || p.startsWith('/algorithms') || p.startsWith('/codifier')
+  })
   watch(meError, (error) => {
     if (error && process.client) {
-      console.error('Auth error:', error)
-      // Если ошибка авторизации, очищаем данные и перенаправляем
-      if (error.statusCode === 401) {
+      // Если 401 — на публичных страницах просто чистим состояние без редиректа
+      if ((error.statusCode === 401 || error.status === 401)) {
         clearAuth()
-        navigateTo('/auth/login')
+        if (!isPublicPath.value) {
+          navigateTo('/auth/login')
+        }
       }
     }
   }, { immediate: true })

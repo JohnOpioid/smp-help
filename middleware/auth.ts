@@ -3,6 +3,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (to.path.startsWith('/auth/')) {
     return
   }
+
+  // Публичные разделы: главная, алгоритмы и кодификатор
+  if (to.path === '/' || to.path.startsWith('/algorithms') || to.path.startsWith('/codifier')) {
+    return
+  }
   
   // Пропускаем авторизацию для ботов социальных сетей, чтобы они могли читать мета-теги
   if (process.server) {
@@ -24,8 +29,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     }
   }
 
-  // Публичный доступ для предпросмотра шеринга кодификатора по ссылке с id
-  // Нужен, чтобы соцсети и неавторизованные пользователи могли получить OG-мета и og:image
+  // Публичный доступ для предпросмотра шеринга кодификатора по ссылке с id (избыточно, но оставим)
   if (to.path.startsWith('/codifier') && typeof to.query.id === 'string' && to.query.id.length > 0) {
     return
   }
@@ -34,6 +38,10 @@ export default defineNuxtRouteMiddleware(async (to) => {
   
   // Если пользователь не авторизован на клиенте, перенаправляем на страницу входа
   if (process.client && !isLoggedIn.value) {
+    // Разрешаем гостевой доступ на публичные разделы и кодификатор с id
+    if (to.path === '/' || to.path.startsWith('/algorithms') || to.path.startsWith('/codifier')) {
+      return
+    }
     return navigateTo('/auth/login')
   }
   

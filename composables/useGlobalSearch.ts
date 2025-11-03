@@ -1,33 +1,50 @@
-// Глобальное состояние поиска с использованием useState для сохранения между страницами
-// Версия без отладочных логов - 2024-01-20
-const globalState = {
-  isSearchActive: useState('search.isSearchActive', () => false),
-  searchQuery: ref(''), // Временно используем ref вместо useState
-  searchResults: useState('search.searchResults', () => []),
-  isSearching: useState('search.isSearching', () => false),
-  isDataFromCache: useState('search.isDataFromCache', () => false),
-  groupedResults: useState('search.groupedResults', () => ({
-    mkb: [],
-    ls: [],
-    algorithm: [],
-    drug: [],
-    substation: [],
-    calculator: []
-  })),
-  orderedSections: useState('search.orderedSections', () => []),
-  currentPageContext: useState('search.currentPageContext', () => ''),
-  searchTimeout: ref<NodeJS.Timeout | null>(null)
+// Глобальное состояние поиска (ленивая инициализация внутри composable)
+let initialized = false
+let globalState: {
+  isSearchActive: Ref<boolean>
+  searchQuery: Ref<string>
+  searchResults: Ref<any[]>
+  isSearching: Ref<boolean>
+  isDataFromCache: Ref<boolean>
+  groupedResults: Ref<Record<string, any[]>>
+  orderedSections: Ref<string[]>
+  currentPageContext: Ref<string>
+  searchTimeout: Ref<NodeJS.Timeout | null>
 }
 
-// Дополнительно используем cookie для надежного сохранения поискового запроса
-const searchQueryCookie = useCookie('search-query', {
-  default: () => '',
-  maxAge: 60 * 60 * 24, // 24 часа
-  sameSite: 'lax'
-})
+let searchQueryCookie: Ref<string>
 
 // Composable для управления глобальным состоянием поиска
 export const useGlobalSearch = () => {
+  if (!initialized) {
+    globalState = {
+      isSearchActive: useState('search.isSearchActive', () => false),
+      searchQuery: ref(''),
+      searchResults: useState('search.searchResults', () => []),
+      isSearching: useState('search.isSearching', () => false),
+      isDataFromCache: useState('search.isDataFromCache', () => false),
+      groupedResults: useState('search.groupedResults', () => ({
+        mkb: [],
+        ls: [],
+        algorithm: [],
+        drug: [],
+        substation: [],
+        calculator: []
+      })),
+      orderedSections: useState('search.orderedSections', () => []),
+      currentPageContext: useState('search.currentPageContext', () => ''),
+      searchTimeout: ref<NodeJS.Timeout | null>(null)
+    }
+
+    // Дополнительно используем cookie для надежного сохранения поискового запроса
+    searchQueryCookie = useCookie('search-query', {
+      default: () => '',
+      maxAge: 60 * 60 * 24,
+      sameSite: 'lax'
+    })
+
+    initialized = true
+  }
   // Инициализируем searchQuery из localStorage при первом запуске
   if (process.client && !globalState.searchQuery.value) {
     const savedQuery = localStorage.getItem('searchQuery') || ''
