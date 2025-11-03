@@ -31,7 +31,9 @@ export default defineAppConfig({
       }
     },
     button: {
-      base: 'cursor-pointer'
+      slots: {
+        base: 'cursor-pointer'
+      }
     }
   }
 })
