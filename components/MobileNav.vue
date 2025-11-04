@@ -30,7 +30,7 @@
             <NuxtLink v-for="item in moreItems" :key="item.to" :to="item.to"
               class="flex items-start gap-3 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
               :class="{ 'bg-slate-100 dark:bg-slate-700': isActive(item.to) }"
-              @click="moreOpen = false">
+              @mousedown.prevent="goAndClose(item.to)" @click="moreOpen = false">
               <UIcon :name="item.icon" class="ms-0.5 mt-0.5 w-4 h-4 text-slate-500" />
               <div class="min-w-0">
                 <div class="truncate font-medium text-slate-900 dark:text-white">{{ item.label }}</div>
@@ -159,6 +159,11 @@ const isActive = (to: string) => {
 const moreOpen = ref(false)
 const moreRef = ref<HTMLElement | null>(null)
 const moreActive = computed(() => moreItems.value.some(item => isActive(item.to)))
+
+const goAndClose = (to: string) => {
+  moreOpen.value = false
+  navigateTo(to)
+}
 
 const onDocClickMore = (e: MouseEvent) => {
   if (!moreOpen.value) return

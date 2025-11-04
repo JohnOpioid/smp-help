@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute } from '#app'
 import { useAuth } from '~/composables/useAuth'
 // Навигация админки (Nuxt UI: UVerticalNavigation)
@@ -64,6 +64,13 @@ const initials = computed(() => {
 })
 const userName = computed(() => `${user.value?.firstName || ''} ${user.value?.lastName || ''}`.trim() || 'Профиль')
 const userEmail = computed(() => user.value?.email || (user.value?.telegram?.username ? `@${user.value.telegram.username}` : '—'))
+
+// Автоматически закрываем сайдбар на мобильных после навигации
+watch(() => route.path, () => {
+  if (process.client && window.innerWidth <= 768) {
+    mobileOpen.value = false
+  }
+})
 </script>
 
 <style scoped>

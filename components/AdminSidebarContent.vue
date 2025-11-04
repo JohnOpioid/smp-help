@@ -25,11 +25,11 @@
       <div class="relative" ref="profileRef">
         <button type="button" @click="profileOpen = !profileOpen" class="w-full flex items-center gap-3 rounded-md px-2 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer">
           <div class="h-9 w-9 rounded-md bg-slate-600 text-white flex items-center justify-center text-sm font-semibold">
-            {{ initials }}
+            {{ displayInitials }}
           </div>
           <div class="min-w-0 text-left">
-            <div class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ userName }}</div>
-            <div class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ userEmail }}</div>
+            <div class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ displayUserName }}</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ displayUserEmail }}</div>
           </div>
         </button>
         <div v-if="profileOpen" class="absolute right-0 bottom-full mb-2 w-56 rounded-md border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 shadow-xl z-50">
@@ -98,6 +98,13 @@ const initials = computed(() => {
 })
 const userName = computed(() => `${user.value?.firstName || ''} ${user.value?.lastName || ''}`.trim() || 'Профиль')
 const userEmail = computed(() => user.value?.email || (user.value?.telegram?.username ? `@${user.value.telegram.username}` : '—'))
+
+// Избегаем SSR/CSR рассинхронизации — до монтирования показываем плейсхолдеры
+const hydrated = ref(false)
+onMounted(() => { hydrated.value = true })
+const displayInitials = computed(() => (hydrated.value && user.value ? initials.value : 'U'))
+const displayUserName = computed(() => (hydrated.value && user.value ? userName.value : 'Профиль'))
+const displayUserEmail = computed(() => (hydrated.value && user.value ? userEmail.value : '—'))
 
 // Локальное управление попапом профиля (как в шапке)
 const profileOpen = ref(false)

@@ -104,7 +104,12 @@
             </div>
             <div class="text-sm">
               <div class="text-slate-500 dark:text-slate-400">Клиентская версия</div>
-              <div class="mt-1 text-base font-semibold text-slate-900 dark:text-white">v{{ clientVersion || '—' }}</div>
+              <ClientOnly>
+                <div class="mt-1 text-base font-semibold text-slate-900 dark:text-white">v{{ clientVersion || '—' }}</div>
+                <template #fallback>
+                  <div class="mt-1 text-base font-semibold text-slate-900 dark:text-white">v—</div>
+                </template>
+              </ClientOnly>
               <div v-if="clientOutdated" class="mt-1 text-xs text-amber-600 dark:text-amber-400">Клиент отстаёт от сервера — перезагрузите клиент</div>
             </div>
           </div>

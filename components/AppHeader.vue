@@ -194,44 +194,44 @@
                 <nav v-if="user" class="py-1">
                   <NuxtLink to="/profile"
                     class="flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                    @click="menuOpen = false">
+                    @mousedown.prevent="goAndClose('/profile')" @click="menuOpen = false">
                     <UIcon name="i-heroicons-calendar-days" class="w-4 h-4 text-slate-500" />
                     <span>Смены</span>
                   </NuxtLink>
                   <NuxtLink to="/profile/bookmarks"
                     class="flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                    @click="menuOpen = false">
+                    @mousedown.prevent="goAndClose('/profile/bookmarks')" @click="menuOpen = false">
                     <UIcon name="i-heroicons-bookmark" class="w-4 h-4 text-slate-500" />
                     <span>Закладки</span>
                   </NuxtLink>
                   <NuxtLink to="/profile/settings"
                     class="flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                    @click="menuOpen = false">
+                    @mousedown.prevent="goAndClose('/profile/settings')" @click="menuOpen = false">
                     <UIcon name="i-heroicons-cog-6-tooth" class="w-4 h-4 text-slate-500" />
                     <span>Настройки</span>
                   </NuxtLink>
                   <div
                     class="flex items-center justify-between px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                    @click="menuOpen = false">
+                    @mousedown="menuOpen = false" @click="menuOpen = false">
                     <span>Тёмная тема</span>
                     <USwitch :model-value="isDark" @update:model-value="onToggleTheme" size="sm" color="neutral" />
                   </div>
                   <NuxtLink v-if="user?.role === 'admin'" to="/admin"
                     class="block px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                    @click="menuOpen = false">Админка</NuxtLink>
-                  <button @click="menuOpen = false; logout()"
+                    @mousedown.prevent="goAndClose('/admin')" @click="menuOpen = false">Админка</NuxtLink>
+                  <button @mousedown="menuOpen = false" @click="menuOpen = false; logout()"
                     class="w-full text-left px-3 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 cursor-pointer">Выйти</button>
                 </nav>
                 <nav v-else class="py-1">
                   <NuxtLink to="/auth/register"
                     class="flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                    @click="menuOpen = false">
+                    @mousedown.prevent="goAndClose('/auth/register')" @click="menuOpen = false">
                     <UIcon name="i-heroicons-user-plus" class="w-4 h-4 text-slate-500" />
                     <span>Регистрация</span>
                   </NuxtLink>
                   <NuxtLink to="/auth/login"
                     class="flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                    @click="menuOpen = false">
+                    @mousedown.prevent="goAndClose('/auth/login')" @click="menuOpen = false">
                     <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-4 h-4 text-slate-500" />
                     <span>Авторизация</span>
                   </NuxtLink>
@@ -389,6 +389,13 @@ if (!user.value) {
 const menuOpen = ref(false)
 const profileRef = ref<HTMLElement | null>(null)
 const toggleMenu = () => { menuOpen.value = !menuOpen.value }
+// Закрываем профиль при смене маршрута
+watch(() => route.path, () => { menuOpen.value = false })
+
+const goAndClose = (to: string) => {
+  menuOpen.value = false
+  navigateTo(to)
+}
 
 // Состояние выпадающего меню
 const dropdownMenuOpen = ref(false)
