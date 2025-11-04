@@ -126,6 +126,20 @@ async function resolveLastLabel() {
   }
   customLastLabel.value = ''
   customAlgoTrail.value = null
+  // Спец. обработка для /tests/:id — подтягиваем название категории
+  try {
+    const segments = route.path.split('/').filter(Boolean)
+    if (segments[0] === 'tests' && segments.length >= 2) {
+      const id = segments[1]
+      if (id && id.length >= 12) {
+        const res: any = await $fetch(`/api/tests/categories/${id}`)
+        if (res?.success && res.item?.name) {
+          customLastLabel.value = String(res.item.name)
+          return
+        }
+      }
+    }
+  } catch {}
 }
 
 onMounted(() => resolveLastLabel())
@@ -159,6 +173,7 @@ const items = computed<BreadcrumbItem[]>(() => {
     'contacts': 'Контакты',
     'help': 'Помощь',
     'privacy': 'Политика конфиденциальности',
+    'tests': 'Тесты',
     // Маппинг английских названий категорий на русские
     'neurology': 'Неврология',
     'anesthesiology': 'Анестезиология и реаниматология',
@@ -214,6 +229,27 @@ const items = computed<BreadcrumbItem[]>(() => {
     // /local-statuses/:category...
     acc.push({ label: 'Локальные статусы', to: '/local-statuses' })
     let localPath = '/local-statuses'
+    segments.slice(1).forEach((seg, idx, rest) => {
+      localPath += `/${seg}`
+      const isLast = idx === rest.length - 1
+      const base = isLast && customLastLabel.value
+        ? customLastLabel.value
+        : (labelMap[seg] || decodeURIComponent(seg).replace(/[-_]+/g, ' '))
+      const label = base.charAt(0).toUpperCase() + base.slice(1)
+      acc.push({ label, to: isLast ? undefined : localPath })
+    })
+    return acc
+  }
+
+  // Явная ветка для /tests
+  if (segments[0] === 'tests') {
+    if (segments.length === 1) {
+      acc.push({ label: 'Тесты' })
+      return acc
+    }
+    // /tests/:id
+    acc.push({ label: 'Тесты', to: '/tests' })
+    let localPath = '/tests'
     segments.slice(1).forEach((seg, idx, rest) => {
       localPath += `/${seg}`
       const isLast = idx === rest.length - 1

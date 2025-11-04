@@ -7,11 +7,12 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   if (!id) return { success: false, message: 'ID не указан' }
   const body = await readBody(event)
-  const { name, description, url } = body || {}
+  const { name, description, url, isPublic } = body || {}
   const update: any = {}
   if (typeof name === 'string') update.name = name
   if (typeof description === 'string') update.description = description
   if (typeof url === 'string') update.url = url
+  if (typeof isPublic === 'boolean') update.isPublic = isPublic
   const item = await TestCategory.findByIdAndUpdate(id, update, { new: true })
   return { success: true, item }
 })

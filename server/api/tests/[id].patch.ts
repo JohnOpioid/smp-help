@@ -16,8 +16,11 @@ export default defineEventHandler(async (event) => {
   if (typeof body?.explanation === 'string') update.explanation = body.explanation
   if (typeof body?.markdown === 'string') update.markdown = body.markdown
   if (typeof body?.order === 'number') update.order = body.order
+  if (typeof body?.approved === 'boolean') update.approved = body.approved
 
   const item = await Test.findByIdAndUpdate(id, update, { new: true })
+    .populate('createdBy', 'firstName lastName email avatarUrl telegram')
+    .lean()
   return { success: true, item }
 })
 

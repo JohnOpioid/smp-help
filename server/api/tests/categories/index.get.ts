@@ -4,7 +4,11 @@ import TestCategory from '~/server/models/TestCategory'
 
 export default defineEventHandler(async (event) => {
   await connectDB()
-  const items = await TestCategory.find({}).sort({ createdAt: -1 }).lean()
+  const url = new URL(event.node.req.url || '', 'http://localhost')
+  const publicOnly = url.searchParams.get('publicOnly')
+  const query: any = {}
+  if (publicOnly === '1') query.isPublic = true
+  const items = await TestCategory.find(query).sort({ createdAt: -1 }).lean()
   return { success: true, items }
 })
 

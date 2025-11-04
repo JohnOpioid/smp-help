@@ -138,15 +138,22 @@ const infoMap: Record<string, { description: string }> = {
   '/apps': { description: 'Полезные приложения' },
   '/instructions': { description: 'Инструкции и памятки' },
   '/substations': { description: 'Подстанции на карте' },
-  '/calculators': { description: 'Медицинские калькуляторы' }
+  '/calculators': { description: 'Медицинские калькуляторы' },
+  '/tests': { description: 'Ответы на тесты' }
 }
 
 const { user } = useAuth()
-const moreItems = computed(() =>
-  moreItemsBase
+// Проверяем доступность тестов
+const { data: testsEnabledData } = useFetch('/api/settings/tests-enabled', { server: false })
+const testsAvailable = computed(() => Boolean(testsEnabledData.value?.enabled))
+
+const moreItems = computed(() => {
+  const base = [...moreItemsBase]
+  if (testsAvailable.value) base.push({ to: '/tests', icon: 'i-lucide-check-circle-2', label: 'Тесты' })
+  return base
     .filter(i => i.to !== '/admin' ? true : (user.value?.role === 'admin'))
     .map(i => ({ ...i, description: infoMap[i.to]?.description }))
-)
+})
 
 const isActive = (to: string) => {
   // Для главной страницы — только точное совпадение

@@ -437,6 +437,10 @@ interface MenuItem {
   hasChildren?: boolean
 }
 
+// Доступность публичных тестов
+const { data: testsEnabledData } = useFetch('/api/settings/tests-enabled', { server: false })
+const testsAvailable = computed(() => Boolean(testsEnabledData.value?.enabled))
+
 // Основные пункты меню
 const mainMenuItems = computed<MenuItem[]>(() => [
   {
@@ -521,7 +525,13 @@ const mainMenuItems = computed<MenuItem[]>(() => [
     to: '/substations',
     icon: 'i-lucide-building-2',
     description: 'Подстанции на карте'
-  }
+  },
+  ...(testsAvailable.value ? [{
+    label: 'Тесты',
+    to: '/tests',
+    icon: 'i-lucide-check-circle-2',
+    description: 'Ответы на тесты'
+  } as MenuItem] : [])
 ])
 
 // Получаем данные для кодификатора
@@ -735,19 +745,17 @@ watch(searchQuery, (newQuery, oldQuery) => {
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
   )
   
-  // На странице подстанций поиск начинается с 1 символа
-  if (isSubstationsPage.value) {
+  // На локальных страницах (подстанции/тесты) поиск начинается с 1 символа и локален
+  if (isSubstationsPage.value || isTestsCategoryPage.value) {
     if (!newQuery || newQuery.trim().length === 0) {
       // Очищаем локальный поиск
-      window.dispatchEvent(new CustomEvent('substations-search', {
-        detail: { query: '' }
-      }))
+      const eventName = isSubstationsPage.value ? 'substations-search' : 'tests-search'
+      window.dispatchEvent(new CustomEvent(eventName, { detail: { query: '' } }))
       return
     } else {
       // Выполняем локальный поиск с любым количеством символов
-      window.dispatchEvent(new CustomEvent('substations-search', {
-        detail: { query: newQuery.trim() }
-      }))
+      const eventName = isSubstationsPage.value ? 'substations-search' : 'tests-search'
+      window.dispatchEvent(new CustomEvent(eventName, { detail: { query: newQuery.trim() } }))
       return
     }
   }
@@ -776,14 +784,18 @@ watch(searchQuery, (newQuery, oldQuery) => {
     activateSearch(newQuery)
   }
   
-  // Устанавливаем дебаунс - поиск запустится только после паузы в вводе
+  // Устанавливаем дебаунс глобального поиска (только вне локальных страниц)
   searchTimeout = setTimeout(() => {
-    performServerSearch(newQuery.trim(), 0) // Без дополнительной задержки
-  }, 500) // 500ms дебаунс
+    if (!isTestsCategoryPage.value && !isSubstationsPage.value) {
+      performServerSearch(newQuery.trim(), 0)
+    }
+  }, 500)
 })
 
 // Проверяем, находимся ли на странице подстанций
 const isSubstationsPage = computed(() => route.path === '/substations')
+// Проверяем, находимся ли на странице тестов (категория)
+const isTestsCategoryPage = computed(() => route.path.startsWith('/tests/') )
 
 // Локальные переменные для управления отображением
 const searchInput = ref<HTMLInputElement | null>(null)
@@ -843,8 +855,8 @@ const onSearchFocus = () => {
   
   const q = queryValue.trim()
 
-  // На странице подстанций не активируем глобальный поиск
-  if (isSubstationsPage.value) {
+  // На локальных страницах поиска (подстанции/тесты) не активируем глобальный поиск
+  if (isSubstationsPage.value || isTestsCategoryPage.value) {
     // На странице подстанций просто расширяем строку поиска на мобильных
     const isMobile = window.innerWidth <= 768
     if (isMobile) {
@@ -877,8 +889,8 @@ const onSearchFocus = () => {
 }
 
 const onSearchBlur = () => {
-  // На странице подстанций не деактивируем поиск
-  if (isSubstationsPage.value) {
+  // На локальных страницах поиска не деактивируем поиск
+  if (isSubstationsPage.value || isTestsCategoryPage.value) {
     return
   }
 
@@ -948,10 +960,10 @@ const onSearchCompositionEnd = () => {
 }
 
 const handleSearchInput = () => {
-  // Если мы на странице подстанций, отправляем событие для локального поиска
-  if (isSubstationsPage.value) {
-    // Отправляем событие на страницу подстанций для фильтрации
-    window.dispatchEvent(new CustomEvent('substations-search', {
+  // Если мы на странице локального поиска
+  if (isSubstationsPage.value || isTestsCategoryPage.value) {
+    const eventName = isSubstationsPage.value ? 'substations-search' : 'tests-search'
+    window.dispatchEvent(new CustomEvent(eventName, {
       detail: { query: searchQuery.value }
     }))
     return
@@ -1112,11 +1124,10 @@ const clearSearchInput = () => {
   groupedResults.value = emptyGrouped
   orderedSections.value = []
   
-  // Если мы на странице подстанций, отправляем событие для очистки локального поиска
-  if (isSubstationsPage.value) {
-    window.dispatchEvent(new CustomEvent('substations-search', {
-      detail: { query: '' }
-    }))
+  // Если мы на странице локального поиска, отправляем событие для очистки
+  if (isSubstationsPage.value || isTestsCategoryPage.value) {
+    const eventName = isSubstationsPage.value ? 'substations-search' : 'tests-search'
+    window.dispatchEvent(new CustomEvent(eventName, { detail: { query: '' } }))
   }
 }
 
@@ -1136,11 +1147,10 @@ const clearSearch = () => {
     isSearchExpanded.value = false
   }
 
-  // Если мы на странице подстанций, отправляем событие для очистки поиска
-  if (isSubstationsPage.value) {
-    window.dispatchEvent(new CustomEvent('substations-search', {
-      detail: { query: '' }
-    }))
+  // Если мы на странице локального поиска, отправляем событие для очистки
+  if (isSubstationsPage.value || isTestsCategoryPage.value) {
+    const eventName = isSubstationsPage.value ? 'substations-search' : 'tests-search'
+    window.dispatchEvent(new CustomEvent(eventName, { detail: { query: '' } }))
   }
 
   // Всегда деактивируем поиск для скрытия панели результатов
@@ -1173,7 +1183,7 @@ const onSearchKeydown = () => {
 
 const onSearchTouchStart = () => {
   // Активируем поиск при касании, если он еще не активен
-  if (!isSearchActive.value && !isSubstationsPage.value) {
+  if (!isSearchActive.value && !isSubstationsPage.value && !isTestsCategoryPage.value) {
     activateSearch(searchQuery.value.trim())
   }
 }

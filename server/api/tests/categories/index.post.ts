@@ -6,7 +6,7 @@ import { slugifyForUrl } from '~/server/utils/textNormalization'
 export default defineEventHandler(async (event) => {
   await connectDB()
   const body = await readBody(event)
-  const { name, description } = body || {}
+  const { name, description, isPublic } = body || {}
   if (!name || !String(name).trim()) return { success: false, message: 'Название обязательно' }
 
   const url = slugifyForUrl(String(name))
@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
   const exists = await TestCategory.findOne({ $or: [{ name }, { url }] })
   if (exists) return { success: false, message: 'Категория с таким названием или URL уже существует' }
 
-  const item = await TestCategory.create({ name, url, description })
+  const item = await TestCategory.create({ name, url, description, isPublic: Boolean(isPublic) })
   return { success: true, item }
 })
 
