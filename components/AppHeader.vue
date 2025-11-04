@@ -211,10 +211,11 @@
                     <span>Настройки</span>
                   </NuxtLink>
                   <div
-                    class="flex items-center justify-between px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                    @mousedown="menuOpen = false" @click="menuOpen = false">
+                    class="flex items-center justify-between px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
                     <span>Тёмная тема</span>
-                    <USwitch :model-value="isDark" @update:model-value="onToggleTheme" size="sm" color="neutral" />
+                    <div @click.stop @mousedown.stop>
+                      <USwitch :model-value="isDark" @update:model-value="onToggleTheme" size="sm" color="neutral" />
+                    </div>
                   </div>
                   <NuxtLink v-if="user?.role === 'admin'" to="/admin"
                     class="block px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
