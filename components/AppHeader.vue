@@ -7,6 +7,7 @@
           <div class="relative">
             <!-- Логотип (крутится при реактивной навигации) -->
             <UTooltip 
+              v-if="!isMobile"
               text="Для открытия меню" 
               :kbds="['ПКМ']" 
               arrow 
@@ -20,16 +21,31 @@
                     class="h-9 w-9 cursor-pointer transition-all duration-700 ease-in-out" :class="{
                       'scale-110': dropdownMenuOpen,
                       'animate-spin': isContentLoading
-                    }" @click="navigateToHome" @contextmenu.prevent="openDropdownMenu" />
+                    }" @click="navigateToHome" @contextmenu.prevent="onLogoContextMenu" />
                   <UIcon v-else :name="activePromo.themeLogo || activePromo.spriteIcon" class="w-7 h-7 text-orange-500 animate-bounce cursor-pointer" @click="navigateToHome" />
                 </template>
                 <img v-else ref="logoRef" :src="logoUrl" alt="Логотип"
                   class="h-9 w-9 cursor-pointer transition-all duration-700 ease-in-out" :class="{
                     'scale-110': dropdownMenuOpen,
                     'animate-spin': isContentLoading
-                  }" @click="navigateToHome" @contextmenu.prevent="openDropdownMenu" />
+                  }" @click="navigateToHome" @contextmenu.prevent="onLogoContextMenu" />
               </div>
             </UTooltip>
+            <div v-else class="flex items-center gap-2">
+              <template v-if="activePromo && (activePromo.themeLogo || activePromo.spriteIcon)">
+                <img v-if="isImageUrl(activePromo.themeLogo)" ref="logoRef" :src="activePromo.themeLogo" alt="Логотип"
+                  class="h-9 w-9 cursor-pointer transition-all duration-700 ease-in-out" :class="{
+                    'scale-110': dropdownMenuOpen,
+                    'animate-spin': isContentLoading
+                  }" @click="navigateToHome" @contextmenu.prevent />
+                <UIcon v-else :name="activePromo.themeLogo || activePromo.spriteIcon" class="w-7 h-7 text-orange-500 animate-bounce cursor-pointer" @click="navigateToHome" />
+              </template>
+              <img v-else ref="logoRef" :src="logoUrl" alt="Логотип"
+                class="h-9 w-9 cursor-pointer transition-all duration-700 ease-in-out" :class="{
+                  'scale-110': dropdownMenuOpen,
+                  'animate-spin': isContentLoading
+                }" @click="navigateToHome" @contextmenu.prevent />
+            </div>
 
             <!-- Выпадающее меню из логотипа-кнопки -->
             <Transition enter-active-class="transition-all duration-200 ease-out"
@@ -382,6 +398,12 @@ const openDropdownMenu = (event: MouseEvent) => {
   // Меню теперь позиционируется через CSS относительно логотипа
   // Не нужно вычислять координаты
   dropdownMenuOpen.value = true
+}
+
+const onLogoContextMenu = (event: MouseEvent) => {
+  // На мобильных долгий тап не должен открывать меню
+  if (isMobile.value) return
+  openDropdownMenu(event)
 }
 
 const closeDropdownMenu = () => {
