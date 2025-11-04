@@ -9,6 +9,7 @@ import AlgorithmSection from '~/server/models/AlgorithmSection'
 import Drug from '~/server/models/Drug'
 import DrugCategory from '~/server/models/DrugCategory'
 import Substation from '~/server/models/Substation'
+import Region from '~/server/models/Region'
 import Calculator from '~/server/models/Calculator'
 import { createCyrillicLatinRegex } from '~/server/utils/textNormalization'
 
@@ -40,6 +41,19 @@ export default defineEventHandler(async (event) => {
     }
 
     await connectDB()
+    
+    // Убеждаемся, что модели зарегистрированы для populate
+    // Это необходимо для работы populate('category', 'name url') и populate('region', 'name')
+    try {
+      await LocalStatusCategory.findOne({}).limit(1).lean()
+    } catch (e) {
+      console.warn('⚠️ API: Предупреждение при проверке модели LocalStatusCategory:', e)
+    }
+    try {
+      await Region.findOne({}).limit(1).lean()
+    } catch (e) {
+      console.warn('⚠️ API: Предупреждение при проверке модели Region:', e)
+    }
     
     const searchQuery = query.trim()
     
@@ -221,10 +235,13 @@ export default defineEventHandler(async (event) => {
       ]
     }
     
-    // Функция-хелпер для условного поиска
+    // Функция-хелпер для условного поиска с обработкой ошибок
     const conditionalSearch = (categoryKey: string, searchFn: () => Promise<any[]>) => {
       if (selectedCategories === null || selectedCategories.includes(categoryKey)) {
-        return searchFn()
+        return searchFn().catch((err: any) => {
+          console.error(`❌ API: Ошибка поиска в категории ${categoryKey}:`, err)
+          return [] // Возвращаем пустой массив при ошибке, чтобы не ломать весь поиск
+        })
       }
       return Promise.resolve([])
     }
@@ -350,8 +367,7 @@ export default defineEventHandler(async (event) => {
           { phones: { $in: searchRegexes } }
         ]
       })
-      // Временно убираем populate для избежания ошибки LocalStatusCategory
-      // .populate('region', 'name')
+      .populate('region', 'name')
       // Лимит убран для получения всех результатов
       .lean()),
 
