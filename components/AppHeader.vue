@@ -248,7 +248,7 @@
 </template>
 
 <script setup lang="ts">
-import { watch, onMounted, onUnmounted, computed } from 'vue'
+import { watch, onMounted, onUnmounted, computed, nextTick } from 'vue'
 
 const props = withDefaults(defineProps<{ title?: string }>(), { title: 'Справочник СМП' })
 const route = useRoute()
@@ -684,6 +684,10 @@ const { addToHistory } = useSearchHistory()
 
 // Синхронизируем локальный searchQuery с глобальным состоянием
 watch(searchQuery, (newValue) => {
+  // Пропускаем обновление, если мы обновляем значение вручную (чтобы избежать конфликтов)
+  if (isManuallyUpdating.value) {
+    return
+  }
   // Не вызываем updateSearchQuery при инициализации с пустым значением
   if (newValue !== '') {
     updateSearchQuery(newValue)
@@ -694,6 +698,7 @@ const isComposing = ref(false)
 const isSearchExpanded = ref(false)
 const isMobile = ref(false)
 const isDataFromCache = ref(false)
+const isManuallyUpdating = ref(false) // Флаг для блокировки watcher при ручном обновлении
 
 // Обновляем состояние мобильного устройства
 const updateMobileState = () => {
@@ -913,7 +918,51 @@ const onSearchEnter = () => {
   }
 }
 
-const onSearchInput = () => {
+const onSearchInput = (event?: Event) => {
+  // Исправление проблемы с пробелом после цифр на ПК
+  if (!isMobile.value && searchInput.value && event) {
+    const input = event.target as HTMLInputElement
+    const currentValue = input.value || ''
+    const cursorPosition = input.selectionStart || 0
+    
+    // Проверяем, если пользователь ввел пробел после цифры
+    if (currentValue.match(/^\d+ /) && !lastSearchValue.value.match(/^\d+ /)) {
+      // Пробел был добавлен после цифры - сохраняем его
+      isManuallyUpdating.value = true
+      searchQuery.value = currentValue
+      lastSearchValue.value = currentValue
+      // Синхронизируем с глобальным состоянием вручную
+      updateSearchQuery(currentValue)
+      nextTick(() => {
+        isManuallyUpdating.value = false
+        // Устанавливаем курсор после пробела
+        if (input) {
+          input.setSelectionRange(cursorPosition, cursorPosition)
+        }
+      })
+      return
+    }
+    
+    // Проверяем, если пробел был удален после цифры
+    if (lastSearchValue.value.match(/^\d+ /) && currentValue.match(/^\d+$/) && !currentValue.match(/^\d+ /)) {
+      // Пробел был удален - восстанавливаем его
+      const restoredValue = lastSearchValue.value
+      isManuallyUpdating.value = true
+      searchQuery.value = restoredValue
+      updateSearchQuery(restoredValue)
+      nextTick(() => {
+        isManuallyUpdating.value = false
+        if (searchInput.value) {
+          const inputEl = searchInput.value as HTMLInputElement
+          const restoredCursorPos = restoredValue.length
+          inputEl.setSelectionRange(restoredCursorPos, restoredCursorPos)
+          inputEl.focus()
+        }
+      })
+      return
+    }
+  }
+  
   // Обновляем значение
   lastSearchValue.value = searchQuery.value
   
@@ -1177,8 +1226,41 @@ const hideSearch = () => {
 }
 
 // Дополнительные обработчики для мобильных устройств
-const onSearchKeydown = () => {
+const onSearchKeydown = (event: KeyboardEvent) => {
   // Логика поиска теперь обрабатывается в watcher для searchQuery
+  // Исправляем проблему с пробелом после цифр на ПК
+  if (event.key === ' ' && searchInput.value && !isMobile.value) {
+    const input = searchInput.value as HTMLInputElement
+    const currentValue = input.value || ''
+    const cursorPosition = input.selectionStart || 0
+    
+    // Проверяем, что перед курсором есть цифра
+    if (cursorPosition > 0) {
+      const charBeforeCursor = currentValue[cursorPosition - 1]
+      if (charBeforeCursor && /[0-9]/.test(charBeforeCursor)) {
+        // Предотвращаем стандартное поведение и вручную добавляем пробел
+        event.preventDefault()
+        const newValue = currentValue.slice(0, cursorPosition) + ' ' + currentValue.slice(cursorPosition)
+        
+        // Устанавливаем флаг, чтобы предотвратить перезапись значения watcher'ом
+        isManuallyUpdating.value = true
+        searchQuery.value = newValue
+        lastSearchValue.value = newValue
+        // Синхронизируем с глобальным состоянием вручную
+        updateSearchQuery(newValue)
+        
+        // Устанавливаем курсор после пробела
+        nextTick(() => {
+          isManuallyUpdating.value = false
+          if (searchInput.value) {
+            const inputEl = searchInput.value as HTMLInputElement
+            inputEl.setSelectionRange(cursorPosition + 1, cursorPosition + 1)
+            inputEl.focus()
+          }
+        })
+      }
+    }
+  }
 }
 
 const onSearchTouchStart = () => {

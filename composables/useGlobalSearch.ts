@@ -59,10 +59,15 @@ export const useGlobalSearch = () => {
   // Синхронизируем searchQuery с cookie и localStorage
   const searchQuery = computed({
     get: () => {
-      const cookieValue = searchQueryCookie.value || ''
+      // Приоритет у stateValue (самого свежего значения), чтобы избежать конфликтов при вводе
       const stateValue = globalState.searchQuery.value || ''
+      // Если stateValue пустое, используем cookie/localStorage как fallback
+      if (stateValue) {
+        return typeof stateValue === 'string' ? stateValue : String(stateValue)
+      }
+      const cookieValue = searchQueryCookie.value || ''
       const localStorageValue = process.client ? localStorage.getItem('searchQuery') || '' : ''
-      const result = cookieValue || stateValue || localStorageValue
+      const result = cookieValue || localStorageValue
       // Убеждаемся, что результат всегда строка
       return typeof result === 'string' ? result : String(result || '')
     },
