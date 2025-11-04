@@ -10,6 +10,7 @@ let globalState: {
   orderedSections: Ref<string[]>
   currentPageContext: Ref<string>
   searchTimeout: Ref<NodeJS.Timeout | null>
+  selectedCategories: Ref<string[]>
 }
 
 let searchQueryCookie: Ref<string>
@@ -33,7 +34,8 @@ export const useGlobalSearch = () => {
       })),
       orderedSections: useState('search.orderedSections', () => []),
       currentPageContext: useState('search.currentPageContext', () => ''),
-      searchTimeout: ref<NodeJS.Timeout | null>(null)
+      searchTimeout: ref<NodeJS.Timeout | null>(null),
+      selectedCategories: useState('search.selectedCategories', () => [])
     }
 
     // Дополнительно используем cookie для надежного сохранения поискового запроса
@@ -385,7 +387,8 @@ export const useGlobalSearch = () => {
         method: 'POST',
         body: {
           query: query.trim(),
-          limit: 50
+          limit: 50,
+          categories: globalState.selectedCategories.value.length > 0 ? globalState.selectedCategories.value : undefined
         }
       })
 
@@ -505,6 +508,14 @@ export const useGlobalSearch = () => {
     }
   }
 
+  const updateSelectedCategories = (categories: string[]) => {
+    globalState.selectedCategories.value = categories
+    // Если есть активный поиск, перезапускаем его с новыми фильтрами
+    if (globalState.isSearchActive.value && searchQuery.value.trim().length >= 3) {
+      performServerSearch(searchQuery.value, 0)
+    }
+  }
+
   return {
     isSearchActive: globalState.isSearchActive,
     searchQuery: searchQuery,
@@ -514,6 +525,7 @@ export const useGlobalSearch = () => {
     groupedResults: globalState.groupedResults,
     orderedSections: globalState.orderedSections,
     currentPageContext: globalState.currentPageContext,
+    selectedCategories: globalState.selectedCategories,
     activateSearch,
     deactivateSearch,
     hideSearch,
@@ -529,6 +541,7 @@ export const useGlobalSearch = () => {
     prioritizeResults,
     performServerSearch,
     clearSearchTimeout,
-    clearSearchStorage
+    clearSearchStorage,
+    updateSelectedCategories
   }
 }

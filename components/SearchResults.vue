@@ -1,7 +1,51 @@
 <template>
   <ClientOnly>
     <div v-if="isSearchActive" class="flex-1" @click.stop data-search-results>
-      <div class="max-w-5xl mx-auto px-2 md:px-4 py-8" @click.stop>
+      <div class="max-w-5xl mx-auto px-2 md:px-4 pb-8" @click.stop>
+        <!-- Фильтры категорий -->
+        <div class="mb-4 flex items-center gap-2">
+          <UIcon name="i-heroicons-funnel" class="w-5 h-5 text-slate-400 dark:text-slate-400 flex-shrink-0" />
+          <div class="relative flex-1 min-w-0">
+            <!-- Левая тень -->
+            <div
+              class="absolute left-0 top-0 bottom-0 w-8 pointer-events-none z-10 transition-opacity duration-200 bg-gradient-to-r from-slate-50 to-transparent dark:from-slate-800"
+              :class="{ 'opacity-0': !showLeftShadow, 'opacity-100': showLeftShadow }"
+            ></div>
+            <!-- Правая тень -->
+            <div
+              class="absolute right-0 top-0 bottom-0 w-8 pointer-events-none z-10 transition-opacity duration-200 bg-gradient-to-l from-slate-50 to-transparent dark:from-slate-800"
+              :class="{ 'opacity-0': !showRightShadow, 'opacity-100': showRightShadow }"
+            ></div>
+            <div
+              ref="filtersContainerRef"
+              class="overflow-x-auto scrollbar-hide w-full"
+              :class="{ 'cursor-grabbing': isDragging, 'cursor-grab': !isDragging }"
+              style="scrollbar-width: none; -ms-overflow-style: none; touch-action: pan-x; user-select: none;"
+              @mousedown="handleMouseDown"
+              @wheel="handleWheel"
+              @scroll="updateShadows"
+              @click.stop
+            >
+              <div class="flex gap-2 min-w-max px-2">
+                <button
+                  v-for="cat in availableCategories"
+                  :key="cat.key"
+                  @click="toggleCategory(cat.key)"
+                  :class="[
+                    'px-3 py-1.5 text-sm rounded transition-colors duration-200 whitespace-nowrap flex-shrink-0',
+                    isDragging ? 'cursor-grabbing' : 'cursor-pointer',
+                    selectedCategories.includes(cat.key)
+                      ? 'bg-primary text-white'
+                      : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                  ]"
+                >
+                  {{ cat.label }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Сообщение-заглушка -->
         <div class="mb-4" @click.stop>
           <!-- Сообщение в стиле чата -->
@@ -650,13 +694,136 @@
 <script setup lang="ts">
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
-import { nextTick, onMounted, onBeforeUnmount, watchEffect } from 'vue'
+import { nextTick, onMounted, onBeforeUnmount, watchEffect, ref } from 'vue'
 import { useGlobalSearch } from '~/composables/useGlobalSearch'
 import { useSearchHistory } from '~/composables/useSearchHistory'
 import Mascot from '~/components/Mascot.vue'
 
-const { isSearchActive, isSearching, searchResults, groupedResults, selectSearchResult, deactivateSearch, hideSearchOnly, currentPageContext, searchQuery, isDataFromCache, orderedSections } = useGlobalSearch()
+const { isSearchActive, isSearching, searchResults, groupedResults, selectSearchResult, deactivateSearch, hideSearchOnly, currentPageContext, searchQuery, isDataFromCache, orderedSections, selectedCategories, updateSelectedCategories } = useGlobalSearch()
 const { searchHistory, addToHistory, clearHistory, removeFromHistory } = useSearchHistory()
+
+// Доступные категории для фильтрации
+const availableCategories = [
+  { key: 'mkb', label: 'МКБ' },
+  { key: 'ls', label: 'Локальные статусы' },
+  { key: 'algorithm', label: 'Алгоритмы' },
+  { key: 'drug', label: 'Препараты' },
+  { key: 'substation', label: 'Подстанции' },
+  { key: 'calculator', label: 'Калькуляторы' }
+]
+
+
+// Переключение категории
+const toggleCategory = (categoryKey: string) => {
+  // Игнорируем клик во время drag
+  if (isDragging.value) return
+  
+  const current = [...selectedCategories.value]
+  const index = current.indexOf(categoryKey)
+  if (index > -1) {
+    current.splice(index, 1)
+  } else {
+    current.push(categoryKey)
+  }
+  updateSelectedCategories(current)
+}
+
+// Обработчик прокрутки колесом мыши для десктопа
+const filtersContainerRef = ref<HTMLElement | null>(null)
+const isDragging = ref(false)
+const dragStartX = ref(0)
+const dragStartScrollLeft = ref(0)
+const showLeftShadow = ref(false)
+const showRightShadow = ref(true)
+
+// Обновление видимости теней
+const updateShadows = () => {
+  if (!filtersContainerRef.value) return
+  
+  const { scrollLeft, scrollWidth, clientWidth } = filtersContainerRef.value
+  const epsilon = 1 // Небольшой отступ для учета погрешностей
+  
+  showLeftShadow.value = scrollLeft > epsilon
+  showRightShadow.value = scrollLeft < scrollWidth - clientWidth - epsilon
+}
+
+const handleMouseDown = (e: MouseEvent) => {
+  if (filtersContainerRef.value) {
+    isDragging.value = true
+    dragStartX.value = e.clientX
+    dragStartScrollLeft.value = filtersContainerRef.value.scrollLeft
+    e.preventDefault()
+  }
+}
+
+const handleMouseMove = (e: MouseEvent) => {
+  if (!isDragging.value || !filtersContainerRef.value) return
+  
+  const deltaX = e.clientX - dragStartX.value
+  filtersContainerRef.value.scrollLeft = dragStartScrollLeft.value - deltaX
+  updateShadows()
+}
+
+const handleMouseUp = () => {
+  isDragging.value = false
+  updateShadows()
+}
+
+// Глобальные обработчики для drag
+onMounted(() => {
+  if (process.client) {
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    
+    // Инициализация теней после монтирования
+    nextTick(() => {
+      updateShadows()
+      // Обновляем тени при изменении размера окна
+      window.addEventListener('resize', updateShadows)
+    })
+  }
+})
+
+onBeforeUnmount(() => {
+  if (process.client) {
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('mouseup', handleMouseUp)
+    window.removeEventListener('resize', updateShadows)
+  }
+})
+
+const handleWheel = (e: WheelEvent) => {
+  if (!filtersContainerRef.value) return
+  
+  // Проверяем, есть ли горизонтальная прокрутка
+  const hasHorizontalScroll = filtersContainerRef.value.scrollWidth > filtersContainerRef.value.clientWidth
+  
+  if (hasHorizontalScroll) {
+    // Если зажат Shift - прокручиваем горизонтально
+    if (e.shiftKey) {
+      e.preventDefault()
+      filtersContainerRef.value.scrollLeft += e.deltaY
+      updateShadows()
+      return
+    }
+    
+    // Если есть явная горизонтальная прокрутка (deltaX), используем её
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      e.preventDefault()
+      filtersContainerRef.value.scrollLeft += e.deltaX
+      updateShadows()
+      return
+    }
+    
+    // Иначе прокручиваем горизонтально при наведении на контейнер
+    const isHovered = filtersContainerRef.value.contains(e.target as Node)
+    if (isHovered && Math.abs(e.deltaY) > 0) {
+      e.preventDefault()
+      filtersContainerRef.value.scrollLeft += e.deltaY
+      updateShadows()
+    }
+  }
+}
 
 // Отслеживаем изменения orderedSections
 watchEffect(() => {
@@ -1730,6 +1897,16 @@ const performSearchFromHistory = (query: string) => {
 </script>
 
 <style scoped>
+/* Скрытие скроллбара для контейнера фильтров */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Стили для таблиц в результатах поиска - точно как на странице алгоритмов */
 :deep(table) {
   width: 100%;

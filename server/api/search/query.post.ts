@@ -16,8 +16,9 @@ export default defineEventHandler(async (event) => {
   let query = '' // Объявляем переменную в начале функции
   
   try {
-    const { query: requestQuery, limit = 50 } = await readBody(event)
+    const { query: requestQuery, limit = 50, categories } = await readBody(event)
     query = requestQuery // Присваиваем значение
+    const selectedCategories = Array.isArray(categories) && categories.length > 0 ? categories : null
     
     // Логирование отключено для производительности
     
@@ -220,14 +221,22 @@ export default defineEventHandler(async (event) => {
       ]
     }
     
+    // Функция-хелпер для условного поиска
+    const conditionalSearch = (categoryKey: string, searchFn: () => Promise<any[]>) => {
+      if (selectedCategories === null || selectedCategories.includes(categoryKey)) {
+        return searchFn()
+      }
+      return Promise.resolve([])
+    }
+
     const [mkbResults, lsResults, algorithmResults, drugResults, substationResults, calculatorResults] = await Promise.all([
       // Поиск по МКБ - сначала точный поиск в заголовках, потом в остальных полях
-      MKB.find(mkbQuery)
+      conditionalSearch('mkb', () => MKB.find(mkbQuery)
         .populate('category', 'name url')
-        .lean(),
+        .lean()),
       
       // Поиск по локальным статусам
-      LocalStatus.find({
+      conditionalSearch('ls', () => LocalStatus.find({
         $or: [
           // Приоритет 1: Точный поиск в названиях
           { name: mainSearchRegex },
@@ -252,10 +261,10 @@ export default defineEventHandler(async (event) => {
         ]
       })
       .populate('category', 'name url')
-      .lean(),
+      .lean()),
       
       // Поиск по алгоритмам
-      Algorithm.find({
+      conditionalSearch('algorithm', () => Algorithm.find({
         $or: [
           // Приоритет 1: Точный поиск в заголовках
           { title: mainSearchRegex },
@@ -275,10 +284,10 @@ export default defineEventHandler(async (event) => {
           { mkbExclusions: { $in: searchRegexes } }
         ]
       })
-      .lean(),
+      .lean()),
       
       // Поиск по препаратам
-      Drug.find({
+      conditionalSearch('drug', () => Drug.find({
         $or: [
           // Приоритет 1: Точный поиск в названиях
           { name: mainSearchRegex },
@@ -317,10 +326,10 @@ export default defineEventHandler(async (event) => {
       // Временно убираем populate для избежания ошибки DrugCategory
       // .populate('categories', 'name url')
       // Лимит убран для получения всех результатов
-      .lean(),
+      .lean()),
       
       // Поиск по подстанциям - особый случай для точного поиска номеров
-      Substation.find({
+      conditionalSearch('substation', () => Substation.find({
         $or: [
           // Приоритет 1: Точный поиск в названиях подстанций
           { name: mainSearchRegex },
@@ -344,10 +353,10 @@ export default defineEventHandler(async (event) => {
       // Временно убираем populate для избежания ошибки LocalStatusCategory
       // .populate('region', 'name')
       // Лимит убран для получения всех результатов
-      .lean(),
+      .lean()),
 
       // Поиск по калькуляторам - упрощенная логика для корректной работы
-      Calculator.find({
+      conditionalSearch('calculator', () => Calculator.find({
         $or: [
           // Приоритет 1: Поиск в keywords (самый важный!)
           { keywords: { $elemMatch: { $regex: mainSearchRegex } } },
@@ -371,7 +380,7 @@ export default defineEventHandler(async (event) => {
           { category: { $regex: new RegExp(searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').split(/\s+/).join('|'), 'i') } }
         ]
       })
-      .lean()
+      .lean())
     ])
     
 
