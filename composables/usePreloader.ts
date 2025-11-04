@@ -286,7 +286,7 @@ export const preloadPage = {
   
   // Предзагрузка страницы инструкций
   instruction: async (instructionId?: string) => {
-    const url = instructionId ? `/instructions?id=${instructionId}` : '/instructions'
+    const url = instructionId ? `/classroom/instructions?id=${instructionId}` : '/classroom/instructions'
     
     await preloadAndNavigate(url, async () => {
       await $fetch('/api/instructions')
@@ -353,7 +353,7 @@ export const useAutoPreload = () => {
           } else if (pathname.includes('/substations')) {
             await preloadPage.substation()
             shouldPreload = true
-          } else if (pathname.includes('/instructions')) {
+          } else if (pathname.includes('/classroom/instructions')) {
             await preloadPage.instruction()
             shouldPreload = true
           }

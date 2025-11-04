@@ -163,6 +163,7 @@ const items = computed<BreadcrumbItem[]>(() => {
     'calculators': 'Калькуляторы',
     'drugs': 'Лекарства',
     'apps': 'Приложения',
+    'classroom': 'Учебная комната',
     'instructions': 'Инструкции',
     'substations': 'Подстанции',
     'admin': 'Админка',
@@ -238,6 +239,21 @@ const items = computed<BreadcrumbItem[]>(() => {
       const label = base.charAt(0).toUpperCase() + base.slice(1)
       acc.push({ label, to: isLast ? undefined : localPath })
     })
+    return acc
+  }
+
+  // Явная ветка для /classroom/instructions
+  if (segments[0] === 'classroom' && segments[1] === 'instructions') {
+    acc.push({ label: 'Учебная комната', to: '/classroom' })
+    acc.push({ label: 'Инструкции' })
+    return acc
+  }
+
+  // Явная ветка для /admin/classroom/instructions
+  if (segments[0] === 'admin' && segments[1] === 'classroom' && segments[2] === 'instructions') {
+    acc.push({ label: 'Админка', to: '/admin' })
+    acc.push({ label: 'Учебная комната', to: '/admin/classroom' })
+    acc.push({ label: 'Инструкции' })
     return acc
   }
 

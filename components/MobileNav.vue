@@ -31,7 +31,7 @@
               class="flex items-start gap-3 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
               :class="{ 'bg-slate-100 dark:bg-slate-700': isActive(item.to) }"
               @mousedown.prevent="goAndClose(item.to)" @click="moreOpen = false">
-              <UIcon :name="item.icon" class="ms-0.5 mt-0.5 w-4 h-4 text-slate-500" />
+              <UIcon :name="item.icon" class="ms-0.5 mt-0.5 w-4 h-4 min-w-[1rem] flex-shrink-0 text-slate-500" />
               <div class="min-w-0">
                 <div class="truncate font-medium text-slate-900 dark:text-white">{{ item.label }}</div>
                 <div v-if="item.description" class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ item.description }}</div>
@@ -127,7 +127,7 @@ const moreItemsBase = [
   { to: '/calculators', icon: 'i-lucide-calculator', label: 'Калькуляторы' },
   { to: '/drugs', icon: 'i-lucide-pill', label: 'Лекарства' },
   { to: '/apps', icon: 'i-lucide-smartphone', label: 'Приложения' },
-  { to: '/instructions', icon: 'i-lucide-file-text', label: 'Инструкции' },
+  { to: '/classroom', icon: 'i-lucide-book-open', label: 'Учебная комната' },
   { to: '/substations', icon: 'i-lucide-building-2', label: 'Подстанции' },
   { to: '/local-statuses', icon: 'i-lucide-list-checks', label: 'Локальные статусы' }
 ]
@@ -136,7 +136,7 @@ const infoMap: Record<string, { description: string }> = {
   '/local-statuses': { description: 'Локальные статусы по категориям' },
   '/drugs': { description: 'Справочник препаратов' },
   '/apps': { description: 'Полезные приложения' },
-  '/instructions': { description: 'Инструкции и памятки' },
+  '/classroom': { description: 'Полезные материалы, приказы и обучающие материалы' },
   '/substations': { description: 'Подстанции на карте' },
   '/calculators': { description: 'Медицинские калькуляторы' },
   '/tests': { description: 'Ответы на тесты' }

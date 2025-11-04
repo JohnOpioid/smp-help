@@ -43,7 +43,7 @@ function onAdminNavWheel(e: WheelEvent) {
 
 const adminNav = [
   { to: '/admin', label: 'Главная', icon: 'i-lucide-home' },
-  { to: '/admin/instructions', label: 'Инструкции', icon: 'i-lucide-file-text' },
+  { to: '/admin/classroom', label: 'Учебная комната', icon: 'i-lucide-book-open' },
   { to: '/admin/substations', label: 'Подстанции', icon: 'i-lucide-building-2' },
   { to: '/admin/algorithms', label: 'Алгоритмы', icon: 'i-lucide-list-tree' },
   { to: '/admin/codifier', label: 'Кодификатор', icon: 'i-heroicons-document-text' },

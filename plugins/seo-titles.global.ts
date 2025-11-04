@@ -17,7 +17,7 @@ export default defineNuxtPlugin(() => {
     // Разделы с вложенностью
     if (p.startsWith('/algorithms')) return `${site} — Алгоритмы`
     if (p.startsWith('/calculators')) return `${site} — Калькуляторы`
-    if (p.startsWith('/instructions')) return `${site} — Инструкции`
+    if (p.startsWith('/classroom/instructions')) return `${site} — Инструкции`
     if (p.startsWith('/apps')) return `${site} — Приложения`
     if (p.startsWith('/favorites') || p.startsWith('/profile/bookmarks')) return `${site} — Избранное`
     if (p.startsWith('/profile')) return `${site} — Профиль`

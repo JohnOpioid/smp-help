@@ -69,7 +69,7 @@ const onNavigate = () => emit('navigate')
 const navLinks = [
   { label: 'Главная', icon: 'i-lucide-home', to: '/admin' },
       { label: 'Пользователи', icon: 'i-heroicons-users', to: '/admin/users' },
-  { label: 'Инструкции', icon: 'i-lucide-file-text', to: '/admin/instructions' },
+  { label: 'Учебная комната', icon: 'i-lucide-book-open', to: '/admin/classroom', activeMatch: '/admin/classroom' },
   { label: 'Подстанции', icon: 'i-lucide-building-2', to: '/admin/substations' },
   { label: 'Алгоритмы', icon: 'i-lucide-list-tree', to: '/admin/algorithms' },
   { label: 'Кодификатор', icon: 'i-heroicons-document-text', to: '/admin/codifier' },

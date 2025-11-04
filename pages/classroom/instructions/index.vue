@@ -113,7 +113,8 @@
 
 <script setup lang="ts">
 definePageMeta({
-  middleware: 'auth'
+  middleware: 'auth',
+  headerTitle: 'Инструкции'
 })
 
 import { ref, computed, watchEffect, nextTick, watch, onBeforeUnmount } from 'vue'

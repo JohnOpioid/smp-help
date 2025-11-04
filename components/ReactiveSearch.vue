@@ -95,7 +95,7 @@ const currentSummary = computed(() => {
   if (path.startsWith('/codifier')) return 'Кодификатор МКБ-10: быстрый поиск по диагнозам.'
   if (path.startsWith('/drugs')) return 'Лекарства: формы, дозировки и категории.'
   if (path.startsWith('/local-statuses')) return 'Локальные статусы: коды, станции и описания.'
-  if (path.startsWith('/instructions')) return 'Инструкции: список и быстрый поиск по описанию.'
+  if (path.startsWith('/classroom/instructions')) return 'Инструкции: список и быстрый поиск по описанию.'
   return 'Помогу найти нужную информацию и сориентироваться.'
 })
 

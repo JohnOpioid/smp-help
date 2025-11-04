@@ -34,7 +34,7 @@
                 <li><NuxtLink to="/codifier" class="text-indigo-600 hover:text-indigo-700">Кодификатор МКБ</NuxtLink></li>
                 <li><NuxtLink to="/local-statuses" class="text-indigo-600 hover:text-indigo-700">Местные статусы</NuxtLink></li>
                 <li><NuxtLink to="/drugs" class="text-indigo-600 hover:text-indigo-700">Препараты</NuxtLink></li>
-                <li><NuxtLink to="/instructions" class="text-indigo-600 hover:text-indigo-700">Инструкции</NuxtLink></li>
+                <li><NuxtLink to="/classroom/instructions" class="text-indigo-600 hover:text-indigo-700">Инструкции</NuxtLink></li>
               </ul>
             </div>
             <div>

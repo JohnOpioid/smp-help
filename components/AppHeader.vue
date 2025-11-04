@@ -515,10 +515,10 @@ const mainMenuItems = computed<MenuItem[]>(() => [
     description: 'Полезные приложения'
   },
   {
-    label: 'Инструкции',
-    to: '/instructions',
-    icon: 'i-lucide-file-text',
-    description: 'Инструкции и памятки'
+    label: 'Учебная комната',
+    to: '/classroom',
+    icon: 'i-lucide-book-open',
+    description: 'Полезные материалы, приказы и обучающие материалы'
   },
   {
     label: 'Подстанции',
@@ -644,7 +644,7 @@ const mapTitle: Record<string, string> = {
   '/calculators': 'Калькуляторы',
   '/drugs': 'Лекарства',
   '/apps': 'Приложения',
-  '/instructions': 'Инструкции',
+  '/classroom': 'Учебная комната',
   '/substations': 'Подстанции'
 }
 

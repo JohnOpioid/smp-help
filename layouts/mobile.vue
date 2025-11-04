@@ -144,7 +144,7 @@ const headerTitle = computed(() => {
     '/codifier': 'Кодификатор',
     '/substations': 'Подстанции',
     '/local-statuses': 'Локальные статусы',
-    '/instructions': 'Инструкции'
+    '/classroom/instructions': 'Инструкции'
   }
   return titles[route.path] || 'Справочник СМП'
 })

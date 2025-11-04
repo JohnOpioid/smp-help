@@ -84,7 +84,7 @@ const pagesToCache = [
   '/calculators/gcs-pediatric/1-4-years',
   '/drugs',
   '/local-statuses',
-  '/instructions',
+  '/classroom/instructions',
   '/codifier',
   '/contacts',
   '/about',
