@@ -1,5 +1,5 @@
 <template>
-  <div v-if="route.path !== '/' && route.path !== '/substations'" class="px-2 md:px-4 max-w-5xl mx-auto">
+  <div v-if="route.path !== '/' && route.path !== '/substations'" :class="['px-2 md:px-4 max-w-5xl mx-auto', route.path?.startsWith('/admin') ? 'pt-8' : '']">
     <!-- Хлебные крошки -->
     <UBreadcrumb :items="items" />
     

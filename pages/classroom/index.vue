@@ -41,6 +41,7 @@
           </li>
         </ul>
       </div>
+
     </div>
   </div>
 </template>
@@ -48,21 +49,26 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth', headerTitle: 'Учебная комната' })
 
-type ClassroomSection = {
-  title: string
-  description: string
-  url: string
-  icon: string
-}
+type ClassroomSection = { title: string; description: string; url: string; icon: string }
 
-const sections: ClassroomSection[] = [
-  {
-    title: 'Инструкции',
-    description: 'Инструкции и памятки для работы',
-    url: '/classroom/instructions',
-    icon: 'i-lucide-file-text'
-  }
+const { data, refresh } = await useFetch('/api/classroom/pages', { server: true })
+const pages = computed<any[]>(() => (data.value?.items || []))
+
+const baseSections: ClassroomSection[] = [
+  { title: 'Инструкции', description: 'Инструкции и памятки для работы', url: '/classroom/instructions', icon: 'i-lucide-file-text' },
+  { title: 'СЛР', description: 'Параметры проведения сердечно-лёгочной реанимации', url: '/classroom/cpr', icon: 'i-lucide-activity' },
+  { title: 'Проходимость дыхательных путей', description: 'Схема проходимости дыхательных путей', url: '/classroom/airway', icon: 'i-lucide-wind' }
 ]
+
+const sections = computed<ClassroomSection[]>(() => {
+  const dynamic = (pages.value || []).map((p: any) => ({
+    title: p.title,
+    description: p.description || (p.type === 'table' ? 'Таблица' : p.type === 'scheme' ? 'Схема' : 'Список'),
+    url: `/classroom/${p.slug}`,
+    icon: p.icon || (p.type === 'table' ? 'i-lucide-table' : p.type === 'scheme' ? 'i-lucide-shapes' : 'i-lucide-list')
+  }))
+  return [...baseSections, ...dynamic]
+})
 
 function openSection(section: ClassroomSection) {
   navigateTo(section.url)

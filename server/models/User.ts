@@ -22,7 +22,7 @@ export interface IUser extends Document {
   lastTelegramAuth?: Date
   bookmarks?: Array<{
     _id: string
-    type: 'drug' | 'local-status' | 'codifier' | 'substation' | 'calculator'
+    type: 'drug' | 'local-status' | 'codifier' | 'substation' | 'calculator' | 'classroom'
     title: string
     description?: string
     category?: string
@@ -134,7 +134,7 @@ const UserSchema = new Schema<IUser>({
   bookmarks: {
     type: [
       new Schema({
-        type: { type: String, enum: ['drug', 'local-status', 'codifier', 'substation', 'calculator'], required: true },
+        type: { type: String, enum: ['drug', 'local-status', 'codifier', 'substation', 'calculator', 'classroom'], required: true },
         title: { type: String, required: true },
         description: { type: String, required: false },
         category: { type: String, required: false },

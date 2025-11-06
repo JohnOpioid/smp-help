@@ -220,7 +220,7 @@
                   <NuxtLink v-if="user?.role === 'admin'" to="/admin"
                     class="block px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
                     @mousedown.prevent="goAndClose('/admin')" @click="menuOpen = false">Админка</NuxtLink>
-                  <button @mousedown="menuOpen = false" @click="menuOpen = false; logout()"
+                  <button @click.stop="logoutAndClose"
                     class="w-full text-left px-3 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 cursor-pointer">Выйти</button>
                 </nav>
                 <nav v-else class="py-1">
@@ -420,6 +420,17 @@ const closeDropdownMenu = () => {
 
 const navigateToHome = () => {
   navigateTo('/')
+}
+
+// Выход: сначала выходим, затем закрываем меню
+const logoutAndClose = async () => {
+  try {
+    await logout()
+  } catch (e) {
+    // no-op
+  } finally {
+    menuOpen.value = false
+  }
 }
 
 // Переменные для меню

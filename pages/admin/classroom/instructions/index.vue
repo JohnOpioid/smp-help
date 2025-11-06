@@ -106,11 +106,12 @@ if (process.server) {
   const headers = useRequestHeaders(['cookie'])
   fetchOptions.headers = { cookie: headers.cookie as string }
 }
-const { data, refresh, pending: fetching } = await useFetch('/api/instructions', {
+const { data, refresh, pending: fetching } = await useFetch('/api/classroom/section/instructions', {
   ...fetchOptions,
   server: false
 })
-const items = computed(() => data.value?.items || [])
+const doc = computed(() => data.value?.item || null)
+const items = computed(() => (doc.value?.data?.items) || [])
 
 // Фильтрация по поиску
 const { matchesNormalized } = useTextNormalization()
@@ -213,19 +214,20 @@ const onEdit = (item: any) => {
 const onSubmit = async () => {
   pending.value = true
   try {
-    let res: any
+    // Собираем новый список items и сохраняем в Classroom
+    const list = items.value.slice()
     if (isEdit.value && currentId.value) {
-      res = await $fetch(`/api/instructions/${currentId.value}`, { method: 'PATCH', body: form })
+      const idx = list.findIndex((x: any) => String(x._id) === String(currentId.value))
+      if (idx >= 0) list[idx] = { ...list[idx], title: form.title, code: form.code, description: form.description }
     } else {
-      res = await $fetch('/api/instructions', { method: 'POST', body: form })
+      list.push({ _id: currentId.value || Date.now().toString(), title: form.title, code: form.code, description: form.description, createdAt: new Date().toISOString() })
     }
-    if (res?.success) {
+    await $fetch('/api/classroom/section/instructions', { method: 'PATCH', body: { data: { items: list } } })
       form.title = ''
       form.code = ''
       form.description = ''
       await refresh()
       open.value = false
-    }
   } finally {
     pending.value = false
   }
@@ -235,8 +237,9 @@ const onDelete = async (item: any) => {
   if (!confirm('Удалить инструкцию?')) return
   pendingList.value = true
   try {
-    const res: any = await $fetch(`/api/instructions/${item._id}`, { method: 'DELETE' })
-    if (res?.success) await refresh()
+    const list = items.value.filter((x: any) => String(x._id) !== String(item._id))
+    await $fetch('/api/classroom/section/instructions', { method: 'PATCH', body: { data: { items: list } } })
+    await refresh()
   } finally {
     pendingList.value = false
   }

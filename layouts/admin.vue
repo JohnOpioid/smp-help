@@ -25,6 +25,7 @@
           <UIcon name="i-heroicons-arrow-top-right-on-square" class="w-5 h-5" />
         </NuxtLink>
       </div>
+      <Breadcrumbs />
       <slot />
     </div>
   </div>

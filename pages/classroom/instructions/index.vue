@@ -3,6 +3,24 @@
     <main class="flex-1">
 
       <!-- Основной контент или результаты поиска -->
+      <div class="max-w-5xl mx-auto px-2 md:px-4 pt-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
+          <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Инструкции</h1>
+          <div class="flex md:items-center gap-2">
+            <button
+              type="button"
+              :title="isBookmarked ? 'В избранном' : 'В закладки'"
+              :class="isBookmarked
+                ? 'rounded-md font-medium transition-colors text-sm gap-1.5 text-inverted bg-primary hover:bg-primary/75 active:bg-primary/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary p-1.5 cursor-pointer h-9 w-9 flex items-center justify-center'
+                : 'rounded-md font-medium disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors text-sm gap-1.5 text-default bg-elevated hover:bg-accented/75 active:bg-accented/75 focus:outline-none focus-visible:bg-accented/75 disabled:bg-elevated aria-disabled:bg-elevated p-1.5 cursor-pointer h-9 w-9 flex items-center justify-center'"
+              @click="toggleBookmark"
+            >
+              <UIcon :name="isBookmarked ? 'i-heroicons:bookmark-solid' : 'i-heroicons:bookmark'" class="size-5" />
+            </button>
+          </div>
+        </div>
+        <p class="text-slate-600 dark:text-slate-300 mb-4">Подборка полезных инструкций и памяток для работы.</p>
+      </div>
       <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
         <div v-if="showSearchResults" class="bg-white dark:bg-slate-800 rounded-lg">
           <div class="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
@@ -117,12 +135,13 @@ definePageMeta({
   headerTitle: 'Инструкции'
 })
 
-import { ref, computed, watchEffect, nextTick, watch, onBeforeUnmount } from 'vue'
+import { ref, computed, watchEffect, nextTick, watch, onBeforeUnmount, onMounted } from 'vue'
+const route = useRoute()
 
 const pending = ref(true)
-const { data, refresh } = await useFetch('/api/instructions', { method: 'GET' })
+const { data, refresh } = await useFetch('/api/classroom/section/instructions', { method: 'GET' })
 const itemsSorted = computed(() => {
-  const arr = (data.value?.items || []) as any[]
+  const arr = ((data.value?.item?.data?.items) || []) as any[]
   // Сортируем по возрастанию: старые сверху, новые внизу
   return arr.slice().sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
 })
@@ -202,6 +221,74 @@ function renderPreview(input: string) {
     .replace(/<br\s*\/?>(\n)?/gi, ' ')
   return noParas.replace(/\s{2,}/g, ' ').trim()
 }
+
+// Закладки — как в calculators/gcs
+const userBookmarks = ref<any[]>([])
+const isBookmarked = ref(false)
+
+async function loadBookmarks() {
+  try {
+    const res: any = await $fetch('/api/bookmarks')
+    if (res?.success) userBookmarks.value = res.items || []
+  } catch {}
+}
+
+function buildUrl() { return route.path || '/classroom/instructions' }
+
+async function updateIsBookmarked() {
+  if (userBookmarks.value.length === 0) await loadBookmarks()
+  const targetUrl = buildUrl()
+  isBookmarked.value = userBookmarks.value.some((b: any) => b.url === targetUrl)
+}
+
+async function addBookmark() {
+  const res: any = await $fetch('/api/bookmarks', {
+    method: 'POST',
+    body: {
+      type: 'classroom',
+      title: 'Инструкции',
+      category: 'Учебный класс',
+      url: buildUrl()
+    }
+  }).catch((e: any) => e?.data || { success: false })
+  if (res?.success || res?.message === 'Закладка уже существует') {
+    isBookmarked.value = true
+    await loadBookmarks()
+    // @ts-ignore
+    const toast = useToast?.()
+    toast?.add?.({ title: res?.success ? 'Добавлено в закладки' : 'Уже в закладках', color: 'primary' })
+    if (process.client) window.dispatchEvent(new CustomEvent('bookmarks-updated'))
+  } else {
+    // @ts-ignore
+    const toast = useToast?.()
+    const title = res?.message || 'Не удалось добавить в закладки'
+    const description = (res?.message === 'Токен не найден' || res?.message === 'Ошибка авторизации') ? 'Войдите в аккаунт и попробуйте ещё раз' : undefined
+    toast?.add?.({ title, description, color: 'error' })
+  }
+}
+
+async function removeBookmark() {
+  const targetUrl = buildUrl()
+  if (userBookmarks.value.length === 0) await loadBookmarks()
+  const bm = userBookmarks.value.find((b: any) => b.url === targetUrl)
+  if (!bm?._id) return
+  await $fetch(`/api/bookmarks/${bm._id}`, { method: 'DELETE' })
+  isBookmarked.value = false
+  userBookmarks.value = userBookmarks.value.filter((b: any) => b._id !== bm._id)
+  // @ts-ignore
+  const toast = useToast?.()
+  toast?.add?.({ title: 'Удалено из закладок', color: 'neutral' })
+  if (process.client) window.dispatchEvent(new CustomEvent('bookmarks-updated'))
+}
+
+async function toggleBookmark() {
+  if (isBookmarked.value) await removeBookmark()
+  else await addBookmark()
+}
+
+onMounted(() => {
+  updateIsBookmarked()
+})
 </script>
 
 <style>

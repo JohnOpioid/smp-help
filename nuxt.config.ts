@@ -49,10 +49,15 @@ export default defineNuxtConfig({
   },
   ui: {
     global: true,
-    icons: ['heroicons'],
+    icons: ['heroicons', 'lucide'],
     safelistColors: ['primary','slate','gray','zinc','neutral','stone','red','orange','amber','yellow','lime','green','emerald','teal','cyan','sky','blue','indigo','violet','purple','fuchsia','pink','rose'],
     safelistOptions: {
       timeout: 1000
+    }
+  },
+  icon: {
+    serverBundle: {
+      collections: ['heroicons', 'lucide']
     }
   },
   nitro: {

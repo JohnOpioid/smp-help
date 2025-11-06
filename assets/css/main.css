@@ -169,6 +169,19 @@ div[contenteditable] {
   background: #94a3b8; /* slate-500 */
 }
 
+/* Стили для выпадающих списков USelect */
+.ui-select button,
+[role="combobox"],
+button[role="combobox"] {
+  cursor: pointer !important;
+}
+
+/* Опции внутри выпадающего списка тоже должны иметь pointer */
+[role="option"],
+[data-radix-select-item] {
+  cursor: pointer !important;
+}
+
 @media (prefers-color-scheme: dark) {
   .custom-scroll {
     scrollbar-color: #475569 #0f172a; /* slate-600 thumb on slate-900 track */
@@ -436,3 +449,5 @@ body::-webkit-scrollbar-thumb:hover,
 .md-content img {
   @apply max-w-full h-auto rounded-md my-3;
 }
+
+/* Фон теперь управляется компонентом Background из @vue-flow/background */
