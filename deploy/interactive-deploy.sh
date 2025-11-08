@@ -763,10 +763,19 @@ copy_files() {
     fi
     
     if [ -d "$PROJECT_DIR/.output/public" ]; then
-        # Копируем все из public кроме uploads (если она там есть)
-        rsync -av --exclude='uploads' $PROJECT_DIR/.output/public/ $WORK_DIR/ 2>/dev/null || \
-        (cd $PROJECT_DIR/.output/public && find . -mindepth 1 -maxdepth 1 ! -name 'uploads' -exec cp -r {} $WORK_DIR/ \;)
-        log "✅ Статические файлы скопированы (uploads исключена)"
+        # Временно удаляем uploads из .output/public если она там есть (чтобы не перезаписать существующую)
+        if [ -d "$PROJECT_DIR/.output/public/uploads" ]; then
+            log "⚠️  Обнаружена папка uploads в сборке, временно удаляем её..."
+            mv "$PROJECT_DIR/.output/public/uploads" "/tmp/uploads.from.build" 2>/dev/null || rm -rf "$PROJECT_DIR/.output/public/uploads"
+        fi
+        # Копируем все из public
+        rsync -av $PROJECT_DIR/.output/public/ $WORK_DIR/ 2>/dev/null || \
+        (cd $PROJECT_DIR/.output/public && find . -mindepth 1 -maxdepth 1 -exec cp -r {} $WORK_DIR/ \;)
+        # Восстанавливаем uploads в сборке если была временно удалена
+        if [ -d "/tmp/uploads.from.build" ]; then
+            mv "/tmp/uploads.from.build" "$PROJECT_DIR/.output/public/uploads" 2>/dev/null || true
+        fi
+        log "✅ Статические файлы скопированы (uploads защищена)"
     else
         error "Директория .output/public не найдена"
         exit 1
@@ -1369,9 +1378,19 @@ if [ -d ".output/server" ]; then
     cp -r .output/server/* \$WORK_DIR/
 fi
 if [ -d ".output/public" ]; then
-    # Копируем все из public кроме uploads (если она там есть)
-    rsync -av --exclude='uploads' .output/public/ \$WORK_DIR/ 2>/dev/null || \
-    (cd .output/public && find . -mindepth 1 -maxdepth 1 ! -name 'uploads' -exec cp -r {} \$WORK_DIR/ \;)
+    # Временно удаляем uploads из .output/public если она там есть (чтобы не перезаписать существующую)
+    if [ -d ".output/public/uploads" ]; then
+        echo "⚠️  Обнаружена папка uploads в сборке, временно удаляем её..."
+        mv ".output/public/uploads" "/tmp/uploads.from.build" 2>/dev/null || rm -rf ".output/public/uploads"
+    fi
+    # Копируем все из public
+    rsync -av .output/public/ \$WORK_DIR/ 2>/dev/null || \
+    (cd .output/public && find . -mindepth 1 -maxdepth 1 -exec cp -r {} \$WORK_DIR/ \;)
+    # Восстанавливаем uploads в сборке если была временно удалена
+    if [ -d "/tmp/uploads.from.build" ]; then
+        mv "/tmp/uploads.from.build" ".output/public/uploads" 2>/dev/null || true
+    fi
+    echo "✅ Статические файлы скопированы (uploads защищена)"
 fi
 
 # Копируем директорию pages/calculators для доступа к исходным файлам калькуляторов
@@ -1717,10 +1736,19 @@ main() {
                 cp -r .output/server/* $WORK_DIR/
             fi
             if [ -d ".output/public" ]; then
-                # Копируем все из public кроме uploads (если она там есть)
-                rsync -av --exclude='uploads' .output/public/ $WORK_DIR/ 2>/dev/null || \
-                (cd .output/public && find . -mindepth 1 -maxdepth 1 ! -name 'uploads' -exec cp -r {} $WORK_DIR/ \;)
-                log "✅ Статические файлы скопированы (uploads исключена)"
+                # Временно удаляем uploads из .output/public если она там есть (чтобы не перезаписать существующую)
+                if [ -d ".output/public/uploads" ]; then
+                    log "⚠️  Обнаружена папка uploads в сборке, временно удаляем её..."
+                    mv ".output/public/uploads" "/tmp/uploads.from.build" 2>/dev/null || rm -rf ".output/public/uploads"
+                fi
+                # Копируем все из public
+                rsync -av .output/public/ $WORK_DIR/ 2>/dev/null || \
+                (cd .output/public && find . -mindepth 1 -maxdepth 1 -exec cp -r {} $WORK_DIR/ \;)
+                # Восстанавливаем uploads в сборке если была временно удалена
+                if [ -d "/tmp/uploads.from.build" ]; then
+                    mv "/tmp/uploads.from.build" ".output/public/uploads" 2>/dev/null || true
+                fi
+                log "✅ Статические файлы скопированы (uploads защищена)"
             fi
             
             # Копируем директорию pages/calculators для доступа к исходным файлам калькуляторов
