@@ -45,27 +45,19 @@
               <div class="space-y-2 mb-2">
                 <div v-if="bookmark.complaints && bookmark.complaints.trim()">
                   <label class="text-xs font-medium text-slate-600 dark:text-slate-400">Жалобы</label>
-                  <div class="text-sm text-slate-900 dark:text-white line-clamp-2">
-                    {{ bookmark.complaints }}
-                  </div>
+                  <div class="text-sm text-slate-900 dark:text-white line-clamp-2 prose prose-sm max-w-none dark:prose-invert" v-html="renderMarkdown(bookmark.complaints)"></div>
                 </div>
                 <div v-if="bookmark.anamnesis && bookmark.anamnesis.trim()">
                   <label class="text-xs font-medium text-slate-600 dark:text-slate-400">Анамнез</label>
-                  <div class="text-sm text-slate-900 dark:text-white line-clamp-2">
-                    {{ bookmark.anamnesis }}
-                  </div>
+                  <div class="text-sm text-slate-900 dark:text-white line-clamp-2 prose prose-sm max-w-none dark:prose-invert" v-html="renderMarkdown(bookmark.anamnesis)"></div>
                 </div>
                 <div v-if="bookmark.localis && bookmark.localis.trim()">
                   <label class="text-xs font-medium text-slate-600 dark:text-slate-400">Status localis</label>
-                  <div class="text-sm text-slate-900 dark:text-white line-clamp-2">
-                    {{ bookmark.localis }}
-                  </div>
+                  <div class="text-sm text-slate-900 dark:text-white line-clamp-2 prose prose-sm max-w-none dark:prose-invert" v-html="renderMarkdown(bookmark.localis)"></div>
                 </div>
                 <div v-if="bookmark.description && bookmark.description.trim()">
                   <label class="text-xs font-medium text-slate-600 dark:text-slate-400">Примечание</label>
-                  <div class="text-sm text-slate-900 dark:text-white line-clamp-2">
-                    {{ bookmark.description }}
-                  </div>
+                  <div class="text-sm text-slate-900 dark:text-white line-clamp-2 prose prose-sm max-w-none dark:prose-invert" v-html="renderMarkdown(bookmark.description)"></div>
                 </div>
               </div>
               <div class="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
@@ -107,6 +99,24 @@
 
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth', headerTitle: 'Закладки - Локальные статусы', layout: 'profile' })
+
+import { marked } from 'marked'
+marked.setOptions({ gfm: true, breaks: true })
+
+let sanitizeHtml: (h: string) => string = (h) => h
+if (process.client) {
+  const mod = await import('dompurify')
+  const createDOMPurify = (mod as any).default
+  const purifier = createDOMPurify(window)
+  sanitizeHtml = (h: string) => purifier.sanitize(h)
+}
+
+function renderMarkdown(text?: string): string {
+  if (!text) return ''
+  const raw = text.replace(/\r\n?/g, '\n')
+  const html = marked.parse(raw) as string
+  return sanitizeHtml(html)
+}
 
 const bookmarks = ref<any[]>([])
 const pending = ref(true)
