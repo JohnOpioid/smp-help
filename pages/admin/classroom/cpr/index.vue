@@ -1,83 +1,90 @@
 <template>
   <div>
     <main class="flex-1">
-      <div class="max-w-5xl mx-auto px-2 md:px-4 py-8 space-y-4">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">СЛР – редактирование таблицы</h3>
-          <div class="flex items-center gap-2">
+      <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
+        <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden">
+          <div class="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">СЛР – редактирование таблицы</h3>
+            <div class="flex items-center gap-2">
+              <UButton color="neutral" variant="soft" @click="resetFromDoc" class="cursor-pointer">Сбросить</UButton>
+              <UButton color="primary" :loading="pending" @click="onSubmit" class="cursor-pointer">Сохранить</UButton>
+            </div>
+          </div>
+
+          <div class="p-4 space-y-4">
+            <UForm :state="form">
+              <div class="grid grid-cols-1 gap-3">
+                <UFormField label="Заголовок" class="w-full">
+                  <UInput v-model="form.title" size="lg" class="w-full" placeholder="Параметры проведения СЛР" />
+                </UFormField>
+              </div>
+            </UForm>
+
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="text-sm font-medium text-slate-700 dark:text-slate-200">Строки таблицы</h4>
+                <UButton size="xs" variant="soft" @click="addRow" class="cursor-pointer">Добавить строку</UButton>
+              </div>
+              <div class="overflow-x-auto rounded-md border border-slate-200 dark:border-slate-700">
+                <table class="w-full table-fixed text-sm text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 table-cpr">
+                  <thead>
+                    <tr class="bg-slate-50 dark:bg-slate-700/60">
+                      <th class="px-3 py-2 text-center uppercase tracking-wide border-x border-slate-200 dark:border-slate-700 w-[22%]">Этап</th>
+                      <th class="px-3 py-2 text-center uppercase tracking-wide border-x border-slate-200 dark:border-slate-700 w-[26%]">Взрослые / ≥14 лет</th>
+                      <th class="px-3 py-2 text-center uppercase tracking-wide border-x border-slate-200 dark:border-slate-700 w-[26%]">Дети</th>
+                      <th class="px-3 py-2 text-center uppercase tracking-wide border-x border-slate-200 dark:border-slate-700 w-[26%]">Новорождённые</th>
+                      <th class="px-3 py-2"></th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                    <tr v-for="(r, i) in form.rows" :key="i">
+                      <td class="align-top p-0 border-x border-slate-200 dark:border-slate-700">
+                        <textarea v-model="r.stage" rows="1" placeholder="Этап" data-cpr-ta
+                          class="w-full bg-transparent outline-none border-0 rounded-none resize-none p-2"
+                          @input="(e: any) => onCellInput(i, 'stage', e)" />
+                      </td>
+                      <td class="align-top p-0 border-x border-slate-200 dark:border-slate-700">
+                        <textarea v-model="r.adults" rows="1" placeholder="Взрослые / ≥14 лет" data-cpr-ta
+                          class="w-full bg-transparent outline-none border-0 rounded-none resize-none p-2"
+                          @input="(e: any) => onCellInput(i, 'adults', e)" />
+                      </td>
+                      <td class="align-top p-0 border-x border-slate-200 dark:border-slate-700">
+                        <textarea v-model="r.children" rows="1" placeholder="Дети" data-cpr-ta
+                          class="w-full bg-transparent outline-none border-0 rounded-none resize-none p-2"
+                          @input="(e: any) => onCellInput(i, 'children', e)" />
+                      </td>
+                      <td class="align-top p-0 border-x border-slate-200 dark:border-slate-700">
+                        <textarea v-model="r.newborns" rows="1" placeholder="Новорождённые" data-cpr-ta
+                          class="w-full bg-transparent outline-none border-0 rounded-none resize-none p-2"
+                          @input="(e: any) => onCellInput(i, 'newborns', e)" />
+                      </td>
+                      <td class="align-top p-2 whitespace-nowrap"><UButton size="xs" color="error" variant="soft" @click="removeRow(i)" class="cursor-pointer">Удалить</UButton></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Поддерживаются переносы строк и Markdown-разметка в ячейках.</p>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="text-sm font-medium text-slate-700 dark:text-slate-200">Примечания</h4>
+                <UButton size="xs" variant="soft" @click="addNote" class="cursor-pointer">Добавить пункт</UButton>
+              </div>
+              <div class="space-y-2">
+                <div v-for="(n, i) in form.notes" :key="i" class="flex items-start gap-2">
+                  <UTextarea v-model="form.notes[i]" autoresize :min-rows="3" class="flex-1" placeholder="Текст примечания" />
+                  <UButton size="xs" color="error" variant="soft" @click="removeNote(i)" class="cursor-pointer">Удалить</UButton>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-end gap-2">
             <UButton color="neutral" variant="soft" @click="resetFromDoc" class="cursor-pointer">Сбросить</UButton>
             <UButton color="primary" :loading="pending" @click="onSubmit" class="cursor-pointer">Сохранить</UButton>
           </div>
         </div>
-
-        <UForm :state="form">
-          <div class="grid grid-cols-1 gap-3">
-            <UFormField label="Заголовок" class="w-full">
-              <UInput v-model="form.title" size="lg" class="w-full" placeholder="Параметры проведения СЛР" />
-            </UFormField>
-          </div>
-        </UForm>
-
-        <div>
-          <div class="flex items-center justify-between mb-2">
-            <h4 class="text-sm font-medium text-slate-700 dark:text-slate-200">Строки таблицы</h4>
-            <UButton size="xs" variant="soft" @click="addRow" class="cursor-pointer">Добавить строку</UButton>
-          </div>
-          <div class="overflow-x-auto rounded-md border border-slate-200 dark:border-slate-700">
-            <table class="w-full table-fixed text-sm text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 table-cpr">
-              <thead>
-                <tr class="bg-slate-50 dark:bg-slate-700/60">
-                  <th class="px-3 py-2 text-center uppercase tracking-wide border-x border-slate-200 dark:border-slate-700 w-[22%]">Этап</th>
-                  <th class="px-3 py-2 text-center uppercase tracking-wide border-x border-slate-200 dark:border-slate-700 w-[26%]">Взрослые / ≥14 лет</th>
-                  <th class="px-3 py-2 text-center uppercase tracking-wide border-x border-slate-200 dark:border-slate-700 w-[26%]">Дети</th>
-                  <th class="px-3 py-2 text-center uppercase tracking-wide border-x border-slate-200 dark:border-slate-700 w-[26%]">Новорождённые</th>
-                  <th class="px-3 py-2"></th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
-                <tr v-for="(r, i) in form.rows" :key="i">
-                  <td class="align-top p-0 border-x border-slate-200 dark:border-slate-700">
-                    <textarea v-model="r.stage" rows="1" placeholder="Этап" data-cpr-ta
-                      class="w-full bg-transparent outline-none border-0 rounded-none resize-none p-2"
-                      @input="(e: any) => onCellInput(i, 'stage', e)" />
-                  </td>
-                  <td class="align-top p-0 border-x border-slate-200 dark:border-slate-700">
-                    <textarea v-model="r.adults" rows="1" placeholder="Взрослые / ≥14 лет" data-cpr-ta
-                      class="w-full bg-transparent outline-none border-0 rounded-none resize-none p-2"
-                      @input="(e: any) => onCellInput(i, 'adults', e)" />
-                  </td>
-                  <td class="align-top p-0 border-x border-slate-200 dark:border-slate-700">
-                    <textarea v-model="r.children" rows="1" placeholder="Дети" data-cpr-ta
-                      class="w-full bg-transparent outline-none border-0 rounded-none resize-none p-2"
-                      @input="(e: any) => onCellInput(i, 'children', e)" />
-                  </td>
-                  <td class="align-top p-0 border-x border-slate-200 dark:border-slate-700">
-                    <textarea v-model="r.newborns" rows="1" placeholder="Новорождённые" data-cpr-ta
-                      class="w-full bg-transparent outline-none border-0 rounded-none resize-none p-2"
-                      @input="(e: any) => onCellInput(i, 'newborns', e)" />
-                  </td>
-                  <td class="align-top p-2 whitespace-nowrap"><UButton size="xs" color="error" variant="soft" @click="removeRow(i)" class="cursor-pointer">Удалить</UButton></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Поддерживаются переносы строк и Markdown-разметка в ячейках.</p>
-        </div>
-
-        <div>
-          <div class="flex items-center justify-between mb-2">
-            <h4 class="text-sm font-medium text-slate-700 dark:text-slate-200">Примечания</h4>
-            <UButton size="xs" variant="soft" @click="addNote" class="cursor-pointer">Добавить пункт</UButton>
-          </div>
-          <div class="space-y-2">
-            <div v-for="(n, i) in form.notes" :key="i" class="flex items-start gap-2">
-              <UTextarea v-model="form.notes[i]" autoresize :min-rows="3" class="flex-1" placeholder="Текст примечания" />
-              <UButton size="xs" color="error" variant="soft" @click="removeNote(i)" class="cursor-pointer">Удалить</UButton>
-            </div>
-          </div>
-        </div>
-
-        
       </div>
     </main>
   </div>

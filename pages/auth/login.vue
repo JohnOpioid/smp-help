@@ -170,27 +170,9 @@ const loading = ref(false)
 const error = ref('')
 const success = ref('')
 
-// Проверяем, открыта ли страница из Telegram
-const isTelegram = ref(false)
-const telegramData = ref<any>(null)
-
 const route = useRoute()
 
 onMounted(async () => {
-  // Проверяем наличие Telegram WebApp (для авторизации внутри Telegram)
-  if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
-    isTelegram.value = true
-    const tg = (window as any).Telegram.WebApp
-    tg.ready()
-    tg.expand()
-    
-    // Получаем данные пользователя
-    const initData = tg.initDataUnsafe
-    telegramData.value = initData.user
-    
-    // Старая авторизация через Telegram Web App удалена
-    // Теперь используется новая авторизация через код
-  }
 })
 
 // Отслеживаем изменения полей для корректной работы с автозаполнением
@@ -304,39 +286,67 @@ const handleTelegramLogin = () => {
 const checkForGeneratedCode = () => {
   console.log('🔍 Начинаем проверку кода...')
   
-  // Ждем 2 секунды перед началом проверки, чтобы дать боту время сгенерировать код
+  let hasNavigated = false // Флаг, что навигация уже произошла
+  let lastCheckedCode: string | null = null // Последний проверенный код, чтобы не редиректить дважды
+  
+  // Ждем 0.5 секунды перед началом проверки, чтобы дать боту время сгенерировать код
   setTimeout(() => {
     console.log('🔍 Начинаем проверять API...')
     
-    // Проверяем API каждую секунду
+    // Проверяем API каждые 300ms для более быстрой реакции
     pollTimer.value = setInterval(async () => {
+      // Проверяем, что мы еще на странице логина и навигация еще не произошла
+      if (hasNavigated || route.path !== '/auth/login') {
+        if (pollTimer.value) {
+          clearInterval(pollTimer.value)
+          pollTimer.value = null
+        }
+        return
+      }
+      
       try {
-        console.log('🔍 Проверяем API...')
         const check = await $fetch('/api/auth/check-telegram-auth-code')
         console.log('📋 Ответ от API:', check)
         
         if (check?.success && check?.code && check?.telegramId) {
+          // Проверяем, что это новый код (не тот же самый)
+          if (lastCheckedCode === check.code) {
+            return // Пропускаем, если это тот же код
+          }
+          
           console.log('✅ Найден код через API:', check)
+          lastCheckedCode = check.code
           
           // Останавливаем проверку
           if (pollTimer.value) {
             clearInterval(pollTimer.value)
+            pollTimer.value = null
           }
           
-          // Переходим на страницу ввода кода
-          navigateTo(`/auth/telegram-code?telegramId=${check.telegramId}&code=${check.code}`)
+          // Устанавливаем флаг навигации
+          hasNavigated = true
+          isWaitingForCode.value = false
+          
+          // Используем window.location.replace для надежного редиректа
+          // replace вместо href, чтобы не добавлять запись в историю
+          const redirectUrl = `/auth/telegram-code?telegramId=${check.telegramId}&code=${check.code}`
+          console.log('🔄 Выполняем редирект на:', redirectUrl)
+          
+          // Используем replace для более надежного редиректа
+          window.location.replace(redirectUrl)
         }
       } catch (e) {
         console.error('❌ Ошибка при проверке API:', e)
       }
-    }, 1000)
-  }, 2000)
+    }, 300) // Проверяем каждые 300ms для более быстрой реакции
+  }, 500) // Уменьшили задержку до 0.5 секунды
   
   // Останавливаем проверку через 5 минут
   setTimeout(() => {
     console.log('⏱️ Превышено время ожидания кода')
     if (pollTimer.value) {
       clearInterval(pollTimer.value)
+      pollTimer.value = null
       isWaitingForCode.value = false
     }
   }, 302000)

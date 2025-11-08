@@ -732,6 +732,13 @@ copy_files() {
         cp "$WORK_DIR/ecosystem.config.cjs" "/tmp/ecosystem.config.cjs.backup"
     fi
     
+    # Сохраняем папку uploads если существует
+    if [ -d "$WORK_DIR/uploads" ]; then
+        log "💾 Сохраняем папку uploads..."
+        cp -r "$WORK_DIR/uploads" "/tmp/uploads.backup"
+        log "✅ Папка uploads сохранена"
+    fi
+    
     # Очищаем рабочую директорию
     log "Очищаем $WORK_DIR..."
     rm -rf $WORK_DIR/*
@@ -771,9 +778,18 @@ copy_files() {
         warn "Директория pages/calculators не найдена"
     fi
     
-    # Создаем директорию uploads для аватарок
-    mkdir -p $WORK_DIR/uploads/avatars
-    log "✅ Директория uploads создана"
+    # Восстанавливаем папку uploads если была сохранена
+    if [ -d "/tmp/uploads.backup" ]; then
+        log "💾 Восстанавливаем папку uploads..."
+        cp -r "/tmp/uploads.backup" "$WORK_DIR/uploads"
+        log "✅ Папка uploads восстановлена"
+        # Удаляем backup после восстановления
+        rm -rf "/tmp/uploads.backup"
+    else
+        # Создаем директорию uploads для аватарок если её не было
+        mkdir -p $WORK_DIR/uploads/avatars
+        log "✅ Директория uploads создана"
+    fi
     
     # Восстанавливаем конфигурацию PM2 если была сохранена
     # (для режимов update это важно, чтобы не потерять настройки)
@@ -1332,6 +1348,13 @@ echo "📁 Копируем файлы в рабочую директорию...
 # Сохраняем конфигурацию PM2
 cp \$WORK_DIR/ecosystem.config.cjs /tmp/eco.backup 2>/dev/null || true
 
+# Сохраняем папку uploads если существует
+if [ -d "\$WORK_DIR/uploads" ]; then
+    echo "💾 Сохраняем папку uploads..."
+    cp -r "\$WORK_DIR/uploads" "/tmp/uploads.backup"
+    echo "✅ Папка uploads сохранена"
+fi
+
 rm -rf \$WORK_DIR/*
 if [ -d ".output/server" ]; then
     cp -r .output/server/* \$WORK_DIR/
@@ -1345,6 +1368,19 @@ if [ -d "pages/calculators" ]; then
     mkdir -p \$WORK_DIR/pages
     cp -r pages/calculators \$WORK_DIR/pages/
     echo "✅ Директория pages/calculators скопирована"
+fi
+
+# Восстанавливаем папку uploads если была сохранена
+if [ -d "/tmp/uploads.backup" ]; then
+    echo "💾 Восстанавливаем папку uploads..."
+    cp -r "/tmp/uploads.backup" "\$WORK_DIR/uploads"
+    echo "✅ Папка uploads восстановлена"
+    # Удаляем backup после восстановления
+    rm -rf "/tmp/uploads.backup"
+else
+    # Создаем директорию uploads если её не было
+    mkdir -p \$WORK_DIR/uploads/avatars
+    echo "✅ Директория uploads создана"
 fi
 
 # Восстанавливаем конфигурацию
@@ -1650,6 +1686,13 @@ main() {
             log "Собираем проект..."
             npm run build
             
+            # Сохраняем папку uploads если существует
+            if [ -d "$WORK_DIR/uploads" ]; then
+                log "💾 Сохраняем папку uploads..."
+                cp -r "$WORK_DIR/uploads" "/tmp/uploads.backup"
+                log "✅ Папка uploads сохранена"
+            fi
+            
             # Копируем файлы (правильная структура Nuxt 3)
             log "Копируем файлы..."
             rm -rf $WORK_DIR/*
@@ -1665,6 +1708,19 @@ main() {
                 mkdir -p $WORK_DIR/pages
                 cp -r pages/calculators $WORK_DIR/pages/
                 log "✅ Директория pages/calculators скопирована"
+            fi
+            
+            # Восстанавливаем папку uploads если была сохранена
+            if [ -d "/tmp/uploads.backup" ]; then
+                log "💾 Восстанавливаем папку uploads..."
+                cp -r "/tmp/uploads.backup" "$WORK_DIR/uploads"
+                log "✅ Папка uploads восстановлена"
+                # Удаляем backup после восстановления
+                rm -rf "/tmp/uploads.backup"
+            else
+                # Создаем директорию uploads если её не было
+                mkdir -p $WORK_DIR/uploads/avatars
+                log "✅ Директория uploads создана"
             fi
             
             # Восстанавливаем конфигурацию PM2
@@ -1739,6 +1795,7 @@ EOF
             echo
             info "✅ НЕ будут удалены:"
             info "   - MongoDB и данные базы"
+            info "   - Папка uploads (загруженные файлы)"
             info "   - Nginx (только будет перезапущен)"
             if [[ ! $delete_repo =~ ^[Yy]$ ]]; then
                 info "   - Репозиторий: $PROJECT_DIR"
@@ -1759,6 +1816,13 @@ EOF
             log "Останавливаем Nginx..."
             systemctl stop nginx 2>/dev/null || true
             
+            # Сохраняем папку uploads если существует
+            if [ -d "$WORK_DIR/uploads" ]; then
+                log "💾 Сохраняем папку uploads перед переустановкой..."
+                cp -r "$WORK_DIR/uploads" "/tmp/uploads.backup"
+                log "✅ Папка uploads сохранена"
+            fi
+            
             # Удаляем файлы приложения
             log "Удаляем рабочую директорию..."
             rm -rf $WORK_DIR
@@ -1778,6 +1842,19 @@ EOF
             setup_mongodb
             clone_and_build
             copy_files
+            
+            # Восстанавливаем папку uploads если была сохранена перед переустановкой
+            if [ -d "/tmp/uploads.backup" ]; then
+                log "💾 Восстанавливаем папку uploads после переустановки..."
+                if [ -d "$WORK_DIR/uploads" ]; then
+                    rm -rf "$WORK_DIR/uploads"
+                fi
+                cp -r "/tmp/uploads.backup" "$WORK_DIR/uploads"
+                log "✅ Папка uploads восстановлена"
+                # Удаляем backup после восстановления
+                rm -rf "/tmp/uploads.backup"
+            fi
+            
             setup_pm2
             setup_nginx
             setup_firewall

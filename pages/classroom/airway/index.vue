@@ -4,13 +4,6 @@
       <div class="max-w-5xl mx-auto px-2 md:px-4 pt-8">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
           <div class="flex flex-col gap-2">
-            <div class="flex items-center gap-2 text-sm">
-              <NuxtLink to="/classroom" class="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors underline">
-                Учебный класс
-              </NuxtLink>
-              <span class="text-slate-400 dark:text-slate-500">/</span>
-              <span class="text-slate-900 dark:text-white">Проходимость дыхательных путей</span>
-            </div>
             <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Проходимость дыхательных путей</h1>
           </div>
           <div class="flex md:items-center gap-2">

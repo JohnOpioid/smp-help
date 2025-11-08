@@ -73,33 +73,82 @@
     </template>
 
     <template v-else-if="type === 'table'">
-      <div class="overflow-x-auto rounded-md border border-slate-200 dark:border-slate-700">
-        <table class="w-full text-sm text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800">
-          <thead>
-            <tr class="bg-slate-50 dark:bg-slate-700/60">
-              <th class="px-3 py-2 text-center">Этап</th>
-              <th class="px-3 py-2 text-center">Взрослые / ≥14 лет</th>
-              <th class="px-3 py-2 text-center">Дети</th>
-              <th class="px-3 py-2 text-center">Новорождённые</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
-            <tr v-for="(r, i) in cprRows" :key="i">
-              <td class="align-top p-2" v-html="fmt(r.stage)"></td>
-              <td class="align-top p-2" v-html="fmt(r.adults)"></td>
-              <td class="align-top p-2" v-html="fmt(r.children)"></td>
-              <td class="align-top p-2" v-html="fmt(r.newborns)"></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div v-if="cprNotes.length" class="space-y-1 text-sm text-slate-600 dark:text-slate-300">
-        <div v-for="(n, i) in cprNotes" :key="i">• {{ n }}</div>
+      <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden">
+        <div v-if="tableData?.item?.title" class="p-4 border-b border-slate-100 dark:border-slate-700">
+          <h2 class="text-lg font-semibold text-slate-900 dark:text-white">{{ tableData.item.title }}</h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 border-collapse" style="border: none !important;">
+            <tbody>
+              <tr 
+                v-for="(row, r) in tableGrid" 
+                :key="r"
+                :class="(tableData?.item?.rowStyles && tableData.item.rowStyles[r]?.rowClass) ? tableData.item.rowStyles[r].rowClass : ''"
+              >
+                <template v-for="(cell, c) in row" :key="c">
+                  <td 
+                    v-if="!cell.hidden"
+                    :colspan="cell.colspan || 1" 
+                    :rowspan="cell.rowspan || 1"
+                    :class="[
+                      'p-2 min-w-[100px] min-h-[40px] border border-slate-200 dark:border-slate-700',
+                      cell.verticalAlign === 'middle' ? 'align-middle' : cell.verticalAlign === 'bottom' ? 'align-bottom' : 'align-top',
+                      (tableData?.item?.columnStyles && tableData.item.columnStyles[c]?.columnClass) ? tableData.item.columnStyles[c].columnClass : '',
+                      cell.cellClass || ''
+                    ]"
+                    :style="{
+                      textAlign: cell.textAlign || 'left',
+                      width: tableData?.item?.columnStyles?.[c]?.width || undefined,
+                      verticalAlign: cell.verticalAlign || 'top'
+                    }"
+                  >
+                    <div 
+                      class="w-full h-full flex"
+                      :class="{
+                        'items-start': cell.verticalAlign === 'top' || !cell.verticalAlign,
+                        'items-center': cell.verticalAlign === 'middle',
+                        'items-end': cell.verticalAlign === 'bottom'
+                      }"
+                    >
+                      <div v-if="!cell.value || cell.value.trim() === ''" style="min-height: 36px; width: 100%;"></div>
+                      <div v-else class="md-content" v-html="fmt(cell.value)"></div>
+                    </div>
+                  </td>
+                </template>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-if="tableNotes.length" class="p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60">
+          <p class="text-xs text-slate-600 dark:text-slate-300 font-medium mb-2">Примечания</p>
+          <div class="space-y-1 text-sm text-slate-600 dark:text-slate-300">
+            <div v-for="(n, i) in tableNotes" :key="i" v-html="fmt(n)"></div>
+          </div>
+        </div>
       </div>
     </template>
 
     <template v-else-if="type === 'scheme'">
-      <div class="text-sm text-slate-500 dark:text-slate-400">Эта схема доступна в админ-редакторе.</div>
+      <div class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-end">
+          <button
+            type="button"
+            title="Вернуть схему в исходное положение"
+            class="rounded-md font-medium transition-colors text-sm gap-1.5 text-default bg-elevated hover:bg-accented/75 active:bg-accented/75 focus-visible:bg-accented/75 p-1 cursor-pointer h-8 w-8 flex items-center justify-center"
+            @click="resetViewport"
+          >
+            <UIcon name="i-heroicons:arrows-pointing-in" class="size-6" />
+          </button>
+        </div>
+        <ClientOnly>
+          <div class="h-[70vh]">
+            <FlowViewer v-if="schemeGraph" ref="flowViewerRef" :graph="schemeGraph" />
+            <div v-else class="flex items-center justify-center h-full text-sm text-slate-500 dark:text-slate-400">
+              Загрузка схемы...
+            </div>
+          </div>
+        </ClientOnly>
+      </div>
     </template>
   </div>
 </template>
@@ -120,8 +169,43 @@ const open = ref(false)
 const currentIndex = ref<number | null>(null)
 const currentItem = computed<any | null>(() => (currentIndex.value != null ? listItems.value[currentIndex.value] : null))
 const { isMobile } = useIsMobile()
-const cprRows = ref<any[]>([])
-const cprNotes = ref<string[]>([])
+const tableData = ref<any>(null)
+const tableGrid = computed(() => {
+  if (!tableData.value?.item?.grid || !Array.isArray(tableData.value.item.grid)) return []
+  return tableData.value.item.grid
+})
+const tableNotes = computed(() => {
+  if (!tableData.value?.item?.notes || !Array.isArray(tableData.value.item.notes)) return []
+  return tableData.value.item.notes
+})
+const schemeData = ref<any>(null)
+const schemeGraph = computed(() => {
+  if (!schemeData.value?.item?.data) return null
+  // Если data уже содержит nodes/edges напрямую, используем его
+  if (schemeData.value.item.data.nodes) {
+    return schemeData.value.item.data
+  }
+  // Если data - это объект с вкладками, берем первую вкладку
+  if (typeof schemeData.value.item.data === 'object') {
+    const firstKey = Object.keys(schemeData.value.item.data)[0]
+    if (firstKey) {
+      return schemeData.value.item.data[firstKey] || { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } }
+    }
+  }
+  return { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } }
+})
+
+// Компонент просмотра схемы
+// @ts-ignore
+const FlowViewer = defineAsyncComponent(() => import('~/components/airway/FlowViewer.vue') as Promise<any>)
+const flowViewerRef = ref<any>(null)
+
+// Функция для сброса viewport в исходное положение
+function resetViewport() {
+  if (flowViewerRef.value && typeof flowViewerRef.value.resetViewport === 'function') {
+    flowViewerRef.value.resetViewport()
+  }
+}
 
 watchEffect(async () => {
   if (!type.value || !slug.value) return
@@ -130,10 +214,10 @@ watchEffect(async () => {
     listItems.value = (res?.item?.items || [])
   } else if (type.value === 'table') {
     const res: any = await $fetch(`/api/cpr/${slug.value}`)
-    cprRows.value = res?.item?.rows || []
-    cprNotes.value = res?.item?.notes || []
+    tableData.value = res
   } else if (type.value === 'scheme') {
-    // схему не рендерим здесь (сложно и тяжело); можно позже добавить viewer
+    const res: any = await $fetch(`/api/classroom/airway/${slug.value}`)
+    schemeData.value = res
   }
 })
 
@@ -161,5 +245,43 @@ if (process.client) {
 const fmt = (t: string) => sanitizeHtml(marked.parse((t || '').replace(/\r\n?/g, '\n')) as string)
 const md = (t: string) => fmt(t)
 </script>
+
+<style scoped>
+/* Убираем внешние border у таблицы */
+table {
+  border: none !important;
+}
+
+table tbody tr:first-child td {
+  border-top: none !important;
+}
+
+table tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+table tbody tr td:first-child {
+  border-left: none !important;
+}
+
+table tbody tr td:last-child {
+  border-right: none !important;
+}
+
+/* Обеспечиваем минимальную высоту для пустых ячеек, как в админке */
+table tbody tr td {
+  min-height: 40px;
+  height: auto;
+  display: table-cell;
+  vertical-align: top;
+}
+
+/* Для пустых ячеек устанавливаем минимальную высоту */
+table tbody tr td > div:first-child:empty,
+table tbody tr td > div:first-child:has(> :empty) {
+  min-height: 36px;
+  display: block;
+}
+</style>
 
 

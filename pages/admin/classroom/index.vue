@@ -37,9 +37,6 @@
               <svg class="w-4 h-4 text-slate-400 flex-shrink-0 self-start" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
-              <UDropdownMenu v-if="section.isDynamic" :items="getItemMenu(section)" :ui="{ content: 'w-48', item: 'cursor-pointer' }">
-                <UButton icon="i-lucide-ellipsis-vertical" size="xs" variant="ghost" class="cursor-pointer" />
-              </UDropdownMenu>
             </div>
           </div>
         </li>
@@ -146,10 +143,114 @@ const baseSections: ClassroomSection[] = [
 const { data, refresh } = await useFetch('/api/classroom/pages', { server: false })
 const pages = computed<any[]>(() => (data.value?.items || []))
 const pagesVersion = useState<number>('classroomPagesVersion', () => 0)
-watch(pagesVersion, () => { refresh() })
+
+// Реактивное обновление при изменении версии
+watch(pagesVersion, async () => {
+  await nextTick()
+  await refresh()
+  await nextTick()
+}, { immediate: false })
+
+// Также слушаем изменения через событие (для обновления из других компонентов)
 if (process.client) {
   onMounted(() => {
-    window.addEventListener('focus', () => { refresh() })
+    const handlePagesUpdate = async () => {
+      await nextTick()
+      await refresh()
+      await nextTick()
+    }
+    window.addEventListener('classroom-pages-updated', handlePagesUpdate)
+    onBeforeUnmount(() => {
+      window.removeEventListener('classroom-pages-updated', handlePagesUpdate)
+    })
+  })
+}
+
+// Обновление при возврате на страницу
+if (process.client) {
+  onMounted(() => {
+    // Обновление при фокусе окна
+    window.addEventListener('focus', async () => {
+      await refresh()
+    })
+    
+    // Обновление при навигации обратно на страницу
+    const router = useRouter()
+    const stopWatcher = watch(() => router.currentRoute.value.path, async (newPath) => {
+      if (newPath === '/admin/classroom') {
+        await refresh()
+      }
+    })
+    
+    onBeforeUnmount(() => {
+      stopWatcher()
+    })
+    
+    // Watch for dropdown menu state changes and prevent/restore scroll
+    const observer = new MutationObserver(() => {
+      const dropdowns = document.querySelectorAll('[data-state="open"]')
+      if (dropdowns.length > 0) {
+        // Dropdown is open - ensure scroll is not blocked
+        if (document.body.style.overflow === 'hidden') {
+          document.body.style.overflow = ''
+          document.body.style.position = ''
+          document.body.style.top = ''
+          document.body.style.left = ''
+          document.body.style.right = ''
+          document.body.style.width = ''
+        }
+      } else {
+        // No dropdowns open, ensure scroll is enabled
+        if (document.body.style.overflow === 'hidden') {
+          document.body.style.overflow = ''
+          document.body.style.position = ''
+          document.body.style.top = ''
+          document.body.style.left = ''
+          document.body.style.right = ''
+          document.body.style.width = ''
+        }
+      }
+    })
+    
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-state', 'style']
+    })
+    
+    // Also check periodically to prevent scroll lock
+    const interval = setInterval(() => {
+      const dropdowns = document.querySelectorAll('[data-state="open"]')
+      if (dropdowns.length > 0 && document.body.style.overflow === 'hidden') {
+        // Dropdown is open but scroll is blocked - restore it
+        document.body.style.overflow = ''
+        document.body.style.position = ''
+        document.body.style.top = ''
+        document.body.style.left = ''
+        document.body.style.right = ''
+        document.body.style.width = ''
+      } else if (dropdowns.length === 0 && document.body.style.overflow === 'hidden') {
+        // No dropdowns but scroll is still blocked - restore it
+        document.body.style.overflow = ''
+        document.body.style.position = ''
+        document.body.style.top = ''
+        document.body.style.left = ''
+        document.body.style.right = ''
+        document.body.style.width = ''
+      }
+    }, 50)
+    
+    onBeforeUnmount(() => {
+      observer.disconnect()
+      clearInterval(interval)
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.left = ''
+      document.body.style.right = ''
+      document.body.style.width = ''
+    })
   })
 }
 
@@ -212,21 +313,42 @@ async function onCreateSubmit() {
     if (createForm.type === 'table') {
       const res: any = await $fetch('/api/cpr', { method: 'POST', body: { title: payload.title, slug: payload.slug, icon: payload.icon } })
       const slug = payload.slug || res?.item?.slug || ''
-      pagesVersion.value++
-      await refresh()
-      await navigateTo(`/admin/classroom/${slug}`)
+    // Обновляем версию и данные немедленно
+    pagesVersion.value++
+    await nextTick()
+    await refresh()
+    await nextTick()
+    // Отправляем событие для обновления других компонентов
+    if (process.client) {
+      window.dispatchEvent(new CustomEvent('classroom-pages-updated'))
+    }
+    await navigateTo(`/admin/classroom/${slug}`)
     } else if (createForm.type === 'list') {
       const res: any = await $fetch('/api/classroom/list', { method: 'POST', body: payload })
       const slug = payload.slug || res?.item?.slug || ''
-      pagesVersion.value++
-      await refresh()
-      await navigateTo(`/admin/classroom/${slug}`)
+    // Обновляем версию и данные немедленно
+    pagesVersion.value++
+    await nextTick()
+    await refresh()
+    await nextTick()
+    // Отправляем событие для обновления других компонентов
+    if (process.client) {
+      window.dispatchEvent(new CustomEvent('classroom-pages-updated'))
+    }
+    await navigateTo(`/admin/classroom/${slug}`)
     } else {
       const res: any = await $fetch('/api/classroom/airway', { method: 'POST', body: payload })
       const slug = payload.slug || res?.item?.slug || ''
-      pagesVersion.value++
-      await refresh()
-      await navigateTo(`/admin/classroom/${slug}`)
+    // Обновляем версию и данные немедленно
+    pagesVersion.value++
+    await nextTick()
+    await refresh()
+    await nextTick()
+    // Отправляем событие для обновления других компонентов
+    if (process.client) {
+      window.dispatchEvent(new CustomEvent('classroom-pages-updated'))
+    }
+    await navigateTo(`/admin/classroom/${slug}`)
     }
     createOpen.value = false
   } finally {
@@ -285,8 +407,15 @@ async function saveEdit() {
     } else if (editForm.type === 'scheme') {
       await $fetch(`/api/classroom/airway/${editForm.slug}`, { method: 'PATCH', body: { title: editForm.title, description: editForm.description, icon: editForm.icon } })
     }
+    // Обновляем версию и данные немедленно
     pagesVersion.value++
+    await nextTick()
     await refresh()
+    await nextTick()
+    // Отправляем событие для обновления других компонентов
+    if (process.client) {
+      window.dispatchEvent(new CustomEvent('classroom-pages-updated'))
+    }
     editOpen.value = false
   } finally {
     editing.value = false
@@ -300,8 +429,16 @@ async function removeItem(section: ClassroomSection) {
     if (section.type === 'list') await $fetch(`/api/classroom/list/${section.slug}`, { method: 'DELETE' })
     else if (section.type === 'table') await $fetch(`/api/cpr/${section.slug}`, { method: 'DELETE' })
     else if (section.type === 'scheme') await $fetch(`/api/classroom/airway/${section.slug}`, { method: 'DELETE' })
+    // Обновляем версию и данные немедленно
     pagesVersion.value++
+    await nextTick()
     await refresh()
+    await nextTick()
+    // Отправляем событие для обновления других компонентов
+    if (process.client) {
+      window.dispatchEvent(new CustomEvent('classroom-pages-updated'))
+    }
   } catch {}
 }
 </script>
+

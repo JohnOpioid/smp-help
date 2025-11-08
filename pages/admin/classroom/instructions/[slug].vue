@@ -2,27 +2,16 @@
   <div>
     <main class="flex-1">
       <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">{{ form.title }}</h3>
-          <div class="flex items-center gap-2">
-            <UButton color="error" variant="soft" @click="onDelete" class="cursor-pointer">Удалить</UButton>
-            <UButton color="primary" :loading="pending" @click="onSubmit" class="cursor-pointer">Сохранить</UButton>
-          </div>
-        </div>
-
-        <UForm :state="form" class="mb-4">
-          <div class="grid grid-cols-1 gap-3">
-            <UFormField label="Заголовок" required>
-              <UInput v-model="form.title" size="lg" class="w-full" />
-            </UFormField>
-            <UFormField label="Описание">
-              <UTextarea v-model="form.description" :rows="3" size="lg" class="w-full" />
-            </UFormField>
-          </div>
-        </UForm>
-
         <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden">
-          <div class="flex items-center justify-between p-3 border-b border-slate-100 dark:border-slate-700">
+          <div class="p-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white truncate">{{ form.title || 'Список' }}</h3>
+            <div class="flex items-center gap-2">
+              <UButton variant="soft" class="cursor-pointer" @click="editOpen = true">Редактировать</UButton>
+              <UButton color="error" variant="soft" @click="onDelete" class="cursor-pointer">Удалить</UButton>
+            </div>
+          </div>
+
+          <div class="p-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
             <div class="text-sm font-medium text-slate-700 dark:text-slate-200">Пункты ({{ form.items.length }})</div>
             <UButton size="xs" variant="soft" @click="addItem" class="cursor-pointer">Добавить пункт</UButton>
           </div>
@@ -53,9 +42,34 @@
               </div>
             </div>
           </div>
+
+          <div class="p-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-end gap-2">
+            <UButton color="primary" :loading="pending" @click="onSubmit" class="cursor-pointer">Сохранить</UButton>
+          </div>
         </div>
 
       </div>
+
+      <USlideover v-model:open="editOpen" title="Редактирование страницы" description="Измените поля и сохраните" side="right" :ui="{ overlay: 'bg-slate-700/50' }">
+        <template #body>
+          <UForm :state="editForm">
+            <div class="space-y-3 w-full">
+              <UFormField label="Заголовок" required class="w-full">
+                <UInput v-model="editForm.title" size="lg" class="w-full" />
+              </UFormField>
+              <UFormField label="Описание" class="w-full">
+                <UTextarea v-model="editForm.description" :rows="4" size="lg" class="w-full" />
+              </UFormField>
+            </div>
+          </UForm>
+        </template>
+        <template #footer>
+          <div class="flex items-center gap-2 w-full justify-end">
+            <UButton variant="ghost" class="cursor-pointer" @click="editOpen = false">Отмена</UButton>
+            <UButton color="primary" class="cursor-pointer" @click="() => { form.title = editForm.title; form.description = editForm.description; editOpen = false }">Сохранить</UButton>
+          </div>
+        </template>
+      </USlideover>
     </main>
   </div>
 </template>
@@ -70,6 +84,8 @@ const { data, refresh } = await useFetch<any>(() => slug.value ? `/api/classroom
 const doc = computed<any>(() => (data as any)?.value?.item || null)
 
 const form = reactive<{ title: string; description: string; items: any[] }>({ title: '', description: '', items: [] })
+const editOpen = ref(false)
+const editForm = reactive<{ title: string; description: string }>({ title: '', description: '' })
 
 watch(doc, () => {
   Object.assign(form, {
@@ -83,6 +99,7 @@ watch(doc, () => {
         : (it.description ? [{ type: 'textarea', label: 'Описание', value: it.description }] : [])
     }))
   })
+  Object.assign(editForm, { title: form.title, description: form.description })
 }, { immediate: true })
 
 const addItem = () => form.items.push({ title: '', fields: [] })
@@ -125,5 +142,4 @@ const onDelete = async () => {
   }
 }
 </script>
-
 

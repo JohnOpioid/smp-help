@@ -14,10 +14,10 @@ export const useAuth = () => {
   
   const runtimeConfig = useRuntimeConfig()
   
-  // Упрощенное определение базового URL для API (без проверки Capacitor)
+  // Определение базового URL для API
   const getApiUrl = () => {
     if (process.client) {
-      // Простая проверка hostname без Capacitor
+      // Проверка hostname
       const hostname = window.location.hostname
       const protocol = window.location.protocol // http: или https:
       const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1'
@@ -193,21 +193,8 @@ export const useAuth = () => {
     
     // Перенаправляем на страницу входа
     if (process.client) {
-      // Определяем, находимся ли мы в Capacitor (мобильное приложение)
-      const isCapacitor = process.client && (
-        window.Capacitor?.isNativePlatform?.() || 
-        window.location.protocol === 'capacitor:' ||
-        window.location.protocol === 'ionic:' ||
-        navigator.userAgent.includes('Capacitor')
-      )
-      
-      if (isCapacitor) {
-        // В Capacitor используем window.location для перенаправления
-        window.location.href = '/auth/login'
-      } else {
-        // В веб-версии используем navigateTo для сохранения реактивности
-        await navigateTo('/auth/login')
-      }
+      // Используем navigateTo для навигации
+      await navigateTo('/auth/login')
     }
   }
 

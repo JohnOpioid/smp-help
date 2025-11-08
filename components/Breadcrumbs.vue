@@ -140,6 +140,42 @@ async function resolveLastLabel() {
       }
     }
   } catch {}
+  
+  // Спец. обработка для /classroom/:slug — подтягиваем название страницы из API
+  try {
+    const segments = route.path.split('/').filter(Boolean)
+    if (segments[0] === 'classroom' && segments.length === 2) {
+      const slug = segments[1]
+      // Пропускаем известные статические страницы
+      if (slug === 'instructions' || slug === 'cpr' || slug === 'airway') {
+        return
+      }
+      const res: any = await $fetch('/api/classroom/pages')
+      const page = (res?.items || []).find((p: any) => p.slug === slug)
+      if (page?.title) {
+        customLastLabel.value = String(page.title)
+        return
+      }
+    }
+  } catch {}
+  
+  // Спец. обработка для /admin/classroom/:slug — подтягиваем название страницы из API
+  try {
+    const segments = route.path.split('/').filter(Boolean)
+    if (segments[0] === 'admin' && segments[1] === 'classroom' && segments.length === 3) {
+      const slug = segments[2]
+      // Пропускаем известные статические страницы
+      if (slug === 'instructions' || slug === 'cpr' || slug === 'airway') {
+        return
+      }
+      const res: any = await $fetch('/api/classroom/pages')
+      const page = (res?.items || []).find((p: any) => p.slug === slug)
+      if (page?.title) {
+        customLastLabel.value = String(page.title)
+        return
+      }
+    }
+  } catch {}
 }
 
 onMounted(() => resolveLastLabel())

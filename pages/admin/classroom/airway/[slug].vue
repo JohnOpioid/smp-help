@@ -48,11 +48,18 @@ import { ref, computed, watch, defineAsyncComponent } from 'vue'
 import type { ContextMenuItem } from '@nuxt/ui'
 const route = useRoute()
 const slug = computed(() => String(route.params.slug || ''))
-const currentTab = ref<string | null>(null)
+const currentTab = ref<string | undefined>(undefined)
 const tabItems = computed(() => Object.keys(item.value?.data || {}).map(k => ({ label: k === 'children' ? 'Дети' : (k === 'adults' ? 'Взрослые' : k), value: k })))
 
-const { data, refresh } = await useFetch<any>(() => slug.value ? `/api/classroom/airway/${slug.value}` : null, { method: 'GET', server: false })
-const item = computed<any>(() => (data as any)?.value?.item || null)
+const data = ref<any>(null)
+const refresh = async () => {
+  if (!slug.value) return
+  data.value = await $fetch<any>(`/api/classroom/airway/${slug.value}`)
+}
+if (slug.value) {
+  await refresh()
+}
+const item = computed<any>(() => data.value?.item || null)
 const loaded = computed(() => Boolean(item.value))
 
 const workingGraph = ref<any>({ nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } })

@@ -19,6 +19,9 @@ const ClassroomCprSchema = new Schema({
   // Совместимость со старым форматом
   rows: { type: [CprRowSchema], default: [] },
   notes: { type: [String], default: [] },
+  // Стили для строк и столбцов
+  rowStyles: { type: [Schema.Types.Mixed], default: [] }, // массив { rowClass?: string }
+  columnStyles: { type: [Schema.Types.Mixed], default: [] }, // массив { columnClass?: string, width?: string }
   order: { type: Number, default: 0 }
 }, { timestamps: true })
 

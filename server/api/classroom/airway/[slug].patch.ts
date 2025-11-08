@@ -11,6 +11,7 @@ export default defineEventHandler(async (event) => {
   if (!doc) return { success: false, message: 'not found' }
   if (body?.title != null) doc.title = body.title
   if (body?.description != null) doc.description = body.description
+  if (body?.icon != null) doc.icon = body.icon
   if (body?.data != null) {
     doc.data = JSON.parse(JSON.stringify(body.data))
     doc.markModified('data')

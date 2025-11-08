@@ -91,7 +91,7 @@ const error = ref('')
 const success = ref('')
 
 const route = useRoute()
-onMounted(() => {
+onMounted(async () => {
   // Получаем telegramId из query
   const telegramIdParam = route.query.telegramId
   if (typeof telegramIdParam === 'string') {
@@ -100,7 +100,29 @@ onMounted(() => {
     telegramId.value = String(telegramIdParam)
   }
   
-  // Код из URL не заполняется автоматически - пользователь должен ввести его вручную
+  // Получаем код из query (если есть)
+  const codeParam = route.query.code
+  if (typeof codeParam === 'string' && codeParam.length === 6) {
+    // Заполняем код автоматически, если он передан в URL
+    // UPinInput ожидает массив строк
+    code.value = codeParam.split('') as string[]
+  }
+  
+  // Помечаем код как использованный в pending кодах после успешной навигации
+  if (telegramId.value && codeParam) {
+    try {
+      await $fetch('/api/auth/mark-telegram-code-used', {
+        method: 'POST',
+        body: {
+          telegramId: telegramId.value,
+          code: codeParam
+        }
+      })
+    } catch (e) {
+      // Игнорируем ошибки - это не критично
+      console.warn('Не удалось пометить код как использованный:', e)
+    }
+  }
 })
 
 const onSubmit = async () => {

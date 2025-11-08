@@ -1,25 +1,17 @@
 <template>
   <div class="flex flex-col h-full">
   <main class="flex-1 flex flex-col overflow-hidden">
-      <div class="max-w-5xl mx-auto px-2 md:px-4 pt-8 flex flex-col flex-1 w-full">
-        <div class="mb-4 flex-shrink-0">
-          <div class="flex items-center gap-2 mb-2 text-sm">
-            <NuxtLink to="/admin/classroom" class="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors underline">
-              Учебный класс
-            </NuxtLink>
-            <span class="text-slate-400 dark:text-slate-500">/</span>
-            <span class="text-slate-900 dark:text-white">Проходимость дыхательных путей</span>
+      <div class="max-w-5xl mx-auto px-2 md:px-4 py-8 flex flex-col flex-1 w-full">
+        <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden flex flex-col flex-1 min-h-0">
+          <div class="p-4 border-b border-slate-100 dark:border-slate-700">
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Редактор: Проходимость дыхательных путей</h1>
           </div>
-          <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Редактор: Проходимость дыхательных путей</h1>
-        </div>
 
-        <!-- Контекстное меню заменяет верхнюю панель действий -->
-
-        <div class="flex-1 flex flex-col min-h-0">
+          <div class="flex-1 flex flex-col min-h-0 p-2">
           <ClientOnly>
             <UContextMenu :items="cmItems" :ui="{ content: 'w-64' }">
               <div ref="canvasWrap"
-                class="rounded-lg border border-dashed border-slate-300 dark:border-slate-600 overflow-hidden flex-1 flex flex-col min-h-0"
+                  class="rounded-lg border border-dashed border-slate-300 dark:border-slate-600 overflow-hidden flex-1 flex flex-col min-h-0 h-full"
                 style="border-width: 1px;"
                 @contextmenu.capture="prepareMenu">
                 <FlowEditor v-if="loaded" v-model:graph="workingGraph" 
@@ -67,16 +59,15 @@
               </div>
             </UContextMenu>
           </ClientOnly>
-        </div>
-
-        <!-- Кнопки управления внизу -->
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mt-4 pb-8 flex-shrink-0">
-          <div class="flex items-center gap-2">
-            <USelect v-model="currentTab" :items="tabs" size="sm" class="w-40" />
           </div>
-          <div class="flex items-center gap-2">
-            <UButton variant="soft" class="cursor-pointer" @click="autoLayout">Авторасстановка</UButton>
-            <UButton color="primary" variant="solid" class="cursor-pointer" @click="save">Сохранить</UButton>
+
+          <div class="p-4 border-t border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <USelect v-model="currentTab" :items="tabs" size="sm" class="w-40" />
+            </div>
+            <div class="flex items-center gap-2">
+              <UButton color="primary" variant="solid" class="cursor-pointer" @click="save">Сохранить</UButton>
+            </div>
           </div>
         </div>
 
@@ -230,7 +221,7 @@ watch([item, currentTab], () => {
     const currentEdgesIds = new Set((workingGraph.value?.edges || []).map((e: any) => e.id))
     const newEdgesIds = new Set(normalizedEdges.map((e: any) => e.id))
     const edgesChanged = normalizedEdges.length !== currentEdgesCount ||
-      !normalizedEdges.every(e => currentEdgesIds.has(e.id)) ||
+      !normalizedEdges.every((e: any) => currentEdgesIds.has(e.id)) ||
       !(workingGraph.value?.edges || []).every((e: any) => newEdgesIds.has(e.id))
     
     // Проверяем изменения в nodes (только по ID, чтобы не перезаписывать при каждом изменении)
@@ -563,7 +554,7 @@ async function save() {
     
     // ВАЖНО: Обновляем workingGraph напрямую из сохраненных данных перед refresh
     // Это предотвращает перезапись данных из БД, которые могут быть еще не обновлены
-    if (result?.item?.data?.[currentTab.value]) {
+    if (result && 'item' in result && result.item?.data?.[currentTab.value]) {
       const savedGraph = result.item.data[currentTab.value]
       
       // ВАЖНО: Создаем Set с ID всех nodes для проверки существования
@@ -633,29 +624,6 @@ async function save() {
 // @ts-ignore
 const FlowEditor = defineAsyncComponent(() => import('~/components/airway/FlowEditor.vue'))
 
-// Авторасстановка (ELK layered)
-let ELK: any
-async function autoLayout() {
-  try {
-    // Используем бандл без web-worker, совместимый с Vite
-    ELK = ELK || (await import('elkjs/lib/elk.bundled.js')).default
-    const elk = new ELK()
-    const graph = {
-      id: 'root',
-      layoutOptions: { 'elk.algorithm': 'layered', 'elk.direction': 'RIGHT' },
-      children: (workingGraph.value.nodes || []).map((n: any) => ({ id: n.id, width: 280, height: 120 })),
-      edges: (workingGraph.value.edges || []).map((e: any) => ({ id: e.id, sources: [e.source], targets: [e.target] }))
-    }
-    const res = await elk.layout(graph)
-    const posById: Record<string, { x: number, y: number }> = {}
-    for (const c of res.children || []) posById[c.id] = { x: c.x || 0, y: c.y || 0 }
-    workingGraph.value.nodes = (workingGraph.value.nodes || []).map((n: any) => ({ ...n, position: posById[n.id] || n.position }))
-  } catch (e) {
-    // @ts-ignore
-    const toast = useToast?.(); toast?.add?.({ title: 'Не удалось выполнить авторасстановку', color: 'error' })
-  }
-}
-
 onMounted(() => { /* noop */ })
 
 // Контекстное меню
@@ -664,13 +632,7 @@ const contextMode = ref<'canvas' | 'node' | 'edge'>('canvas')
 const cmItems = computed<ContextMenuItem[][]>(() => {
   if (contextMode.value === 'canvas') {
     return [[
-      {
-        label: 'Добавить', icon: 'i-lucide-plus', children: [
-          { label: 'Блок', icon: 'i-lucide-square-plus', onSelect: () => onAddAtCenter() },
-          { label: 'Связь', icon: 'i-lucide-link', onSelect: () => { addMode.value = 'edge'; pendingSourceId.value = null } }
-        ]
-      },
-      { label: 'Авторасстановка', icon: 'i-lucide-sparkles', onSelect: () => autoLayout() }
+      { label: 'Добавить узел', icon: 'i-lucide-square-plus', onSelect: () => onAddAtCenter() }
     ]]
   }
   if (contextMode.value === 'node') {

@@ -116,9 +116,7 @@ export default defineNuxtConfig({
     public: {
       apiBase: '/api',
       yamapsApiKey: process.env.YAMAPS_API_KEY || '0cf3bb2c-e67f-4006-8a3e-c5df09b9da6c',
-      realmAppId: process.env.REALM_APP_ID || '', // Отключаем Realm для локальной работы
-      // Для мобильного приложения используем IP адрес вместо localhost
-      apiUrl: process.env.NODE_ENV === 'production' ? 'https://your-domain.com' : 'http://10.0.2.2:3000',
+      apiUrl: process.env.NODE_ENV === 'production' ? 'https://your-domain.com' : 'http://localhost:3000',
       telegramBotUsername: process.env.TELEGRAM_BOT_USERNAME || 'helpssmp_bot',
       // Отключаем Fontshare provider
       UNFONT_PROVIDER_DISABLED: true,
@@ -136,11 +134,7 @@ export default defineNuxtConfig({
     }
   },
   plugins: [
-    // Условная загрузка плагинов для локальной работы
-    ...(process.env.REALM_APP_ID ? ['~/plugins/realm.client.ts'] : ['~/plugins/mongodb-local.client.ts']),
-    '~/plugins/capacitor.client.ts',
-    '~/plugins/mobile-ui.client.ts',
-    '~/plugins/telegram.client.ts',
+    '~/plugins/mongodb-local.client.ts',
     '~/plugins/fetch.client.ts',
     '~/plugins/promo.client.ts',
     '~/plugins/version.client.ts',

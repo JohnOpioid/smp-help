@@ -20,14 +20,14 @@ export default defineEventHandler(async (event) => {
       }
     }
     
-    // Возвращаем последний код
+    // Возвращаем последний код (самый свежий)
     const lastCode = pendingCodes[pendingCodes.length - 1]
     
     console.log('✅ Возвращаем код:', { telegramId: lastCode.telegramId, code: lastCode.code })
     
-    // Удаляем код после получения, чтобы он не возвращался повторно
-    const { removePendingCode } = await import('~/server/utils/telegram-auth-codes')
-    removePendingCode(lastCode.telegramId, lastCode.code)
+    // НЕ помечаем код как использованный сразу - даем время на навигацию
+    // Код будет помечен как использованный только после успешной навигации
+    // Это позволяет повторно запросить код, если редирект не сработал
     
     return {
       success: true,

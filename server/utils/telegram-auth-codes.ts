@@ -18,6 +18,7 @@ interface PendingCode {
   telegramId: string
   code: string
   timestamp: number
+  used: boolean // Флаг, что код был использован для навигации
 }
 
 const pendingCodesMap = new Map<string, PendingCode>()
@@ -65,13 +66,14 @@ export function storeAuthCodeForSync(telegramId: string, code: string): void {
   pendingCodesMap.set(telegramId, {
     telegramId,
     code,
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    used: false
   })
   
-  // Очищаем старые коды (старше 1 минуты)
+  // Очищаем старые коды (старше 2 минут)
   const now = Date.now()
   for (const [key, value] of pendingCodesMap.entries()) {
-    if (now - value.timestamp > 60000) {
+    if (now - value.timestamp > 120000) {
       pendingCodesMap.delete(key)
     }
   }
@@ -85,22 +87,23 @@ export function getAllPendingCodes(): PendingCode[] {
   if (pendingCodesMap.size > 0) {
     console.log('📋 Содержимое Map:')
     for (const [key, value] of pendingCodesMap.entries()) {
-      console.log(`  Key: ${key}, Code: ${value.code}, Timestamp: ${value.timestamp}`)
+      console.log(`  Key: ${key}, Code: ${value.code}, Timestamp: ${value.timestamp}, Used: ${value.used}`)
     }
   }
   
-  // Очищаем старые коды
+  // Очищаем старые коды (старше 2 минут)
   const now = Date.now()
   for (const [key, value] of pendingCodesMap.entries()) {
     console.log(`  Код: ${value.code}, возраст: ${now - value.timestamp}ms`)
-    if (now - value.timestamp > 60000) {
+    if (now - value.timestamp > 120000) {
       pendingCodesMap.delete(key)
       console.log(`  Удален старый код: ${value.code}`)
     }
   }
   
-  const result = Array.from(pendingCodesMap.values())
-  console.log(`📋 Возвращаем ${result.length} кодов`)
+  // Возвращаем только неиспользованные коды
+  const result = Array.from(pendingCodesMap.values()).filter(c => !c.used)
+  console.log(`📋 Возвращаем ${result.length} неиспользованных кодов`)
   
   if (result.length > 0) {
     console.log('📋 Коды:', result.map(c => ({ telegramId: c.telegramId, code: c.code })))
@@ -110,7 +113,13 @@ export function getAllPendingCodes(): PendingCode[] {
 }
 
 export function removePendingCode(telegramId: string, code: string): void {
-  pendingCodesMap.delete(telegramId)
+  const pending = pendingCodesMap.get(telegramId)
+  if (pending && pending.code === code) {
+    // Помечаем код как использованный вместо удаления
+    pending.used = true
+    pendingCodesMap.set(telegramId, pending)
+    console.log('✅ Код помечен как использованный:', { telegramId, code })
+  }
 }
 
 export function getAuthCodeWithChat(telegramId: string): AuthCode | null {
