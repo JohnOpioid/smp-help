@@ -741,7 +741,8 @@ copy_files() {
     
     # Очищаем рабочую директорию
     log "Очищаем $WORK_DIR..."
-    rm -rf $WORK_DIR/*
+    # Удаляем все файлы кроме uploads
+    find $WORK_DIR -mindepth 1 -maxdepth 1 ! -name 'uploads' -exec rm -rf {} +
     
     # Проверяем, что сборка существует
     if [ ! -d "$PROJECT_DIR/.output" ]; then
@@ -762,14 +763,10 @@ copy_files() {
     fi
     
     if [ -d "$PROJECT_DIR/.output/public" ]; then
-        cp -r $PROJECT_DIR/.output/public/* $WORK_DIR/ 2>/dev/null || true
-        log "✅ Статические файлы скопированы"
-        
-        # Удаляем папку uploads из .output/public если она там есть (она будет восстановлена из backup)
-        if [ -d "$WORK_DIR/uploads" ] && [ -d "/tmp/uploads.backup" ]; then
-            log "🗑️ Удаляем папку uploads из .output/public (будет восстановлена из backup)..."
-            rm -rf "$WORK_DIR/uploads"
-        fi
+        # Копируем все из public кроме uploads (если она там есть)
+        rsync -av --exclude='uploads' $PROJECT_DIR/.output/public/ $WORK_DIR/ 2>/dev/null || \
+        (cd $PROJECT_DIR/.output/public && find . -mindepth 1 -maxdepth 1 ! -name 'uploads' -exec cp -r {} $WORK_DIR/ \;)
+        log "✅ Статические файлы скопированы (uploads исключена)"
     else
         error "Директория .output/public не найдена"
         exit 1
@@ -1366,12 +1363,15 @@ if [ -d "\$WORK_DIR/uploads" ]; then
     echo "✅ Папка uploads сохранена"
 fi
 
-rm -rf \$WORK_DIR/*
+# Удаляем все файлы кроме uploads
+find \$WORK_DIR -mindepth 1 -maxdepth 1 ! -name 'uploads' -exec rm -rf {} +
 if [ -d ".output/server" ]; then
     cp -r .output/server/* \$WORK_DIR/
 fi
 if [ -d ".output/public" ]; then
-    cp -r .output/public/* \$WORK_DIR/ 2>/dev/null || true
+    # Копируем все из public кроме uploads (если она там есть)
+    rsync -av --exclude='uploads' .output/public/ \$WORK_DIR/ 2>/dev/null || \
+    (cd .output/public && find . -mindepth 1 -maxdepth 1 ! -name 'uploads' -exec cp -r {} \$WORK_DIR/ \;)
 fi
 
 # Копируем директорию pages/calculators для доступа к исходным файлам калькуляторов
@@ -1711,18 +1711,16 @@ main() {
             
             # Копируем файлы (правильная структура Nuxt 3)
             log "Копируем файлы..."
-            rm -rf $WORK_DIR/*
+            # Удаляем все файлы кроме uploads
+            find $WORK_DIR -mindepth 1 -maxdepth 1 ! -name 'uploads' -exec rm -rf {} +
             if [ -d ".output/server" ]; then
                 cp -r .output/server/* $WORK_DIR/
             fi
             if [ -d ".output/public" ]; then
-                cp -r .output/public/* $WORK_DIR/ 2>/dev/null || true
-                
-                # Удаляем папку uploads из .output/public если она там есть (она будет восстановлена из backup)
-                if [ -d "$WORK_DIR/uploads" ] && [ -d "/tmp/uploads.backup" ]; then
-                    log "🗑️ Удаляем папку uploads из .output/public (будет восстановлена из backup)..."
-                    rm -rf "$WORK_DIR/uploads"
-                fi
+                # Копируем все из public кроме uploads (если она там есть)
+                rsync -av --exclude='uploads' .output/public/ $WORK_DIR/ 2>/dev/null || \
+                (cd .output/public && find . -mindepth 1 -maxdepth 1 ! -name 'uploads' -exec cp -r {} $WORK_DIR/ \;)
+                log "✅ Статические файлы скопированы (uploads исключена)"
             fi
             
             # Копируем директорию pages/calculators для доступа к исходным файлам калькуляторов
