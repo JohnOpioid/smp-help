@@ -141,6 +141,21 @@ async function resolveLastLabel() {
     }
   } catch {}
   
+  // Спец. обработка для /admin/tests/:id — подтягиваем название категории
+  try {
+    const segments = route.path.split('/').filter(Boolean)
+    if (segments[0] === 'admin' && segments[1] === 'tests' && segments.length >= 3) {
+      const id = segments[2]
+      if (id && id.length >= 12) {
+        const res: any = await $fetch(`/api/tests/categories/${id}`)
+        if (res?.success && res.item?.name) {
+          customLastLabel.value = String(res.item.name)
+          return
+        }
+      }
+    }
+  } catch {}
+  
   // Спец. обработка для /classroom/:slug — подтягиваем название страницы из API
   try {
     const segments = route.path.split('/').filter(Boolean)
@@ -303,6 +318,28 @@ const items = computed<BreadcrumbItem[]>(() => {
     acc.push({ label: 'Тесты', to: '/tests' })
     let localPath = '/tests'
     segments.slice(1).forEach((seg, idx, rest) => {
+      localPath += `/${seg}`
+      const isLast = idx === rest.length - 1
+      const base = isLast && customLastLabel.value
+        ? customLastLabel.value
+        : (labelMap[seg] || decodeURIComponent(seg).replace(/[-_]+/g, ' '))
+      const label = base.charAt(0).toUpperCase() + base.slice(1)
+      acc.push({ label, to: isLast ? undefined : localPath })
+    })
+    return acc
+  }
+
+  // Явная ветка для /admin/tests
+  if (segments[0] === 'admin' && segments[1] === 'tests') {
+    acc.push({ label: 'Админка', to: '/admin' })
+    if (segments.length === 2) {
+      acc.push({ label: 'Тесты' })
+      return acc
+    }
+    // /admin/tests/:id
+    acc.push({ label: 'Тесты', to: '/admin/tests' })
+    let localPath = '/admin/tests'
+    segments.slice(2).forEach((seg, idx, rest) => {
       localPath += `/${seg}`
       const isLast = idx === rest.length - 1
       const base = isLast && customLastLabel.value

@@ -14,10 +14,21 @@
       <div v-if="items.length === 0" class="text-sm text-slate-500 dark:text-slate-400">Доступных категорий пока нет</div>
       <ul class="divide-y divide-slate-100 dark:divide-slate-700">
         <li v-for="cat in items" :key="cat._id" class="hover:bg-slate-100 dark:hover:bg-slate-700/40 cursor-pointer">
-          <NuxtLink :to="`/tests/${cat._id}`" class="flex items-center gap-3 px-4 py-3">
+          <NuxtLink :to="`/tests/${cat._id}`" class="flex items-start gap-3 px-4 py-3">
             <div class="min-w-0 flex-1">
               <p class="text-slate-900 dark:text-white font-medium truncate">{{ cat.name }}</p>
               <p v-if="cat.description" class="text-xs text-slate-500 dark:text-slate-400 truncate mt-1">{{ cat.description }}</p>
+              <UButton
+                v-if="cat.courseLink"
+                size="xs"
+                color="slate"
+                variant="soft"
+                icon="i-heroicons-academic-cap"
+                class="mt-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600"
+                @click.stop="window.open(cat.courseLink, '_blank', 'noopener,noreferrer')"
+              >
+                Курс на портале
+              </UButton>
             </div>
             <span class="text-xs px-2 py-1 rounded bg-slate-200 text-slate-600 font-mono whitespace-nowrap">{{ countsMap[cat._id] ?? 0 }} {{ getTestWord(countsMap[cat._id] ?? 0) }}</span>
           </NuxtLink>
@@ -55,10 +66,10 @@ onMounted(async () => {
     }
     const res: any = await $fetch('/api/tests/categories?publicOnly=1', { cache: 'no-cache' as any })
     items.value = Array.isArray(res?.items) ? res.items : []
-    // Загружаем количества тестов по категориям
+    // Загружаем количества тестов по категориям (только одобренные для публичной страницы)
     await Promise.all(items.value.map(async (cat: any) => {
       try {
-        const qs: any = await $fetch(`/api/tests?category=${cat._id}&includeAll=1`, { cache: 'no-cache' as any })
+        const qs: any = await $fetch(`/api/tests?category=${cat._id}`, { cache: 'no-cache' as any })
         countsMap[cat._id] = Array.isArray(qs?.items) ? qs.items.length : 0
       } catch {
         countsMap[cat._id] = 0

@@ -27,14 +27,17 @@
             <tbody>
               <tr v-for="cat in items" :key="cat._id" class="border-t border-slate-100 dark:border-slate-700/60">
                 <td class="p-3">
-                  <NuxtLink :to="`/admin/tests/${cat._id}`" class="text-slate-900 dark:text-white hover:underline">{{ cat.name }}</NuxtLink>
+                  <div class="flex items-center gap-2">
+                    <NuxtLink :to="`/admin/tests/${cat._id}`" class="text-slate-900 dark:text-white hover:underline">{{ cat.name }}</NuxtLink>
+                    <UIcon v-if="cat.courseLink" name="i-heroicons-academic-cap" class="w-4 h-4 text-slate-500 dark:text-slate-400" title="Есть ссылка на курс" />
+                  </div>
                   <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">/{{ cat.url }}</div>
                 </td>
                 <td class="p-3 text-center whitespace-nowrap">
                   <UBadge :color="cat.isPublic ? 'primary' : 'neutral'" variant="soft" size="sm" class="cursor-default">{{ cat.isPublic ? 'Да' : 'Нет' }}</UBadge>
                 </td>
                 <td class="p-3 text-center whitespace-nowrap">
-                  <UPopover :content="{ side: 'bottom', align: 'end', sideOffset: 8 }">
+                  <UPopover v-model:open="popoverOpenMap[cat._id]" :content="{ side: 'bottom', align: 'end', sideOffset: 8 }">
                     <button
                       type="button"
                       class="rounded-md p-2 size-9 inline-flex items-center justify-center text-default text-slate-500 dark:text-slate-400 hover:bg-elevated focus:outline-none cursor-pointer"
@@ -48,7 +51,7 @@
                           <button
                             type="button"
                             class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
-                            @click="onEdit(cat)"
+                            @click="popoverOpenMap[cat._id] = false; onEdit(cat)"
                           >
                             <UIcon name="i-heroicons-pencil-square" class="w-4 h-4 text-slate-500" />
                             <span>Редактировать</span>
@@ -56,7 +59,7 @@
                           <button
                             type="button"
                             class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 cursor-pointer"
-                            @click="onDelete(cat)"
+                            @click="popoverOpenMap[cat._id] = false; onDelete(cat)"
                           >
                             <UIcon name="i-heroicons-trash" class="w-4 h-4" />
                             <span>Удалить</span>
@@ -84,6 +87,9 @@
             </UFormField>
             <UFormField label="Описание" class="w-full">
               <UTextarea v-model="form.description" placeholder="Краткое описание категории (необязательно)" class="w-full" />
+            </UFormField>
+            <UFormField label="Ссылка на курс" class="w-full">
+              <UInput v-model="form.courseLink" placeholder="https://..." class="w-full" size="xl" />
             </UFormField>
             <UFormField label="Доступен на сайте" class="w-full">
               <USwitch v-model="form.isPublic" color="primary" />
@@ -138,13 +144,15 @@ const slideoverOpen = ref(false)
 const isEdit = ref(false)
 const currentId = ref<string | null>(null)
 const pendingSubmit = ref(false)
-const form = reactive<{ name: string; description?: string; isPublic: boolean }>({ name: '', description: '', isPublic: false })
+const popoverOpenMap = reactive<Record<string, boolean>>({})
+const form = reactive<{ name: string; description?: string; courseLink?: string; isPublic: boolean }>({ name: '', description: '', courseLink: '', isPublic: false })
 
 function onNew() {
   isEdit.value = false
   currentId.value = null
   form.name = ''
   form.description = ''
+  form.courseLink = ''
   form.isPublic = false
   slideoverOpen.value = true
 }
@@ -154,6 +162,7 @@ function onEdit(cat: any) {
   currentId.value = String(cat._id)
   form.name = cat.name || ''
   form.description = cat.description || ''
+  form.courseLink = cat.courseLink || ''
   form.isPublic = Boolean(cat.isPublic)
   slideoverOpen.value = true
 }
@@ -169,13 +178,13 @@ async function onSubmit() {
   pendingSubmit.value = true
   try {
     if (isEdit.value && currentId.value) {
-      const res: any = await $fetch(`/api/tests/categories/${currentId.value}`, { method: 'PATCH', body: { name: form.name, description: form.description, isPublic: form.isPublic } })
+      const res: any = await $fetch(`/api/tests/categories/${currentId.value}`, { method: 'PATCH', body: { name: form.name, description: form.description, courseLink: form.courseLink, isPublic: form.isPublic } })
       if (res?.success && res.item) {
         const idx = items.value.findIndex((i: any) => i._id === currentId.value)
         if (idx !== -1) items.value[idx] = res.item
       }
     } else {
-      const res: any = await $fetch('/api/tests/categories', { method: 'POST', body: { name: form.name, description: form.description, isPublic: form.isPublic } })
+      const res: any = await $fetch('/api/tests/categories', { method: 'POST', body: { name: form.name, description: form.description, courseLink: form.courseLink, isPublic: form.isPublic } })
       if (res?.success && res.item) {
         items.value = [res.item, ...items.value]
       } else {

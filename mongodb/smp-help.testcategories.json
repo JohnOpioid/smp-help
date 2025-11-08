@@ -1,0 +1,512 @@
+[{
+  "_id": {
+    "$oid": "69091fc5bd471cd72243157e"
+  },
+  "name": "Управление стрессом",
+  "url": "effektivnaya-kommunikaciya-upravlenie-stressom-upravlenie-konfliktom",
+  "description": "",
+  "createdAt": {
+    "$date": "2025-11-03T21:33:57.795Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:45:02.254Z"
+  },
+  "__v": 0,
+  "isPublic": true
+},
+{
+  "_id": {
+    "$oid": "690a2bc44f2ea8c73482263b"
+  },
+  "name": "Эффективная коммуникация",
+  "url": "effektivnaya-kommunikaciya",
+  "description": "",
+  "createdAt": {
+    "$date": "2025-11-04T16:37:24.457Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:45:07.345Z"
+  },
+  "__v": 0,
+  "isPublic": true
+},
+{
+  "_id": {
+    "$oid": "690a5715ba14966798630d33"
+  },
+  "name": "Управление конфликтом",
+  "url": "upravlenie-konfliktom",
+  "description": "",
+  "isPublic": true,
+  "createdAt": {
+    "$date": "2025-11-04T19:42:13.875Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-08T21:58:42.214Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a597564d160c06c28e18b"
+  },
+  "name": "Психические нарушения и отказы от оказания медицинской помощи при соматических заболеваниях",
+  "url": "psihicheskie-narusheniya-i-otkazy-ot-okazaniya-medicinskoy-pomoschi-pri-somaticheskih-zabolevaniyah",
+  "description": "",
+  "isPublic": true,
+  "createdAt": {
+    "$date": "2025-11-04T19:52:21.276Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:45:16.254Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a5f6664d160c06c28e2d8"
+  },
+  "name": "Острый церебральный инсульт",
+  "url": "ostryy-cerebralnyy-insult",
+  "description": "",
+  "isPublic": true,
+  "createdAt": {
+    "$date": "2025-11-04T20:17:42.548Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:45:20.913Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a5fcd64d160c06c28e2db"
+  },
+  "name": "Оказание скорой медицинской помощи пациентам с острым коронарным синдромом",
+  "url": "okazanie-skoroy-medicinskoy-pomoschi-pacientam-s-ostrym-koronarnym-sindromom",
+  "description": "",
+  "isPublic": true,
+  "createdAt": {
+    "$date": "2025-11-04T20:19:25.776Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:56:33.447Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a5ff964d160c06c28e2de"
+  },
+  "name": "Применение инновационных изделий для остановки носовых кровотечений",
+  "url": "primenenie-innovacionnyh-izdeliy-dlya-ostanovki-nosovyh-krovotecheniy",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:20:09.188Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:20:09.188Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a605364d160c06c28e2e1"
+  },
+  "name": "Эпидемиология, клиника, дифференциальная диагностика, лечение и профилактика инфекционных (паразитарных) болезней, требующие проведения мероприятий по санитарной охране территории города Москвы",
+  "url": "epidemiologiya-klinika-differencialnaya-diagnostika-lechenie-i-profilaktika-infekcionnyh-parazitarnyh-bolezney-trebuyuschie-provedeniya-meropriyatiy-po-sanitarnoy-ohrane-territorii-goroda-moskvy",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:21:39.629Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:21:39.629Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a606c64d160c06c28e2e4"
+  },
+  "name": "Отравление синтетическими канабиоидными препаратами (спайсы) и производными катинонов (соли)",
+  "url": "otravlenie-sinteticheskimi-kanabioidnymi-preparatami-spaysy-i-proizvodnymi-katinonov-soli",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:22:04.838Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:22:04.838Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a607764d160c06c28e2e7"
+  },
+  "name": "Действия сотрудников Станции при работе в зоне чрезвычайной ситуации (ЧС)",
+  "url": "deystviya-sotrudnikov-stancii-pri-rabote-v-zone-chrezvychaynoy-situacii-chs",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:22:15.318Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:22:15.318Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a608264d160c06c28e2ea"
+  },
+  "name": "Дифференциальная диагностика диарейного синдрома",
+  "url": "differencialnaya-diagnostika-diareynogo-sindroma",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:22:26.604Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:22:26.604Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a608b64d160c06c28e2ef"
+  },
+  "name": "Гипертензивные расстройства во время беременности",
+  "url": "gipertenzivnye-rasstroystva-vo-vremya-beremennosti",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:22:35.582Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:22:35.582Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a609564d160c06c28e2f2"
+  },
+  "name": "Бактериальные менингиты и менингококковая инфекция",
+  "url": "bakterialnye-meningity-i-meningokokkovaya-infekciya",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:22:45.033Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:22:45.033Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a609d64d160c06c28e2f5"
+  },
+  "name": "Соматические заболевания, сопровождающиеся психическими расстройствами",
+  "url": "somaticheskie-zabolevaniya-soprovozhdayuschiesya-psihicheskimi-rasstroystvami",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:22:53.736Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:22:53.736Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a60a764d160c06c28e2f8"
+  },
+  "name": "Дифференциальная диагностика заболеваний в гнойной хирургии на догоспитальном этапе",
+  "url": "differencialnaya-diagnostika-zabolevaniy-v-gnoynoy-hirurgii-na-dogospitalnom-etape",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:23:03.749Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:23:03.749Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a60b864d160c06c28e2fb"
+  },
+  "name": "«Новые» антигипертензивные препараты. Сходство и различие оригинальных препаратов и дженериков",
+  "url": "novye-antigipertenzivnye-preparaty-shodstvo-i-razlichie-originalnyh-preparatov-i-dzhenerikov",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:23:20.931Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:23:20.931Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a60c164d160c06c28e2fe"
+  },
+  "name": "Эпидемиология, клиника, диагностика и медицинская помощь при ботулизме",
+  "url": "epidemiologiya-klinika-diagnostika-i-medicinskaya-pomosch-pri-botulizme",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:23:29.682Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:23:29.682Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a60cd64d160c06c28e301"
+  },
+  "name": "Клиника и диагностика аневризм аорты",
+  "url": "klinika-i-diagnostika-anevrizm-aorty",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:23:41.015Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:23:41.015Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a610b64d160c06c28e304"
+  },
+  "name": "Применение ультразвуковой сонографии в практике врача СМП",
+  "url": "primenenie-ultrazvukovoy-sonografii-v-praktike-vracha-smp",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:24:43.393Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:24:43.393Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a612164d160c06c28e307"
+  },
+  "name": "Пароксизмальные нарушения ритма",
+  "url": "paroksizmalnye-narusheniya-ritma",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:25:05.485Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:25:05.485Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a612c64d160c06c28e30a"
+  },
+  "name": "Быстрая последовательная индукция (RSI, медикаментозная седация) пациента перед восстановлением проходимости верхних дыхательных путей",
+  "url": "bystraya-posledovatelnaya-indukciya-rsi-medikamentoznaya-sedaciya-pacienta-pered-vosstanovleniem-prohodimosti-verhnih-dyhatelnyh-putey",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:25:16.736Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:25:16.736Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a616164d160c06c28e30d"
+  },
+  "name": "Бронхиальная астма: диагностика и современные подходы к оказанию медицинской помощи",
+  "url": "bronhialnaya-astma-diagnostika-i-sovremennye-podhody-k-okazaniyu-medicinskoy-pomoschi",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:26:09.700Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:26:09.700Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a616d64d160c06c28e310"
+  },
+  "name": "Нормальные роды: ведение на догоспитальном этапе и принципы родовспоможения",
+  "url": "normalnye-rody-vedenie-na-dogospitalnom-etape-i-principy-rodovspomozheniya",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:26:21.449Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:26:21.449Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a617864d160c06c28e313"
+  },
+  "name": "Восстановление проходимости дыхательных путей",
+  "url": "vosstanovlenie-prohodimosti-dyhatelnyh-putey",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:26:32.135Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:26:32.135Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a618a64d160c06c28e316"
+  },
+  "name": "Нейролептический синдром и другие экстрапирамидные расстройства",
+  "url": "neyrolepticheskiy-sindrom-i-drugie-ekstrapiramidnye-rasstroystva",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:26:50.883Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:26:50.883Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a619964d160c06c28e31c"
+  },
+  "name": "Лечебно-диагностический алгоритм осмотра и оказания медицинской помощи, в том числе реанимационной, пострадавшему в результате высокоэнергетической травмы",
+  "url": "lechebno-diagnosticheskiy-algoritm-osmotra-i-okazaniya-medicinskoy-pomoschi-v-tom-chisle-reanimacionnoy-postradavshemu-v-rezultate-vysokoenergeticheskoy-travmy",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:27:05.352Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:27:05.352Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a61a564d160c06c28e31f"
+  },
+  "name": "Судороги у детей",
+  "url": "sudorogi-u-detey",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:27:17.102Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:27:17.102Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a620f64d160c06c28e385"
+  },
+  "name": "Осложнения артериальной гипертензии на догоспитальном этапе",
+  "url": "oslozhneniya-arterialnoy-gipertenzii-na-dogospitalnom-etape",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:29:03.717Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:29:03.717Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a622464d160c06c28e3a7"
+  },
+  "name": "Суицидальное поведение пациента. Тактика выездных бригад",
+  "url": "suicidalnoe-povedenie-pacienta-taktika-vyezdnyh-brigad",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:29:24.582Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:29:24.582Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a626764d160c06c28e3ad"
+  },
+  "name": "Острые хирургические заболевания органов брюшной полости",
+  "url": "ostrye-hirurgicheskie-zabolevaniya-organov-bryushnoy-polosti",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:30:31.657Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:30:31.657Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a627464d160c06c28e3b0"
+  },
+  "name": "Дифференциальная диагностика коматозных состояний",
+  "url": "differencialnaya-diagnostika-komatoznyh-sostoyaniy",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:30:44.130Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:30:44.130Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "690a628564d160c06c28e411"
+  },
+  "name": "Ультразвуковая диагностика заболевания лёгких в практике бригад скорой медицинской помощи",
+  "url": "ultrazvukovaya-diagnostika-zabolevaniya-legkih-v-praktike-brigad-skoroy-medicinskoy-pomoschi",
+  "description": "",
+  "isPublic": false,
+  "createdAt": {
+    "$date": "2025-11-04T20:31:01.883Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-04T20:31:01.883Z"
+  },
+  "__v": 0
+}]

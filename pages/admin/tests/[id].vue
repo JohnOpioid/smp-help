@@ -2,18 +2,44 @@
   <div class="flex-1">
     <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
       <div class="bg-white dark:bg-slate-800 rounded-lg">
-        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-2">
-          <div>
-            <div class="mb-1">
-              <NuxtLink to="/admin/tests" class="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
-                <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
-                <span>Назад к категориям</span>
-              </NuxtLink>
+        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div>
+              <div class="mb-1">
+                <NuxtLink to="/admin/tests" class="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
+                  <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
+                  <span>Назад к категориям</span>
+                </NuxtLink>
+              </div>
+              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">{{ category?.name || 'Категория' }}</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Вопросы и ответы категории</p>
             </div>
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">{{ category?.name || 'Категория' }}</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Вопросы и ответы категории</p>
+            <UButton color="primary" size="lg" icon="i-heroicons-plus" class="cursor-pointer aspect-square p-2" @click="onNew" title="Новый вопрос" />
           </div>
-          <UButton color="primary" size="lg" icon="i-heroicons-plus" class="cursor-pointer aspect-square p-2" @click="onNew" title="Новый вопрос" />
+          <div v-if="unapprovedCount > 0" class="flex items-center gap-2">
+            <UButton 
+              size="sm" 
+              color="success" 
+              variant="soft" 
+              class="cursor-pointer" 
+              @click="approveAll"
+              :loading="pendingApproveAll"
+            >
+              <UIcon name="i-heroicons-check-circle" class="w-4 h-4 mr-1" />
+              Одобрить все ({{ unapprovedCount }})
+            </UButton>
+            <UButton 
+              size="sm" 
+              color="red" 
+              variant="soft" 
+              class="cursor-pointer" 
+              @click="rejectAll"
+              :loading="pendingRejectAll"
+            >
+              <UIcon name="i-heroicons-x-circle" class="w-4 h-4 mr-1" />
+              Отклонить все ({{ unapprovedCount }})
+            </UButton>
+          </div>
         </div>
 
         <div class="divide-y divide-slate-100 dark:divide-slate-700">
@@ -21,15 +47,30 @@
           <div v-else-if="items.length === 0" class="p-4 text-sm text-slate-500 dark:text-slate-400">Пока нет вопросов</div>
           <div v-for="q in items" :key="q._id" class="p-4 flex items-start justify-between gap-4">
             <div class="flex-1">
-              <div class="font-medium text-slate-900 dark:text-white mb-1">{{ q.question }}</div>
-              <div v-if="q.createdBy" class="mb-2">
-                <span v-if="!q.suggestion?.createdBy" class="text-xs text-slate-500 dark:text-slate-400 mr-2">{{ !q.approved ? 'Предложен вопрос' : 'Добавлен:' }}</span>
-                <span class="font-medium inline-flex items-center text-[10px]/3 px-1.5 py-1 gap-1.5 rounded-sm text-default bg-elevated">
+              <div class="flex items-center gap-2 mb-1">
+                <div class="font-medium text-slate-900 dark:text-white">{{ q.question }}</div>
+                <UBadge 
+                  v-if="q.approved !== undefined" 
+                  :color="q.approved ? 'success' : 'warning'" 
+                  variant="soft" 
+                  size="xs"
+                  class="cursor-default"
+                >
+                  {{ q.approved ? 'Одобрен' : 'На модерации' }}
+                </UBadge>
+              </div>
+              <div v-if="q.createdBy || !q.approved" class="mb-2">
+                <span v-if="!q.suggestion?.createdBy" class="text-xs text-slate-500 dark:text-slate-400 mr-2">
+                  {{ !q.approved ? 'Предложен вопрос:' : 'Добавлен:' }}
+                </span>
+                <span v-if="q.createdBy" class="font-medium inline-flex items-center text-[10px]/3 px-1.5 py-1 gap-1.5 rounded-sm text-default bg-elevated">
                   <span class="h-3.5 w-3.5 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700 inline-block">
                     <img v-if="q.createdBy.avatarUrl" :src="q.createdBy.avatarUrl" alt="avatar" class="h-full w-full object-cover" />
                   </span>
                   <span>{{ userDisplayName(q.createdBy) }}</span>
                 </span>
+                <span v-else-if="!q.approved" class="text-xs text-slate-500 dark:text-slate-400 italic">Пользователь</span>
+                <span v-else class="text-xs text-slate-500 dark:text-slate-400 italic">Администратор</span>
               </div>
               <div v-if="q.correctedBy" class="mb-2">
                 <span class="text-xs text-slate-500 dark:text-slate-400 mr-2">Исправлен:</span>
@@ -87,15 +128,15 @@
                     <span>{{ a.text }}</span>
                   </div>
                 </div>
-                <div v-if="!q.approved && q.createdBy" class="mt-2 flex items-center gap-2">
+                <div v-if="q.approved !== true" class="mt-2 flex items-center gap-2">
                   <UButton size="xs" color="primary" variant="soft" class="cursor-pointer" @click="onApprove(q)">Одобрить</UButton>
                   <UButton size="xs" color="neutral" variant="ghost" class="cursor-pointer" @click="onDelete(q)">Отклонить</UButton>
                 </div>
               </div>
-                <div v-if="q.suggestion?.createdBy" class="mt-2 flex items-center gap-2">
-                  <UButton size="xs" color="primary" variant="soft" class="cursor-pointer" @click="approveSuggestion(q)">Одобрить исправление</UButton>
-                  <UButton size="xs" color="neutral" variant="ghost" class="cursor-pointer" @click="rejectSuggestion(q)">Отклонить</UButton>
-                </div>
+              <div v-if="q.suggestion?.createdBy" class="mt-2 flex items-center gap-2">
+                <UButton size="xs" color="primary" variant="soft" class="cursor-pointer" @click="approveSuggestion(q)">Одобрить исправление</UButton>
+                <UButton size="xs" color="neutral" variant="ghost" class="cursor-pointer" @click="rejectSuggestion(q)">Отклонить</UButton>
+              </div>
               </div>
             <div class="flex items-center gap-2">
               <!-- Кнопка-меню действий через UPopover -->
@@ -186,6 +227,12 @@ const categoryId = computed(() => String(route.params.id))
 const category = ref<any>(null)
 const pending = ref(false)
 const items = ref<any[]>([])
+const pendingApproveAll = ref(false)
+const pendingRejectAll = ref(false)
+
+const unapprovedCount = computed(() => {
+  return items.value.filter((q: any) => q.approved !== true).length
+})
 
 async function fetchCategory() {
   const res: any = await $fetch(`/api/tests/categories/${categoryId.value}`)
@@ -261,6 +308,76 @@ async function onApprove(q: any) {
       if (!next.createdBy && prev?.createdBy) next.createdBy = prev.createdBy
       items.value[idx] = next
     }
+  }
+}
+
+async function approveAll() {
+  const unapproved = items.value.filter((q: any) => q.approved !== true)
+  if (unapproved.length === 0) return
+  
+  const ok = window.confirm(`Одобрить все ${unapproved.length} неодобренных вопросов?`)
+  if (!ok) return
+  
+  pendingApproveAll.value = true
+  try {
+    const results = await Promise.allSettled(unapproved.map((q: any) => 
+      $fetch(`/api/tests/${q._id}`, { method: 'PATCH', body: { approved: true } })
+    ))
+    
+    // Реактивно обновляем одобренные тесты
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled' && result.value?.success && result.value?.item) {
+        const q = unapproved[index]
+        const idx = items.value.findIndex((i: any) => i._id === q._id)
+        if (idx !== -1) {
+          const prev = items.value[idx]
+          const next = { ...result.value.item }
+          // Сохраняем автора, если сервер не вернул populate
+          if (!next.createdBy && prev?.createdBy) next.createdBy = prev.createdBy
+          items.value[idx] = next
+        }
+      }
+    })
+    
+    const successCount = results.filter(r => r.status === 'fulfilled' && r.value?.success).length
+    try { (useToast as any)?.().add?.({ title: `Одобрено вопросов: ${successCount}`, color: 'success' }) } catch {}
+  } catch (err: any) {
+    try { (useToast as any)?.().add?.({ title: 'Ошибка при одобрении', color: 'error' }) } catch {}
+  } finally {
+    pendingApproveAll.value = false
+  }
+}
+
+async function rejectAll() {
+  const unapproved = items.value.filter((q: any) => q.approved !== true)
+  if (unapproved.length === 0) return
+  
+  const ok = window.confirm(`Отклонить (удалить) все ${unapproved.length} неодобренных вопросов?`)
+  if (!ok) return
+  
+  pendingRejectAll.value = true
+  try {
+    const results = await Promise.allSettled(unapproved.map((q: any) => 
+      $fetch(`/api/tests/${q._id}`, { method: 'DELETE' })
+    ))
+    
+    // Реактивно удаляем отклоненные тесты
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        const q = unapproved[index]
+        const idx = items.value.findIndex((i: any) => i._id === q._id)
+        if (idx !== -1) {
+          items.value.splice(idx, 1)
+        }
+      }
+    })
+    
+    const successCount = results.filter(r => r.status === 'fulfilled').length
+    try { (useToast as any)?.().add?.({ title: `Отклонено вопросов: ${successCount}`, color: 'success' }) } catch {}
+  } catch (err: any) {
+    try { (useToast as any)?.().add?.({ title: 'Ошибка при отклонении', color: 'error' }) } catch {}
+  } finally {
+    pendingRejectAll.value = false
   }
 }
 
