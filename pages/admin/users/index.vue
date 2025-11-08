@@ -68,75 +68,129 @@
             Подтянуть аватары из Telegram
           </UButton>
         </div>
-        <div class="relative overflow-auto">
-          <table class="min-w-full overflow-clip">
-            <thead class="relative">
-              <tr class="data-[selected=true]:bg-slate-200 dark:bg-slate-700/50">
-                <th scope="col" class="px-4 py-3.5 text-sm text-highlighted text-left font-semibold">Аватар</th>
-                <th scope="col" class="px-4 py-3.5 text-sm text-highlighted text-left font-semibold">ФИО</th>
-                <th scope="col" class="px-4 py-3.5 text-sm text-highlighted text-left font-semibold">E‑mail</th>
-                <th scope="col" class="px-4 py-3.5 text-sm text-highlighted text-left font-semibold">Роль</th>
-                <th scope="col" class="px-4 py-3.5 text-sm text-highlighted text-left font-semibold">Статус</th>
-                <th scope="col" class="px-4 py-3.5 text-sm text-highlighted text-right font-semibold">Действия</th>
-              </tr>
-              <tr class="absolute z-[1] left-0 w-full h-px bg-(--ui-border-accented)"></tr>
-            </thead>
-            <tbody class="divide-y divide-default">
-              <tr v-if="loading && users.length === 0">
-                <td colspan="6" class="py-6 text-center text-sm text-muted">Загрузка…</td>
-              </tr>
-              <tr v-else v-for="u in users" :key="u._id">
-                <td class="px-4 py-3 text-sm">
-                  <UAvatar :src="u.displayAvatar || u.avatarUrl || u.telegram?.photo_url" :alt="(u.firstName + ' ' + u.lastName).trim()" size="md" :ui="{ root: 'rounded-full', image: 'object-cover', fallback: 'rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300' }">
-                    <span class="font-semibold">{{ ((u.firstName||'').trim()[0] || '') + ((u.lastName||'').trim()[0] || '') }}</span>
-                  </UAvatar>
-                </td>
-                <td class="px-4 py-3 text-sm text-slate-800 dark:text-slate-200 whitespace-nowrap">
-                  {{ u.firstName }} {{ u.lastName }}
-                </td>
-                <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
-                  {{ u.email || (u.telegram?.username ? '@' + u.telegram.username : '—') }}
-                </td>
-                <td class="px-4 py-3 text-sm">
-                  <UPopover :popper="{ placement: 'bottom-start', offsetDistance: 6 }">
-                    <UButton size="xs" variant="soft" color="neutral" class="cursor-pointer">
-                      {{ u.role || 'user' }}
-                    </UButton>
-                    <template #panel>
-                      <div class="p-2 w-40">
-                        <button v-for="r in roleItems" :key="r" type="button"
-                          class="w-full text-left px-2 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-sm"
-                          @click="onChangeRole(u, r)">
-                          {{ r }}
-                        </button>
-                      </div>
-                    </template>
-                  </UPopover>
-                </td>
-                <td class="px-4 py-3 text-sm">
-                  <span :class="u.blocked ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'">
-                    {{ u.blocked ? 'Заблокирован' : 'Активен' }}
-                  </span>
-                </td>
-                <td class="px-4 py-3 text-sm">
-                  <div class="flex items-center justify-end gap-2">
-                    <UButton size="xs" variant="soft" :color="u.blocked ? 'primary' : 'warning'" class="cursor-pointer" @click="onToggleBlock(u)">
-                      {{ u.blocked ? 'Разблокировать' : 'Заблокировать' }}
-                    </UButton>
-                    <UButton size="xs" variant="soft" color="error" class="cursor-pointer" @click="onDelete(u)">Удалить</UButton>
-                  </div>
-                </td>
-              </tr>
-              <tr v-if="!loading && users.length === 0">
-                <td colspan="6" class="py-6 text-center text-sm text-muted">Нет данных</td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="p-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
-            <UButton v-if="hasMore" :loading="loadingMore" color="neutral" variant="soft" size="sm" class="cursor-pointer" @click="loadMore">
+
+        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+          <UInput 
+            v-model="searchQuery" 
+            placeholder="Поиск по имени, email или username..." 
+            size="lg"
+            class="w-full"
+          >
+            <template #leading>
+              <UIcon name="i-heroicons-magnifying-glass" />
+            </template>
+          </UInput>
+        </div>
+
+        <div class="relative">
+          <div class="overflow-x-auto">
+            <table class="w-full table-fixed min-w-[800px]">
+              <colgroup>
+                <col style="width: 60px;">
+                <col style="width: auto;">
+                <col style="width: auto;">
+                <col style="width: 100px;">
+                <col style="width: 120px;">
+                <col style="width: 80px;">
+              </colgroup>
+              <thead>
+                <tr class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/30">
+                  <th class="text-left p-3 font-medium">Аватар</th>
+                  <th class="text-left p-3 font-medium">ФИО</th>
+                  <th class="text-left p-3 font-medium">E‑mail</th>
+                  <th class="text-left p-3 font-medium">Роль</th>
+                  <th class="text-left p-3 font-medium">Статус</th>
+                  <th class="text-center p-3 font-medium">Действия</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="loading && usersTableData.length === 0">
+                  <td colspan="6" class="py-6 text-center text-sm text-muted">Загрузка…</td>
+                </tr>
+                <tr v-else v-for="u in usersTableData" :key="u._id" class="border-t border-slate-100 dark:border-slate-700/60">
+                  <td class="p-3">
+                    <UAvatar :src="u.displayAvatar || u.avatarUrl || u.telegram?.photo_url" :alt="(u.firstName + ' ' + u.lastName).trim()" size="sm" :ui="{ root: 'rounded-full', image: 'object-cover', fallback: 'rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300' }">
+                      <span class="font-semibold text-xs">{{ ((u.firstName||'').trim()[0] || '') + ((u.lastName||'').trim()[0] || '') }}</span>
+                    </UAvatar>
+                  </td>
+                  <td class="p-3">
+                    <div class="text-sm text-muted whitespace-nowrap truncate" :title="`${u.firstName} ${u.lastName}`.trim()">{{ u.firstName }} {{ u.lastName }}</div>
+                    <div v-if="u.telegram?.username" class="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate" :title="`@${u.telegram.username}`">@{{ u.telegram.username }}</div>
+                  </td>
+                  <td class="p-3">
+                    <div class="text-sm text-muted truncate" :title="u.email || (u.telegram?.username ? '@' + u.telegram.username : '—')">{{ u.email || (u.telegram?.username ? '@' + u.telegram.username : '—') }}</div>
+                  </td>
+                  <td class="p-3">
+                    <UPopover :content="{ side: 'bottom', align: 'start', sideOffset: 8 }">
+                      <UButton size="xs" variant="soft" color="neutral" class="cursor-pointer">
+                        {{ u.role || 'user' }}
+                      </UButton>
+                      <template #content>
+                        <div class="w-40">
+                          <button v-for="r in roleItems" :key="r" type="button"
+                            class="w-full text-left px-2 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-sm cursor-pointer"
+                            @click="onChangeRole(u, r)">
+                            {{ r }}
+                          </button>
+                        </div>
+                      </template>
+                    </UPopover>
+                  </td>
+                  <td class="p-3">
+                    <div class="text-sm text-muted whitespace-nowrap">
+                      <span :class="u.blocked ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'">
+                        {{ u.blocked ? 'Заблокирован' : 'Активен' }}
+                      </span>
+                    </div>
+                  </td>
+                  <td class="p-3 text-center whitespace-nowrap">
+                    <UPopover :content="{ side: 'bottom', align: 'end', sideOffset: 8 }">
+                      <button
+                        type="button"
+                        class="rounded-md p-2 size-9 inline-flex items-center justify-center text-default text-slate-500 dark:text-slate-400 hover:bg-elevated focus:outline-none cursor-pointer"
+                        title="Действия"
+                      >
+                        <UIcon name="i-heroicons-ellipsis-vertical" class="w-5 h-5" />
+                      </button>
+                      <template #content>
+                        <div class="w-56">
+                          <nav class="py-1">
+                            <button
+                              type="button"
+                              class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+                              @click="onToggleBlock(u)"
+                            >
+                              <UIcon :name="u.blocked ? 'i-heroicons-lock-open' : 'i-heroicons-lock-closed'" class="w-4 h-4 text-slate-500" />
+                              <span>{{ u.blocked ? 'Разблокировать' : 'Заблокировать' }}</span>
+                            </button>
+                            <button
+                              type="button"
+                              class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 cursor-pointer"
+                              @click="onDelete(u)"
+                            >
+                              <UIcon name="i-heroicons-trash" class="w-4 h-4" />
+                              <span>Удалить</span>
+                            </button>
+                          </nav>
+                        </div>
+                      </template>
+                    </UPopover>
+                  </td>
+                </tr>
+                <tr v-if="!loading && usersTableData.length === 0">
+                  <td colspan="6" class="py-6 text-center text-sm text-muted">Нет данных</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div v-if="!loading && hasMoreUsers" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
+            <UButton :loading="loadingMore" variant="soft" color="neutral" size="sm" class="cursor-pointer" @click="loadMore">
+              <UIcon name="i-heroicons-chevron-down" class="me-1" />
               Загрузить ещё
             </UButton>
-            <span v-else class="text-xs text-slate-500 dark:text-slate-400">Все пользователи загружены</span>
+          </div>
+          <div v-if="!loading && !hasMoreUsers && users.length > 0" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
+            <span class="text-xs text-slate-500 dark:text-slate-400">Все пользователи загружены</span>
           </div>
         </div>
       </div>
@@ -154,12 +208,38 @@ const loading = ref(false)
 const loadingMore = ref(false)
 const total = ref(0)
 const items = ref<any[]>([])
+const searchQuery = ref('')
 
 // Данные для графиков
 const loadingRegistrations = ref(false)
 const loadingVisits = ref(false)
 const registrationsData = ref<Array<{ date: string; count: number }>>([])
 const visitsData = ref<Array<{ date: string; loggedIn: number; guests: number; total?: number }>>([])
+
+const filteredUsers = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return users.value
+  }
+  const query = searchQuery.value.toLowerCase().trim()
+  return users.value.filter((u: any) => {
+    const searchableText = [
+      u.firstName,
+      u.lastName,
+      u.email,
+      u.telegram?.username
+    ].filter(Boolean).join(' ').toLowerCase()
+    
+    return searchableText.includes(query)
+  })
+})
+
+const usersTableData = computed(() => {
+  return filteredUsers.value
+})
+
+const hasMoreUsers = computed(() => {
+  return users.value.length < total.value
+})
 
 async function fetchPage(p: number) {
   const res: any = await $fetch(`/api/admin/users?page=${p}&limit=${limit}`, { method: 'GET' })

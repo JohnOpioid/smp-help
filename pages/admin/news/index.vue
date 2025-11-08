@@ -2,34 +2,136 @@
   <div>
     <main class="flex-1">
       <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
-        <div class="mb-6 flex items-center justify-between">
-          <div class="text-sm text-slate-600 dark:text-slate-300">Управление новостями (таймлайн)</div>
-          <UButton color="primary" class="cursor-pointer" @click="openCreate">Добавить</UButton>
-        </div>
 
-        <!-- Changelog-like list (without UI Pro) -->
-        <div class="space-y-6">
-          <article v-for="v in versions" :key="v._id" class="w-full">
-            <div class="flex flex-col w-full bg-white dark:bg-slate-800 rounded-xl p-4">
-              <div class="flex items-center justify-between gap-3 mb-2">
-                <div class="flex items-center gap-3 min-w-0">
-                  <div class="text-sm/6 text-slate-500 dark:text-slate-400 truncate">{{ formatDate(v.date) }}</div>
-                  <UBadge v-if="v.badge" size="sm" class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-0">{{ v.badge }}</UBadge>
-                </div>
-                <div class="shrink-0 flex items-center gap-2">
-                  <UButton size="sm" color="neutral" variant="soft" class="cursor-pointer !p-0 size-7 rounded-md !flex !items-center !justify-center" @click="openEdit(v)">
-                    <UIcon name="i-lucide-pencil" class="w-4 h-4" />
-                  </UButton>
-                  <UButton size="sm" color="error" variant="soft" class="cursor-pointer !p-0 size-7 rounded-md !flex !items-center !justify-center" @click="onDelete(v)">
-                    <UIcon name="i-lucide-trash-2" class="w-4 h-4" />
-                  </UButton>
+        <!-- Таблица новостей -->
+        <div class="mb-8">
+          <div class="bg-white dark:bg-slate-800 rounded-lg">
+            <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-2">
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Новости</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Создавайте и редактируйте новости</p>
+              </div>
+              <UButton color="primary" size="sm" icon="i-heroicons-plus" class="cursor-pointer aspect-square p-2" @click="openCreate" title="Новая новость" />
+            </div>
+
+            <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+              <UInput 
+                v-model="searchQuery" 
+                placeholder="Поиск по заголовку, описанию или версии..." 
+                size="lg"
+                class="w-full"
+              >
+                <template #leading>
+                  <UIcon name="i-heroicons-magnifying-glass" />
+                </template>
+              </UInput>
+            </div>
+
+            <div class="relative">
+              <div class="overflow-x-auto">
+                <table class="w-full table-fixed min-w-[800px]">
+                  <colgroup>
+                    <col style="width: 120px;">
+                    <col style="width: auto;">
+                    <col style="width: 100px;">
+                    <col style="width: 120px;">
+                    <col style="width: 80px;">
+                  </colgroup>
+                  <thead>
+                    <tr class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/30">
+                      <th class="text-left p-3 font-medium">Дата</th>
+                      <th class="text-left p-3 font-medium">Заголовок</th>
+                      <th class="text-left p-3 font-medium">Версия</th>
+                      <th class="text-left p-3 font-medium">Опубликовано</th>
+                      <th class="text-center p-3 font-medium">Действия</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="v in newsTableData" :key="v._id" class="border-t border-slate-100 dark:border-slate-700/60">
+                      <td class="p-3">
+                        <div class="text-sm text-muted whitespace-nowrap">{{ formatDate(v.date) }}</div>
+                      </td>
+                      <td class="p-3">
+                        <div class="text-sm text-muted truncate" :title="v.title">{{ v.title }}</div>
+                        <div v-if="v.descriptionPlain" class="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate" :title="v.descriptionPlain">{{ v.descriptionPlain }}</div>
+                      </td>
+                      <td class="p-3">
+                        <UBadge v-if="v.badge" size="sm" class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-0">{{ v.badge }}</UBadge>
+                        <span v-else class="text-sm text-muted">—</span>
+                      </td>
+                      <td class="p-3">
+                        <div class="text-sm text-muted whitespace-nowrap">
+                          <span v-if="v.published" class="text-green-600 dark:text-green-400">Да</span>
+                          <span v-else class="text-slate-400">Нет</span>
+                        </div>
+                      </td>
+                      <td class="p-3 text-center whitespace-nowrap">
+                        <UPopover :content="{ side: 'bottom', align: 'end', sideOffset: 8 }">
+                          <button
+                            type="button"
+                            class="rounded-md p-2 size-9 inline-flex items-center justify-center text-default text-slate-500 dark:text-slate-400 hover:bg-elevated focus:outline-none cursor-pointer"
+                            title="Действия"
+                          >
+                            <UIcon name="i-heroicons-ellipsis-vertical" class="w-5 h-5" />
+                          </button>
+                          <template #content>
+                            <div class="w-56">
+                              <nav class="py-1">
+                                <button
+                                  type="button"
+                                  class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+                                  @click="openEdit(v)"
+                                >
+                                  <UIcon name="i-heroicons-pencil-square" class="w-4 h-4 text-slate-500" />
+                                  <span>Редактировать</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 cursor-pointer"
+                                  @click="onDelete(v)"
+                                >
+                                  <UIcon name="i-heroicons-trash" class="w-4 h-4" />
+                                  <span>Удалить</span>
+                                </button>
+                              </nav>
+                            </div>
+                          </template>
+                        </UPopover>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div v-if="!loading && newsTableData.length === 0" class="p-6 text-sm text-slate-500 dark:text-slate-400">
+                <div>
+                  Пока нет новостей
                 </div>
               </div>
-              <h3 class="relative text-xl font-semibold text-slate-900 dark:text-white">{{ v.title }}</h3>
-              <div v-if="v.description" class="mt-2 md-content" v-html="renderMarkdown(v.description)"></div>
-              
+              <div v-if="loading" class="p-6"><USkeleton class="h-6 w-full" /></div>
+              <div v-if="!loading && hasMoreNews" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
+                <UButton 
+                  variant="soft" 
+                  color="neutral" 
+                  @click="newsShown += 10"
+                  class="cursor-pointer"
+                >
+                  <UIcon name="i-heroicons-chevron-down" class="me-1" />
+                  Показать еще ({{ filteredVersions.length - newsShown }})
+                </UButton>
+              </div>
+              <div v-if="!loading && !hasMoreNews && newsShown > 10" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
+                <UButton 
+                  variant="soft" 
+                  color="neutral" 
+                  @click="newsShown = 10"
+                  class="cursor-pointer"
+                >
+                  <UIcon name="i-heroicons-chevron-up" class="me-1" />
+                  Свернуть все
+                </UButton>
+              </div>
             </div>
-          </article>
+          </div>
         </div>
 
         <USlideover v-model:open="formOpen" :title="isEdit ? 'Редактировать новость' : 'Новая новость'" :description="isEdit ? 'Форма редактирования новости' : 'Форма создания новости'" side="right" :ui="{ overlay: 'bg-slate-700/50' }">
@@ -114,8 +216,39 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'admin', layout: 'admin', headerTitle: 'Новости' })
 
+// Markdown rendering (client-safe)
+import { marked } from 'marked'
+marked.setOptions({ gfm: true, breaks: true })
+let sanitizeHtml: (h: string) => string = (h) => h
+if (process.client) {
+  const mod: any = await import('dompurify')
+  const createDOMPurify = mod.default
+  const purifier = createDOMPurify(window)
+  sanitizeHtml = (h: string) => purifier.sanitize(h)
+}
+function renderMarkdown(text: string) {
+  if (!text) return ''
+  const raw = text.replace(/\r\n?/g, '\n')
+  const html = marked.parse(raw) as string
+  return sanitizeHtml(html)
+}
+
+function stripMarkdownToText(text: string) {
+  if (!text) return ''
+  if (process.client) {
+    const html = renderMarkdown(text)
+    const tmp = document.createElement('div')
+    tmp.innerHTML = html
+    return (tmp.textContent || tmp.innerText || '').trim()
+  }
+  return text
+}
+
 const items = ref<any[]>([])
 const loading = ref(false)
+const searchQuery = ref('')
+const newsShown = ref(10)
+
 const versions = computed(() => (items.value || []).map((n: any) => ({
   _id: n._id,
   title: n.title,
@@ -127,6 +260,35 @@ const versions = computed(() => (items.value || []).map((n: any) => ({
   published: n.published,
   badge: n.version ? `v${n.version}` : undefined
 })))
+
+const filteredVersions = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return versions.value
+  }
+  const query = searchQuery.value.toLowerCase().trim()
+  return versions.value.filter((v: any) => {
+    const searchableText = [
+      v.title,
+      v.descriptionPlain,
+      v.badge,
+      v.version
+    ].filter(Boolean).join(' ').toLowerCase()
+    
+    return searchableText.includes(query)
+  })
+})
+
+const newsTableData = computed(() => {
+  return filteredVersions.value.slice(0, newsShown.value)
+})
+
+const hasMoreNews = computed(() => {
+  return filteredVersions.value.length > newsShown.value
+})
+
+watch([filteredVersions, searchQuery], () => {
+  newsShown.value = 10
+})
 
 const formOpen = ref(false)
 const isEdit = ref(false)
@@ -304,34 +466,6 @@ function getIcon(n: any) {
 }
 
 // Удалены вспомогательные обработчики popover'а — UInputMenu держит строковое значение
-
-// Markdown rendering (client-safe)
-import { marked } from 'marked'
-marked.setOptions({ gfm: true, breaks: true })
-let sanitizeHtml: (h: string) => string = (h) => h
-if (process.client) {
-  const mod: any = await import('dompurify')
-  const createDOMPurify = mod.default
-  const purifier = createDOMPurify(window)
-  sanitizeHtml = (h: string) => purifier.sanitize(h)
-}
-function renderMarkdown(text: string) {
-  if (!text) return ''
-  const raw = text.replace(/\r\n?/g, '\n')
-  const html = marked.parse(raw) as string
-  return sanitizeHtml(html)
-}
-
-function stripMarkdownToText(text: string) {
-  if (!text) return ''
-  if (process.client) {
-    const html = renderMarkdown(text)
-    const tmp = document.createElement('div')
-    tmp.innerHTML = html
-    return (tmp.textContent || tmp.innerText || '').trim()
-  }
-  return text
-}
 </script>
 
 

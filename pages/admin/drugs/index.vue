@@ -3,13 +3,120 @@
     <main class="flex-1">
       <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
 
-        <div class="mb-6 flex items-center justify-between">
-          <div class="text-sm text-slate-600 dark:text-slate-300">Управление препаратами</div>
-          <UButton color="primary" @click="openForm" class="cursor-pointer">Добавить</UButton>
-        </div>
+        <!-- Таблица препаратов -->
+        <div class="mb-8">
+          <div class="bg-white dark:bg-slate-800 rounded-lg">
+            <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-2">
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Препараты</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Создавайте и редактируйте препараты</p>
+              </div>
+              <UButton color="primary" size="sm" icon="i-heroicons-plus" class="cursor-pointer aspect-square p-2" @click="openForm" title="Новый препарат" />
+            </div>
 
-        <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden">
-          <UTable :data="rows" :columns="columns" :loading="pending" class="w-full" />
+            <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+              <UInput 
+                v-model="searchQuery" 
+                placeholder="Поиск по названию или латинскому названию..." 
+                size="lg"
+                class="w-full"
+              >
+                <template #leading>
+                  <UIcon name="i-heroicons-magnifying-glass" />
+                </template>
+              </UInput>
+            </div>
+
+            <div class="relative">
+              <div class="overflow-x-auto">
+                <table class="w-full table-fixed min-w-[600px]">
+                  <colgroup>
+                    <col style="width: auto;">
+                    <col style="width: auto;">
+                    <col style="width: 80px;">
+                  </colgroup>
+                  <thead>
+                    <tr class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/30">
+                      <th class="text-left p-3 font-medium">Название</th>
+                      <th class="text-left p-3 font-medium">Латинское название</th>
+                      <th class="text-center p-3 font-medium">Действия</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="drug in drugsTableData" :key="drug._id" class="border-t border-slate-100 dark:border-slate-700/60">
+                      <td class="p-3">
+                        <div class="text-sm text-muted whitespace-nowrap truncate" :title="drug.name">{{ drug.name }}</div>
+                      </td>
+                      <td class="p-3">
+                        <div class="text-sm text-muted whitespace-nowrap truncate" :title="drug.latinName || '—'">{{ drug.latinName || '—' }}</div>
+                      </td>
+                      <td class="p-3 text-center whitespace-nowrap">
+                        <UPopover :content="{ side: 'bottom', align: 'end', sideOffset: 8 }">
+                          <button
+                            type="button"
+                            class="rounded-md p-2 size-9 inline-flex items-center justify-center text-default text-slate-500 dark:text-slate-400 hover:bg-elevated focus:outline-none cursor-pointer"
+                            title="Действия"
+                          >
+                            <UIcon name="i-heroicons-ellipsis-vertical" class="w-5 h-5" />
+                          </button>
+                          <template #content>
+                            <div class="w-56">
+                              <nav class="py-1">
+                                <button
+                                  type="button"
+                                  class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+                                  @click="onEditDrug(drug)"
+                                >
+                                  <UIcon name="i-heroicons-pencil-square" class="w-4 h-4 text-slate-500" />
+                                  <span>Редактировать</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 cursor-pointer"
+                                  @click="onDeleteDrug(drug)"
+                                >
+                                  <UIcon name="i-heroicons-trash" class="w-4 h-4" />
+                                  <span>Удалить</span>
+                                </button>
+                              </nav>
+                            </div>
+                          </template>
+                        </UPopover>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div v-if="!pending && drugsTableData.length === 0" class="p-6 text-sm text-slate-500 dark:text-slate-400">
+                <div>
+                  Пока нет препаратов
+                </div>
+              </div>
+              <div v-if="pending" class="p-6"><USkeleton class="h-6 w-full" /></div>
+              <div v-if="!pending && hasMoreDrugs" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
+                <UButton 
+                  variant="soft" 
+                  color="neutral" 
+                  @click="drugsShown += 10"
+                  class="cursor-pointer"
+                >
+                  <UIcon name="i-heroicons-chevron-down" class="me-1" />
+                  Показать еще ({{ filteredDrugs.length - drugsShown }})
+                </UButton>
+              </div>
+              <div v-if="!pending && !hasMoreDrugs && drugsShown > 10" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
+                <UButton 
+                  variant="soft" 
+                  color="neutral" 
+                  @click="drugsShown = 10"
+                  class="cursor-pointer"
+                >
+                  <UIcon name="i-heroicons-chevron-up" class="me-1" />
+                  Свернуть все
+                </UButton>
+              </div>
+            </div>
+          </div>
         </div>
 
         <USlideover v-model:open="formOpen" :title="isEdit ? 'Редактировать препарат' : 'Новый препарат'" side="right" :ui="{ overlay: 'bg-slate-700/50' }">
@@ -120,12 +227,37 @@
 </template>
 
 <script setup lang="ts">
-import { h, resolveComponent } from 'vue'
-
 definePageMeta({ middleware: 'admin', layout: 'admin', headerTitle: 'Лекарства' })
 
-const { data, refresh, pending } = await useFetch('/api/drugs')
+const { data, refresh, pending } = await useFetch('/api/drugs/all')
 const rows = computed(() => (data.value as any)?.items || [])
+
+const searchQuery = ref('')
+const drugsShown = ref(10)
+
+const filteredDrugs = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return rows.value
+  }
+  const query = searchQuery.value.toLowerCase().trim()
+  return rows.value.filter((drug: any) => {
+    const name = (drug.name || '').toLowerCase()
+    const latinName = (drug.latinName || '').toLowerCase()
+    return name.includes(query) || latinName.includes(query)
+  })
+})
+
+const drugsTableData = computed(() => {
+  return filteredDrugs.value.slice(0, drugsShown.value)
+})
+
+const hasMoreDrugs = computed(() => {
+  return filteredDrugs.value.length > drugsShown.value
+})
+
+watch([filteredDrugs, searchQuery], () => {
+  drugsShown.value = 10
+})
 
 // Заглушка для категорий - нужно будет добавить API для получения категорий
 const categoryOptions = ref([
@@ -135,30 +267,6 @@ const categoryOptions = ref([
   { label: 'Педиатрия', value: 'pediatrics' }
 ])
 
-const columns = [
-  { accessorKey: 'name', header: 'Название' },
-  { accessorKey: 'latinName', header: 'Латинское название' },
-  {
-    id: 'actions',
-    header: 'Действия',
-    cell: ({ row }: any) => h(
-      'div',
-      { class: 'flex items-center gap-2' },
-      [
-        h(
-          resolveComponent('UButton') as any,
-          { size: 'xs', color: 'neutral', variant: 'soft', onClick: () => onEditDrug(row.original) },
-          { default: () => 'Редактировать' }
-        ),
-        h(
-          resolveComponent('UButton') as any,
-          { size: 'xs', color: 'error', variant: 'soft', onClick: () => onDeleteDrug(row.original) },
-          { default: () => 'Удалить' }
-        )
-      ]
-    )
-  }
-]
 
 const formOpen = ref(false)
 const submitting = ref(false)

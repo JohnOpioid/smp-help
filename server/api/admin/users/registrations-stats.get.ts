@@ -10,8 +10,10 @@ export default defineEventHandler(async (event) => {
   
   const endDate = new Date()
   endDate.setHours(23, 59, 59, 999) // Включаем сегодняшний день полностью
-  const startDate = new Date()
-  startDate.setDate(startDate.getDate() - (days - 1)) // -1 чтобы включить сегодня
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const startDate = new Date(today)
+  startDate.setDate(today.getDate() - (days - 1)) // (days-1) дней назад + сегодня = days дней
   startDate.setHours(0, 0, 0, 0)
   
   // Группируем регистрации по дням
@@ -26,7 +28,8 @@ export default defineEventHandler(async (event) => {
         _id: {
           $dateToString: {
             format: '%Y-%m-%d',
-            date: '$createdAt'
+            date: '$createdAt',
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Moscow'
           }
         },
         count: { $sum: 1 }
@@ -46,14 +49,18 @@ export default defineEventHandler(async (event) => {
   
   // Заполняем пропущенные дни нулями (включая сегодня)
   const result: Array<{ date: string; count: number }> = []
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
   
   // Генерируем дни от самого старого до сегодня включительно
   for (let i = 0; i < days; i++) {
-    const date = new Date(today)
-    date.setDate(date.getDate() - (days - 1 - i)) // От старого к новому, включая сегодня
-    const dateStr = date.toISOString().split('T')[0]
+    const date = new Date(startDate)
+    date.setDate(startDate.getDate() + i) // Добавляем i дней к начальной дате (0 до days-1)
+    date.setHours(0, 0, 0, 0) // Убеждаемся, что время установлено на начало дня
+    
+    // Форматируем дату в YYYY-MM-DD с учетом локального времени
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const dateStr = `${year}-${month}-${day}`
     
     const existing = registrations.find((r: any) => r.date === dateStr)
     result.push({

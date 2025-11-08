@@ -23,53 +23,119 @@
         </div>
       </div>
 
-      <!-- Список калькуляторов -->
-      <div v-if="loading" class="text-center py-12">
-        <p class="text-slate-600 dark:text-slate-300">Загрузка...</p>
-      </div>
+      <!-- Таблица калькуляторов -->
+      <div class="mb-8">
+        <div class="bg-white dark:bg-slate-800 rounded-lg">
+          <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Калькуляторы</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Управление калькуляторами</p>
+          </div>
 
-      <div v-else-if="calculators.length === 0" class="text-center py-12">
-        <p class="text-slate-600 dark:text-slate-300">Калькуляторы не найдены</p>
-      </div>
+          <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+            <UInput 
+              v-model="searchQuery" 
+              placeholder="Поиск по названию файла, URL или категории..." 
+              size="lg"
+              class="w-full"
+            >
+              <template #leading>
+                <UIcon name="i-heroicons-magnifying-glass" />
+              </template>
+            </UInput>
+          </div>
 
-      <div v-else class="space-y-4">
-        <div
-          v-for="calc in calculators"
-          :key="calc.fileName"
-          class="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700"
-        >
-          <div class="flex items-start justify-between gap-4">
-            <div class="flex-1">
-              <div class="flex items-center gap-2 mb-2">
-                <h3 class="font-semibold text-slate-900 dark:text-white">{{ calc.fileName }}</h3>
-                <span
-                  :class="[
-                    'px-2 py-0.5 text-xs font-medium rounded',
-                    calc.inDatabase 
-                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                      : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                  ]"
-                >
-                  {{ calc.inDatabase ? 'В базе' : 'Не в базе' }}
-                </span>
-              </div>
-              <div class="text-sm text-slate-600 dark:text-slate-400 space-y-1">
-                <div class="font-mono">URL: {{ calc.url }}</div>
-                <div v-if="calc.dbData">
-                  <div>Название: {{ calc.dbData.name }}</div>
-                  <div>Категория: {{ calc.dbData.category }}</div>
-                </div>
+          <div class="relative">
+            <div v-if="loading" class="p-6"><USkeleton class="h-6 w-full" /></div>
+            <div v-else-if="calcTableData.length === 0" class="p-6 text-sm text-slate-500 dark:text-slate-400">
+              <div>
+                Калькуляторы не найдены
               </div>
             </div>
-            <UButton
-              v-if="!calc.inDatabase"
-              @click="addCalculator(calc.fileName)"
-              :loading="adding[calc.fileName]"
-              color="primary"
-              size="sm"
-            >
-              Добавить
-            </UButton>
+            <div v-else class="overflow-x-auto">
+              <table class="w-full table-fixed min-w-[800px]">
+                <colgroup>
+                  <col style="width: auto;">
+                  <col style="width: 200px;">
+                  <col style="width: 150px;">
+                  <col style="width: 120px;">
+                  <col style="width: 100px;">
+                  <col style="width: 80px;">
+                </colgroup>
+                <thead>
+                  <tr class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/30">
+                    <th class="text-left p-3 font-medium">Название</th>
+                    <th class="text-left p-3 font-medium">URL</th>
+                    <th class="text-left p-3 font-medium">Категория</th>
+                    <th class="text-left p-3 font-medium">Статус</th>
+                    <th class="text-left p-3 font-medium"></th>
+                    <th class="text-center p-3 font-medium">Действия</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="calc in calcTableData" :key="calc.fileName" class="border-t border-slate-100 dark:border-slate-700/60">
+                    <td class="p-3">
+                      <div class="text-sm text-muted truncate" :title="calc.fileName">{{ calc.fileName }}</div>
+                      <div v-if="calc.dbData?.name" class="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate" :title="calc.dbData.name">{{ calc.dbData.name }}</div>
+                    </td>
+                    <td class="p-3">
+                      <div class="text-sm text-muted whitespace-nowrap truncate font-mono" :title="calc.url">{{ calc.url }}</div>
+                    </td>
+                    <td class="p-3">
+                      <div class="text-sm text-muted whitespace-nowrap truncate" :title="calc.dbData?.category || '—'">{{ calc.dbData?.category || '—' }}</div>
+                    </td>
+                    <td class="p-3">
+                      <span
+                        :class="[
+                          'px-2 py-0.5 text-xs font-medium rounded',
+                          calc.inDatabase 
+                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                            : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                        ]"
+                      >
+                        {{ calc.inDatabase ? 'В базе' : 'Не в базе' }}
+                      </span>
+                    </td>
+                    <td class="p-3">
+                      <UButton
+                        v-if="!calc.inDatabase"
+                        @click="addCalculator(calc.fileName)"
+                        :loading="adding[calc.fileName]"
+                        color="primary"
+                        size="sm"
+                        class="cursor-pointer"
+                      >
+                        Добавить
+                      </UButton>
+                    </td>
+                    <td class="p-3 text-center whitespace-nowrap">
+                      <span class="text-sm text-muted">—</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div v-if="!loading && hasMoreCalc" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
+              <UButton 
+                variant="soft" 
+                color="neutral" 
+                @click="calcShown += 10"
+                class="cursor-pointer"
+              >
+                <UIcon name="i-heroicons-chevron-down" class="me-1" />
+                Показать еще ({{ filteredCalculators.length - calcShown }})
+              </UButton>
+            </div>
+            <div v-if="!loading && !hasMoreCalc && calcShown > 10" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
+              <UButton 
+                variant="soft" 
+                color="neutral" 
+                @click="calcShown = 10"
+                class="cursor-pointer"
+              >
+                <UIcon name="i-heroicons-chevron-up" class="me-1" />
+                Свернуть все
+              </UButton>
+            </div>
           </div>
         </div>
       </div>
@@ -112,6 +178,37 @@ const calculators = ref<any[]>([])
 const stats = ref<any>(null)
 const adding = ref<Record<string, boolean>>({})
 const operationResult = ref<any>(null)
+const searchQuery = ref('')
+const calcShown = ref(10)
+
+const filteredCalculators = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return calculators.value
+  }
+  const query = searchQuery.value.toLowerCase().trim()
+  return calculators.value.filter((calc: any) => {
+    const searchableText = [
+      calc.fileName,
+      calc.url,
+      calc.dbData?.name,
+      calc.dbData?.category
+    ].filter(Boolean).join(' ').toLowerCase()
+    
+    return searchableText.includes(query)
+  })
+})
+
+const calcTableData = computed(() => {
+  return filteredCalculators.value.slice(0, calcShown.value)
+})
+
+const hasMoreCalc = computed(() => {
+  return filteredCalculators.value.length > calcShown.value
+})
+
+watch([filteredCalculators, searchQuery], () => {
+  calcShown.value = 10
+})
 
 async function loadCalculators() {
   loading.value = true

@@ -31,6 +31,9 @@ export default defineEventHandler(async (event) => {
     return
   }
   
+  // Логируем для отладки (можно убрать после проверки)
+  console.log(`[track-visits] Обработка запроса: ${path}`)
+  
   // Пропускаем ботов
   const userAgent = getHeader(event, 'user-agent') || ''
   const isBot = /bot|crawler|spider|crawling/i.test(userAgent)
@@ -42,6 +45,7 @@ export default defineEventHandler(async (event) => {
     // Проверяем, авторизован ли пользователь
     const token = getCookie(event, 'token')
     let isLoggedIn = false
+    let userId: string | null = null
     
     if (token) {
       try {
@@ -49,50 +53,61 @@ export default defineEventHandler(async (event) => {
         const decoded = jwt.verify(token, jwtSecret) as any
         if (decoded?.userId) {
           isLoggedIn = true
-          
-          // Обновляем lastVisit для авторизованного пользователя
-          const now = new Date()
-          const today = new Date()
-          today.setHours(0, 0, 0, 0)
-          
-          await User.findById(decoded.userId).then(async (user) => {
-            if (user) {
-              const lastVisit = user.lastVisit ? new Date(user.lastVisit) : null
-              const lastVisitDate = lastVisit ? new Date(lastVisit) : null
-              lastVisitDate?.setHours(0, 0, 0, 0)
-              
-              if (!lastVisit || !lastVisitDate || lastVisitDate.getTime() < today.getTime()) {
-                await User.findByIdAndUpdate(user._id, { lastVisit: now }).catch(() => {})
-              }
-            }
-          }).catch(() => {})
+          userId = decoded.userId
         }
-      } catch {}
+      } catch (err) {
+        // Токен невалидный, игнорируем
+      }
     }
     
-    // Если пользователь не авторизован, сохраняем гостевое посещение
-    if (!isLoggedIn) {
-      const ip = getClientIP(event) || 'unknown'
-      const now = new Date()
-      const today = new Date(now)
-      today.setHours(0, 0, 0, 0)
-      
-      // Проверяем, было ли сегодня уже посещение с этого IP
-      const existingVisit = await GuestVisit.findOne({
-        ip,
-        date: { $gte: today }
-      })
-      
-      // Сохраняем только одно посещение в день с одного IP
-      if (!existingVisit) {
-        await GuestVisit.create({
+    if (isLoggedIn && userId) {
+      // Обновляем lastVisit для авторизованного пользователя
+      try {
+        const now = new Date()
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        
+        const user = await User.findById(userId)
+        if (user) {
+          const lastVisit = user.lastVisit ? new Date(user.lastVisit) : null
+          const lastVisitDate = lastVisit ? new Date(lastVisit) : null
+          if (lastVisitDate) {
+            lastVisitDate.setHours(0, 0, 0, 0)
+          }
+          
+          if (!lastVisit || !lastVisitDate || lastVisitDate.getTime() < today.getTime()) {
+            await User.findByIdAndUpdate(userId, { lastVisit: now })
+            console.log(`✅ [track-visits] Обновлен lastVisit для пользователя ${userId} на ${now.toISOString()}`)
+          }
+        }
+      } catch (err) {
+        console.error('Ошибка обновления lastVisit в middleware:', err)
+      }
+    } else {
+      // Если пользователь не авторизован, сохраняем гостевое посещение
+      try {
+        const ip = getClientIP(event) || 'unknown'
+        const now = new Date()
+        const today = new Date(now)
+        today.setHours(0, 0, 0, 0)
+        
+        // Проверяем, было ли сегодня уже посещение с этого IP
+        const existingVisit = await GuestVisit.findOne({
           ip,
-          userAgent,
-          date: now
-        }).catch((err) => {
-          // Логируем ошибки для отладки, но не ломаем основной запрос
-          console.error('Ошибка сохранения гостевого посещения:', err)
+          date: { $gte: today }
         })
+        
+        // Сохраняем только одно посещение в день с одного IP
+        if (!existingVisit) {
+          await GuestVisit.create({
+            ip,
+            userAgent,
+            date: now
+          })
+          console.log(`✅ [track-visits] Сохранено гостевое посещение с IP ${ip} на ${now.toISOString()}`)
+        }
+      } catch (err) {
+        console.error('Ошибка сохранения гостевого посещения:', err)
       }
     }
   } catch (error) {

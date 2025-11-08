@@ -26,8 +26,10 @@ export default defineEventHandler(async (event) => {
   if (!lastVisit || !lastVisitDate || lastVisitDate.getTime() < today.getTime()) {
     await User.findByIdAndUpdate(user._id, { 
       lastVisit: now 
-    }).catch(() => {
-      // Игнорируем ошибки обновления, чтобы не ломать основной запрос
+    }).then(() => {
+      console.log(`✅ Обновлен lastVisit для пользователя ${user._id} на ${now.toISOString()}`)
+    }).catch((err) => {
+      console.error('Ошибка обновления lastVisit в /api/auth/me:', err)
     })
   }
   

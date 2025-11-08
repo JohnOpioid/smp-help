@@ -2,34 +2,172 @@
   <div>
     <main class="flex-1">
       <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
-        <div class="mb-6 flex items-center justify-between">
-          <div class="text-sm text-slate-600 dark:text-slate-300">Промо-ивенты</div>
-          <UButton color="primary" class="cursor-pointer" @click="openCreate">Добавить</UButton>
-        </div>
 
-        <div class="space-y-3">
-          <div v-for="e in events" :key="e._id" class="bg-white dark:bg-slate-800 rounded-lg p-4 flex items-center justify-between">
-            <div class="flex items-start gap-3">
-              <div class="shrink-0">
-                <template v-if="isImageUrl(e.spriteIcon)">
-                  <img :src="e.spriteIcon" alt="sprite" class="w-6 h-6 object-contain" />
-                </template>
-                <template v-else>
-                  <UIcon :name="e.spriteIcon" class="w-6 h-6" />
-                </template>
-              </div>
+        <!-- Таблица промо-ивентов -->
+        <div class="mb-8">
+          <div class="bg-white dark:bg-slate-800 rounded-lg">
+            <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-2">
               <div>
-                <div class="text-base font-semibold text-slate-900 dark:text-white">{{ e.title }}</div>
-                <div class="text-xs text-slate-500 dark:text-slate-400">
-                  <NuxtLink :to="`/promo/${e.slug}`" class="underline hover:no-underline">/{{ e.slug }}</NuxtLink>
-                  · {{ formatRange(e.startAt, e.endAt) }} · нужно собрать: {{ e.requiredCount }}
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Промо-ивенты</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Создавайте и редактируйте промо-ивенты</p>
+              </div>
+              <UButton color="primary" size="sm" icon="i-heroicons-plus" class="cursor-pointer aspect-square p-2" @click="openCreate" title="Новый ивент" />
+            </div>
+
+            <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+              <UInput 
+                v-model="searchQuery" 
+                placeholder="Поиск по названию или slug..." 
+                size="lg"
+                class="w-full"
+              >
+                <template #leading>
+                  <UIcon name="i-heroicons-magnifying-glass" />
+                </template>
+              </UInput>
+            </div>
+
+            <div class="relative">
+              <ClientOnly>
+                <div class="overflow-x-auto">
+                  <table class="w-full table-fixed min-w-[800px]">
+                    <colgroup>
+                      <col style="width: 60px;">
+                      <col style="width: auto;">
+                      <col style="width: 200px;">
+                      <col style="width: 150px;">
+                      <col style="width: 120px;">
+                      <col style="width: 80px;">
+                    </colgroup>
+                  <thead>
+                    <tr class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/30">
+                      <th class="text-left p-3 font-medium"></th>
+                      <th class="text-left p-3 font-medium">Название</th>
+                      <th class="text-left p-3 font-medium">Период</th>
+                      <th class="text-left p-3 font-medium">Slug</th>
+                      <th class="text-left p-3 font-medium">Статус</th>
+                      <th class="text-center p-3 font-medium">Действия</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="e in promoTableData" :key="e._id" class="border-t border-slate-100 dark:border-slate-700/60">
+                      <td class="p-3">
+                        <div class="flex items-center justify-center">
+                          <template v-if="isImageUrl(e.spriteIcon)">
+                            <img :src="e.spriteIcon" alt="sprite" class="w-8 h-8 object-contain" />
+                          </template>
+                          <template v-else>
+                            <UIcon :name="e.spriteIcon" class="w-8 h-8 text-slate-500 dark:text-slate-400" />
+                          </template>
+                        </div>
+                      </td>
+                      <td class="p-3">
+                        <div class="text-sm text-muted truncate" :title="e.title">{{ e.title }}</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Нужно собрать: {{ e.requiredCount }}</div>
+                      </td>
+                      <td class="p-3">
+                        <div class="text-sm text-muted whitespace-nowrap truncate" :title="formatRange(e.startAt, e.endAt)">{{ formatRange(e.startAt, e.endAt) }}</div>
+                      </td>
+                      <td class="p-3">
+                        <NuxtLink :to="`/promo/${e.slug}`" class="text-sm text-muted whitespace-nowrap truncate hover:underline" :title="`/${e.slug}`">/{{ e.slug }}</NuxtLink>
+                      </td>
+                      <td class="p-3">
+                        <UBadge :color="isActive(e) ? 'primary' : 'neutral'" variant="soft" size="sm">{{ isActive(e) ? 'Активен' : 'Не активен' }}</UBadge>
+                      </td>
+                      <td class="p-3 text-center whitespace-nowrap">
+                        <UPopover :content="{ side: 'bottom', align: 'end', sideOffset: 8 }">
+                          <button
+                            type="button"
+                            class="rounded-md p-2 size-9 inline-flex items-center justify-center text-default text-slate-500 dark:text-slate-400 hover:bg-elevated focus:outline-none cursor-pointer"
+                            title="Действия"
+                          >
+                            <UIcon name="i-heroicons-ellipsis-vertical" class="w-5 h-5" />
+                          </button>
+                          <template #content>
+                            <div class="w-56">
+                              <nav class="py-1">
+                                <button
+                                  type="button"
+                                  class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+                                  @click="openEdit(e)"
+                                >
+                                  <UIcon name="i-heroicons-pencil-square" class="w-4 h-4 text-slate-500" />
+                                  <span>Редактировать</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 cursor-pointer"
+                                  @click="onDelete(e)"
+                                >
+                                  <UIcon name="i-heroicons-trash" class="w-4 h-4" />
+                                  <span>Удалить</span>
+                                </button>
+                              </nav>
+                            </div>
+                          </template>
+                        </UPopover>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                </div>
+                <template #fallback>
+                  <div class="overflow-x-auto">
+                    <table class="w-full table-fixed min-w-[800px]">
+                      <colgroup>
+                        <col style="width: 60px;">
+                        <col style="width: auto;">
+                        <col style="width: 200px;">
+                        <col style="width: 150px;">
+                        <col style="width: 120px;">
+                        <col style="width: 80px;">
+                      </colgroup>
+                      <thead>
+                        <tr class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/30">
+                          <th class="text-left p-3 font-medium"></th>
+                          <th class="text-left p-3 font-medium">Название</th>
+                          <th class="text-left p-3 font-medium">Период</th>
+                          <th class="text-left p-3 font-medium">Slug</th>
+                          <th class="text-left p-3 font-medium">Статус</th>
+                          <th class="text-center p-3 font-medium">Действия</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td colspan="6" class="p-6 text-center text-sm text-slate-500 dark:text-slate-400">Загрузка...</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </template>
+              </ClientOnly>
+              <div v-if="promoTableData.length === 0" class="p-6 text-sm text-slate-500 dark:text-slate-400">
+                <div>
+                  Пока нет промо-ивентов
                 </div>
               </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <UBadge :color="isActive(e) ? 'primary' : 'neutral'" variant="soft">{{ isActive(e) ? 'Активен' : 'Не активен' }}</UBadge>
-              <UButton size="sm" variant="soft" class="cursor-pointer" @click="openEdit(e)"><UIcon name="i-lucide-pencil" class="w-4 h-4" /></UButton>
-              <UButton size="sm" color="error" variant="soft" class="cursor-pointer" @click="onDelete(e)"><UIcon name="i-lucide-trash-2" class="w-4 h-4" /></UButton>
+              <div v-if="hasMorePromo" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
+                <UButton 
+                  variant="soft" 
+                  color="neutral" 
+                  @click="promoShown += 10"
+                  class="cursor-pointer"
+                >
+                  <UIcon name="i-heroicons-chevron-down" class="me-1" />
+                  Показать еще ({{ filteredEvents.length - promoShown }})
+                </UButton>
+              </div>
+              <div v-if="!hasMorePromo && promoShown > 10" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
+                <UButton 
+                  variant="soft" 
+                  color="neutral" 
+                  @click="promoShown = 10"
+                  class="cursor-pointer"
+                >
+                  <UIcon name="i-heroicons-chevron-up" class="me-1" />
+                  Свернуть все
+                </UButton>
+              </div>
             </div>
           </div>
         </div>
@@ -354,7 +492,37 @@
 definePageMeta({ middleware: 'admin', layout: 'admin', headerTitle: 'Промо' })
 
 const items = ref<any[]>([])
+const searchQuery = ref('')
+const promoShown = ref(10)
+
 const events = computed(() => items.value)
+
+const filteredEvents = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return events.value
+  }
+  const query = searchQuery.value.toLowerCase().trim()
+  return events.value.filter((e: any) => {
+    const searchableText = [
+      e.title,
+      e.slug
+    ].filter(Boolean).join(' ').toLowerCase()
+    
+    return searchableText.includes(query)
+  })
+})
+
+const promoTableData = computed(() => {
+  return filteredEvents.value.slice(0, promoShown.value)
+})
+
+const hasMorePromo = computed(() => {
+  return filteredEvents.value.length > promoShown.value
+})
+
+watch([filteredEvents, searchQuery], () => {
+  promoShown.value = 10
+})
 const formOpen = ref(false)
 const isEdit = ref(false)
 const saving = ref(false)

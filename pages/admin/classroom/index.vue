@@ -1,50 +1,146 @@
 <template>
   <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
-    <div class="flex items-center justify-between mb-6">
-      <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Учебная комната</h2>
-      <UDropdownMenu :items="addMenu" :ui="{ content: 'w-56', item: 'cursor-pointer' }">
-        <UButton color="primary" icon="i-lucide-plus" trailing-icon="i-lucide-chevron-down">Добавить</UButton>
-      </UDropdownMenu>
-    </div>
 
     <div class="bg-white dark:bg-slate-800 rounded-lg">
-      <div class="p-4 border-b border-slate-100 dark:border-slate-700">
-        <p class="text-sm text-slate-600 dark:text-slate-300">Разделы</p>
+      <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-2">
+        <div>
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Разделы</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Управление разделами учебной комнаты</p>
+        </div>
+        <UDropdownMenu :items="addMenu" :ui="{ content: 'w-56', item: 'cursor-pointer' }">
+          <UButton color="primary" icon="i-lucide-plus" trailing-icon="i-lucide-chevron-down" size="sm" class="cursor-pointer">Добавить</UButton>
+        </UDropdownMenu>
       </div>
 
-      <ul class="grid grid-cols-1 md:grid-cols-2 gap-0">
-        <li
-          v-for="(section, index) in sections"
-          :key="section.url"
-          class="p-4 hover:bg-slate-100 dark:hover:bg-slate-700/40 cursor-pointer relative border-b border-slate-100 dark:border-slate-700"
-          :class="{
-            'md:border-r md:border-slate-100 dark:md:border-slate-700': (index % 2 === 0) && !(sections.length % 2 === 1 && index === sections.length - 1),
-            'md:border-b-0': sections.length % 2 === 0 && index >= sections.length - 2,
-            'border-b-0': index === sections.length - 1,
-            'md:col-span-2': sections.length % 2 === 1 && index === sections.length - 1
-          }"
-          @click="openSection(section)"
+      <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+        <UInput 
+          v-model="searchQuery" 
+          placeholder="Поиск по названию или описанию..." 
+          size="lg"
+          class="w-full"
         >
-          <div class="flex items-start justify-between gap-2">
-            <div class="flex items-center gap-3">
-              <UIcon :name="section.icon" class="w-6 h-6 text-slate-600 dark:text-slate-400 flex-shrink-0" />
-              <div>
-                <p class="text-slate-900 dark:text-white font-medium">{{ section.title }}</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ section.description }}</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-1" @click.stop>
-              <svg class="w-4 h-4 text-slate-400 flex-shrink-0 self-start" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
-          </div>
-        </li>
+          <template #leading>
+            <UIcon name="i-heroicons-magnifying-glass" />
+          </template>
+        </UInput>
+      </div>
 
-        <li v-if="sections.length === 0" class="p-6 border-b-0">
-          <p class="text-sm text-slate-600 dark:text-slate-300">Пока нет разделов</p>
-        </li>
-      </ul>
+      <div class="relative">
+        <div class="overflow-x-auto">
+          <table class="w-full table-fixed min-w-[600px]">
+            <colgroup>
+              <col style="width: 40px;">
+              <col style="width: auto;">
+              <col style="width: 150px;">
+              <col style="width: 80px;">
+            </colgroup>
+            <thead>
+              <tr class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/30">
+                <th class="text-left p-3 font-medium"></th>
+                <th class="text-left p-3 font-medium">Название</th>
+                <th class="text-left p-3 font-medium">Тип</th>
+                <th class="text-center p-3 font-medium">Действия</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr 
+                v-for="section in classroomTableData" 
+                :key="section.url"
+                class="border-t border-slate-100 dark:border-slate-700/60 hover:bg-slate-50 dark:hover:bg-slate-700/30 cursor-pointer"
+                @click="openSection(section)"
+              >
+                <td class="p-3">
+                  <div class="flex items-center justify-center">
+                    <UIcon :name="section.icon" class="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                  </div>
+                </td>
+                <td class="p-3">
+                  <div class="text-sm text-muted truncate" :title="section.title">{{ section.title }}</div>
+                  <div class="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate" :title="section.description">{{ section.description }}</div>
+                </td>
+                <td class="p-3">
+                  <div class="text-sm text-muted whitespace-nowrap">
+                    <span v-if="section.type === 'list'" class="px-2 py-0.5 text-xs font-medium rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Список</span>
+                    <span v-else-if="section.type === 'table'" class="px-2 py-0.5 text-xs font-medium rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Таблица</span>
+                    <span v-else-if="section.type === 'scheme'" class="px-2 py-0.5 text-xs font-medium rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">Схема</span>
+                    <span v-else class="text-slate-400">—</span>
+                  </div>
+                </td>
+                <td class="p-3 text-center whitespace-nowrap" @click.stop>
+                  <UPopover :content="{ side: 'bottom', align: 'end', sideOffset: 8 }">
+                    <button
+                      type="button"
+                      class="rounded-md p-2 size-9 inline-flex items-center justify-center text-default text-slate-500 dark:text-slate-400 hover:bg-elevated focus:outline-none cursor-pointer"
+                      title="Действия"
+                    >
+                      <UIcon name="i-heroicons-ellipsis-vertical" class="w-5 h-5" />
+                    </button>
+                    <template #content>
+                      <div class="w-56">
+                        <nav class="py-1">
+                          <button
+                            type="button"
+                            class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+                            @click="openSection(section)"
+                          >
+                            <UIcon name="i-heroicons-arrow-top-right-on-square" class="w-4 h-4 text-slate-500" />
+                            <span>Открыть</span>
+                          </button>
+                          <button
+                            v-if="section.slug && section.type"
+                            type="button"
+                            class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+                            @click="openEdit(section)"
+                          >
+                            <UIcon name="i-heroicons-pencil-square" class="w-4 h-4 text-slate-500" />
+                            <span>Редактировать</span>
+                          </button>
+                          <button
+                            v-if="section.slug && section.type"
+                            type="button"
+                            class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 cursor-pointer"
+                            @click="removeItem(section)"
+                          >
+                            <UIcon name="i-heroicons-trash" class="w-4 h-4" />
+                            <span>Удалить</span>
+                          </button>
+                        </nav>
+                      </div>
+                    </template>
+                  </UPopover>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-if="classroomTableData.length === 0" class="p-6 text-sm text-slate-500 dark:text-slate-400">
+          <div>
+            Пока нет разделов
+          </div>
+        </div>
+        <div v-if="hasMoreClassroom" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
+          <UButton 
+            variant="soft" 
+            color="neutral" 
+            @click="classroomShown += 10"
+            class="cursor-pointer"
+          >
+            <UIcon name="i-heroicons-chevron-down" class="me-1" />
+            Показать еще ({{ filteredSections.length - classroomShown }})
+          </UButton>
+        </div>
+        <div v-if="!hasMoreClassroom && classroomShown > 10" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
+          <UButton 
+            variant="soft" 
+            color="neutral" 
+            @click="classroomShown = 10"
+            class="cursor-pointer"
+          >
+            <UIcon name="i-heroicons-chevron-up" class="me-1" />
+            Свернуть все
+          </UButton>
+        </div>
+      </div>
     </div>
 
     <USlideover v-model:open="createOpen" title="Новая страница" description="Укажите тип, заголовок и URL" side="right" :ui="{ overlay: 'bg-slate-700/50' }">
@@ -254,6 +350,9 @@ if (process.client) {
   })
 }
 
+const searchQuery = ref('')
+const classroomShown = ref(10)
+
 const sections = computed<ClassroomSection[]>(() => {
   const dynamic = (pages.value || []).map((p: any) => ({
     title: p.title,
@@ -265,6 +364,33 @@ const sections = computed<ClassroomSection[]>(() => {
     isDynamic: true
   }))
   return [...baseSections, ...dynamic]
+})
+
+const filteredSections = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return sections.value
+  }
+  const query = searchQuery.value.toLowerCase().trim()
+  return sections.value.filter((section: ClassroomSection) => {
+    const searchableText = [
+      section.title,
+      section.description
+    ].filter(Boolean).join(' ').toLowerCase()
+    
+    return searchableText.includes(query)
+  })
+})
+
+const classroomTableData = computed(() => {
+  return filteredSections.value.slice(0, classroomShown.value)
+})
+
+const hasMoreClassroom = computed(() => {
+  return filteredSections.value.length > classroomShown.value
+})
+
+watch([filteredSections, searchQuery], () => {
+  classroomShown.value = 10
 })
 
 function openSection(section: ClassroomSection) {

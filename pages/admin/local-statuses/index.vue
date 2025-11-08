@@ -5,133 +5,243 @@
 
         <!-- Таблица категорий -->
         <div class="mb-8">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">
-              Категории ({{ categoriesTotal }}) 
-            </h3>
-            <UButton color="primary" @click="onAddCategory">Добавить категорию</UButton>
-          </div>
-
-          <div class="mb-4">
-            <UInput 
-              v-model="categoriesSearchQuery" 
-              placeholder="Поиск по названию категории..." 
-              size="lg"
-              class="w-full"
-              :input-class="'px-4 py-3'"
-            >
-              <template #leading>
-                <UIcon name="i-heroicons-magnifying-glass" />
-              </template>
-            </UInput>
-          </div>
-
-          <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden">
-            <UTable :data="categoriesTableData" :columns="categoryColumns" :loading="pendingCategories" sticky="header" class="w-full">
-              <template #empty>
-                <div class="p-6 text-sm text-slate-600 dark:text-slate-300">
-                  <div v-if="categoriesError" class="text-red-600 dark:text-red-400 mb-2">
-                    Ошибка загрузки: {{ categoriesError }}
-                  </div>
-                  <div v-else-if="pendingCategories">
-                    <div class="space-y-3">
-                      <USkeleton class="h-5 w-1/3" />
-                      <USkeleton class="h-5 w-1/2" />
-                      <USkeleton class="h-5 w-2/3" />
-                    </div>
-                  </div>
-                  <div v-else-if="!pendingCategories && categories.length === 0">
-                    Нет данных. Добавьте категорию.
-                  </div>
-                </div>
-              </template>
-            </UTable>
-            <div class="px-4 py-3 border-t border-slate-100 dark:border-slate-600 flex items-center justify-center">
-              <UButton 
-                v-if="filteredCategories.length > 3" 
-                variant="soft" 
-                color="neutral" 
-                @click="showAllCategories = !showAllCategories"
-                class="cursor-pointer"
-              >
-                <UIcon :name="showAllCategories ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'" class="me-1" />
-                {{ showAllCategories ? 'Свернуть' : `Показать все (${filteredCategories.length})` }}
-              </UButton>
+          <div class="bg-white dark:bg-slate-800 rounded-lg">
+            <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-2">
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Категории</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Создавайте и редактируйте категории локальных статусов</p>
+              </div>
+              <UButton color="primary" size="sm" icon="i-heroicons-plus" class="cursor-pointer aspect-square p-2" @click="onAddCategory" title="Новая категория" />
             </div>
-            <div v-if="showAllCategories && categoriesTotalPages > 1" class="px-4 py-3 border-t border-slate-100 dark:border-slate-600">
-              <UPagination 
-                :page="categoriesPage" 
-                :total="categoriesTotalPages" 
-                :page-size="1"
-                :max-visible="10"
-                show-last
-                show-first
-                @update:page="categoriesPage = $event"
-              />
+
+            <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+              <UInput 
+                v-model="categoriesSearchQuery" 
+                placeholder="Поиск по названию категории..." 
+                size="lg"
+                class="w-full"
+              >
+                <template #leading>
+                  <UIcon name="i-heroicons-magnifying-glass" />
+                </template>
+              </UInput>
+            </div>
+
+            <div class="relative">
+              <div class="overflow-x-auto">
+                <table class="w-full table-fixed min-w-[600px]">
+                  <colgroup>
+                    <col style="width: auto;">
+                    <col style="width: 150px;">
+                    <col style="width: 80px;">
+                  </colgroup>
+                  <thead>
+                    <tr class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/30">
+                      <th class="text-left p-3 font-medium">Название</th>
+                      <th class="text-left p-3 font-medium whitespace-nowrap">URL</th>
+                      <th class="text-center p-3 font-medium">Действия</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="cat in categoriesTableData" :key="cat._id" class="border-t border-slate-100 dark:border-slate-700/60">
+                      <td class="p-3">
+                        <div class="text-sm text-muted whitespace-nowrap truncate" :title="cat.name">{{ cat.name }}</div>
+                      </td>
+                      <td class="p-3">
+                        <div class="text-sm text-muted whitespace-nowrap truncate" :title="`/${cat.url}`">/{{ cat.url }}</div>
+                      </td>
+                      <td class="p-3 text-center whitespace-nowrap">
+                        <UPopover :content="{ side: 'bottom', align: 'end', sideOffset: 8 }">
+                          <button
+                            type="button"
+                            class="rounded-md p-2 size-9 inline-flex items-center justify-center text-default text-slate-500 dark:text-slate-400 hover:bg-elevated focus:outline-none cursor-pointer"
+                            title="Действия"
+                          >
+                            <UIcon name="i-heroicons-ellipsis-vertical" class="w-5 h-5" />
+                          </button>
+                          <template #content>
+                            <div class="w-56">
+                              <nav class="py-1">
+                                <button
+                                  type="button"
+                                  class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+                                  @click="onEditCategory(cat)"
+                                >
+                                  <UIcon name="i-heroicons-pencil-square" class="w-4 h-4 text-slate-500" />
+                                  <span>Редактировать</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 cursor-pointer"
+                                  @click="onDeleteCategory(cat)"
+                                >
+                                  <UIcon name="i-heroicons-trash" class="w-4 h-4" />
+                                  <span>Удалить</span>
+                                </button>
+                              </nav>
+                            </div>
+                          </template>
+                        </UPopover>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div v-if="!pendingCategories && categoriesTableData.length === 0" class="p-6 text-sm text-slate-500 dark:text-slate-400">
+                <div v-if="categoriesError" class="text-red-600 dark:text-red-400 mb-2">
+                  Ошибка загрузки: {{ categoriesError }}
+                </div>
+                <div v-else>
+                  Пока нет категорий
+                </div>
+              </div>
+              <div v-if="pendingCategories" class="p-6"><USkeleton class="h-6 w-full" /></div>
+              <div v-if="!pendingCategories && hasMoreCategories" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
+                <UButton 
+                  variant="soft" 
+                  color="neutral" 
+                  @click="categoriesShown += 10"
+                  class="cursor-pointer"
+                >
+                  <UIcon name="i-heroicons-chevron-down" class="me-1" />
+                  Показать еще ({{ filteredCategories.length - categoriesShown }})
+                </UButton>
+              </div>
+              <div v-if="!pendingCategories && !hasMoreCategories && categoriesShown > 10" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
+                <UButton 
+                  variant="soft" 
+                  color="neutral" 
+                  @click="categoriesShown = 10"
+                  class="cursor-pointer"
+                >
+                  <UIcon name="i-heroicons-chevron-up" class="me-1" />
+                  Свернуть все
+                </UButton>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Таблица локальных статусов -->
         <div class="mb-8">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Локальные статусы ({{ lsTotal }})</h3>
-            <UButton color="primary" @click="onAddLocalStatus" :disabled="categories.length === 0">Добавить статус</UButton>
-          </div>
+          <div class="bg-white dark:bg-slate-800 rounded-lg">
+            <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-2">
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Локальные статусы</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Создавайте и редактируйте локальные статусы</p>
+              </div>
+              <UButton color="primary" size="sm" icon="i-heroicons-plus" class="cursor-pointer aspect-square p-2" @click="onAddLocalStatus" :disabled="categories.length === 0" title="Новый статус" />
+            </div>
 
-          <div class="mb-4">
-            <UInput 
-              v-model="lsSearchQuery" 
-              placeholder="Поиск по коду станции, коду, названию или примечанию..." 
-              size="lg"
-              class="w-full"
-              :input-class="'px-4 py-3'"
-            >
-              <template #leading>
-                <UIcon name="i-heroicons-magnifying-glass" />
-              </template>
-            </UInput>
-          </div>
+            <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+              <UInput 
+                v-model="lsSearchQuery" 
+                placeholder="Поиск по коду станции, коду, названию или примечанию..." 
+                size="lg"
+                class="w-full"
+              >
+                <template #leading>
+                  <UIcon name="i-heroicons-magnifying-glass" />
+                </template>
+              </UInput>
+            </div>
 
-          <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden">
-            <UTable :data="lsPaginated" :columns="lsColumns" :loading="pendingLS" sticky="header" class="w-full">
-              <template #empty>
-                <div class="p-6 text-sm text-slate-600 dark:text-slate-300">
-                  <div v-if="lsError" class="text-red-600 dark:text-red-400 mb-2">
-                    Ошибка загрузки: {{ lsError }}
-                  </div>
-                  <div v-else-if="pendingLS">
-                    <div class="space-y-3">
-                      <USkeleton class="h-5 w-1/3" />
-                      <USkeleton class="h-5 w-1/2" />
-                      <USkeleton class="h-5 w-2/3" />
-                    </div>
-                  </div>
-                  <div v-else-if="!pendingLS && lsItems.length === 0">
-                    Нет данных. Добавьте статус.
-                  </div>
+            <div class="relative">
+              <div class="overflow-x-auto">
+                <table class="w-full table-fixed min-w-[800px]">
+                  <colgroup>
+                    <col style="width: 200px;">
+                    <col style="width: 100px;">
+                    <col style="width: auto;">
+                    <col style="width: 80px;">
+                  </colgroup>
+                  <thead>
+                    <tr class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/30">
+                      <th class="text-left p-3 font-medium">Категория</th>
+                      <th class="text-left p-3 font-medium whitespace-nowrap">Код</th>
+                      <th class="text-left p-3 font-medium">Название</th>
+                      <th class="text-center p-3 font-medium">Действия</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="item in lsPaginated" :key="item._id" class="border-t border-slate-100 dark:border-slate-700/60">
+                      <td class="p-3">
+                        <div class="text-sm text-muted whitespace-nowrap truncate" :title="item.category?.name || '—'">{{ item.category?.name || '—' }}</div>
+                      </td>
+                      <td class="p-3">
+                        <div class="text-sm text-muted whitespace-nowrap font-mono">{{ item.code || item.stationCode || '—' }}</div>
+                      </td>
+                      <td class="p-3">
+                        <div class="text-sm text-muted whitespace-nowrap truncate" :title="item.name">{{ item.name }}</div>
+                        <div v-if="item.note" class="text-sm text-muted whitespace-nowrap truncate mt-1" :title="item.note">{{ item.note }}</div>
+                      </td>
+                      <td class="p-3 text-center whitespace-nowrap">
+                        <UPopover :content="{ side: 'bottom', align: 'end', sideOffset: 8 }">
+                          <button
+                            type="button"
+                            class="rounded-md p-2 size-9 inline-flex items-center justify-center text-default text-slate-500 dark:text-slate-400 hover:bg-elevated focus:outline-none cursor-pointer"
+                            title="Действия"
+                          >
+                            <UIcon name="i-heroicons-ellipsis-vertical" class="w-5 h-5" />
+                          </button>
+                          <template #content>
+                            <div class="w-56">
+                              <nav class="py-1">
+                                <button
+                                  type="button"
+                                  class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+                                  @click="onEditLS(item)"
+                                >
+                                  <UIcon name="i-heroicons-pencil-square" class="w-4 h-4 text-slate-500" />
+                                  <span>Редактировать</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 cursor-pointer"
+                                  @click="onDeleteLS(item)"
+                                >
+                                  <UIcon name="i-heroicons-trash" class="w-4 h-4" />
+                                  <span>Удалить</span>
+                                </button>
+                              </nav>
+                            </div>
+                          </template>
+                        </UPopover>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div v-if="!pendingLS && lsPaginated.length === 0" class="p-6 text-sm text-slate-500 dark:text-slate-400">
+                <div v-if="lsError" class="text-red-600 dark:text-red-400 mb-2">
+                  Ошибка загрузки: {{ lsError }}
                 </div>
-              </template>
-            </UTable>
-            <div v-if="lsTotalPages > 1" class="px-4 py-3 border-t border-slate-100 dark:border-slate-600">
-              <div class="flex items-center justify-between">
-                <div class="text-sm text-slate-600 dark:text-slate-400">
-                  Страница {{ lsPage }} из {{ lsTotalPages }} ({{ lsTotal }} записей)
+                <div v-else>
+                  Пока нет статусов
                 </div>
-                <div class="flex items-center gap-2">
-                  <UButton :disabled="lsPage <= 1" @click="lsPage = 1" size="sm" variant="ghost">Первая</UButton>
-                  <UButton :disabled="lsPage <= 1" @click="lsPage = lsPage - 1" size="sm" variant="ghost">Предыдущая</UButton>
-                  <div class="flex items-center gap-1">
-                    <template v-for="pageNum in visiblePages" :key="pageNum">
-                      <UButton v-if="pageNum !== '...'" :variant="pageNum === lsPage ? 'solid' : 'ghost'" :color="pageNum === lsPage ? 'primary' : 'neutral'" @click="lsPage = pageNum as number" size="sm">
-                        {{ pageNum }}
-                      </UButton>
-                      <span v-else class="px-2 text-slate-400">...</span>
-                    </template>
-                  </div>
-                  <UButton :disabled="lsPage >= lsTotalPages" @click="lsPage = lsPage + 1" size="sm" variant="ghost">Следующая</UButton>
-                  <UButton :disabled="lsPage >= lsTotalPages" @click="lsPage = lsTotalPages" size="sm" variant="ghost">Последняя</UButton>
-                </div>
+              </div>
+              <div v-if="pendingLS" class="p-6"><USkeleton class="h-6 w-full" /></div>
+              <div v-if="!pendingLS && hasMoreLS" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
+                <UButton 
+                  variant="soft" 
+                  color="neutral" 
+                  @click="loadMoreLS"
+                  class="cursor-pointer"
+                >
+                  <UIcon name="i-heroicons-chevron-down" class="me-1" />
+                  Показать еще ({{ lsTotal - lsItems.length }})
+                </UButton>
+              </div>
+              <div v-if="!pendingLS && !hasMoreLS && lsItems.length > 10" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
+                <UButton 
+                  variant="soft" 
+                  color="neutral" 
+                  @click="collapseLS"
+                  class="cursor-pointer"
+                >
+                  <UIcon name="i-heroicons-chevron-up" class="me-1" />
+                  Свернуть все
+                </UButton>
               </div>
             </div>
           </div>
@@ -266,9 +376,8 @@ const pendingCategory = ref(false)
 const pendingCategories = ref(false)
 
 const categoriesSearchQuery = ref('')
-const categoriesPage = ref(1)
-const categoriesPerPage = 15
 const categoriesTotal = ref(0)
+const categoriesShown = ref(10)
 
 const { data: categoriesData, refresh: refreshCategories, pending: fetchingCategories, error: categoriesError } = await useFetch('/api/local-statuses', { server: false })
 const categories = computed(() => categoriesData.value?.items || [])
@@ -281,23 +390,18 @@ const filteredCategories = computed(() => {
   return all.filter((c: any) => matchesNormalized(q, c.name || ''))
 })
 
-const categoriesPaginated = computed(() => {
-  const start = (categoriesPage.value - 1) * categoriesPerPage
-  const end = start + categoriesPerPage
-  return filteredCategories.value.slice(start, end)
-})
-const showAllCategories = ref(false)
 const categoriesTableData = computed(() => {
-  if (showAllCategories.value) return categoriesPaginated.value
-  return filteredCategories.value.slice(0, 3)
+  return filteredCategories.value.slice(0, categoriesShown.value)
 })
-const categoriesTotalPages = computed(() => Math.ceil(filteredCategories.value.length / categoriesPerPage))
+const hasMoreCategories = computed(() => {
+  return filteredCategories.value.length > categoriesShown.value
+})
 
 watch(filteredCategories, (n) => {
   categoriesTotal.value = n.length
-  if (categoriesPage.value > Math.ceil(n.length / categoriesPerPage)) categoriesPage.value = 1
+  categoriesShown.value = 10 // Сбрасываем при изменении фильтра
 })
-watch(categoriesSearchQuery, () => { categoriesPage.value = 1 })
+watch(categoriesSearchQuery, () => { categoriesShown.value = 10 })
 watch(fetchingCategories, v => { pendingCategories.value = !!v })
 onMounted(() => { refreshCategories() })
 
@@ -360,36 +464,55 @@ const pendingLSForm = ref(false)
 const pendingLS = ref(false)
 
 const lsPage = ref(1)
-const lsPerPage = 15
+const lsPerPage = 10
 const lsTotal = ref(0)
 const lsTotalPages = ref(0)
 const lsSearchQuery = ref('')
+const lsItems = ref<any[]>([])
 
 const { data: lsData, refresh: refreshLS, pending: fetchingLS, error: lsError } = await useFetch('/api/local-statuses/all', {
   query: computed(() => ({ page: lsPage.value, limit: lsPerPage, search: lsSearchQuery.value })),
-  server: false
+  server: false,
+  watch: [lsPage, lsSearchQuery]
 })
-const lsItems = computed(() => (lsData.value as any)?.items || [])
+
+watch(lsData, (newData) => {
+  if (newData) {
+    const items = (newData as any)?.items || []
+    if (lsPage.value === 1) {
+      // Первая страница - заменяем данные
+      lsItems.value = items
+    } else {
+      // Последующие страницы - добавляем к существующим
+      lsItems.value = [...lsItems.value, ...items]
+    }
+    lsTotal.value = (newData as any).total || 0
+    lsTotalPages.value = (newData as any).totalPages || 0
+  }
+}, { immediate: true })
+
 const lsPaginated = computed(() => lsItems.value)
-
-watch(lsData, (n) => { if (n) { lsTotal.value = (n as any).total || 0; lsTotalPages.value = (n as any).totalPages || 0 } })
-watch(fetchingLS, v => { pendingLS.value = !!v })
-watch(lsPage, () => { refreshLS() })
-watch(lsSearchQuery, () => { lsPage.value = 1 })
-onMounted(() => { refreshLS() })
-
-const visiblePages = computed(() => {
-  const current = lsPage.value
-  const total = lsTotalPages.value
-  const delta = 2
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
-  const pages: any[] = [1]
-  if (current > delta + 3) pages.push('...')
-  for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) pages.push(i)
-  if (current < total - delta - 2) pages.push('...')
-  if (total > 1) pages.push(total)
-  return pages
+const hasMoreLS = computed(() => {
+  return lsItems.value.length < lsTotal.value
 })
+
+const loadMoreLS = () => {
+  if (lsPage.value < lsTotalPages.value) {
+    lsPage.value += 1
+  }
+}
+
+const collapseLS = () => {
+  lsPage.value = 1
+  lsItems.value = []
+}
+
+watch(fetchingLS, v => { pendingLS.value = !!v })
+watch(lsSearchQuery, () => { 
+  lsPage.value = 1
+  lsItems.value = [] // Очищаем при новом поиске
+})
+onMounted(() => { refreshLS() })
 
 // Поиск по МКБ для поля "Кодировка"
 const mkbSearch = ref('')

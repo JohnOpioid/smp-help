@@ -5,118 +5,263 @@
 
         <!-- Секция регионов -->
         <div class="mb-8">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Регионы ({{ regions.length }})</h3>
-            <UButton color="primary" @click="onAddRegion" class="cursor-pointer">Добавить регион</UButton>
-          </div>
+          <div class="bg-white dark:bg-slate-800 rounded-lg">
+            <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-2">
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Регионы</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Создавайте и редактируйте регионы</p>
+              </div>
+              <UButton color="primary" size="sm" icon="i-heroicons-plus" class="cursor-pointer aspect-square p-2" @click="onAddRegion" title="Новый регион" />
+            </div>
 
-          <!-- Поиск по регионам -->
-          <div class="mb-4">
-            <UInput 
-              v-model="regionsSearch" 
-              placeholder="Поиск по названию региона..." 
-              size="xl"
-              class="w-full"
-              :input-class="'px-4 py-3'"
-            >
-              <template #leading>
-                <UIcon name="i-heroicons-magnifying-glass" />
-              </template>
-            </UInput>
-          </div>
-          
-          <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden">
-            <UTable :data="filteredRegions" :columns="regionColumns" :loading="pendingRegions" sticky="header" class="w-full">
-              <template #empty>
-                <div class="p-6 text-sm text-slate-600 dark:text-slate-300">Регионы не добавлены. Добавьте первый регион.</div>
-              </template>
-            </UTable>
+            <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+              <UInput 
+                v-model="regionsSearch" 
+                placeholder="Поиск по названию региона, руководителю, округу или телефону..." 
+                size="lg"
+                class="w-full"
+              >
+                <template #leading>
+                  <UIcon name="i-heroicons-magnifying-glass" />
+                </template>
+              </UInput>
+            </div>
+
+            <div class="relative">
+              <div class="overflow-x-auto">
+                <table class="w-full table-fixed min-w-[800px]">
+                  <colgroup>
+                    <col style="width: 200px;">
+                    <col style="width: 200px;">
+                    <col style="width: 150px;">
+                    <col style="width: auto;">
+                    <col style="width: 80px;">
+                  </colgroup>
+                  <thead>
+                    <tr class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/30">
+                      <th class="text-left p-3 font-medium">Название</th>
+                      <th class="text-left p-3 font-medium">Руководитель</th>
+                      <th class="text-left p-3 font-medium">Округ</th>
+                      <th class="text-left p-3 font-medium">Телефоны</th>
+                      <th class="text-center p-3 font-medium">Действия</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="region in regionsTableData" :key="region._id" class="border-t border-slate-100 dark:border-slate-700/60">
+                      <td class="p-3">
+                        <div class="text-sm text-muted whitespace-nowrap truncate" :title="region.name">{{ region.name }}</div>
+                      </td>
+                      <td class="p-3">
+                        <div class="text-sm text-muted whitespace-nowrap truncate" :title="region.manager || '—'">{{ region.manager || '—' }}</div>
+                      </td>
+                      <td class="p-3">
+                        <div class="text-sm text-muted whitespace-nowrap truncate" :title="region.district || '—'">{{ region.district || '—' }}</div>
+                      </td>
+                      <td class="p-3">
+                        <div class="text-sm text-muted">
+                          <template v-if="region.phones && region.phones.length > 0">
+                            <div v-for="(phone, idx) in region.phones" :key="idx" class="whitespace-nowrap truncate" :title="`${phone.name}: ${phone.number}`">
+                              {{ phone.name }}: {{ phone.number }}
+                            </div>
+                          </template>
+                          <span v-else>Не указаны</span>
+                        </div>
+                      </td>
+                      <td class="p-3 text-center whitespace-nowrap">
+                        <UPopover :content="{ side: 'bottom', align: 'end', sideOffset: 8 }">
+                          <button
+                            type="button"
+                            class="rounded-md p-2 size-9 inline-flex items-center justify-center text-default text-slate-500 dark:text-slate-400 hover:bg-elevated focus:outline-none cursor-pointer"
+                            title="Действия"
+                          >
+                            <UIcon name="i-heroicons-ellipsis-vertical" class="w-5 h-5" />
+                          </button>
+                          <template #content>
+                            <div class="w-56">
+                              <nav class="py-1">
+                                <button
+                                  type="button"
+                                  class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+                                  @click="onEditRegion(region)"
+                                >
+                                  <UIcon name="i-heroicons-pencil-square" class="w-4 h-4 text-slate-500" />
+                                  <span>Редактировать</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 cursor-pointer"
+                                  @click="onDeleteRegion(region)"
+                                >
+                                  <UIcon name="i-heroicons-trash" class="w-4 h-4" />
+                                  <span>Удалить</span>
+                                </button>
+                              </nav>
+                            </div>
+                          </template>
+                        </UPopover>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div v-if="!pendingRegions && regionsTableData.length === 0" class="p-6 text-sm text-slate-500 dark:text-slate-400">
+                <div>
+                  Пока нет регионов
+                </div>
+              </div>
+              <div v-if="pendingRegions" class="p-6"><USkeleton class="h-6 w-full" /></div>
+              <div v-if="!pendingRegions && hasMoreRegions" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
+                <UButton 
+                  variant="soft" 
+                  color="neutral" 
+                  @click="regionsShown += 10"
+                  class="cursor-pointer"
+                >
+                  <UIcon name="i-heroicons-chevron-down" class="me-1" />
+                  Показать еще ({{ filteredRegions.length - regionsShown }})
+                </UButton>
+              </div>
+              <div v-if="!pendingRegions && !hasMoreRegions && regionsShown > 10" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
+                <UButton 
+                  variant="soft" 
+                  color="neutral" 
+                  @click="regionsShown = 10"
+                  class="cursor-pointer"
+                >
+                  <UIcon name="i-heroicons-chevron-up" class="me-1" />
+                  Свернуть все
+                </UButton>
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- Секция подстанций -->
         <div class="mb-8">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Подстанции ({{ total }})</h3>
-            <UButton color="primary" @click="onAdd" class="cursor-pointer">Добавить подстанцию</UButton>
-          </div>
+          <div class="bg-white dark:bg-slate-800 rounded-lg">
+            <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-2">
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Подстанции</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Создавайте и редактируйте подстанции</p>
+              </div>
+              <UButton color="primary" size="sm" icon="i-heroicons-plus" class="cursor-pointer aspect-square p-2" @click="onAdd" title="Новая подстанция" />
+            </div>
 
-          <!-- Поиск -->
-          <div class="mb-4">
-            <UInput 
-              v-model="searchQuery" 
-              placeholder="Поиск по названию, адресу или телефону..." 
-              size="xl"
-              class="w-full"
-              :input-class="'px-4 py-3'"
-            >
-              <template #leading>
-                <UIcon name="i-heroicons-magnifying-glass" />
-              </template>
-            </UInput>
-          </div>
+            <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+              <UInput 
+                v-model="searchQuery" 
+                placeholder="Поиск по названию, адресу или телефону..." 
+                size="lg"
+                class="w-full"
+              >
+                <template #leading>
+                  <UIcon name="i-heroicons-magnifying-glass" />
+                </template>
+              </UInput>
+            </div>
 
-          <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden">
-            <UTable :data="paginatedItems" :columns="columns" :loading="pendingList" sticky="header" class="w-full">
-              <template #empty>
-                <div class="p-6 text-sm text-slate-600 dark:text-slate-300">Нет данных. Добавьте подстанцию.</div>
-              </template>
-            </UTable>
-            
-            <!-- Пагинация -->
-            <div v-if="totalPages > 1" class="px-4 py-3 border-t border-slate-100 dark:border-slate-600">
-              <div class="flex items-center justify-between">
-                <div class="text-sm text-slate-600 dark:text-slate-400">
-                  Страница {{ page }} из {{ totalPages }} ({{ total }} записей)
+            <div class="relative">
+              <div class="overflow-x-auto">
+                <table class="w-full table-fixed min-w-[800px]">
+                  <colgroup>
+                    <col style="width: 200px;">
+                    <col style="width: auto;">
+                    <col style="width: 150px;">
+                    <col style="width: 150px;">
+                    <col style="width: 80px;">
+                  </colgroup>
+                  <thead>
+                    <tr class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/30">
+                      <th class="text-left p-3 font-medium">Название</th>
+                      <th class="text-left p-3 font-medium">Адрес</th>
+                      <th class="text-left p-3 font-medium">Регион</th>
+                      <th class="text-left p-3 font-medium">Телефоны</th>
+                      <th class="text-center p-3 font-medium">Действия</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="item in substationsTableData" :key="item._id" class="border-t border-slate-100 dark:border-slate-700/60">
+                      <td class="p-3">
+                        <div class="text-sm text-muted whitespace-nowrap truncate" :title="item.name">{{ item.name }}</div>
+                      </td>
+                      <td class="p-3">
+                        <div class="text-sm text-muted truncate" :title="item.address">{{ item.address }}</div>
+                      </td>
+                      <td class="p-3">
+                        <div class="text-sm text-muted whitespace-nowrap truncate" :title="item.region?.name || '—'">{{ item.region?.name || '—' }}</div>
+                      </td>
+                      <td class="p-3">
+                        <div class="text-sm text-muted whitespace-nowrap truncate" :title="(item.phones || []).join(', ') || '—'">
+                          <template v-if="item.phones && item.phones.length > 0">
+                            {{ item.phones.length === 1 ? item.phones[0] : `${item.phones[0]} +${item.phones.length - 1}` }}
+                          </template>
+                          <span v-else>—</span>
+                        </div>
+                      </td>
+                      <td class="p-3 text-center whitespace-nowrap">
+                        <UPopover :content="{ side: 'bottom', align: 'end', sideOffset: 8 }">
+                          <button
+                            type="button"
+                            class="rounded-md p-2 size-9 inline-flex items-center justify-center text-default text-slate-500 dark:text-slate-400 hover:bg-elevated focus:outline-none cursor-pointer"
+                            title="Действия"
+                          >
+                            <UIcon name="i-heroicons-ellipsis-vertical" class="w-5 h-5" />
+                          </button>
+                          <template #content>
+                            <div class="w-56">
+                              <nav class="py-1">
+                                <button
+                                  type="button"
+                                  class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+                                  @click="onEdit(item)"
+                                >
+                                  <UIcon name="i-heroicons-pencil-square" class="w-4 h-4 text-slate-500" />
+                                  <span>Редактировать</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  class="w-full text-left flex items-center gap-2 px-3 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 cursor-pointer"
+                                  @click="onDelete(item)"
+                                >
+                                  <UIcon name="i-heroicons-trash" class="w-4 h-4" />
+                                  <span>Удалить</span>
+                                </button>
+                              </nav>
+                            </div>
+                          </template>
+                        </UPopover>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div v-if="!pendingList && substationsTableData.length === 0" class="p-6 text-sm text-slate-500 dark:text-slate-400">
+                <div>
+                  Пока нет подстанций
                 </div>
-                <div class="flex items-center gap-2">
-                  <UButton 
-                    :disabled="page <= 1" 
-                    @click="page = 1" 
-                    size="sm" 
-                    variant="ghost"
-                  >
-                    Первая
-                  </UButton>
-                  <UButton 
-                    :disabled="page <= 1" 
-                    @click="page = page - 1" 
-                    size="sm" 
-                    variant="ghost"
-                  >
-                    Предыдущая
-                  </UButton>
-                  <div class="flex items-center gap-1">
-                    <template v-for="pageNum in visiblePages" :key="pageNum">
-                      <UButton 
-                        v-if="pageNum !== '...'" 
-                        :variant="pageNum === page ? 'solid' : 'ghost'" 
-                        :color="pageNum === page ? 'primary' : 'neutral'" 
-                        @click="page = pageNum as number" 
-                        size="sm"
-                      >
-                        {{ pageNum }}
-                      </UButton>
-                      <span v-else class="px-2 text-slate-400">...</span>
-                    </template>
-                  </div>
-                  <UButton 
-                    :disabled="page >= totalPages" 
-                    @click="page = page + 1" 
-                    size="sm" 
-                    variant="ghost"
-                  >
-                    Следующая
-                  </UButton>
-                  <UButton 
-                    :disabled="page >= totalPages" 
-                    @click="page = totalPages" 
-                    size="sm" 
-                    variant="ghost"
-                  >
-                    Последняя
-                  </UButton>
-                </div>
+              </div>
+              <div v-if="pendingList" class="p-6"><USkeleton class="h-6 w-full" /></div>
+              <div v-if="!pendingList && hasMoreSubstations" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
+                <UButton 
+                  variant="soft" 
+                  color="neutral" 
+                  @click="substationsShown += 10"
+                  class="cursor-pointer"
+                >
+                  <UIcon name="i-heroicons-chevron-down" class="me-1" />
+                  Показать еще ({{ filteredItems.length - substationsShown }})
+                </UButton>
+              </div>
+              <div v-if="!pendingList && !hasMoreSubstations && substationsShown > 10" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center">
+                <UButton 
+                  variant="soft" 
+                  color="neutral" 
+                  @click="substationsShown = 10"
+                  class="cursor-pointer"
+                >
+                  <UIcon name="i-heroicons-chevron-up" class="me-1" />
+                  Свернуть все
+                </UButton>
               </div>
             </div>
           </div>
@@ -252,7 +397,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, h, resolveComponent, nextTick } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 definePageMeta({ middleware: 'admin', layout: 'admin' })
 
 const open = ref(false)
@@ -283,11 +428,8 @@ const regionForm = reactive({
 
 // Поиск
 const searchQuery = ref('')
-
-// Пагинация
-const page = ref(1)
-const perPage = 15
-const total = ref(0)
+const regionsShown = ref(10)
+const substationsShown = ref(10)
 
 const fetchOptions: any = { method: 'GET', credentials: 'include' }
 if (process.server) {
@@ -315,68 +457,6 @@ const filteredItems = computed(() => {
   })
 })
 
-const paginatedItems = computed(() => {
-  const start = (page.value - 1) * perPage
-  const end = start + perPage
-  const result = filteredItems.value.slice(start, end)
-  console.log('Пагинация:', { 
-    page: page.value, 
-    perPage, 
-    start, 
-    end, 
-    totalItems: filteredItems.value.length,
-    resultLength: result.length 
-  })
-  return result
-})
-const totalPages = computed(() => {
-  const pages = Math.ceil(filteredItems.value.length / perPage)
-  console.log('Общее количество страниц:', pages)
-  return pages
-})
-
-const visiblePages = computed(() => {
-  const current = page.value
-  const total = totalPages.value
-  const delta = 2
-  
-  if (total <= 7) {
-    return Array.from({ length: total }, (_, i) => i + 1)
-  }
-  
-  const pages: any[] = [1]
-  if (current > delta + 3) pages.push('...')
-  
-  for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
-    pages.push(i)
-  }
-  
-  if (current < total - delta - 2) pages.push('...')
-  if (total > 1) pages.push(total)
-  
-  return pages
-})
-
-watch(filteredItems, (newItems) => {
-  total.value = newItems.length
-  // Сбрасываем на первую страницу при изменении поиска
-  if (page.value > Math.ceil(newItems.length / perPage)) {
-    page.value = 1
-  }
-})
-
-// Сбрасываем страницу при изменении поиска
-watch(searchQuery, () => {
-  page.value = 1
-})
-
-watch(fetching, v => { pendingList.value = !!v })
-onMounted(() => { 
-  refresh()
-  loadRegions()
-})
-
-
 const regionOptions = computed(() => {
   return regions.value.map(region => ({
     label: region.name,
@@ -402,50 +482,36 @@ const filteredRegions = computed(() => {
   })
 })
 
-const regionColumns = [
-  { accessorKey: 'name', header: 'Название' },
-  { accessorKey: 'manager', header: 'Руководитель' },
-  { accessorKey: 'district', header: 'Округ' },
-  { 
-    accessorKey: 'phones', 
-    header: 'Телефоны', 
-    cell: ({ row }: { row: any }) => {
-      const phones = row.original.phones || []
-      if (phones.length === 0) return 'Не указаны'
-      return phones.map((p: any) => `${p.name}: ${p.number}`).join(', ')
-    }
-  },
-  {
-    id: 'actions', header: 'Действия',
-    cell: ({ row }: { row: any }) => h('div', { class: 'flex items-center gap-2' }, [
-      h(resolveComponent('UButton'), { size: 'xs', color: 'neutral', variant: 'soft', onClick: () => onEditRegion(row.original) }, () => 'Редактировать'),
-      h(resolveComponent('UButton'), { size: 'xs', color: 'error', variant: 'soft', onClick: () => onDeleteRegion(row.original) }, () => 'Удалить')
-    ])
-  }
-]
+const regionsTableData = computed(() => {
+  return filteredRegions.value.slice(0, regionsShown.value)
+})
 
-const columns = [
-  { accessorKey: 'name', header: 'Название' },
-  { accessorKey: 'address', header: 'Адрес' },
-  { accessorKey: 'region', header: 'Регион', cell: ({ row }: { row: any }) => row.original.region?.name || '-' },
-  { 
-    accessorKey: 'phones', 
-    header: 'Телефоны', 
-    cell: ({ row }: { row: any }) => {
-      const phones = row.original.phones || []
-      if (phones.length === 0) return ''
-      if (phones.length === 1) return phones[0]
-      return `${phones[0]} +${phones.length - 1}`
-    }
-  },
-  {
-    id: 'actions', header: 'Действия',
-    cell: ({ row }: { row: any }) => h('div', { class: 'flex items-center gap-2' }, [
-      h(resolveComponent('UButton'), { size: 'xs', color: 'neutral', variant: 'soft', onClick: () => onEdit(row.original) }, () => 'Редактировать'),
-      h(resolveComponent('UButton'), { size: 'xs', color: 'error', variant: 'soft', onClick: () => onDelete(row.original) }, () => 'Удалить')
-    ])
-  }
-]
+const hasMoreRegions = computed(() => {
+  return filteredRegions.value.length > regionsShown.value
+})
+
+const substationsTableData = computed(() => {
+  return filteredItems.value.slice(0, substationsShown.value)
+})
+
+const hasMoreSubstations = computed(() => {
+  return filteredItems.value.length > substationsShown.value
+})
+
+watch([filteredRegions, regionsSearch], () => {
+  regionsShown.value = 10
+})
+
+watch([filteredItems, searchQuery], () => {
+  substationsShown.value = 10
+})
+
+watch(fetching, v => { pendingList.value = !!v })
+onMounted(() => { 
+  refresh()
+  loadRegions()
+})
+
 
 const onAdd = () => {
   isEdit.value = false
