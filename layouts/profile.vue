@@ -44,13 +44,19 @@
             <UIcon name="i-heroicons-calendar-days" class="w-4 h-4 mr-2" />
             Смены
           </NuxtLink>
-          <NuxtLink to="/profile/bookmarks"
-            class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap"
-            exact-active-class="bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
-            inactive-class="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
-            <UIcon name="i-heroicons-bookmark" class="w-4 h-4 mr-2" />
-            Закладки
-          </NuxtLink>
+          <UDropdownMenu :items="bookmarksMenuItems" :ui="{ content: 'w-64', item: 'cursor-pointer py-2.5', group: 'p-2 space-y-1' }">
+            <button
+              type="button"
+              class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap"
+              :class="route.path.startsWith('/profile/bookmarks') 
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' 
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'"
+            >
+              <UIcon name="i-heroicons-bookmark" class="w-4 h-4 mr-2" />
+              Закладки
+              <UIcon name="i-heroicons-chevron-down" class="w-4 h-4 ml-1" />
+            </button>
+          </UDropdownMenu>
           <NuxtLink to="/profile/settings"
             class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap"
             exact-active-class="bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
@@ -142,8 +148,98 @@ const closeBottomSearch = () => {
   isBottomSearchOpen.value = false
 }
 
+// Загрузка закладок для подсчета
+const bookmarks = ref<any[]>([])
+const bookmarksLoading = ref(false)
+
+async function loadBookmarks() {
+  try {
+    bookmarksLoading.value = true
+    const res: any = await $fetch('/api/bookmarks', {
+      query: { _t: Date.now() }
+    })
+    if (res?.success) {
+      bookmarks.value = res.items || []
+    }
+  } catch (err: any) {
+    console.error('Ошибка загрузки закладок:', err)
+  } finally {
+    bookmarksLoading.value = false
+  }
+}
+
+// Меню категорий закладок
+const bookmarksMenuItems = computed(() => {
+  const bookmarkCounts = {
+    codifier: bookmarks.value.filter((b: any) => b.type === 'codifier').length,
+    drug: bookmarks.value.filter((b: any) => b.type === 'drug').length,
+    'local-status': bookmarks.value.filter((b: any) => b.type === 'local-status').length,
+    substation: bookmarks.value.filter((b: any) => b.type === 'substation').length,
+    calculator: bookmarks.value.filter((b: any) => b.type === 'calculator').length,
+    classroom: bookmarks.value.filter((b: any) => b.type === 'classroom').length
+  }
+
+  return [[
+    {
+      label: 'Все закладки',
+      icon: 'i-heroicons-bookmark',
+      onSelect: () => navigateTo('/profile/bookmarks'),
+      class: 'cursor-pointer'
+    },
+    {
+      label: 'Кодификатор',
+      icon: 'i-heroicons-document-text',
+      onSelect: () => navigateTo('/profile/bookmarks/codifier'),
+      class: 'cursor-pointer',
+      trailing: bookmarkCounts.codifier > 0 ? String(bookmarkCounts.codifier) : undefined
+    },
+    {
+      label: 'Препараты',
+      icon: 'i-lucide-pill',
+      onSelect: () => navigateTo('/profile/bookmarks/drug'),
+      class: 'cursor-pointer',
+      trailing: bookmarkCounts.drug > 0 ? String(bookmarkCounts.drug) : undefined
+    },
+    {
+      label: 'Локальные статусы',
+      icon: 'i-heroicons-clipboard-document-list',
+      onSelect: () => navigateTo('/profile/bookmarks/local-status'),
+      class: 'cursor-pointer',
+      trailing: bookmarkCounts['local-status'] > 0 ? String(bookmarkCounts['local-status']) : undefined
+    },
+    {
+      label: 'Подстанции',
+      icon: 'i-heroicons-building-office',
+      onSelect: () => navigateTo('/profile/bookmarks/substation'),
+      class: 'cursor-pointer',
+      trailing: bookmarkCounts.substation > 0 ? String(bookmarkCounts.substation) : undefined
+    },
+    {
+      label: 'Калькуляторы',
+      icon: 'i-heroicons-calculator',
+      onSelect: () => navigateTo('/profile/bookmarks/calculator'),
+      class: 'cursor-pointer',
+      trailing: bookmarkCounts.calculator > 0 ? String(bookmarkCounts.calculator) : undefined
+    },
+    {
+      label: 'Учебный класс',
+      icon: 'i-heroicons-book-open',
+      onSelect: () => navigateTo('/profile/bookmarks/classroom'),
+      class: 'cursor-pointer',
+      trailing: bookmarkCounts.classroom > 0 ? String(bookmarkCounts.classroom) : undefined
+    }
+  ]]
+})
+
 // Слушаем события от SearchBar для открытия панели поиска
 onMounted(() => {
+  loadBookmarks()
+  
+  // Слушаем обновления закладок
+  const handleBookmarksUpdated = () => {
+    loadBookmarks()
+  }
+  window.addEventListener('bookmarks-updated', handleBookmarksUpdated)
   const handleOpenBottomSearch = () => {
     isBottomSearchOpen.value = true
   }
@@ -166,6 +262,7 @@ onMounted(() => {
   setupAutoPreload()
 
   onUnmounted(() => {
+    window.removeEventListener('bookmarks-updated', handleBookmarksUpdated)
     window.removeEventListener('openBottomSearch', handleOpenBottomSearch)
     window.removeEventListener('keydown', handleGlobalHotkey as any)
   })
