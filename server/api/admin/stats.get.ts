@@ -2,7 +2,7 @@ import { defineEventHandler } from 'h3'
 import connectDB from '~/server/utils/mongodb'
 import User from '~/server/models/User'
 import Substation from '~/server/models/Substation'
-import Category from '~/server/models/Category'
+import MKBCategory from '~/server/models/MKBCategory'
 import MKB from '~/server/models/MKB'
 import Instruction from '~/server/models/Instruction'
 import LocalStatus from '~/server/models/LocalStatus'
@@ -10,6 +10,9 @@ import LocalStatusCategory from '~/server/models/LocalStatusCategory'
 import Calculator from '~/server/models/Calculator'
 import Algorithm from '~/server/models/Algorithm'
 import Drug from '~/server/models/Drug'
+import ClassroomList from '~/server/models/ClassroomList'
+import ClassroomAirway from '~/server/models/ClassroomAirway'
+import ClassroomCpr from '~/server/models/ClassroomCpr'
 
 export default defineEventHandler(async () => {
   await connectDB()
@@ -26,7 +29,10 @@ export default defineEventHandler(async () => {
     totalLocalStatusCategories,
     totalCalculators,
     totalAlgorithms,
-    totalDrugs
+    totalDrugs,
+    totalClassroomLists,
+    totalClassroomAirways,
+    totalClassroomCprs
   ] = await Promise.all([
     User.countDocuments({}),
     User.aggregate([
@@ -41,15 +47,22 @@ export default defineEventHandler(async () => {
       { $sort: { count: -1 } }
     ]),
     Substation.countDocuments({}),
-    Category.countDocuments({}),
+    MKBCategory.countDocuments({}),
     MKB.countDocuments({}),
     Instruction.countDocuments({}),
     LocalStatus.countDocuments({}),
     LocalStatusCategory.countDocuments({}),
     Calculator.countDocuments({}),
     Algorithm.countDocuments({}),
-    Drug.countDocuments({})
+    Drug.countDocuments({}),
+    ClassroomList.countDocuments({}),
+    ClassroomAirway.countDocuments({}),
+    ClassroomCpr.countDocuments({})
   ])
+
+  // Базовые разделы: Инструкции, СЛР, Проходимость дыхательных путей (всегда есть)
+  const baseSectionsCount = 3
+  const totalClassroomPages = totalClassroomLists + totalClassroomAirways + totalClassroomCprs + baseSectionsCount
 
   // Топ-10 подстанций и пользователей
   const topSubstations = usersBySubstation.slice(0, 10)
@@ -70,7 +83,7 @@ export default defineEventHandler(async () => {
       calculators: { total: totalCalculators },
       algorithms: { total: totalAlgorithms },
       drugs: { total: totalDrugs },
-      apps: { total: 0 }
+      classroom: { total: totalClassroomPages }
     }
   }
 })

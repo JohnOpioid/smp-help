@@ -20,6 +20,7 @@ export interface IUser extends Document {
   }
   avatarUrl?: string
   lastTelegramAuth?: Date
+  lastVisit?: Date
   bookmarks?: Array<{
     _id: string
     type: 'drug' | 'local-status' | 'codifier' | 'substation' | 'calculator' | 'classroom'
@@ -123,6 +124,10 @@ const UserSchema = new Schema<IUser>({
     _id: false
   },
   lastTelegramAuth: {
+    type: Date,
+    required: false
+  },
+  lastVisit: {
     type: Date,
     required: false
   },

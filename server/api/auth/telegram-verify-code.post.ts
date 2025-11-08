@@ -76,8 +76,10 @@ export default defineEventHandler(async (event) => {
       }
     }
     
-    // Сохраняем временную метку авторизации через Telegram
-    user.lastTelegramAuth = new Date()
+    // Сохраняем временную метку авторизации через Telegram и последнее посещение
+    const now = new Date()
+    user.lastTelegramAuth = now
+    user.lastVisit = now
     await user.save()
     console.log('✅ Временная метка авторизации через Telegram сохранена для пользователя:', user._id)
 

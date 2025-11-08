@@ -150,7 +150,7 @@ type AdminStats = {
   calculators?: { total: number }
   algorithms?: { total: number }
   drugs?: { total: number }
-  apps?: { total: number }
+  classroom?: { total: number }
 }
 
 const { data: statsRes, pending: pendingStats } = await useFetch<{ success: boolean; stats: AdminStats }>('/api/admin/stats')
@@ -163,7 +163,7 @@ const stats = computed<AdminStats>(() => (statsRes.value?.stats as AdminStats) |
   calculators: { total: 0 },
   algorithms: { total: 0 },
   drugs: { total: 0 },
-  apps: { total: 0 }
+  classroom: { total: 0 }
 })
 
 const topSubstationsCols = [
@@ -313,15 +313,15 @@ const dashboardCards = computed(() => [
     get: () => toNum((stats.value as any)?.drugs?.total)
   },
   {
-    key: 'apps',
-    title: 'Приложения',
-    subtitle: 'Полезные приложения',
-    icon: 'i-lucide-smartphone',
+    key: 'classroom',
+    title: 'Учебная комната',
+    subtitle: 'Учебные материалы',
+    icon: 'i-lucide-graduation-cap',
     iconBg: 'bg-teal-100 dark:bg-teal-900',
     iconColor: 'text-teal-600 dark:text-teal-400',
     type: 'single',
     singleLabel: 'Всего',
-    get: () => toNum((stats.value as any)?.apps?.total)
+    get: () => toNum((stats.value as any)?.classroom?.total)
   }
 ])
 

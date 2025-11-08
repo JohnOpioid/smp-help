@@ -77,13 +77,18 @@ export default defineEventHandler(async (event) => {
       maxAge: 60 * 60 * 24 * 7 // 7 дней
     })
 
+    // Обновляем lastVisit при логине
+    const now = new Date()
+    user.lastVisit = now
+    
     // Авто-подстановка аватара из Telegram, если не установлен вручную
     if (!user.avatarUrl && user.telegram?.photo_url) {
       try {
         user.avatarUrl = user.telegram.photo_url
-        await user.save()
       } catch {}
     }
+    
+    await user.save()
 
     return {
       success: true,

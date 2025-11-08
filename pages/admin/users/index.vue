@@ -1,6 +1,63 @@
 <template>
   <div class="flex-1">
     <div class="max-w-5xl mx-auto px-2 md:px-4 py-8">
+      <!-- Графики статистики -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        <!-- График регистраций -->
+        <div class="bg-white dark:bg-slate-800 rounded-lg p-4">
+          <div class="mb-4">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Новые пользователи</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Регистрации по дням</p>
+          </div>
+          <div v-if="loadingRegistrations" class="flex items-center justify-center min-h-[300px]">
+            <USkeleton class="h-full w-full" />
+          </div>
+          <ClientOnly v-else>
+            <AdminChart :data="registrationsData" color="#3b82f6" height="auto" />
+            <template #fallback>
+              <USkeleton class="h-[300px] w-full" />
+            </template>
+          </ClientOnly>
+        </div>
+        
+        <!-- График посещений -->
+        <div class="bg-white dark:bg-slate-800 rounded-lg p-4">
+          <div class="mb-4">
+            <div class="flex items-center justify-between mb-2">
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Посещения сайта</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Активные пользователи по дням</p>
+              </div>
+              <div v-if="!loadingVisits && visitsData.length > 0" class="text-right">
+                <div class="text-sm text-slate-600 dark:text-slate-400">Всего сегодня</div>
+                <div class="text-2xl font-bold text-slate-900 dark:text-white">
+                  {{ todayTotalVisits }}
+                </div>
+                <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  <span class="text-blue-600 dark:text-blue-400">{{ todayLoggedIn }}</span> / 
+                  <span class="text-green-600 dark:text-green-400">{{ todayGuests }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-if="loadingVisits" class="flex items-center justify-center min-h-[300px]">
+            <USkeleton class="h-full w-full" />
+          </div>
+          <ClientOnly v-else>
+            <AdminChart 
+              :data="visitsData" 
+              height="auto" 
+              :multiple-series="true"
+              :series-colors="['#3b82f6', '#10b981', '#8b5cf6']"
+              :series-names="['Залогиненные', 'Гости', 'Всего']"
+            />
+            <template #fallback>
+              <USkeleton class="h-[300px] w-full" />
+            </template>
+          </ClientOnly>
+        </div>
+      </div>
+      
       <div class="bg-white dark:bg-slate-800 rounded-lg">
         <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-2">
           <div>
@@ -98,6 +155,12 @@ const loadingMore = ref(false)
 const total = ref(0)
 const items = ref<any[]>([])
 
+// Данные для графиков
+const loadingRegistrations = ref(false)
+const loadingVisits = ref(false)
+const registrationsData = ref<Array<{ date: string; count: number }>>([])
+const visitsData = ref<Array<{ date: string; loggedIn: number; guests: number; total?: number }>>([])
+
 async function fetchPage(p: number) {
   const res: any = await $fetch(`/api/admin/users?page=${p}&limit=${limit}`, { method: 'GET' })
   total.value = Number(res?.total || 0)
@@ -107,10 +170,55 @@ async function fetchPage(p: number) {
 const users = computed<any[]>(() => items.value)
 const hasMore = computed(() => users.value.length < total.value)
 
+async function loadCharts() {
+  loadingRegistrations.value = true
+  loadingVisits.value = true
+  try {
+    const [registrationsRes, visitsRes] = await Promise.all([
+      $fetch('/api/admin/users/registrations-stats?days=30'),
+      $fetch('/api/admin/users/visits-stats?days=30')
+    ])
+    registrationsData.value = registrationsRes?.data || []
+    // Добавляем поле total (сумма залогиненных и гостей) для каждой записи
+    visitsData.value = (visitsRes?.data || []).map(item => ({
+      ...item,
+      total: (item.loggedIn || 0) + (item.guests || 0)
+    }))
+  } catch (error) {
+    console.error('Ошибка загрузки графиков:', error)
+  } finally {
+    loadingRegistrations.value = false
+    loadingVisits.value = false
+  }
+}
+
+// Вычисляем статистику за сегодня
+const todayTotalVisits = computed(() => {
+  if (!visitsData.value || visitsData.value.length === 0) return 0
+  const today = new Date().toISOString().split('T')[0]
+  const todayData = visitsData.value.find(item => item.date === today)
+  return todayData ? (todayData.loggedIn || 0) + (todayData.guests || 0) : 0
+})
+
+const todayLoggedIn = computed(() => {
+  if (!visitsData.value || visitsData.value.length === 0) return 0
+  const today = new Date().toISOString().split('T')[0]
+  const todayData = visitsData.value.find(item => item.date === today)
+  return todayData?.loggedIn || 0
+})
+
+const todayGuests = computed(() => {
+  if (!visitsData.value || visitsData.value.length === 0) return 0
+  const today = new Date().toISOString().split('T')[0]
+  const todayData = visitsData.value.find(item => item.date === today)
+  return todayData?.guests || 0
+})
+
 onMounted(async () => {
   loading.value = true
   try {
     items.value = await fetchPage(page.value)
+    await loadCharts()
   } finally {
     loading.value = false
   }
