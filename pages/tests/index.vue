@@ -17,7 +17,7 @@
           <NuxtLink :to="`/tests/${cat._id}`" class="flex items-start gap-3 px-4 py-3">
             <div class="min-w-0 flex-1">
               <p class="text-slate-900 dark:text-white font-medium truncate">{{ cat.name }}</p>
-              <p v-if="cat.description" class="text-xs text-slate-500 dark:text-slate-400 truncate mt-1">{{ cat.description }}</p>
+              <p v-if="cat.description" class="text-sm text-slate-500 dark:text-slate-400 truncate mt-1">{{ cat.description }}</p>
               <UButton
                 v-if="cat.courseLink"
                 size="xs"

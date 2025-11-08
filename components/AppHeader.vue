@@ -790,7 +790,8 @@ watch(searchQuery, (newQuery, oldQuery) => {
         algorithm: [],
         drug: [],
         substation: [],
-        calculator: []
+        calculator: [],
+        test: []
       }
     }
     return

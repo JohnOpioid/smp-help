@@ -11,6 +11,9 @@ import DrugCategory from '~/server/models/DrugCategory'
 import Substation from '~/server/models/Substation'
 import Region from '~/server/models/Region'
 import Calculator from '~/server/models/Calculator'
+import TestCategory from '~/server/models/TestCategory'
+import Test from '~/server/models/Test'
+import Setting from '~/server/models/Setting'
 import { createCyrillicLatinRegex } from '~/server/utils/textNormalization'
 
 export default defineEventHandler(async (event) => {
@@ -33,7 +36,8 @@ export default defineEventHandler(async (event) => {
           algorithm: [],
           drug: [],
           substation: [],
-          calculator: []
+          calculator: [],
+          test: []
         },
         totalResults: 0,
         query: query || ''
@@ -246,7 +250,7 @@ export default defineEventHandler(async (event) => {
       return Promise.resolve([])
     }
 
-    const [mkbResults, lsResults, algorithmResults, drugResults, substationResults, calculatorResults] = await Promise.all([
+    const [mkbResults, lsResults, algorithmResults, drugResults, substationResults, calculatorResults, testResults] = await Promise.all([
       // Поиск по МКБ - сначала точный поиск в заголовках, потом в остальных полях
       conditionalSearch('mkb', () => MKB.find(mkbQuery)
         .populate('category', 'name url')
@@ -396,7 +400,33 @@ export default defineEventHandler(async (event) => {
           { category: { $regex: new RegExp(searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').split(/\s+/).join('|'), 'i') } }
         ]
       })
-      .lean())
+      .lean()),
+      
+      // Поиск по категориям тестов (только если раздел включен)
+      conditionalSearch('test', async () => {
+        // Проверяем, включен ли раздел тестов
+        const testsEnabledDoc = await Setting.findOne({ key: 'testsEnabled' }).lean()
+        const testsEnabled = Boolean(testsEnabledDoc?.value)
+        
+        if (!testsEnabled) {
+          return [] // Возвращаем пустой массив, если раздел отключен
+        }
+        
+        return TestCategory.find({
+          isPublic: true,
+          $or: [
+            // Приоритет 1: Точный поиск в названиях
+            { name: mainSearchRegex },
+            // Приоритет 2: Расширенный поиск в названиях
+            { name: { $in: searchRegexes } },
+            // Приоритет 3: Точный поиск в описании
+            { description: mainSearchRegex },
+            // Приоритет 4: Расширенный поиск в описании
+            { description: { $in: searchRegexes } }
+          ]
+        })
+        .lean()
+      })
     ])
     
 
@@ -445,6 +475,21 @@ export default defineEventHandler(async (event) => {
       type: 'calculator',
       priority: getResultPriority(item, searchQuery, searchPatterns)
     }))
+    // Для тестов загружаем количество тестов в каждой категории
+    const testWithType = await Promise.all(testResults.map(async (item: any) => {
+      // Подсчитываем количество одобренных тестов в категории
+      const testCount = await Test.countDocuments({ 
+        category: item._id,
+        approved: true 
+      }).catch(() => 0)
+      
+      return {
+        ...item,
+        type: 'test',
+        priority: getResultPriority(item, searchQuery, searchPatterns),
+        testCount
+      }
+    }))
     
     // Логируем результаты калькуляторов для отладки
     console.log(`📊 Найдено калькуляторов: ${calculatorResults.length}`, calculatorResults.length > 0 ? calculatorResults[0].name : 'нет результатов')
@@ -458,7 +503,8 @@ export default defineEventHandler(async (event) => {
       ...algorithmWithType,
       ...drugWithType,
       ...substationWithType,
-      ...calculatorWithType
+      ...calculatorWithType,
+      ...testWithType
     ].sort((a, b) => b.priority - a.priority)
     
     // Объединяем все результаты
@@ -472,7 +518,8 @@ export default defineEventHandler(async (event) => {
       algorithm: sortedResults.filter(item => item.type === 'algorithm'),
       drug: sortedResults.filter(item => item.type === 'drug'),
       substation: sortedResults.filter(item => item.type === 'substation'),
-      calculator: sortedResults.filter(item => item.type === 'calculator')
+      calculator: sortedResults.filter(item => item.type === 'calculator'),
+      test: sortedResults.filter(item => item.type === 'test')
     }
     
     

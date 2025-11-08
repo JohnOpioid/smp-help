@@ -184,7 +184,7 @@
                   <div class="px-3 py-2 bg-slate-50/50 dark:bg-slate-800/30">
                     <div class="flex items-center gap-2 mb-2 flex-wrap">
                       <span v-if="result.mkbCode"
-                        class="bg-slate-100 dark:bg-slate-600 px-2 py-1 rounded text-xs font-mono text-slate-600 dark:text-slate-300">МКБ:
+                        class="bg-slate-100 dark:bg-slate-600 px-2 py-1 rounded text-xs font-mono text-slate-600 dark:text-slate-300">Код:
                         {{ result.mkbCode }}</span>
                       <span v-if="result.stationCode"
                         class="bg-green-100 dark:bg-green-900 px-2 py-1 rounded text-xs font-mono text-green-700 dark:text-green-300">Станция:
@@ -684,6 +684,62 @@
                 </div>
               </div>
             </template>
+
+            <!-- Тесты -->
+            <template v-if="group.key === 'test'">
+              <div class="space-y-3">
+                <div v-for="result in getDisplayedResults('test', groupedResults.test)"
+                  :key="result._id || result.id"
+                  class="bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
+                  <div class="p-3">
+                    <div class="flex items-start justify-between gap-3">
+                      <div class="flex-1 min-w-0">
+                        <h4 class="font-medium text-slate-900 dark:text-white"
+                          v-html="highlightText(result.name || result.title, searchQuery)">
+                        </h4>
+                        <p v-if="result.description"
+                          class="text-sm text-slate-600 dark:text-slate-300 mt-1"
+                          v-html="highlightText(truncateToApproximateLines(result.description, 3), searchQuery)">
+                        </p>
+                      </div>
+                      <span v-if="result.testCount !== undefined" class="text-xs px-2 py-1 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 font-mono whitespace-nowrap shrink-0">
+                        {{ result.testCount ?? 0 }} {{ getTestWord(result.testCount ?? 0) }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Разделитель между шапкой и контентом -->
+                  <div class="border-t border-slate-100 dark:border-slate-600"></div>
+
+                  <div
+                    class="px-3 pb-3 pt-0 border-t border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
+                    <div class="flex flex-wrap gap-1 pt-2">
+                      <button @click="selectSearchResult(result)"
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-full text-sm hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-lucide:check-circle-2" class="w-4 h-4" />Открыть тесты
+                      </button>
+                      <button
+                        v-if="result.courseLink"
+                        @click.stop="window.open(result.courseLink, '_blank', 'noopener,noreferrer')"
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-sm hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
+                        <UIcon name="i-heroicons-academic-cap" class="w-4 h-4" />Курс на портале
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Кнопка "Показать еще" для тестов -->
+                <div v-if="groupedResults.test.length > 3" class="flex justify-center pt-2">
+                  <button @click="toggleGroup('test')"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-1000 transition-colors border-0 cursor-pointer">
+                    <UIcon :name="expandedGroups.test ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+                      class="w-4 h-4" />
+                    {{ expandedGroups.test ? 'Скрыть' : `Показать еще ${getHiddenCount('test',
+                      groupedResults.test)} результатов` }}
+                  </button>
+                </div>
+              </div>
+            </template>
           </template>
         </div>
       </div>
@@ -704,12 +760,13 @@ const { searchHistory, addToHistory, clearHistory, removeFromHistory } = useSear
 
 // Доступные категории для фильтрации
 const availableCategories = [
-  { key: 'mkb', label: 'МКБ' },
+  { key: 'mkb', label: 'Кодификатор' },
   { key: 'ls', label: 'Локальные статусы' },
   { key: 'algorithm', label: 'Алгоритмы' },
   { key: 'drug', label: 'Препараты' },
   { key: 'substation', label: 'Подстанции' },
-  { key: 'calculator', label: 'Калькуляторы' }
+  { key: 'calculator', label: 'Калькуляторы' },
+  { key: 'test', label: 'Тесты' }
 ]
 
 
@@ -872,7 +929,7 @@ const getFoundSections = () => {
   const sections = []
 
   if (groupedResults.value.mkb && groupedResults.value.mkb.length > 0) {
-    sections.push('МКБ')
+    sections.push('Кодификатор')
   }
   if (groupedResults.value.ls && groupedResults.value.ls.length > 0) {
     sections.push('Локальные статусы')
@@ -888,6 +945,9 @@ const getFoundSections = () => {
   }
   if (groupedResults.value.calculator && groupedResults.value.calculator.length > 0) {
     sections.push('Калькуляторы')
+  }
+  if (groupedResults.value.test && groupedResults.value.test.length > 0) {
+    sections.push('Тесты')
   }
 
   return sections.join(', ')
@@ -908,17 +968,32 @@ const groupDisplayOrder = computed(() => {
   // Принудительно читаем orderedSections для реактивности
   const sections = orderedSections.value
   
+  // Если выбраны категории для фильтрации, используем их порядок
+  if (selectedCategories.value && selectedCategories.value.length > 0) {
+    // Используем порядок выбранных категорий, но добавляем все категории с результатами
+    const selectedOrder = [...selectedCategories.value]
+    const allSections = ['mkb', 'algorithm', 'ls', 'drug', 'substation', 'calculator', 'test']
+    const sectionsWithResults = Object.keys(groupedResults.value).filter(key => {
+      const results = (groupedResults.value as Record<string, any[]>)[key]
+      return results && results.length > 0
+    })
+    // Добавляем категории с результатами, которые не выбраны, в конец
+    const remaining = sectionsWithResults.filter(s => !selectedOrder.includes(s))
+    return [...selectedOrder.filter(s => sectionsWithResults.includes(s)), ...remaining]
+  }
+  
   // Если мы находимся на конкретной странице раздела, приоритет этому разделу
   if (context && context !== 'default' && context !== 'general') {
       const contextOrder: Record<string, string[]> = {
-        'algorithm': ['algorithm', 'mkb', 'ls', 'drug', 'substation', 'calculator'],
-        'mkb': ['mkb', 'algorithm', 'ls', 'drug', 'substation', 'calculator'],
-        'ls': ['ls', 'mkb', 'algorithm', 'drug', 'substation', 'calculator'],
-        'drug': ['drug', 'algorithm', 'mkb', 'ls', 'substation', 'calculator'],
-        'substation': ['substation', 'mkb', 'ls', 'algorithm', 'drug', 'calculator'],
-        'calculator': ['calculator', 'algorithm', 'mkb', 'ls', 'drug', 'substation']
+        'algorithm': ['algorithm', 'mkb', 'ls', 'drug', 'substation', 'calculator', 'test'],
+        'mkb': ['mkb', 'algorithm', 'ls', 'drug', 'substation', 'calculator', 'test'],
+        'ls': ['ls', 'mkb', 'algorithm', 'drug', 'substation', 'calculator', 'test'],
+        'drug': ['drug', 'algorithm', 'mkb', 'ls', 'substation', 'calculator', 'test'],
+        'substation': ['substation', 'mkb', 'ls', 'algorithm', 'drug', 'calculator', 'test'],
+        'calculator': ['calculator', 'algorithm', 'mkb', 'ls', 'drug', 'substation', 'test'],
+        'test': ['test', 'mkb', 'algorithm', 'ls', 'drug', 'substation', 'calculator']
       }
-      return contextOrder[context] || ['mkb', 'algorithm', 'ls', 'drug', 'substation', 'calculator']
+      return contextOrder[context] || ['mkb', 'algorithm', 'ls', 'drug', 'substation', 'calculator', 'test']
   }
   
   // Для главной страницы используем порядок с сервера (отсортированный по количеству результатов)
@@ -933,7 +1008,7 @@ const groupDisplayOrder = computed(() => {
   })
   
   // Добавляем разделы, которые есть в groupedResults, но не в serverOrder
-  const allSections = ['mkb', 'algorithm', 'ls', 'drug', 'substation', 'calculator']
+  const allSections = ['mkb', 'algorithm', 'ls', 'drug', 'substation', 'calculator', 'test']
   const remainingSections = allSections.filter(section => !serverOrder.includes(section))
   
   return [...serverOrder, ...remainingSections]
@@ -950,7 +1025,7 @@ const orderedGroups = computed(() => {
       let title = ''
       switch (groupKey) {
         case 'mkb':
-          title = 'МКБ'
+          title = 'Кодификатор'
           break
         case 'ls':
           title = 'Локальные статусы'
@@ -967,6 +1042,9 @@ const orderedGroups = computed(() => {
         case 'calculator':
           title = 'Калькуляторы'
           break
+        case 'test':
+          title = 'Тесты'
+          break
       }
       groups.push({ key: groupKey, title, results })
     }
@@ -982,12 +1060,23 @@ const expandedGroups = ref<Record<string, boolean>>({
   algorithm: false,
   drug: false,
   substation: false,
-  calculator: false
+  calculator: false,
+  test: false
 })
 
 // Функции для управления развертыванием групп
 const toggleGroup = (groupName: string) => {
   expandedGroups.value[groupName] = !expandedGroups.value[groupName]
+}
+
+// Функция для правильного склонения слова "тест"
+function getTestWord(count: number): string {
+  const lastDigit = count % 10
+  const lastTwoDigits = count % 100
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 14) return 'тестов'
+  if (lastDigit === 1) return 'тест'
+  if (lastDigit >= 2 && lastDigit <= 4) return 'теста'
+  return 'тестов'
 }
 
 // Получение отображаемых результатов для каждой группы

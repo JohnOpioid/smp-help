@@ -30,7 +30,8 @@ export const useGlobalSearch = () => {
         algorithm: [],
         drug: [],
         substation: [],
-        calculator: []
+        calculator: [],
+        test: []
       })),
       orderedSections: useState('search.orderedSections', () => []),
       currentPageContext: useState('search.currentPageContext', () => ''),
@@ -103,6 +104,8 @@ export const useGlobalSearch = () => {
       globalState.currentPageContext.value = 'substation'
     } else if (path.startsWith('/calculators')) {
       globalState.currentPageContext.value = 'algorithm' // Калькуляторы связаны с алгоритмами
+    } else if (path.startsWith('/tests')) {
+      globalState.currentPageContext.value = 'test'
     } else {
       globalState.currentPageContext.value = 'general' // Общий поиск
     }
@@ -118,7 +121,8 @@ export const useGlobalSearch = () => {
         algorithm: [],
         drug: [],
         substation: [],
-        calculator: []
+        calculator: [],
+        test: []
       }
     }
     
@@ -145,10 +149,13 @@ export const useGlobalSearch = () => {
         groupOrder = ['substation', 'mkb', 'ls', 'algorithm', 'drug', 'calculator']
         break
       case 'calculator':
-        groupOrder = ['calculator', 'algorithm', 'mkb', 'ls', 'drug', 'substation']
+        groupOrder = ['calculator', 'algorithm', 'mkb', 'ls', 'drug', 'substation', 'test']
+        break
+      case 'test':
+        groupOrder = ['test', 'mkb', 'algorithm', 'ls', 'drug', 'substation', 'calculator']
         break
       default:
-        groupOrder = ['mkb', 'algorithm', 'ls', 'drug', 'substation', 'calculator']
+        groupOrder = ['mkb', 'algorithm', 'ls', 'drug', 'substation', 'calculator', 'test']
     }
     
     // Переупорядочиваем группы согласно приоритету
@@ -200,7 +207,9 @@ export const useGlobalSearch = () => {
       ls: [],
       algorithm: [],
       drug: [],
-      substation: []
+      substation: [],
+      calculator: [],
+      test: []
     }
     globalState.orderedSections.value = []
     
@@ -304,7 +313,8 @@ export const useGlobalSearch = () => {
       algorithm: [],
       drug: [],
       substation: [],
-      calculator: []
+      calculator: [],
+      test: []
     }
     globalState.orderedSections.value = []
     // НЕ очищаем globalState.searchQuery.value - оставляем текст в инпуте
@@ -358,7 +368,9 @@ export const useGlobalSearch = () => {
         ls: [],
         algorithm: [],
         drug: [],
-        substation: []
+        substation: [],
+        calculator: [],
+        test: []
       }
       globalState.isSearching.value = false
       return
@@ -407,7 +419,8 @@ export const useGlobalSearch = () => {
             algorithm: [],
             drug: [],
             substation: [],
-            calculator: []
+            calculator: [],
+            test: []
           },
           response.orderedSections || []
         )
@@ -426,7 +439,9 @@ export const useGlobalSearch = () => {
           ls: [],
           algorithm: [],
           drug: [],
-          substation: []
+          substation: [],
+          calculator: [],
+          test: []
         }, [])
       }
     } catch (error) {
@@ -436,7 +451,9 @@ export const useGlobalSearch = () => {
         ls: [],
         algorithm: [],
         drug: [],
-        substation: []
+        substation: [],
+        calculator: [],
+        test: []
       }, [])
     } finally {
       globalState.isSearching.value = false
@@ -504,6 +521,9 @@ export const useGlobalSearch = () => {
         break
       case 'calculator':
         url = result.url || `/calculators/${result._id}`
+        break
+      case 'test':
+        url = `/tests/${result._id}`
         break
     }
     
