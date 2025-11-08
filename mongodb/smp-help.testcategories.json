@@ -9,10 +9,11 @@
     "$date": "2025-11-03T21:33:57.795Z"
   },
   "updatedAt": {
-    "$date": "2025-11-04T20:45:02.254Z"
+    "$date": "2025-11-08T22:52:30.494Z"
   },
   "__v": 0,
-  "isPublic": true
+  "isPublic": true,
+  "courseLink": "https://mos03education.ru/course/view.php?id=525"
 },
 {
   "_id": {
@@ -25,10 +26,11 @@
     "$date": "2025-11-04T16:37:24.457Z"
   },
   "updatedAt": {
-    "$date": "2025-11-04T20:45:07.345Z"
+    "$date": "2025-11-08T22:35:13.101Z"
   },
   "__v": 0,
-  "isPublic": true
+  "isPublic": true,
+  "courseLink": "https://mos03education.ru/course/view.php?id=525"
 },
 {
   "_id": {
@@ -42,9 +44,10 @@
     "$date": "2025-11-04T19:42:13.875Z"
   },
   "updatedAt": {
-    "$date": "2025-11-08T21:58:42.214Z"
+    "$date": "2025-11-08T22:35:17.866Z"
   },
-  "__v": 0
+  "__v": 0,
+  "courseLink": "https://mos03education.ru/course/view.php?id=525"
 },
 {
   "_id": {
@@ -58,9 +61,10 @@
     "$date": "2025-11-04T19:52:21.276Z"
   },
   "updatedAt": {
-    "$date": "2025-11-04T20:45:16.254Z"
+    "$date": "2025-11-08T22:36:26.152Z"
   },
-  "__v": 0
+  "__v": 0,
+  "courseLink": "https://mos03education.ru/course/view.php?id=524"
 },
 {
   "_id": {
@@ -74,9 +78,10 @@
     "$date": "2025-11-04T20:17:42.548Z"
   },
   "updatedAt": {
-    "$date": "2025-11-04T20:45:20.913Z"
+    "$date": "2025-11-08T22:36:48.921Z"
   },
-  "__v": 0
+  "__v": 0,
+  "courseLink": "https://mos03education.ru/enrol/index.php?id=500"
 },
 {
   "_id": {
@@ -90,9 +95,10 @@
     "$date": "2025-11-04T20:19:25.776Z"
   },
   "updatedAt": {
-    "$date": "2025-11-04T20:56:33.447Z"
+    "$date": "2025-11-08T22:37:09.076Z"
   },
-  "__v": 0
+  "__v": 0,
+  "courseLink": "https://mos03education.ru/course/view.php?id=501"
 },
 {
   "_id": {
