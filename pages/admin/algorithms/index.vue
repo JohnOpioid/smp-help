@@ -165,10 +165,10 @@
                   <tbody>
                     <tr v-for="cat in catsTableData" :key="cat._id" class="border-t border-slate-100 dark:border-slate-700/60">
                       <td class="p-3">
-                        <div class="text-sm text-muted">{{ (cat.sections || []).map((s: any) => s.name || s).join(', ') || '—' }}</div>
+                        <div class="text-sm text-muted">{{ ((cat as any).sections || []).map((s: any) => s.name || s).join(', ') || '—' }}</div>
                       </td>
                       <td class="p-3">
-                        <div class="text-sm text-muted whitespace-nowrap truncate" :title="cat.name">{{ cat.name }}</div>
+                        <div class="text-sm text-muted whitespace-nowrap truncate" :title="(cat as any).name">{{ (cat as any).name }}</div>
                       </td>
                       <td class="p-3 text-center whitespace-nowrap">
                         <UPopover :content="{ side: 'bottom', align: 'end', sideOffset: 8 }">
