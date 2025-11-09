@@ -828,73 +828,19 @@ if (drugId && process.server) {
         ? serverDrug.synonyms.join(', ')
         : (serverDrug.latinName || 'Информация о препарате')
 
-      // Устанавливаем мета-теги с явными hid и key для правильной перезаписи
+      // Устанавливаем мета-теги (og:image устанавливается через плагин drugs-og-image.global.ts)
       useSeoMeta({
         title,
         description,
         ogLocale: 'ru_RU',
         ogTitle: title,
         ogDescription: description,
-        ogImage: ogImageUrl,
-        ogImageType: 'image/png',
         ogImageAlt: serverDrug.name || 'Препарат',
-        ogImageWidth: '900',
-        ogImageHeight: '600',
         ogSiteName: 'Справочник СМП',
         ogType: 'website',
         ogUrl: `${baseUrlValue}${route.fullPath}`,
-        twitterCard: 'summary_large_image',
         twitterTitle: title,
         twitterDescription: description,
-        twitterImage: ogImageUrl,
-      })
-      
-      // Дополнительно устанавливаем через useHead для гарантии правильной установки
-      useHead({
-        meta: [
-          {
-            property: 'og:image',
-            content: ogImageUrl,
-            hid: 'og:image-drugs',
-            key: 'og:image-drugs'
-          },
-          {
-            property: 'og:image:secure_url',
-            content: ogImageUrl,
-            hid: 'og:image:secure_url-drugs',
-            key: 'og:image:secure_url-drugs'
-          },
-          {
-            property: 'og:image:width',
-            content: '900',
-            hid: 'og:image:width-drugs',
-            key: 'og:image:width-drugs'
-          },
-          {
-            property: 'og:image:height',
-            content: '600',
-            hid: 'og:image:height-drugs',
-            key: 'og:image:height-drugs'
-          },
-          {
-            property: 'og:image:type',
-            content: 'image/png',
-            hid: 'og:image:type-drugs',
-            key: 'og:image:type-drugs'
-          },
-          {
-            name: 'twitter:image',
-            content: ogImageUrl,
-            hid: 'twitter:image-drugs',
-            key: 'twitter:image-drugs'
-          },
-          {
-            name: 'twitter:card',
-            content: 'summary_large_image',
-            hid: 'twitter:card-drugs',
-            key: 'twitter:card-drugs'
-          }
-        ]
       })
 
       useHead({
@@ -908,7 +854,7 @@ if (drugId && process.server) {
   }
 }
 
-// Базовые мета-теги для страницы без препарата
+// Базовые мета-теги для страницы без препарата или если препарат не загрузился
 if (!serverDrug) {
   const baseUrlValue = getBaseUrl()
   useSeoMeta({
@@ -916,12 +862,11 @@ if (!serverDrug) {
     description: 'Полная информация о лекарственных препаратах и их применении',
     ogTitle: 'Лекарственные средства',
     ogDescription: 'Полная информация о лекарственных препаратах и их применении',
-    ogImage: `${baseUrlValue}/api/og-image/page?path=${encodeURIComponent('/drugs')}&w=900&h=600`,
     ogSiteName: 'Справочник СМП',
     ogType: 'website',
     ogUrl: `${baseUrlValue}${route.fullPath}`,
-    twitterCard: 'summary_large_image',
   })
+  // og:image устанавливается через плагин drugs-og-image.global.ts
 }
 
 // Пагинация по 20

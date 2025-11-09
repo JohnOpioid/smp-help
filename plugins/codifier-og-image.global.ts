@@ -2,14 +2,18 @@ export default defineNuxtPlugin({
   name: 'codifier-og-image',
   enforce: 'post', // Выполняется после всех других плагинов
   setup() {
-    // Плагин работает только на клиенте для динамического обновления мета-тегов
-    // На сервере мета-теги устанавливаются в pages/codifier/[url].vue
-    if (process.server) return
-    
     const route = useRoute()
     
     // Получаем абсолютный URL
-    const baseUrl = `${window.location.protocol}//${window.location.host}`
+    let baseUrl: string
+    if (process.server) {
+      const headers = useRequestHeaders()
+      const host = headers.host || 'localhost:3000'
+      const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
+      baseUrl = `${protocol}://${host}`
+    } else {
+      baseUrl = `${window.location.protocol}//${window.location.host}`
+    }
     
     // Функция для получения правильного URL изображения
     const getOgImageUrl = () => {
@@ -33,52 +37,67 @@ export default defineNuxtPlugin({
     
     // Вычисляем URL реактивно (без вызова composables внутри)
     const ogImageUrl = computed(() => getOgImageUrl())
+    const path = computed(() => route.path || '/')
     
-    // Устанавливаем явный meta тег для og:image (реактивно обновляется)
-    // useHead в Nuxt 3 автоматически отслеживает реактивные значения
-    useHead({
-      meta: [
-        { 
-          property: 'og:image', 
-          content: ogImageUrl,
-          hid: 'og:image-codifier',
-          key: 'og:image-codifier'
-        },
-        { 
-          property: 'og:image:secure_url', 
-          content: ogImageUrl,
-          hid: 'og:image:secure_url-codifier',
-          key: 'og:image:secure_url-codifier'
-        },
-        { 
-          property: 'og:image:width',
-          content: '900',
-          hid: 'og:image:width-codifier',
-          key: 'og:image:width-codifier'
-        },
-        { 
-          property: 'og:image:height',
-          content: '600',
-          hid: 'og:image:height-codifier',
-          key: 'og:image:height-codifier'
-        },
-        { 
-          property: 'og:image:type',
-          content: 'image/png',
-          hid: 'og:image:type-codifier',
-          key: 'og:image:type-codifier'
-        },
-        { 
-          name: 'twitter:image', 
-          content: ogImageUrl,
-          hid: 'twitter:image-codifier',
-          key: 'twitter:image-codifier'
-        }
-      ],
-      link: [
-        { rel: 'image_src', href: ogImageUrl, key: 'image_src' }
-      ]
-    })
+    // Устанавливаем мета-теги только для страниц кодификатора
+    // Используем стандартные hid для перезаписи автоматически установленных мета-тегов
+    watch([ogImageUrl, path], ([url, currentPath]) => {
+      // Устанавливаем мета-теги только для страниц кодификатора и когда URL готов
+      if (!currentPath.startsWith('/codifier') || !url) {
+        return
+      }
+      
+      // Устанавливаем мета-теги с стандартными hid для перезаписи
+      useHead({
+        meta: [
+          { 
+            property: 'og:image', 
+            content: url,
+            hid: 'og:image', // Стандартный hid для перезаписи
+            key: 'og:image-codifier'
+          },
+          { 
+            property: 'og:image:secure_url', 
+            content: url,
+            hid: 'og:image:secure_url', // Стандартный hid для перезаписи
+            key: 'og:image:secure_url-codifier'
+          },
+          { 
+            property: 'og:image:width',
+            content: '900',
+            hid: 'og:image:width',
+            key: 'og:image:width-codifier'
+          },
+          { 
+            property: 'og:image:height',
+            content: '600',
+            hid: 'og:image:height',
+            key: 'og:image:height-codifier'
+          },
+          { 
+            property: 'og:image:type',
+            content: 'image/png',
+            hid: 'og:image:type',
+            key: 'og:image:type-codifier'
+          },
+          { 
+            name: 'twitter:image', 
+            content: url,
+            hid: 'twitter:image', // Стандартный hid для перезаписи
+            key: 'twitter:image-codifier'
+          },
+          {
+            name: 'twitter:card',
+            content: 'summary_large_image',
+            hid: 'twitter:card',
+            key: 'twitter:card-codifier'
+          }
+        ],
+        link: [
+          { rel: 'image_src', href: url, key: 'image_src', hid: 'image_src' } // Стандартный key и hid для перезаписи
+        ]
+      })
+    }, { immediate: true })
   }
 })
 

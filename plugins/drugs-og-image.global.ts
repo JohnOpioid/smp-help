@@ -2,22 +2,31 @@ export default defineNuxtPlugin({
   name: 'drugs-og-image',
   enforce: 'post', // Выполняется после всех других плагинов
   setup() {
-    // Плагин работает только на клиенте для динамического обновления мета-тегов
-    // На сервере мета-теги устанавливаются в pages/drugs/index.vue
-    if (process.server) return
-    
     const route = useRoute()
     
     // Получаем абсолютный URL
-    const baseUrl = `${window.location.protocol}//${window.location.host}`
+    let baseUrl: string
+    if (process.server) {
+      const headers = useRequestHeaders()
+      const host = headers.host || 'localhost:3000'
+      const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
+      baseUrl = `${protocol}://${host}`
+    } else {
+      baseUrl = `${window.location.protocol}//${window.location.host}`
+    }
     
     // Функция для получения правильного URL изображения для препаратов
     const getOgImageUrl = () => {
       const path = route.path || '/'
       const queryId = route.query.id as string | undefined
       
+      // Только для страниц препаратов
+      if (!path.startsWith('/drugs')) {
+        return null
+      }
+      
       // Для страниц препаратов с id используем индивидуальный endpoint
-      if (path.startsWith('/drugs') && queryId && queryId.trim().length > 0) {
+      if (queryId && queryId.trim().length > 0) {
         const itemId = queryId.trim()
         // Проверяем, что id выглядит как валидный MongoDB ObjectId (24 символа hex)
         if (itemId.length >= 20) {
@@ -27,69 +36,69 @@ export default defineNuxtPlugin({
       }
       
       // Для страниц препаратов без id используем общий endpoint
-      if (path.startsWith('/drugs')) {
-        return `${baseUrl}/api/og-image/page?path=${encodeURIComponent('/drugs')}&w=900&h=600`
-      }
-      
-      return null
+      return `${baseUrl}/api/og-image/page?path=${encodeURIComponent('/drugs')}&w=900&h=600`
     }
     
-    // Вычисляем URL реактивно
+    // Вычисляем URL реактивно (без вызова composables внутри)
     const ogImageUrl = computed(() => getOgImageUrl())
+    const path = computed(() => route.path || '/')
     
     // Устанавливаем мета-теги только для страниц препаратов
-    // Используем useHead напрямую с реактивным значением
-    const path = computed(() => route.path || '/')
-    const queryId = computed(() => route.query.id as string | undefined)
-    
-    watch([ogImageUrl, path, queryId], ([url, currentPath]) => {
-      if (!url || !currentPath.startsWith('/drugs')) return
+    // Используем watch для установки мета-тегов только когда URL готов
+    watch([ogImageUrl, path], ([url, currentPath]) => {
+      // Устанавливаем мета-теги только для страниц препаратов и когда URL готов
+      if (!currentPath.startsWith('/drugs') || !url) {
+        return
+      }
       
-      // Устанавливаем og:image через useHead
+      // Устанавливаем мета-теги с стандартными hid для перезаписи автоматически установленных
       useHead({
         meta: [
-          {
-            property: 'og:image',
+          { 
+            property: 'og:image', 
             content: url,
-            hid: 'og:image-drugs',
+            hid: 'og:image', // Стандартный hid для перезаписи
             key: 'og:image-drugs'
           },
-          {
-            property: 'og:image:secure_url',
+          { 
+            property: 'og:image:secure_url', 
             content: url,
-            hid: 'og:image:secure_url-drugs',
+            hid: 'og:image:secure_url', // Стандартный hid для перезаписи
             key: 'og:image:secure_url-drugs'
           },
-          {
+          { 
             property: 'og:image:width',
             content: '900',
-            hid: 'og:image:width-drugs',
+            hid: 'og:image:width',
             key: 'og:image:width-drugs'
           },
-          {
+          { 
             property: 'og:image:height',
             content: '600',
-            hid: 'og:image:height-drugs',
+            hid: 'og:image:height',
             key: 'og:image:height-drugs'
           },
-          {
+          { 
             property: 'og:image:type',
             content: 'image/png',
-            hid: 'og:image:type-drugs',
+            hid: 'og:image:type',
             key: 'og:image:type-drugs'
           },
-          {
-            name: 'twitter:image',
+          { 
+            name: 'twitter:image', 
             content: url,
-            hid: 'twitter:image-drugs',
+            hid: 'twitter:image', // Стандартный hid для перезаписи
             key: 'twitter:image-drugs'
           },
           {
             name: 'twitter:card',
             content: 'summary_large_image',
-            hid: 'twitter:card-drugs',
+            hid: 'twitter:card',
             key: 'twitter:card-drugs'
           }
+        ],
+        link: [
+          { rel: 'image_src', href: url, key: 'image_src', hid: 'image_src' } // Стандартный key и hid для перезаписи
         ]
       })
     }, { immediate: true })
