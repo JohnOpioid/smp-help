@@ -6,14 +6,15 @@
   "scripts": {
     "prebuild": "node scripts/prepare-version.cjs",
     "build": "cross-env NODE_OPTIONS=--max-old-space-size=4096 nuxt build",
-    "build:production": "cross-env NODE_ENV=production NODE_OPTIONS=--max-old-space-size=4096 nuxt build",
+    "build:production": "cross-env NODE_ENV=production NODE_OPTIONS=--max-old-space-size=4096 NODE_OPTIONS_TIMEOUT=600000 nuxt build",
+    "build:safe": "cross-env NODE_ENV=production NODE_OPTIONS=--max-old-space-size=4096 timeout 1800 npm run build:production || (echo 'Build failed or timed out' && exit 1)",
     "dev": "nuxt dev",
     "generate": "cross-env NODE_OPTIONS=--max-old-space-size=4096 nuxt generate",
     "preview": "nuxt preview",
     "start": "cross-env NODE_ENV=production node .output/server/index.mjs",
     "postinstall": "nuxt prepare",
     "import:data": "node scripts/import-data.cjs",
-    "deploy:build": "npm run build:production",
+    "deploy:build": "npm run build:safe",
     "deploy:start": "npm run start"
   },
   "dependencies": {

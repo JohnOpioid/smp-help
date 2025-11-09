@@ -71,6 +71,9 @@ export default defineNuxtConfig({
       gzip: true,
       brotli: true
     },
+    // Оптимизация сборки для продакшена
+    minify: true,
+    sourceMap: false, // Отключаем source maps для ускорения сборки
     // Перехватываем запросы к внешним API
     hooks: {
       'ready': (nitro) => {
@@ -89,6 +92,36 @@ export default defineNuxtConfig({
         maxAge: 60 * 60 * 24 * 365 // 1 year
       }
     ]
+  },
+  vite: {
+    build: {
+      // Увеличиваем таймаут сборки
+      chunkSizeWarningLimit: 1000,
+      rollupOptions: {
+        output: {
+          // Оптимизация чанков
+          manualChunks: (id) => {
+            // Выделяем большие библиотеки в отдельные чанки
+            if (id.includes('node_modules')) {
+              if (id.includes('vue') || id.includes('vue-router')) {
+                return 'vue-vendor'
+              }
+              if (id.includes('@xenova/transformers')) {
+                return 'transformers'
+              }
+              if (id.includes('react') || id.includes('react-dom')) {
+                return 'react-vendor'
+              }
+              return 'vendor'
+            }
+          }
+        }
+      }
+    },
+    // Оптимизация для продакшена
+    optimizeDeps: {
+      exclude: ['@xenova/transformers'] // Исключаем тяжелые зависимости из оптимизации
+    }
   },
   ssr: true, // Включаем SSR для всех режимов (необходимо для OG мета-тегов)
   app: {
