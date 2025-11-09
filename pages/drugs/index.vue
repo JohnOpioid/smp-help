@@ -73,7 +73,8 @@
             <li v-if="loadingMore" class="p-4 text-center md:col-span-2 border-b-0">
               <USkeleton class="h-6 w-24 mx-auto" />
             </li>
-            <div v-if="loadingMore" ref="sentinel" class="h-1 md:col-span-2"></div>
+            <!-- Sentinel для ленивой загрузки - показываем если есть еще данные для загрузки -->
+            <div v-if="!initialLoading && items.length < total" ref="sentinel" class="h-1 md:col-span-2"></div>
           </ul>
         </div>
 
@@ -884,17 +885,61 @@ const loadingMore = ref(false)
 const sentinel = ref<HTMLElement | null>(null)
 
 async function loadPage(first = false) {
-  if (loadingMore.value) return
+  if (loadingMore.value) {
+    console.log('⏸️ Загрузка уже идет, пропускаем')
+    return
+  }
+  
+  // Проверяем, есть ли еще данные для загрузки
+  if (!first && items.value.length >= total.value) {
+    console.log('✅ Все данные загружены:', items.value.length, 'из', total.value)
+    return
+  }
+  
   loadingMore.value = true
+  
+  // При первой загрузке сбрасываем skip
+  if (first) {
+    skip.value = 0
+    items.value = []
+  }
+  
   try {
+    const currentSkip = skip.value
+    console.log(`📥 Загрузка страницы: skip=${currentSkip}, limit=${PAGE_SIZE}, first=${first}`)
+    
     const res: any = await $fetch('/api/drugs', {
-      params: { limit: PAGE_SIZE, skip: skip.value }
+      query: { limit: PAGE_SIZE, skip: currentSkip }
     })
-    if (Array.isArray(res.items)) {
-      items.value.push(...res.items)
+    
+    console.log(`📦 Получено препаратов: ${res.items?.length || 0}, всего: ${res.total || 0}`)
+    
+    if (Array.isArray(res.items) && res.items.length > 0) {
+      // Проверяем на дубликаты перед добавлением
+      const existingIds = new Set(items.value.map((item: any) => String(item._id || item.id)))
+      const newItems = res.items.filter((item: any) => {
+        const id = String(item._id || item.id)
+        return !existingIds.has(id)
+      })
+      
+      console.log(`✨ Новых препаратов (без дубликатов): ${newItems.length} из ${res.items.length}`)
+      
+      if (newItems.length > 0) {
+        items.value.push(...newItems)
+        skip.value = skip.value + PAGE_SIZE
+        console.log(`✅ Добавлено препаратов: ${newItems.length}, всего: ${items.value.length}, skip обновлен: ${skip.value}`)
+      } else {
+        console.warn('⚠️ Все полученные препараты уже есть в списке (дубликаты)')
+      }
+      
       total.value = Number(res.total || 0)
-      skip.value += PAGE_SIZE
+    } else if (Array.isArray(res.items) && res.items.length === 0) {
+      // Если вернулся пустой массив, значит больше нет данных
+      console.log('📭 Больше нет данных для загрузки')
+      total.value = items.value.length
     }
+  } catch (error) {
+    console.error('❌ Ошибка загрузки препаратов:', error)
   } finally {
     loadingMore.value = false
     if (first) initialLoading.value = false
@@ -906,14 +951,44 @@ onUnmounted(() => { try { io?.disconnect() } catch { } })
 
 onMounted(async () => {
   await loadPage(true)
+  
   // IntersectionObserver для догрузки
   io = new IntersectionObserver((entries) => {
     const entry = entries[0]
     if (entry && entry.isIntersecting) {
-      if (items.value.length < total.value) loadPage()
+      if (items.value.length < total.value && !loadingMore.value) {
+        loadPage()
+      }
     }
   })
-  if (sentinel.value && io) io.observe(sentinel.value)
+  
+  // Наблюдаем за sentinel после его появления в DOM
+  const setupObserver = () => {
+    if (sentinel.value && io) {
+      // Отключаем наблюдение за предыдущим элементом, если был
+      io.disconnect()
+      // Подключаем наблюдение за новым элементом
+      io.observe(sentinel.value)
+    }
+  }
+  
+  // Пытаемся установить observer сразу
+  await nextTick()
+  setupObserver()
+  
+  // Также следим за изменениями sentinel (когда элемент появляется/исчезает)
+  watch(sentinel, (newVal, oldVal) => {
+    if (io) {
+      // Отключаем наблюдение за старым элементом
+      if (oldVal) {
+        io.unobserve(oldVal)
+      }
+      // Подключаем наблюдение за новым элементом
+      if (newVal) {
+        io.observe(newVal)
+      }
+    }
+  })
   
   // Проверяем URL параметр для автоматического открытия модального окна
   const openDrugId = route.query.id

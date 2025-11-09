@@ -339,22 +339,52 @@ function openStatus(it: any) {
 
 async function loadPage(first = false) {
   if (loadingMore.value) return
+  
+  // Проверяем, есть ли еще данные для загрузки
+  if (!first && items.value.length >= total.value) {
+    return
+  }
+  
   loadingMore.value = true
+  
+  // При первой загрузке сбрасываем skip
+  if (first) {
+    skip.value = 0
+    items.value = []
+  }
+  
   try {
+    const currentSkip = skip.value
     const res: any = await $fetch(`/api/local-statuses/${encodeURIComponent(url)}`, {
-      params: { limit: PAGE_SIZE, skip: skip.value }
+      query: { limit: PAGE_SIZE, skip: currentSkip }
     })
-    if (Array.isArray(res.items)) {
-      items.value.push(...res.items)
+    
+    if (Array.isArray(res.items) && res.items.length > 0) {
+      // Проверяем на дубликаты перед добавлением
+      const existingIds = new Set(items.value.map((item: any) => String(item._id || item.id)))
+      const newItems = res.items.filter((item: any) => {
+        const id = String(item._id || item.id)
+        return !existingIds.has(id)
+      })
+      
+      if (newItems.length > 0) {
+        items.value.push(...newItems)
+        skip.value = skip.value + PAGE_SIZE
+      }
+      
       total.value = Number(res.total || 0)
-      skip.value += PAGE_SIZE
       category.value = res.category
       error.value = null
+    } else if (Array.isArray(res.items) && res.items.length === 0) {
+      // Если вернулся пустой массив, значит больше нет данных
+      total.value = items.value.length
+      category.value = res.category
     } else {
       error.value = res.message || 'Ошибка загрузки данных'
     }
   } catch (err: any) {
     error.value = err.message || 'Ошибка загрузки данных'
+    console.error('Ошибка загрузки локальных статусов:', err)
   } finally {
     loadingMore.value = false
     if (first) initialLoading.value = false
@@ -519,13 +549,41 @@ async function loadSpecificItem(itemId: string) {
 
 onMounted(async () => {
   await loadPage(true)
+  
+  // IntersectionObserver для догрузки
   const io = new IntersectionObserver((entries) => {
     const entry = entries[0]
     if (entry && entry.isIntersecting) {
-      if (items.value.length < total.value) loadPage()
+      if (items.value.length < total.value && !loadingMore.value) {
+        loadPage()
+      }
     }
   })
-  if (sentinel.value) io.observe(sentinel.value)
+  
+  // Наблюдаем за sentinel после его появления в DOM
+  const setupObserver = () => {
+    if (sentinel.value && io) {
+      io.observe(sentinel.value)
+    }
+  }
+  
+  // Пытаемся установить observer сразу
+  await nextTick()
+  setupObserver()
+  
+  // Также следим за изменениями sentinel (когда элемент появляется/исчезает)
+  watch(sentinel, (newVal, oldVal) => {
+    if (io) {
+      // Отключаем наблюдение за старым элементом
+      if (oldVal) {
+        io.unobserve(oldVal)
+      }
+      // Подключаем наблюдение за новым элементом
+      if (newVal) {
+        io.observe(newVal)
+      }
+    }
+  })
   
   const itemId = routeQuery.query.id as string | undefined
   if (itemId) {
