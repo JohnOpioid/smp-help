@@ -791,6 +791,89 @@ definePageMeta({ middleware: 'auth', headerTitle: 'Лекарства' })
 // Получаем route для работы с query параметрами
 const route = useRoute()
 
+// Получаем абсолютный URL для изображения
+const getBaseUrl = () => {
+  if (process.server) {
+    const headers = useRequestHeaders()
+    const host = headers.host || 'localhost:3000'
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
+    return `${protocol}://${host}`
+  }
+  if (process.client) {
+    return `${window.location.protocol}//${window.location.host}`
+  }
+  return process.env.NODE_ENV === 'production' ? 'https://helpsmp.ru' : 'http://localhost:3000'
+}
+
+// Загружаем препарат на сервере для установки мета-тегов
+const drugId = route.query.id as string | undefined
+let serverDrug: any = null
+
+if (drugId && process.server) {
+  try {
+    const { default: connectDB } = await import('~/server/utils/mongodb')
+    const Drug = (await import('~/server/models/Drug')).default
+    await connectDB()
+    serverDrug = await Drug.findById(drugId)
+      .populate('categories', 'name url')
+      .lean()
+    
+    // Устанавливаем мета-теги на сервере
+    if (serverDrug) {
+      const baseUrlValue = getBaseUrl()
+      const ogImageUrl = `${baseUrlValue}/api/og-image/page?path=${encodeURIComponent('/drugs')}&v=${drugId}&w=900&h=600`
+      const title = `${serverDrug.name} — Препарат`
+      const description = serverDrug.synonyms && serverDrug.synonyms.length > 0
+        ? serverDrug.synonyms.join(', ')
+        : (serverDrug.latinName || 'Информация о препарате')
+
+      useSeoMeta({
+        title,
+        description,
+        ogLocale: 'ru_RU',
+        ogTitle: title,
+        ogDescription: description,
+        ogImage: ogImageUrl,
+        ogImageType: 'image/png',
+        ogImageAlt: serverDrug.name || 'Препарат',
+        ogImageWidth: '900',
+        ogImageHeight: '600',
+        ogSiteName: 'Справочник СМП',
+        ogType: 'website',
+        ogUrl: `${baseUrlValue}${route.fullPath}`,
+        twitterCard: 'summary_large_image',
+        twitterTitle: title,
+        twitterDescription: description,
+        twitterImage: ogImageUrl,
+      })
+
+      useHead({
+        link: [
+          { rel: 'canonical', href: `${baseUrlValue}${route.fullPath}`, key: 'canonical' }
+        ]
+      })
+    }
+  } catch (e) {
+    console.error('Ошибка загрузки препарата на сервере для мета-тегов:', e)
+  }
+}
+
+// Базовые мета-теги для страницы без препарата
+if (!serverDrug) {
+  const baseUrlValue = getBaseUrl()
+  useSeoMeta({
+    title: 'Лекарственные средства — Справочник СМП',
+    description: 'Полная информация о лекарственных препаратах и их применении',
+    ogTitle: 'Лекарственные средства',
+    ogDescription: 'Полная информация о лекарственных препаратах и их применении',
+    ogImage: `${baseUrlValue}/api/og-image/page?path=${encodeURIComponent('/drugs')}&w=900&h=600`,
+    ogSiteName: 'Справочник СМП',
+    ogType: 'website',
+    ogUrl: `${baseUrlValue}${route.fullPath}`,
+    twitterCard: 'summary_large_image',
+  })
+}
+
 // Пагинация по 20
 const PAGE_SIZE = 20
 const items = ref<any[]>([])
