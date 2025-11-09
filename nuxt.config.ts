@@ -138,6 +138,7 @@ export default defineNuxtConfig({
     '~/plugins/fetch.client.ts',
     '~/plugins/promo.client.ts',
     '~/plugins/version.client.ts',
-    '~/plugins/seo-titles.global'
+    '~/plugins/seo-titles.global',
+    '~/plugins/codifier-og-image.global'
   ]
 })

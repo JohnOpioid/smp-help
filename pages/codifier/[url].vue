@@ -350,23 +350,21 @@ const ogImageUrlBase = itemIdForOg
   ? `${baseUrlValue}/api/codifier/og-image/${itemIdForOg}?v=${v}`
   : `${baseUrlValue}/api/codifier/og-image/${v}`
 
+// Формируем URL для og:image (используем itemId если есть, иначе базовый)
+const ogImageUrlForMeta = itemIdForOg
+  ? `${baseUrlValue}/api/codifier/og-image/${itemIdForOg}?v=${itemIdForOg}`
+  : ogImageUrlBase
+
 // Устанавливаем базовые мета-теги через useSeoMeta (работает на сервере и клиенте)
 useSeoMeta({
   ogType: 'website',
   ogUrl: `${baseUrlValue}${route.fullPath}`,
   ogSiteName: 'Справочник СМП',
-  ogImage: ogImageUrlBase,
-  ogImageSecureUrl: ogImageUrlBase,
   ogImageType: 'image/png',
   twitterCard: 'summary_large_image',
-  twitterImage: ogImageUrlBase,
 })
 
-useHead({
-  link: [
-    { rel: 'image_src', href: ogImageUrlBase }
-  ]
-})
+// og:image устанавливается через плагин codifier-og-image.global.ts
 
 if (itemId && process.server) {
   try {
@@ -390,8 +388,6 @@ if (itemId && process.server) {
         ogLocale: 'ru_RU',
         ogTitle: title,
         ogDescription: description,
-        ogImage: ogImageUrl,
-        ogImageSecureUrl: ogImageUrl,
         ogImageType: 'image/png',
         ogImageAlt: serverItem.name || 'Кодификатор',
         ogImageWidth: '900',
@@ -402,13 +398,12 @@ if (itemId && process.server) {
         twitterCard: 'summary_large_image',
         twitterTitle: title,
         twitterDescription: description,
-        twitterImage: ogImageUrl,
       })
 
+      // og:image устанавливается через плагин codifier-og-image.global.ts
       useHead({
         link: [
-          { rel: 'image_src', href: ogImageUrl },
-          { rel: 'canonical', href: `${baseUrlValue}${route.fullPath}` }
+          { rel: 'canonical', href: `${baseUrlValue}${route.fullPath}`, key: 'canonical' }
         ]
       })
     }
@@ -730,7 +725,6 @@ if (process.client) {
       description: item.note || `МКБ-10: ${item.mkbCode}${item.stationCode ? ` | Код станции: ${item.stationCode}` : ''}`,
       ogTitle: `${item.name} — Кодификатор`,
       ogDescription: item.note || `МКБ-10: ${item.mkbCode}${item.stationCode ? ` | Код станции: ${item.stationCode}` : ''}`,
-      ogImage: imageUrl,
       ogImageAlt: item.name || 'Кодификатор',
       ogImageWidth: '1200',
       ogImageHeight: '630',
@@ -739,7 +733,27 @@ if (process.client) {
       twitterCard: 'summary_large_image',
       twitterTitle: `${item.name} — Кодификатор`,
       twitterDescription: item.note || `МКБ-10: ${item.mkbCode}${item.stationCode ? ` | Код станции: ${item.stationCode}` : ''}`,
-      twitterImage: imageUrl,
+    })
+    
+    // Явный meta тег для og:image (обновляется на клиенте)
+    useHead({
+      meta: [
+        { 
+          property: 'og:image', 
+          content: imageUrl,
+          hid: 'og:image'
+        },
+        { 
+          property: 'og:image:secure_url', 
+          content: imageUrl,
+          hid: 'og:image:secure_url'
+        },
+        { 
+          name: 'twitter:image', 
+          content: imageUrl,
+          hid: 'twitter:image'
+        }
+      ]
     })
   }, { immediate: true })
 }
