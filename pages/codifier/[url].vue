@@ -300,6 +300,7 @@ if (itemId && process.server) {
         ogLocale: 'ru_RU',
         ogTitle: title,
         ogDescription: description,
+        ogImage: ogImageUrl,
         ogImageType: 'image/png',
         ogImageAlt: serverItem.name || 'Кодификатор',
         ogImageWidth: '900',
@@ -310,10 +311,55 @@ if (itemId && process.server) {
         twitterCard: 'summary_large_image',
         twitterTitle: title,
         twitterDescription: description,
+        twitterImage: ogImageUrl,
       })
 
-      // og:image устанавливается через плагин codifier-og-image.global.ts
+      // Дополнительно устанавливаем через useHead для гарантии правильной установки
       useHead({
+        meta: [
+          {
+            property: 'og:image',
+            content: ogImageUrl,
+            hid: 'og:image-codifier',
+            key: 'og:image-codifier'
+          },
+          {
+            property: 'og:image:secure_url',
+            content: ogImageUrl,
+            hid: 'og:image:secure_url-codifier',
+            key: 'og:image:secure_url-codifier'
+          },
+          {
+            property: 'og:image:width',
+            content: '900',
+            hid: 'og:image:width-codifier',
+            key: 'og:image:width-codifier'
+          },
+          {
+            property: 'og:image:height',
+            content: '600',
+            hid: 'og:image:height-codifier',
+            key: 'og:image:height-codifier'
+          },
+          {
+            property: 'og:image:type',
+            content: 'image/png',
+            hid: 'og:image:type-codifier',
+            key: 'og:image:type-codifier'
+          },
+          {
+            name: 'twitter:image',
+            content: ogImageUrl,
+            hid: 'twitter:image-codifier',
+            key: 'twitter:image-codifier'
+          },
+          {
+            name: 'twitter:card',
+            content: 'summary_large_image',
+            hid: 'twitter:card-codifier',
+            key: 'twitter:card-codifier'
+          }
+        ],
         link: [
           { rel: 'canonical', href: `${baseUrlValue}${route.fullPath}`, key: 'canonical' }
         ]

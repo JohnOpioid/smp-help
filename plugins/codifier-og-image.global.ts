@@ -2,20 +2,14 @@ export default defineNuxtPlugin({
   name: 'codifier-og-image',
   enforce: 'post', // Выполняется после всех других плагинов
   setup() {
+    // Плагин работает только на клиенте для динамического обновления мета-тегов
+    // На сервере мета-теги устанавливаются в pages/codifier/[url].vue
+    if (process.server) return
+    
     const route = useRoute()
     
-    // Получаем абсолютный URL (вызываем composables в правильном контексте)
-    let baseUrl: string
-    if (process.server) {
-      const headers = useRequestHeaders()
-      const host = headers.host || 'localhost:3000'
-      const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
-      baseUrl = `${protocol}://${host}`
-    } else if (process.client) {
-      baseUrl = `${window.location.protocol}//${window.location.host}`
-    } else {
-      baseUrl = process.env.NODE_ENV === 'production' ? 'https://smp-help.ru' : 'http://localhost:3000'
-    }
+    // Получаем абсолютный URL
+    const baseUrl = `${window.location.protocol}//${window.location.host}`
     
     // Функция для получения правильного URL изображения
     const getOgImageUrl = () => {
@@ -47,20 +41,38 @@ export default defineNuxtPlugin({
         { 
           property: 'og:image', 
           content: ogImageUrl,
-          hid: 'og:image',
-          key: 'og:image'
+          hid: 'og:image-codifier',
+          key: 'og:image-codifier'
         },
         { 
           property: 'og:image:secure_url', 
           content: ogImageUrl,
-          hid: 'og:image:secure_url',
-          key: 'og:image:secure_url'
+          hid: 'og:image:secure_url-codifier',
+          key: 'og:image:secure_url-codifier'
+        },
+        { 
+          property: 'og:image:width',
+          content: '900',
+          hid: 'og:image:width-codifier',
+          key: 'og:image:width-codifier'
+        },
+        { 
+          property: 'og:image:height',
+          content: '600',
+          hid: 'og:image:height-codifier',
+          key: 'og:image:height-codifier'
+        },
+        { 
+          property: 'og:image:type',
+          content: 'image/png',
+          hid: 'og:image:type-codifier',
+          key: 'og:image:type-codifier'
         },
         { 
           name: 'twitter:image', 
           content: ogImageUrl,
-          hid: 'twitter:image',
-          key: 'twitter:image'
+          hid: 'twitter:image-codifier',
+          key: 'twitter:image-codifier'
         }
       ],
       link: [
