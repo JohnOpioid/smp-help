@@ -720,7 +720,7 @@
                       </button>
                       <button
                         v-if="result.courseLink"
-                        @click.stop="window.open(result.courseLink, '_blank', 'noopener,noreferrer')"
+                        @click.stop="openCourseLink(result.courseLink)"
                         class="inline-flex items-center gap-1 px-2 py-1 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-sm hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors border-0 cursor-pointer">
                         <UIcon name="i-heroicons-academic-cap" class="w-4 h-4" />Курс на портале
                       </button>
@@ -1946,6 +1946,24 @@ const openSubstationModal = (result: any) => {
 const openCalculator = (url: string) => {
   if (url) {
     navigateTo(url)
+  }
+}
+
+const openCourseLink = (url: string) => {
+  if (!url) return
+  try {
+    if (process.client && typeof window !== 'undefined' && window.open) {
+      window.open(url, '_blank', 'noopener,noreferrer')
+    } else if (process.client && typeof window !== 'undefined') {
+      // Fallback: если window.open недоступен, используем location
+      window.location.href = url
+    }
+  } catch (err) {
+    console.error('Ошибка открытия ссылки:', err)
+    // Fallback: пытаемся открыть через navigateTo
+    if (url) {
+      navigateTo(url)
+    }
   }
 }
 
