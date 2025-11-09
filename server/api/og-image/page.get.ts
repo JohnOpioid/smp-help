@@ -7,6 +7,7 @@ import connectDB from '~/server/utils/mongodb'
 import Algorithm from '~/server/models/Algorithm'
 import TestCategory from '~/server/models/TestCategory'
 import LocalStatus from '~/server/models/LocalStatus'
+import Drug from '~/server/models/Drug'
 import mongoose from 'mongoose'
 
 export default defineEventHandler(async (event) => {
@@ -81,6 +82,86 @@ export default defineEventHandler(async (event) => {
       }
     }
     
+    // Проверяем, является ли это страницей препарата (путь /drugs с ID в query параметре)
+    let drugData: { name: string; synonyms: string[]; latinName: string; latinNameWithForms: string; categories: Array<{ name: string; isAntidote: boolean }> } | null = null
+    if (path.startsWith('/drugs')) {
+      // ID препарата может быть в query.id или в query.v (версия)
+      const queryId = query.id as string | undefined
+      const versionId = query.v as string | undefined
+      const drugId = queryId || versionId
+      
+      if (drugId && mongoose.Types.ObjectId.isValid(drugId)) {
+        try {
+          await connectDB()
+          const drug = await Drug.findById(drugId)
+            .populate('categories', 'name url')
+            .lean() as any
+          if (drug && drug.name) {
+            // Используем synonyms (как в modalDescription), а не analogs
+            const synonymsArray = Array.isArray(drug.synonyms) 
+              ? drug.synonyms.map((s: any) => String(s).trim()).filter((s: string) => s.length > 0)
+              : []
+            
+            // Формируем латинское название с формами выпуска
+            let latinNameWithForms = ''
+            if (drug.latinName) {
+              const latinName = String(drug.latinName).trim()
+              const forms = drug.forms || {}
+              const doseValue = forms.doseValue
+              const doseUnit = forms.doseUnit
+              const volumeMl = forms.volumeMl
+              
+              if (doseValue && doseUnit && volumeMl) {
+                // Формат: "Sol. Adrenalini 1 mg/ml - 1 ml"
+                latinNameWithForms = `Sol. ${latinName} ${doseValue} ${doseUnit} - ${volumeMl} ml`
+              } else if (latinName) {
+                // Если нет форм, просто латинское название
+                latinNameWithForms = latinName
+              }
+            }
+            
+            // Обрабатываем категории
+            const categoriesArray: Array<{ name: string; isAntidote: boolean }> = []
+            if (Array.isArray(drug.categories)) {
+              for (const cat of drug.categories) {
+                const catName = String(cat?.name || '').trim()
+                if (catName) {
+                  const isAntidote = catName.toLowerCase().includes('антидот')
+                  categoriesArray.push({ name: catName, isAntidote })
+                }
+              }
+            }
+            
+            // Отладочная информация
+            console.log('Drug data for OG image:', {
+              id: drugId,
+              name: drug.name,
+              synonyms: drug.synonyms,
+              processedSynonyms: synonymsArray,
+              latinName: drug.latinName,
+              forms: drug.forms,
+              latinNameWithForms,
+              categories: categoriesArray
+            })
+            
+            drugData = {
+              name: String(drug.name || 'Препарат'),
+              synonyms: synonymsArray,
+              latinName: String(drug.latinName || ''),
+              latinNameWithForms,
+              categories: categoriesArray
+            }
+          } else {
+            console.warn('Препарат не найден или нет названия:', { drugId, drug: drug?.name })
+          }
+        } catch (e) {
+          console.warn('Ошибка загрузки препарата для OG изображения:', e)
+        }
+      } else {
+        console.warn('Невалидный ID препарата:', { queryId, versionId, drugId: queryId || versionId })
+      }
+    }
+    
     // Получаем название раздела из пути
     const getSectionName = (p: string): string => {
       if (p === '/' || p === '') return 'Справочник СМП'
@@ -119,6 +200,10 @@ export default defineEventHandler(async (event) => {
         // Для локальных статусов возвращаем название локального статуса как описание
         return localStatusData ? localStatusData.name : 'Локальные статусы и классификации'
       }
+      if (p.startsWith('/drugs')) {
+        // Для препаратов возвращаем название препарата как описание
+        return drugData ? drugData.name : 'Полная информация о лекарственных препаратах и их применении'
+      }
       if (p.startsWith('/calculators')) return 'Инструменты для расчета дозировок, индексов и других показателей'
       if (p.startsWith('/classroom/instructions')) return 'Учебные материалы и инструкции для медицинских работников'
       if (p.startsWith('/apps')) return 'Мобильные приложения и инструменты для СМП'
@@ -131,7 +216,6 @@ export default defineEventHandler(async (event) => {
       if (p.startsWith('/help')) return 'Справка и помощь по использованию сервиса'
       if (p.startsWith('/promo')) return 'Промо-материалы и специальные предложения'
       if (p.startsWith('/substations')) return 'Информация о подстанциях скорой медицинской помощи'
-      if (p.startsWith('/drugs')) return 'Полная информация о лекарственных препаратах и их применении'
       if (p.startsWith('/codifier')) return 'Международная классификация болезней и медицинские коды'
       return 'Алгоритмы, инструкции, кодификаторы и медицинские калькуляторы'
     }
@@ -364,41 +448,145 @@ export default defineEventHandler(async (event) => {
                     })
                   }
                   
-                  // Название раздела под логотипом (цвет как в шапке #62748E)
-                  childrenArray.push({
-                    type: 'div',
-                    props: {
-                      style: {
-                        fontSize: `${szi(42, 24)}px`,
-                        fontWeight: '600',
-                        color: '#62748E',
-                        textAlign: 'center',
-                        lineHeight: 1.2,
-                        marginBottom: `${sz(16)}px`,
-                      },
-                      children: sectionName,
-                    },
-                  })
-                  
-                  // Описание раздела под названием (для алгоритмов - название алгоритма, для тестов - название категории)
-                  if (sectionDescription) {
-                    const hasMkbCodes = (algorithmData && algorithmData.mkbCodes && algorithmData.mkbCodes.length > 0) || 
-                                       (testCategoryData && testCategoryData.mkbCodes && testCategoryData.mkbCodes.length > 0)
+                  // Категории препарата (между логотипом и названием)
+                  if (drugData && drugData.categories && drugData.categories.length > 0) {
                     childrenArray.push({
                       type: 'div',
                       props: {
                         style: {
-                          fontSize: `${szi(18, 14)}px`,
-                          fontWeight: '400',
-                          color: '#64748b',
-                          textAlign: 'center',
-                          lineHeight: 1.5,
-                          maxWidth: '80%',
-                          marginBottom: hasMkbCodes ? `${sz(16)}px` : '0',
+                          display: 'flex',
+                          flexDirection: 'row',
+                          flexWrap: 'wrap',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: `${sz(6)}px`,
+                          marginTop: `${sz(8)}px`,
+                          marginBottom: '0',
                         },
-                        children: sectionDescription,
+                        children: drugData.categories.map((cat: { name: string; isAntidote: boolean }) => ({
+                          type: 'div',
+                          props: {
+                            style: {
+                              fontSize: `${szi(12, 10)}px`,
+                              fontWeight: '400',
+                              padding: `${sz(4)}px ${sz(8)}px`,
+                              borderRadius: '4px',
+                              backgroundColor: cat.isAntidote ? '#fee2e2' : '#e2e8f0',
+                              color: cat.isAntidote ? '#991b1b' : '#475569',
+                            },
+                            children: cat.name,
+                          },
+                        })),
                       },
                     })
+                  }
+                  
+                  // Для препаратов: название препарата как крупный заголовок, синонимы и латинское название под ним
+                  if (drugData && drugData.name) {
+                    // Название препарата как крупный заголовок
+                    const hasSynonyms = drugData.synonyms && drugData.synonyms.length > 0
+                    const hasLatinName = drugData.latinNameWithForms && drugData.latinNameWithForms.length > 0
+                    const hasCategories = drugData.categories && drugData.categories.length > 0
+                    
+                    childrenArray.push({
+                      type: 'div',
+                      props: {
+                        style: {
+                          fontSize: `${szi(42, 24)}px`,
+                          fontWeight: '600',
+                          color: '#62748E',
+                          textAlign: 'center',
+                          lineHeight: 1.0,
+                          marginTop: hasCategories ? '-8px' : '0',
+                          marginBottom: (hasSynonyms || hasLatinName) ? '0' : `${sz(16)}px`,
+                        },
+                        children: drugData.name,
+                      },
+                    })
+                    
+                    // Синонимы под названием препарата
+                    if (hasSynonyms) {
+                      const synonymsText = drugData.synonyms.join(', ')
+                      console.log('Добавляем синонимы на изображение:', synonymsText)
+                      childrenArray.push({
+                        type: 'div',
+                        props: {
+                          style: {
+                            fontSize: `${szi(18, 14)}px`,
+                            fontWeight: '400',
+                            color: '#64748b',
+                            textAlign: 'center',
+                            lineHeight: 1.0,
+                            maxWidth: '80%',
+                            marginTop: '-8px',
+                            marginBottom: hasLatinName ? '0' : '0',
+                          },
+                          children: synonymsText,
+                        },
+                      })
+                    }
+                    
+                    // Латинское название с формами выпуска
+                    if (hasLatinName) {
+                      console.log('Добавляем латинское название на изображение:', drugData.latinNameWithForms)
+                      childrenArray.push({
+                        type: 'div',
+                        props: {
+                          style: {
+                            fontSize: `${szi(18, 14)}px`,
+                            fontWeight: '400',
+                            color: '#64748b',
+                            textAlign: 'center',
+                            lineHeight: 1.2,
+                            maxWidth: '80%',
+                            marginTop: '0',
+                            marginBottom: '0',
+                            fontStyle: 'italic',
+                          },
+                          children: drugData.latinNameWithForms,
+                        },
+                      })
+                    } else {
+                      console.log('Латинское название не найдено для препарата:', drugData.name)
+                    }
+                  } else {
+                    // Для остальных страниц: название раздела и описание
+                    // Название раздела под логотипом (цвет как в шапке #62748E)
+                    childrenArray.push({
+                      type: 'div',
+                      props: {
+                        style: {
+                          fontSize: `${szi(42, 24)}px`,
+                          fontWeight: '600',
+                          color: '#62748E',
+                          textAlign: 'center',
+                          lineHeight: 1.2,
+                          marginBottom: `${sz(16)}px`,
+                        },
+                        children: sectionName,
+                      },
+                    })
+                    
+                    // Описание раздела под названием (для алгоритмов - название алгоритма, для тестов - название категории)
+                    if (sectionDescription) {
+                      const hasMkbCodes = (algorithmData && algorithmData.mkbCodes && algorithmData.mkbCodes.length > 0) || 
+                                         (testCategoryData && testCategoryData.mkbCodes && testCategoryData.mkbCodes.length > 0)
+                      childrenArray.push({
+                        type: 'div',
+                        props: {
+                          style: {
+                            fontSize: `${szi(18, 14)}px`,
+                            fontWeight: '400',
+                            color: '#64748b',
+                            textAlign: 'center',
+                            lineHeight: 1.5,
+                            maxWidth: '80%',
+                            marginBottom: hasMkbCodes ? `${sz(16)}px` : '0',
+                          },
+                          children: sectionDescription,
+                        },
+                      })
+                    }
                   }
                   
                   // Для алгоритмов и тестов показываем коды МКБ в виде бейджей под описанием
