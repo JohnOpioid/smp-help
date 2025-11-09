@@ -66,6 +66,32 @@
             </div>
           </li>
         </ul>
+        
+        <!-- Футер с кнопками -->
+        <div v-if="filteredItems.length > 0" class="px-4 py-3 border-t border-slate-100 dark:border-slate-700">
+          <div class="flex items-center justify-between">
+            <button
+              v-if="category?.courseLink"
+              type="button"
+              @click="openCourseLink(category.courseLink)"
+              class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
+              title="Курс на портале"
+            >
+              <UIcon name="i-heroicons-academic-cap" class="w-4 h-4" />
+              Курс на портале
+            </button>
+            <div v-else></div>
+            <button
+              type="button"
+              @click="shareCategory"
+              class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
+              title="Поделиться"
+            >
+              <UIcon name="i-heroicons-share" class="w-4 h-4" />
+              Поделиться
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -347,6 +373,48 @@ function proposeFix(q: any) {
   formNew.answers = mapped
   activeEditQuestionId.value = String(q?._id || '')
   openModal()
+}
+
+function openCourseLink(url: string) {
+  if (!url) return
+  try {
+    if (process.client && typeof window !== 'undefined' && window.open) {
+      window.open(url, '_blank', 'noopener,noreferrer')
+    } else if (process.client && typeof window !== 'undefined') {
+      // Fallback: если window.open недоступен, используем location
+      window.location.href = url
+    }
+  } catch (err) {
+    console.error('Ошибка открытия ссылки:', err)
+  }
+}
+
+async function shareCategory() {
+  try {
+    const title = category.value?.name || 'Тесты'
+    const description = category.value?.description || `Категория тестов: ${title}`
+    const urlToShare = process.client ? window.location.href : ''
+    
+    if (process.client && navigator.share) {
+      await navigator.share({
+        title,
+        text: description,
+        url: urlToShare
+      })
+    } else if (process.client) {
+      // Fallback: копируем в буфер обмена
+      const shareText = `${title}\n\n${description}\n\n${urlToShare}`
+      await navigator.clipboard?.writeText(shareText)
+      try {
+        (useToast as any)?.().add?.({ title: 'Ссылка скопирована', color: 'success' })
+      } catch {}
+    }
+  } catch (e: any) {
+    // Игнорируем ошибку, если пользователь отменил шаринг
+    if (e?.name !== 'AbortError') {
+      console.error('Ошибка при попытке поделиться:', e)
+    }
+  }
 }
 
 defineExpose({ proposeFix })

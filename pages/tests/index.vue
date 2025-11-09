@@ -13,25 +13,28 @@
     <div v-else>
       <div v-if="items.length === 0" class="text-sm text-slate-500 dark:text-slate-400">Доступных категорий пока нет</div>
       <ul class="divide-y divide-slate-100 dark:divide-slate-700">
-        <li v-for="cat in items" :key="cat._id" class="hover:bg-slate-100 dark:hover:bg-slate-700/40 cursor-pointer">
-          <NuxtLink :to="`/tests/${cat._id}`" class="flex items-start gap-3 px-4 py-3">
-            <div class="min-w-0 flex-1">
-              <p class="text-slate-900 dark:text-white font-medium truncate">{{ cat.name }}</p>
-              <p v-if="cat.description" class="text-sm text-slate-500 dark:text-slate-400 truncate mt-1">{{ cat.description }}</p>
-              <UButton
-                v-if="cat.courseLink"
-                size="xs"
-                color="slate"
-                variant="soft"
-                icon="i-heroicons-academic-cap"
-                class="mt-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600"
-                @click.stop="window.open(cat.courseLink, '_blank', 'noopener,noreferrer')"
-              >
-                Курс на портале
-              </UButton>
+        <li v-for="cat in items" :key="cat._id" class="hover:bg-slate-100 dark:hover:bg-slate-700/40">
+          <div class="flex items-start gap-3 px-4 py-3">
+            <NuxtLink :to="`/tests/${cat._id}`" class="flex items-start gap-3 flex-1 min-w-0 cursor-pointer">
+              <div class="min-w-0 flex-1">
+                <p class="text-slate-900 dark:text-white font-medium truncate">{{ cat.name }}</p>
+                <p v-if="cat.description" class="text-sm text-slate-500 dark:text-slate-400 truncate mt-1">{{ cat.description }}</p>
+                <span class="text-xs px-2 py-1 rounded bg-slate-200 text-slate-600 font-mono whitespace-nowrap inline-block mt-1.5">{{ countsMap[cat._id] ?? 0 }} {{ getTestWord(countsMap[cat._id] ?? 0) }}</span>
+              </div>
+            </NuxtLink>
+            <div v-if="cat.courseLink" class="flex-shrink-0">
+              <UTooltip arrow :delay-duration="0" text="Курс на портале">
+                <UButton
+                  size="md"
+                  color="neutral"
+                  variant="soft"
+                  icon="i-heroicons-academic-cap"
+                  class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 aspect-square rounded-md"
+                  @click="openCourseLink(cat.courseLink)"
+                />
+              </UTooltip>
             </div>
-            <span class="text-xs px-2 py-1 rounded bg-slate-200 text-slate-600 font-mono whitespace-nowrap">{{ countsMap[cat._id] ?? 0 }} {{ getTestWord(countsMap[cat._id] ?? 0) }}</span>
-          </NuxtLink>
+          </div>
         </li>
       </ul>
     </div>
@@ -54,6 +57,20 @@ function getTestWord(count: number): string {
   if (lastDigit === 1) return 'тест'
   if (lastDigit >= 2 && lastDigit <= 4) return 'теста'
   return 'тестов'
+}
+
+function openCourseLink(url: string) {
+  if (!url) return
+  try {
+    if (process.client && typeof window !== 'undefined' && window.open) {
+      window.open(url, '_blank', 'noopener,noreferrer')
+    } else if (process.client && typeof window !== 'undefined') {
+      // Fallback: если window.open недоступен, используем location
+      window.location.href = url
+    }
+  } catch (err) {
+    console.error('Ошибка открытия ссылки:', err)
+  }
 }
 
 onMounted(async () => {
