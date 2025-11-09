@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
         .filter((a: any) => a && String(a.text || '').trim())
         .map((a: any) => ({ text: String(a.text).trim(), isCorrect: Boolean(a.isCorrect) }))
     : []
-  if (normAnswers.length < 2) return { success: false, message: 'Нужно минимум 2 ответа' }
+  if (normAnswers.length < 1) return { success: false, message: 'Нужно хотя бы 1 ответ' }
 
   const item = await Test.create({
     category,

@@ -50,7 +50,16 @@
               <div class="flex items-center gap-2 mb-1">
                 <div class="font-medium text-slate-900 dark:text-white">{{ q.question }}</div>
                 <UBadge 
-                  v-if="q.approved !== undefined" 
+                  v-if="q.suggestion?.createdBy" 
+                  color="warning" 
+                  variant="soft" 
+                  size="xs"
+                  class="cursor-default"
+                >
+                  На модерации
+                </UBadge>
+                <UBadge 
+                  v-else-if="q.approved !== undefined" 
                   :color="q.approved ? 'success' : 'warning'" 
                   variant="soft" 
                   size="xs"

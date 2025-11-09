@@ -28,6 +28,7 @@
               <tr v-for="cat in items" :key="cat._id" class="border-t border-slate-100 dark:border-slate-700/60">
                 <td class="p-3">
                   <div class="flex items-center gap-2">
+                    <UIcon v-if="cat.hasSuggestions" name="i-heroicons-exclamation-circle" class="w-4 h-4 text-amber-500 dark:text-amber-400" title="Есть предложения на модерацию" />
                     <NuxtLink :to="`/admin/tests/${cat._id}`" class="text-slate-900 dark:text-white hover:underline">{{ cat.name }}</NuxtLink>
                     <UIcon v-if="cat.courseLink" name="i-heroicons-academic-cap" class="w-4 h-4 text-slate-500 dark:text-slate-400" title="Есть ссылка на курс" />
                   </div>

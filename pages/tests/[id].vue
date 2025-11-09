@@ -117,8 +117,8 @@
       </template>
       <template #footer>
         <div class="flex items-center justify-end gap-2 w-full">
-            <UButton variant="ghost" color="neutral" class="cursor-pointer px-3 py-2 text-sm gap-1.5" @click="closeModal">Отмена</UButton>
-            <UButton color="primary" variant="soft" class="cursor-pointer px-3 py-2 text-sm gap-1.5" @click="submitNewQuestion">Отправить</UButton>
+            <UButton variant="ghost" color="neutral" type="button" class="cursor-pointer px-3 py-2 text-sm gap-1.5" @click="closeModal">Отмена</UButton>
+            <UButton color="primary" variant="soft" type="button" :loading="pendingSubmit" class="cursor-pointer px-3 py-2 text-sm gap-1.5" @click="submitNewQuestion">Отправить</UButton>
           </div>
       </template>
     </UModal>
@@ -138,7 +138,7 @@
                   <UCheckbox v-model="ans.isCorrect" color="primary" class="mt-0.5" />
                   <UInput v-model="ans.text" placeholder="Текст ответа" class="flex-1" size="lg" />
                   <UButton
-                    v-if="idx >= 2"
+                    v-if="formNew.answers.length > 1"
                     variant="ghost"
                     color="neutral"
                     size="sm"
@@ -157,8 +157,8 @@
           </UForm>
           <div class="flex items-center gap-1.5 p-4 sm:px-6">
             <div class="flex items-center justify-end gap-2 w-full">
-              <UButton variant="ghost" color="neutral" class="cursor-pointer px-3 py-2 text-sm gap-1.5" @click="closeModal">Отмена</UButton>
-              <UButton color="primary" variant="soft" class="cursor-pointer px-3 py-2 text-sm gap-1.5" @click="submitNewQuestion">Отправить</UButton>
+              <UButton variant="ghost" color="neutral" type="button" class="cursor-pointer px-3 py-2 text-sm gap-1.5" @click="closeModal">Отмена</UButton>
+              <UButton color="primary" variant="soft" type="button" :loading="pendingSubmit" class="cursor-pointer px-3 py-2 text-sm gap-1.5" @click="submitNewQuestion">Отправить</UButton>
             </div>
           </div>
         </div>
@@ -264,8 +264,9 @@ function userDisplayName(user: any): string {
 
 // Модальное окно добавления вопроса
 const modalOpen = ref(false)
+const pendingSubmit = ref(false)
 type NewAnswer = { text: string; isCorrect: boolean }
-const formNew = reactive<{ question: string; answers: NewAnswer[] }>({ question: '', answers: [{ text: '', isCorrect: false }, { text: '', isCorrect: false }] })
+const formNew = reactive<{ question: string; answers: NewAnswer[] }>({ question: '', answers: [{ text: '', isCorrect: false }] })
 
 function openModal() {
   modalOpen.value = true
@@ -277,33 +278,63 @@ function addAnswerField() {
   formNew.answers.push({ text: '', isCorrect: false })
 }
 function removeAnswerField(index: number) {
-  if (formNew.answers.length > 2) formNew.answers.splice(index, 1)
+  if (formNew.answers.length > 1) formNew.answers.splice(index, 1)
 }
 async function submitNewQuestion() {
-  if (!formNew.question.trim()) return
-  let res: any
-  if (activeEditQuestionId.value) {
-    // Предложение исправления существующего вопроса
-    const payload = {
-      question: formNew.question.trim(),
-      answers: formNew.answers.map(a => ({ text: a.text, isCorrect: a.isCorrect }))
-    }
-    res = await $fetch(`/api/tests/${activeEditQuestionId.value}/suggestion`, { method: 'POST', body: payload })
-  } else {
-    // Предложение нового вопроса
-    const payload = {
-      category: categoryId.value,
-      question: formNew.question.trim(),
-      answers: formNew.answers.map(a => ({ text: a.text, isCorrect: a.isCorrect }))
-    }
-    res = await $fetch('/api/tests/public', { method: 'POST', body: payload })
+  // Проверяем авторизацию
+  if (!isLoggedIn.value) {
+    try { (useToast as any)?.().add?.({ title: 'Требуется авторизация', description: 'Войдите в систему, чтобы предложить исправление', color: 'error' }) } catch {}
+    return
   }
-  if (res?.success) {
-    try { (useToast as any)?.().add?.({ title: 'Отправлено на модерацию', description: 'Вопрос появится после одобрения администратором', color: 'neutral' }) } catch {}
-    closeModal()
-    formNew.question = ''
-    formNew.answers = [{ text: '', isCorrect: false }, { text: '', isCorrect: false }]
-    activeEditQuestionId.value = ''
+  
+  if (!formNew.question.trim()) {
+    try { (useToast as any)?.().add?.({ title: 'Ошибка', description: 'Введите текст вопроса', color: 'error' }) } catch {}
+    return
+  }
+  
+  // Проверяем, что есть хотя бы 1 ответ с текстом
+  const validAnswers = formNew.answers.filter(a => a.text.trim())
+  if (validAnswers.length < 1) {
+    try { (useToast as any)?.().add?.({ title: 'Ошибка', description: 'Нужно хотя бы 1 ответ', color: 'error' }) } catch {}
+    return
+  }
+  
+  pendingSubmit.value = true
+  try {
+    let res: any
+    if (activeEditQuestionId.value) {
+      // Предложение исправления существующего вопроса
+      const payload = {
+        question: formNew.question.trim(),
+        answers: formNew.answers.map(a => ({ text: a.text.trim(), isCorrect: a.isCorrect })).filter(a => a.text)
+      }
+      res = await $fetch(`/api/tests/${activeEditQuestionId.value}/suggestion`, { method: 'POST', body: payload })
+    } else {
+      // Предложение нового вопроса
+      const payload = {
+        category: categoryId.value,
+        question: formNew.question.trim(),
+        answers: formNew.answers.map(a => ({ text: a.text.trim(), isCorrect: a.isCorrect })).filter(a => a.text)
+      }
+      res = await $fetch('/api/tests/public', { method: 'POST', body: payload })
+    }
+    
+    if (res?.success) {
+      try { (useToast as any)?.().add?.({ title: 'Отправлено на модерацию', description: 'Вопрос появится после одобрения администратором', color: 'success' }) } catch {}
+      closeModal()
+      formNew.question = ''
+      formNew.answers = [{ text: '', isCorrect: false }]
+      activeEditQuestionId.value = ''
+    } else {
+      const errorMsg = res?.message || 'Не удалось отправить предложение'
+      try { (useToast as any)?.().add?.({ title: 'Ошибка', description: errorMsg, color: 'error' }) } catch {}
+    }
+  } catch (error: any) {
+    console.error('Ошибка при отправке предложения:', error)
+    const errorMsg = error?.data?.message || error?.message || 'Не удалось отправить предложение. Проверьте, что вы авторизованы.'
+    try { (useToast as any)?.().add?.({ title: 'Ошибка', description: errorMsg, color: 'error' }) } catch {}
+  } finally {
+    pendingSubmit.value = false
   }
 }
 
@@ -311,8 +342,8 @@ function proposeFix(q: any) {
   // Заполняем форму текущими данными вопроса
   formNew.question = String(q?.question || '')
   const mapped = Array.isArray(q?.answers) ? q.answers.map((a: any) => ({ text: String(a?.text || ''), isCorrect: Boolean(a?.isCorrect) })) : []
-  // Гарантируем минимум 2 ответа
-  while (mapped.length < 2) mapped.push({ text: '', isCorrect: false })
+  // Если нет ответов, добавляем один пустой
+  if (mapped.length === 0) mapped.push({ text: '', isCorrect: false })
   formNew.answers = mapped
   activeEditQuestionId.value = String(q?._id || '')
   openModal()
