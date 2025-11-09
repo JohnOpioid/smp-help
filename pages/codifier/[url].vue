@@ -144,58 +144,14 @@
               <UIcon :name="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'" class="w-4 h-4" />
               {{ isBookmarked ? 'В избранном' : 'В закладки' }}
             </button>
-            <div ref="shareRef" class="relative flex-1">
-              <button 
-                type="button" 
-                title="Поделиться"
-                @click="toggleShareMenu()"
-                class="w-full rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer justify-center items-center"
-              >
-                <UIcon name="i-heroicons-share" class="w-4 h-4" />
-                Поделиться
-              </button>
-              <div v-if="shareMenuOpen" class="absolute right-0 bottom-full mb-2 z-50 w-72 sm:w-80 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg p-3">
-                <div class="rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                  <div class="relative w-full aspect-[3/2]">
-                    <div v-if="!shareOgUrl || !shareImageLoaded" class="absolute inset-0 z-10 flex items-center justify-center bg-slate-50 dark:bg-slate-800 pointer-events-none">
-                      <div class="flex flex-col items-center gap-3">
-                        <div class="w-8 h-8 border-4 border-slate-200 dark:border-slate-700 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin"></div>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Загрузка изображения...</p>
-                      </div>
-                    </div>
-                    <img :src="shareOgUrl" alt="preview" class="absolute inset-0 z-0 w-full h-full object-cover transition-opacity" :class="{ 'opacity-0': !shareImageLoaded, 'opacity-100': shareImageLoaded }" @load="shareImageLoaded = true" @error="shareImageLoaded = false" />
-                  </div>
-                </div>
-                <div class="mt-2 grid grid-cols-2 gap-2">
-                  <button type="button" :disabled="!selectedItem" @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
-                    <UIcon name="i-heroicons-share" class="w-4 h-4" />Поделиться
-                  </button>
-                  <button type="button" :disabled="!selectedItem" @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop.prevent="downloadImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
-                    <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />Сохранить
-                  </button>
-                </div>
-                <div class="mt-2 relative">
-                  <input
-                    v-if="directShareUrl"
-                    :value="directShareUrl"
-                    readonly
-                    @pointerdown.stop.prevent
-                    @mousedown.stop.prevent
-                    @click.stop.prevent="copyShareLink"
-                    class="w-full text-xs pl-3 pr-9 py-2 rounded-md border-0 focus:outline-none focus:ring-0 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 cursor-pointer select-none caret-transparent"
-                  />
-                  <span
-                    v-if="directShareUrl"
-                    class="absolute inset-y-0 right-2 inline-flex items-center text-slate-500 hover:text-slate-700 dark:text-slate-300 dark:hover:text-slate-100 cursor-pointer"
-                    @pointerdown.stop.prevent
-                    @mousedown.stop.prevent
-                    @click.stop.prevent="copyShareLink"
-                    title="Копировать ссылку"
-                  >
-                    <UIcon name="i-heroicons-clipboard" class="w-4 h-4" />
-                  </span>
-                </div>
-              </div>
+            <div class="flex-1">
+              <ShareButton
+                :title="selectedItem?.name ? `${selectedItem.name} — Кодификатор` : 'Кодификатор'"
+                :description="selectedItem?.note || (selectedItem ? `МКБ-10: ${selectedItem.mkbCode}${selectedItem.stationCode ? ` | Код станции: ${selectedItem.stationCode}` : ''}` : '')"
+                :image-id="(route.query.id as string) || selectedItem?._id"
+                image-type="codifier"
+                section-name="Кодификатор"
+              />
             </div>
             </div>
         </template>
@@ -252,58 +208,14 @@
                   <UIcon :name="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'" class="w-4 h-4" />
                   {{ isBookmarked ? 'В избранном' : 'В закладки' }}
                 </button>
-                <div ref="shareRef" class="relative flex-1">
-                  <button 
-                    type="button" 
-                    title="Поделиться"
-                    @click="toggleShareMenu()"
-                    class="w-full rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer justify-center items-center"
-                  >
-                    <UIcon name="i-heroicons-share" class="w-4 h-4" />
-                    Поделиться
-                  </button>
-              <div v-if="shareMenuOpen" class="absolute right-0 bottom-full mb-2 z-50 w-72 sm:w-80 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg p-3">
-                    <div class="rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                      <div class="relative w-full aspect-[3/2]">
-                        <div v-if="!shareOgUrl || !shareImageLoaded" class="absolute inset-0 z-10 flex items-center justify-center bg-slate-50 dark:bg-slate-800 pointer-events-none">
-                          <div class="flex flex-col items-center gap-3">
-                            <div class="w-8 h-8 border-4 border-slate-200 dark:border-slate-700 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin"></div>
-                            <p class="text-xs text-slate-500 dark:text-slate-400">Загрузка изображения...</p>
-                          </div>
-                        </div>
-                        <img v-if="shareOgUrl" :src="shareOgUrl" alt="preview" class="absolute inset-0 z-0 w-full h-full object-cover transition-opacity" :class="{ 'opacity-0': !shareImageLoaded, 'opacity-100': shareImageLoaded }" @load="shareImageLoaded = true" @error="shareImageLoaded = false" />
-                      </div>
-                    </div>
-                    <div class="mt-2 grid grid-cols-2 gap-2">
-                      <button type="button" :disabled="!selectedItem" @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop="shareImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
-                        <UIcon name="i-heroicons-share" class="w-4 h-4" />Поделиться
-                      </button>
-                      <button type="button" :disabled="!selectedItem" @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop.prevent="downloadImage" class="rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
-                        <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />Сохранить
-                      </button>
-                    </div>
-                    <div class="mt-2 relative">
-                      <input
-                        v-if="directShareUrl"
-                        :value="directShareUrl"
-                        readonly
-                        @pointerdown.stop.prevent
-                        @mousedown.stop.prevent
-                        @click.stop.prevent="copyShareLink"
-                        class="w-full text-xs pl-3 pr-9 py-2 rounded-md border-0 focus:outline-none focus:ring-0 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 cursor-pointer select-none caret-transparent"
-                      />
-                      <span
-                        v-if="directShareUrl"
-                        class="absolute inset-y-0 right-2 inline-flex items-center text-slate-500 hover:text-slate-700 dark:text-slate-300 dark:hover:text-slate-100 cursor-pointer"
-                        @pointerdown.stop.prevent
-                        @mousedown.stop.prevent
-                        @click.stop.prevent="copyShareLink"
-                        title="Копировать ссылку"
-                      >
-                        <UIcon name="i-heroicons-clipboard" class="w-4 h-4" />
-                      </span>
-                    </div>
-                  </div>
+                <div class="flex-1">
+                  <ShareButton
+                    :title="selectedItem?.name ? `${selectedItem.name} — Кодификатор` : 'Кодификатор'"
+                    :description="selectedItem?.note || (selectedItem ? `МКБ-10: ${selectedItem.mkbCode}${selectedItem.stationCode ? ` | Код станции: ${selectedItem.stationCode}` : ''}` : '')"
+                    :image-id="(route.query.id as string) || selectedItem?._id"
+                    image-type="codifier"
+                    section-name="Кодификатор"
+                  />
                 </div>
               </div>
             </div>
@@ -628,135 +540,62 @@ const modalOpen = ref(false)
 const selectedItem = ref<any>(null)
 const isBookmarked = ref(false)
 const userBookmarks = ref<any[]>([])
-const shareMenuOpen = ref(false)
-const shareRef = ref<HTMLElement | null>(null)
-const shareImageLoaded = ref(false)
-const shareFile = ref<File | null>(null)
-// Кнопку «Поделиться» разрешаем при наличии элемента; файл подгрузим в обработчике при необходимости
-const canShareNow = computed(() => !!selectedItem.value)
 
-// Прямая ссылка для копирования
-const directShareUrl = computed(() => {
-  const id = (route.query.id as string) || (selectedItem.value?._id as string)
-  if (!id) return ''
-  const base = getBaseUrl()
-  return `${base}${route.path}?id=${id}`
+// Используем composable для SEO и поделиться
+const { seoData } = useSeoShare({
+  title: computed(() => selectedItem.value?.name ? `${selectedItem.value.name} — Кодификатор` : 'Кодификатор'),
+  description: computed(() => {
+    if (!selectedItem.value) return ''
+    return selectedItem.value.note || `МКБ-10: ${selectedItem.value.mkbCode}${selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''}`
+  }),
+  imageId: computed(() => (route.query.id as string) || selectedItem.value?._id),
+  imageType: 'codifier',
+  sectionName: 'Кодификатор'
 })
 
-function onGlobalClick(e: MouseEvent) {
-  const root = shareRef.value
-  if (!root) return
-  const target = e.target as Node
-  if (shareMenuOpen.value && target && !root.contains(target)) {
-    shareMenuOpen.value = false
+// Обновляем мета-теги при изменении selectedItem или route.query.id
+watch([selectedItem, () => route.query.id, () => seoData.value], ([item, itemId, seo]) => {
+  if (!item || !itemId || !seo.ogImageUrl) {
+    return
   }
-}
-
-onMounted(() => {
-  if (process.client) {
-    document.addEventListener('click', onGlobalClick)
-  }
-})
-
-onUnmounted(() => {
-  if (process.client) {
-    document.removeEventListener('click', onGlobalClick)
-  }
-})
-
-function toggleShareMenu() {
-  shareMenuOpen.value = !shareMenuOpen.value
-  if (shareMenuOpen.value) {
-    shareImageLoaded.value = false
-    shareFile.value = null
-    // Предзагрузка файла для сохранения «жеста» на шаринг
-    getOgImageFile().then((f) => {
-      if (f) {
-        shareFile.value = f
+  
+  // Используем useSeoMeta для правильной установки мета-тегов
+  useSeoMeta({
+    title: seo.title,
+    description: seo.description,
+    ogTitle: seo.title,
+    ogDescription: seo.description,
+    ogImageAlt: item.name || 'Кодификатор',
+    ogImageWidth: '1200',
+    ogImageHeight: '630',
+    ogType: 'website',
+    ogUrl: seo.pageUrl,
+    twitterCard: 'summary_large_image',
+    twitterTitle: seo.title,
+    twitterDescription: seo.description,
+  })
+  
+  // Явный meta тег для og:image (обновляется на клиенте)
+  useHead({
+    meta: [
+      { 
+        property: 'og:image', 
+        content: seo.ogImageUrl,
+        hid: 'og:image'
+      },
+      { 
+        property: 'og:image:secure_url', 
+        content: seo.ogImageUrl,
+        hid: 'og:image:secure_url'
+      },
+      { 
+        name: 'twitter:image', 
+        content: seo.ogImageUrl,
+        hid: 'twitter:image'
       }
-    }).catch(() => {})
-  }
-}
-
-async function copyShareLink(e?: Event) {
-  try {
-    const value = directShareUrl.value
-    if (!value) return
-    await navigator.clipboard.writeText(value)
-    try { document.getSelection()?.removeAllRanges() } catch {}
-    // @ts-ignore
-    const toast = useToast?.()
-    toast?.add?.({ title: 'Ссылка скопирована', color: 'primary' })
-  } catch (_) {
-    // @ts-ignore
-    const toast = useToast?.()
-    toast?.add?.({ title: 'Не удалось скопировать', color: 'error' })
-  }
-}
-
-// Мета-теги для OG изображения
-const ogImageUrl = computed(() => {
-  const itemId = route.query.id as string | undefined
-  if (!itemId) return undefined
-  const baseUrl = getBaseUrl()
-  // Клиентская версия с версионированием, чтобы платформа не брала старый кеш
-  return `${baseUrl}/api/codifier/og-image/${itemId}?v=${itemId}`
-})
-
-// URL для превью в поповере: используем id из query либо из выбранного элемента
-const shareOgUrl = computed(() => {
-  const baseUrl = getBaseUrl()
-  const qid = route.query.id as string | undefined
-  const sid = selectedItem.value?._id as string | undefined
-  const id = qid || sid
-  return id ? `${baseUrl}/api/codifier/og-image/${id}?v=${id}&w=900&h=600` : undefined
-})
-
-// Обновляем мета-теги на клиенте при изменении selectedItem или route.query.id
-if (process.client) {
-  watch([selectedItem, () => route.query.id, ogImageUrl], ([item, itemId, imageUrl]) => {
-    if (!item || !itemId || !imageUrl) {
-      return
-    }
-    
-    // Используем useSeoMeta для правильной установки мета-тегов
-    useSeoMeta({
-      title: `${item.name} — Кодификатор`,
-      description: item.note || `МКБ-10: ${item.mkbCode}${item.stationCode ? ` | Код станции: ${item.stationCode}` : ''}`,
-      ogTitle: `${item.name} — Кодификатор`,
-      ogDescription: item.note || `МКБ-10: ${item.mkbCode}${item.stationCode ? ` | Код станции: ${item.stationCode}` : ''}`,
-      ogImageAlt: item.name || 'Кодификатор',
-      ogImageWidth: '1200',
-      ogImageHeight: '630',
-      ogType: 'website',
-      ogUrl: window.location.href,
-      twitterCard: 'summary_large_image',
-      twitterTitle: `${item.name} — Кодификатор`,
-      twitterDescription: item.note || `МКБ-10: ${item.mkbCode}${item.stationCode ? ` | Код станции: ${item.stationCode}` : ''}`,
-    })
-    
-    // Явный meta тег для og:image (обновляется на клиенте)
-    useHead({
-      meta: [
-        { 
-          property: 'og:image', 
-          content: imageUrl,
-          hid: 'og:image'
-        },
-        { 
-          property: 'og:image:secure_url', 
-          content: imageUrl,
-          hid: 'og:image:secure_url'
-        },
-        { 
-          name: 'twitter:image', 
-          content: imageUrl,
-          hid: 'twitter:image'
-        }
-      ]
-    })
-  }, { immediate: true })
-}
+    ]
+  })
+}, { immediate: true })
 
 
 
@@ -913,123 +752,7 @@ async function shareItem() {
   }
 }
 
-// Получить File с OG-изображением (без сохранения на устройство)
-async function getOgImageFile(): Promise<File | null> {
-  const imageUrl = shareOgUrl.value || ogImageUrl.value
-  if (!imageUrl) return null
-  try {
-    const res = await fetch(imageUrl, { cache: 'no-store' })
-    if (!res.ok) return null
-    const blob = await res.blob()
-    return new File([blob], 'codifier-og.png', { type: 'image/png' })
-  } catch {
-    return null
-  }
-}
-
-// Поделиться изображением через Web Share API (если поддерживается)
-const { shareToTelegram, shareToWhatsApp, shareNative } = useShare()
-const { isSupported: wshareSupported, shareFiles: wshareFiles } = useWebShare()
-
-async function shareImage() {
-  if (!selectedItem.value) return
-  if (shareMenuOpen.value) shareMenuOpen.value = false
-
-  const file = shareFile.value || await getOgImageFile()
-  const name = selectedItem.value.name || 'Кодификатор'
-  const mkb = selectedItem.value.mkbCode ? `МКБ-10: ${selectedItem.value.mkbCode}` : ''
-  const station = selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''
-  const text = `${name}\n${mkb}${station}\n\n${window.location.href}`
-
-  // 1) Нативный шаринг с файлом
-  if (file && wshareSupported) {
-    // Подстраховка: копируем текст заранее, т.к. некоторые приложения игнорируют text с файлами
-    try { await navigator.clipboard?.writeText?.(text) } catch {}
-    const res = await wshareFiles([file], { title: `${name} — Кодификатор`, text })
-    if (res.success) return
-  }
-
-  // 2) Нативный шаринг без файла (текст + ссылка)
-  try {
-    // @ts-ignore
-    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-      // @ts-ignore
-      await navigator.share({ title: `${name} — Кодификатор`, text })
-      return
-    }
-  } catch (_) {}
-
-  // 3) Фолбэк: копируем подпись и сохраняем файл «в фоне»
-  try { await navigator.clipboard?.writeText?.(text) } catch {}
-  if (file) {
-    await downloadBlob(file, 'codifier-og.png')
-  }
-  // @ts-ignore
-  const toast = useToast?.()
-  toast?.add?.({ title: 'Готово к отправке', description: 'Откройте мессенджер: подпись скопирована, файл сохранён.', color: 'primary' })
-}
-
-function shareViaWhatsApp() {
-  if (!selectedItem.value) return
-  const name = selectedItem.value.name || 'Кодификатор'
-  const mkb = selectedItem.value.mkbCode ? `МКБ-10: ${selectedItem.value.mkbCode}` : ''
-  const station = selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''
-  const base = getBaseUrl()
-  // Версионируем саму страницу, чтобы боты заново подтянули OG (обход кеша Telegram/WhatsApp)
-  const v = selectedItem.value._id || Date.now()
-  const shareUrl = `${base}${route.path}?id=${selectedItem.value._id}&v=${v}`
-  const description = `${mkb}${station}`.trim()
-  // Передаем полный текст: название + коды + ссылка
-  const fullText = `${name}${description ? `\n${description}` : ''}\n\n${shareUrl}`
-  shareToWhatsApp({ url: shareUrl, title: name, description: fullText })
-}
-
-function shareViaTelegram() {
-  if (!selectedItem.value) return
-  const name = selectedItem.value.name || 'Кодификатор'
-  const mkb = selectedItem.value.mkbCode ? `МКБ-10: ${selectedItem.value.mkbCode}` : ''
-  const station = selectedItem.value.stationCode ? ` | Код станции: ${selectedItem.value.stationCode}` : ''
-  const base = getBaseUrl()
-  const v = selectedItem.value._id || Date.now()
-  const shareUrl = `${base}${route.path}?id=${selectedItem.value._id}&v=${v}`
-  const description = `${mkb}${station}`.trim()
-  // Передаем полный текст: название + коды + ссылка
-  const fullText = `${name}${description ? `\n${description}` : ''}\n\n${shareUrl}`
-  shareToTelegram({ url: shareUrl, title: name, description: fullText })
-}
-
-// Безопасная загрузка файла, не триггеря глобальные обработчики навигации
-async function downloadBlob(file: Blob, filename: string) {
-  try {
-    const url = URL.createObjectURL(file)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    a.target = '_self'
-    a.rel = 'noopener noreferrer'
-    // Не вставляем в DOM и не диспатчим событие — прямой вызов a.click()
-    if (typeof a.click === 'function') a.click()
-    // Небольшая задержка перед очисткой URL, чтобы скачать успело начаться
-    setTimeout(() => URL.revokeObjectURL(url), 1000)
-  } catch (e) {
-    // Фолбэк: открываем системный диалог сохранения через новый таб запрещен, поэтому показываем подсказку
-    // @ts-ignore
-    const toast = useToast?.()
-    toast?.add?.({ title: 'Не удалось скачать', description: 'Попробуйте ещё раз или используйте «Поделиться».', color: 'error' })
-  }
-}
-
-// Явная загрузка изображения по запросу пользователя
-async function downloadImage() {
-  const file = await getOgImageFile()
-  if (!file) {
-    // @ts-ignore
-    const toast = useToast?.()
-    toast?.add?.({ title: 'Не удалось получить изображение', color: 'error' })
-    return
-  }
-  await downloadBlob(file, 'codifier-og.png')
-}
+// Функции поделиться теперь реализованы в компоненте ShareButton
 
 // Авто-открытие по query ?open=<id> или ?mkb=<code>
 const routeQuery = useRoute()

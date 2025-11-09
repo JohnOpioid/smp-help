@@ -6,6 +6,7 @@ import { join } from 'path'
 import connectDB from '~/server/utils/mongodb'
 import Algorithm from '~/server/models/Algorithm'
 import TestCategory from '~/server/models/TestCategory'
+import LocalStatus from '~/server/models/LocalStatus'
 import mongoose from 'mongoose'
 
 export default defineEventHandler(async (event) => {
@@ -57,6 +58,29 @@ export default defineEventHandler(async (event) => {
       }
     }
     
+    // Проверяем, является ли это страницей локального статуса с ID в query параметре
+    let localStatusData: { name: string } | null = null
+    if (path.startsWith('/local-statuses/')) {
+      // ID может быть в параметре v (версия) или в query.id
+      const versionId = query.v as string | undefined
+      const queryId = query.id as string | undefined
+      const statusId = queryId || versionId
+      
+      if (statusId && mongoose.Types.ObjectId.isValid(statusId)) {
+        try {
+          await connectDB()
+          const localStatus = await LocalStatus.findById(statusId).lean() as any
+          if (localStatus && localStatus.name) {
+            localStatusData = {
+              name: String(localStatus.name || 'Локальный статус')
+            }
+          }
+        } catch (e) {
+          console.warn('Ошибка загрузки локального статуса для OG изображения:', e)
+        }
+      }
+    }
+    
     // Получаем название раздела из пути
     const getSectionName = (p: string): string => {
       if (p === '/' || p === '') return 'Справочник СМП'
@@ -91,6 +115,10 @@ export default defineEventHandler(async (event) => {
         // Для тестов возвращаем название категории теста как описание
         return testCategoryData ? testCategoryData.name : 'Ответы на тесты пернаментного обучения'
       }
+      if (p.startsWith('/local-statuses')) {
+        // Для локальных статусов возвращаем название локального статуса как описание
+        return localStatusData ? localStatusData.name : 'Локальные статусы и классификации'
+      }
       if (p.startsWith('/calculators')) return 'Инструменты для расчета дозировок, индексов и других показателей'
       if (p.startsWith('/classroom/instructions')) return 'Учебные материалы и инструкции для медицинских работников'
       if (p.startsWith('/apps')) return 'Мобильные приложения и инструменты для СМП'
@@ -103,7 +131,6 @@ export default defineEventHandler(async (event) => {
       if (p.startsWith('/help')) return 'Справка и помощь по использованию сервиса'
       if (p.startsWith('/promo')) return 'Промо-материалы и специальные предложения'
       if (p.startsWith('/substations')) return 'Информация о подстанциях скорой медицинской помощи'
-      if (p.startsWith('/local-statuses')) return 'Локальные статусы и классификации'
       if (p.startsWith('/drugs')) return 'Полная информация о лекарственных препаратах и их применении'
       if (p.startsWith('/codifier')) return 'Международная классификация болезней и медицинские коды'
       return 'Алгоритмы, инструкции, кодификаторы и медицинские калькуляторы'

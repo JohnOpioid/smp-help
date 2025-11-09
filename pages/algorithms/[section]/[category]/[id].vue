@@ -192,6 +192,29 @@
       </div>
       <div v-else class="text-sm text-slate-500">Не удалось загрузить данные диагноза</div>
     </template>
+    <template #footer>
+      <div class="flex gap-3 w-full">
+        <button 
+          type="button" 
+          :title="isBookmarked ? 'В избранном' : 'В закладки'" 
+          :disabled="!selectedDiagnosis"
+          @click="toggleBookmark"
+          class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer flex-1 justify-center items-center"
+        >
+          <UIcon :name="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'" class="w-4 h-4" />
+          {{ isBookmarked ? 'В избранном' : 'В закладки' }}
+        </button>
+        <div class="flex-1">
+          <ShareButton
+            :title="selectedDiagnosis?.name ? `${selectedDiagnosis.name} — Кодификатор` : 'Кодификатор'"
+            :description="selectedDiagnosis?.note || (selectedDiagnosis ? `МКБ-10: ${selectedDiagnosis.mkbCode}${selectedDiagnosis.stationCode ? ` | Код станции: ${selectedDiagnosis.stationCode}` : ''}` : '')"
+            :image-id="selectedDiagnosis?._id || selectedDiagnosis?.mkbCode"
+            image-type="codifier"
+            section-name="Кодификатор"
+          />
+        </div>
+      </div>
+    </template>
   </UModal>
 
   <!-- BottomSheet для мобильных устройств -->
@@ -223,7 +246,7 @@
       </div>
       
       <!-- Кнопки действий -->
-      <div class="mt-6">
+      <div class="mt-6 space-y-3">
         <UButton
           :icon="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
           :class="isBookmarked
@@ -239,6 +262,13 @@
         >
           {{ isBookmarked ? 'В избранном' : 'В закладки' }}
         </UButton>
+        <ShareButton
+          :title="selectedDiagnosis?.name ? `${selectedDiagnosis.name} — Кодификатор` : 'Кодификатор'"
+          :description="selectedDiagnosis?.note || (selectedDiagnosis ? `МКБ-10: ${selectedDiagnosis.mkbCode}${selectedDiagnosis.stationCode ? ` | Код станции: ${selectedDiagnosis.stationCode}` : ''}` : '')"
+          :image-id="selectedDiagnosis?._id || selectedDiagnosis?.mkbCode"
+          image-type="codifier"
+          section-name="Кодификатор"
+        />
       </div>
     </div>
     <div v-else class="text-sm text-slate-500 px-4 py-2">Не удалось загрузить данные диагноза</div>
@@ -1025,7 +1055,7 @@ const openLocalStatus = (status: any) => {
 
 // Стилизация таблиц в контенте под стиль Nuxt UI Table
 const contentRef = ref<HTMLElement | null>(null)
-function styleTables() {
+async function styleTables() {
   const root = contentRef.value
   if (!root) return
   const tables = Array.from(root.querySelectorAll('table')) as HTMLTableElement[]
@@ -1038,6 +1068,9 @@ function styleTables() {
       wrapper.classList.add('my-3', 'bg-white', 'dark:bg-slate-800', 'border', 'border-slate-100', 'dark:border-slate-700', 'rounded-lg', 'overflow-x-hidden', 'relative', 'sticky-container')
       table.parentElement?.insertBefore(wrapper, table)
       wrapper.appendChild(table)
+      
+      // Добавляем футер с кнопкой "Поделиться"
+      await addTableFooter(wrapper)
     }
     // Стили только для содержимого таблицы, без внешнего бордера
     table.classList.remove('border', 'border-slate-100', 'dark:border-slate-700', 'rounded-lg', 'rounded-md', 'overflow-hidden')
@@ -1078,6 +1111,64 @@ function styleTables() {
     // Мобильный режим: показывать 2 колонки, первая + переключаемая (2/3) свайпом
     setupMobileTwoColumn(table)
   }
+}
+
+// Функция для добавления футера с кнопкой "Поделиться" к таблице
+async function addTableFooter(wrapper: HTMLElement) {
+  // Проверяем, не добавлен ли уже футер
+  if (wrapper.querySelector('[data-table-footer]')) return
+  
+  // Создаем контейнер для футера
+  const footer = document.createElement('div')
+  footer.setAttribute('data-table-footer', '')
+  footer.classList.add('p-4', 'border-t', 'border-slate-100', 'dark:border-slate-700', 'bg-white', 'dark:bg-slate-800')
+  
+  // Создаем контейнер для кнопки
+  const buttonContainer = document.createElement('div')
+  buttonContainer.classList.add('flex', 'justify-end', 'w-full')
+  
+  // Используем Vue для монтирования компонента ShareButton
+  const { createApp, h } = await import('vue')
+  const ShareButton = (await import('~/components/ShareButton.vue')).default
+  const nuxtApp = useNuxtApp()
+  
+  // Создаем приложение Vue для компонента с правильным контекстом
+  const app = createApp({
+    setup() {
+      return () => h(ShareButton, {
+        title: algo.value?.title ? `${algo.value.title} — Алгоритмы` : 'Алгоритмы',
+        description: algo.value?.title || '',
+        imageId: route.params.id as string,
+        imageType: 'algorithm' as const,
+        sectionName: 'Алгоритмы',
+        buttonClass: 'w-auto',
+        rootClass: 'w-auto'
+      })
+    }
+  })
+  
+  // Копируем плагины и провайдеры из основного приложения Nuxt
+  if (nuxtApp.vueApp) {
+    // Копируем глобальные свойства
+    const globalProperties = nuxtApp.vueApp.config.globalProperties
+    Object.keys(globalProperties).forEach(key => {
+      app.config.globalProperties[key] = globalProperties[key]
+    })
+    
+    // Копируем провайдеры
+    const provides = (nuxtApp.vueApp as any)._context?.provides
+    if (provides) {
+      Object.keys(provides).forEach(key => {
+        ;(app as any)._context.provides[key] = provides[key]
+      })
+    }
+  }
+  
+  // Монтируем компонент в контейнер
+  app.mount(buttonContainer)
+  
+  footer.appendChild(buttonContainer)
+  wrapper.appendChild(footer)
 }
 
 onMounted(() => nextTick(styleTables))

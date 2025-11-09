@@ -145,27 +145,26 @@
               :title="isBookmarked ? 'В избранном' : 'В закладки'" 
               :disabled="!selectedItem"
               @click="toggleBookmark()"
-              class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer flex-1 justify-center items-center"
+              class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer flex-1 justify-center items-center h-[2.5rem]"
             >
               <UIcon :name="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'" class="w-4 h-4" />
               {{ isBookmarked ? 'В избранном' : 'В закладки' }}
             </button>
-            <button 
-              type="button" 
-              title="Поделиться"
-              :disabled="!selectedItem"
-              @click="shareItem"
-              class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer flex-1 justify-center items-center"
-            >
-              <UIcon name="i-heroicons-share" class="w-4 h-4" />
-              Поделиться
-            </button>
+            <div class="flex-1">
+              <ShareButton
+                :title="selectedItem?.name ? `${selectedItem.name} — Локальные статусы` : 'Локальные статусы'"
+                :description="selectedItem?.description || selectedItem?.name || ''"
+                :image-id="selectedItem?._id"
+                image-type="page"
+                section-name="Локальные статусы"
+              />
+            </div>
             <button 
               type="button" 
               title="Копировать"
               :disabled="!selectedItem"
               @click="copyDescription"
-              class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer aspect-square flex items-center justify-center min-w-[2.5rem]"
+              class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer aspect-square w-[2.5rem] h-[2.5rem] flex items-center justify-center"
             >
               <UIcon name="i-heroicons-clipboard" class="w-4 h-4" />
             </button>
@@ -242,16 +241,15 @@
                   <UIcon :name="isBookmarked ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'" class="w-4 h-4" />
                   {{ isBookmarked ? 'В избранном' : 'В закладки' }}
                 </button>
-                <button 
-                  type="button" 
-                  title="Поделиться"
-                  :disabled="!selectedItem"
-                  @click="shareItem"
-                  class="rounded-md font-medium inline-flex disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-3 py-2 text-sm gap-2 text-secondary bg-secondary/10 hover:bg-secondary/15 active:bg-secondary/15 focus:outline-none focus-visible:bg-secondary/15 disabled:bg-secondary/10 aria-disabled:bg-secondary/10 cursor-pointer flex-1 justify-center items-center"
-                >
-                  <UIcon name="i-heroicons-share" class="w-4 h-4" />
-                  Поделиться
-                </button>
+                <div class="flex-1">
+                  <ShareButton
+                    :title="selectedItem?.name ? `${selectedItem.name} — Локальные статусы` : 'Локальные статусы'"
+                    :description="selectedItem?.description || selectedItem?.name || ''"
+                    :image-id="selectedItem?._id"
+                    image-type="page"
+                    section-name="Локальные статусы"
+                  />
+                </div>
               </div>
             </div>
             </div>
@@ -457,7 +455,15 @@ async function shareItem() {
 function openModal(item: any) {
   selectedItem.value = item
   modalOpen.value = true
-  updateIsBookmarked();
+  updateIsBookmarked()
+  
+  // Обновляем URL с ID элемента через query параметр только если его еще нет
+  if (!routeQuery.query.id || routeQuery.query.id !== item._id) {
+    // Используем прямое изменение истории браузера для избежания моргания
+    const newUrl = new URL(window.location.href)
+    newUrl.searchParams.set('id', item._id)
+    window.history.replaceState({}, '', newUrl.toString())
+  }
 }
 
 // Авто-открытие по query ?id=<id>
@@ -468,6 +474,7 @@ function closeModal() {
   // Очищаем query параметры используя прямое изменение истории браузера
   const newUrl = new URL(window.location.href)
   newUrl.searchParams.delete('id')
+  newUrl.searchParams.delete('open')
   window.history.replaceState({}, '', newUrl.toString())
 }
 
@@ -545,28 +552,49 @@ onMounted(async () => {
 // Не трогаем общий скролл страницы — полагаемся на UModal/BottomSheet
 
 // Реакция на изменение query на текущей странице (открыть/закрыть модалку)
-watch(() => routeQuery.query.id, (val) => {
-  const id = val as string | undefined
+watch(() => routeQuery.query.id, (newId, oldId) => {
+  // Пропускаем срабатывание при первоначальной загрузке страницы с параметром id
+  if (newId && !oldId) {
+    return
+  }
   
-  if (id) {
+  // Если есть новый ID и он отличается от старого
+  if (newId && newId !== oldId) {
     // Ждем загрузки данных и открываем нужный элемент
     const checkAndOpenItem = () => {
       if (items.value.length > 0) {
-        const found = items.value.find((i: any) => String(i._id) === String(id))
+        const found = items.value.find((i: any) => String(i._id) === String(newId))
         if (found) {
+          // Открываем модалку без изменения URL (URL уже обновлен)
           selectedItem.value = found
           modalOpen.value = true
           updateIsBookmarked()
         } else {
-          loadSpecificItem(id)
+          loadSpecificItem(String(newId))
         }
       } else {
-        console.log('⏳ Watcher данные еще загружаются, повторяем через 100мс')
         setTimeout(checkAndOpenItem, 100)
       }
     }
     checkAndOpenItem()
-  } else if (modalOpen.value) {
+  } else if (!newId && modalOpen.value) {
+    // Если id убран, закрываем модалку
+    closeModal()
+  }
+})
+
+// Открытие/закрытие модалки при изменении query параметра ?open=<id>
+watch(() => routeQuery.query.open, (openVal) => {
+  const openId = openVal as string | undefined
+  
+  if (openId) {
+    const found = items.value.find((i: any) => String(i._id) === String(openId))
+    if (found) {
+      openModal(found)
+    } else {
+      loadSpecificItem(openId)
+    }
+  } else if (modalOpen.value && !routeQuery.query.id) {
     closeModal()
   }
 })
