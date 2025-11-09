@@ -6,7 +6,14 @@
         <!-- Таблица пользователей перенесена на /admin/users -->
 
         <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-          <div v-for="card in dashboardCards as any[]" :key="card.key" class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg">
+          <NuxtLink
+            v-for="card in dashboardCards as any[]"
+            :key="card.key"
+            :to="card.url"
+            class="bg-white dark:bg-slate-800 overflow-hidden rounded-lg cursor-pointer hover:shadow-lg dark:hover:shadow-xl transition-all duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            tabindex="0"
+            role="button"
+          >
             <div class="h-full flex flex-col">
               <div class="flex flex-col sm:flex-row items-center sm:items-start p-3 border-b border-slate-100 dark:border-slate-700">
                 <div class="flex-shrink-0 mb-3 sm:mb-0">
@@ -63,7 +70,7 @@
                 </template>
               </div>
             </div>
-          </div>
+          </NuxtLink>
         </div>
 
         <!-- Карта подстанций с количеством пользователей -->
@@ -225,7 +232,8 @@ const dashboardCards = computed(() => [
     icon: 'i-heroicons-users',
     iconBg: 'bg-blue-100 dark:bg-blue-900',
     iconColor: 'text-blue-600 dark:text-blue-400',
-    type: 'users'
+    type: 'users',
+    url: '/admin/users'
   },
   {
     key: 'substations',
@@ -236,12 +244,13 @@ const dashboardCards = computed(() => [
     iconColor: 'text-indigo-600 dark:text-indigo-400',
     type: 'single',
     singleLabel: 'Всего',
-    get: () => toNum((stats.value as any)?.substations?.total)
+    get: () => toNum((stats.value as any)?.substations?.total),
+    url: '/admin/substations'
   },
   {
     key: 'codifier',
     title: 'Кодификатор',
-    subtitle: 'МКБ и коды',
+    subtitle: 'МКБ-10 и коды Станции',
     icon: 'i-heroicons-document-text',
     iconBg: 'bg-green-100 dark:bg-green-900',
     iconColor: 'text-green-600 dark:text-green-400',
@@ -251,7 +260,8 @@ const dashboardCards = computed(() => [
       rightLabel: 'Диагнозы',
       left: () => toNum((stats.value as any)?.codifier?.categories),
       right: () => toNum((stats.value as any)?.codifier?.mkb)
-    }
+    },
+    url: '/admin/codifier'
   },
   {
     key: 'localStatuses',
@@ -266,7 +276,8 @@ const dashboardCards = computed(() => [
       rightLabel: 'Статусы',
       left: () => toNum((stats.value as any)?.localStatuses?.categories),
       right: () => toNum((stats.value as any)?.localStatuses?.items)
-    }
+    },
+    url: '/admin/local-statuses'
   },
   {
     key: 'instructions',
@@ -277,7 +288,8 @@ const dashboardCards = computed(() => [
     iconColor: 'text-purple-600 dark:text-purple-400',
     type: 'single',
     singleLabel: 'Всего',
-    get: () => toNum((stats.value as any)?.instructions?.total)
+    get: () => toNum((stats.value as any)?.instructions?.total),
+    url: '/admin/classroom/instructions'
   },
   {
     key: 'algorithms',
@@ -288,7 +300,8 @@ const dashboardCards = computed(() => [
     iconColor: 'text-slate-600 dark:text-slate-300',
     type: 'single',
     singleLabel: 'Всего',
-    get: () => toNum((stats.value as any)?.algorithms?.total)
+    get: () => toNum((stats.value as any)?.algorithms?.total),
+    url: '/admin/algorithms'
   },
   {
     key: 'calculators',
@@ -299,7 +312,8 @@ const dashboardCards = computed(() => [
     iconColor: 'text-orange-600 dark:text-orange-400',
     type: 'single',
     singleLabel: 'Всего',
-    get: () => toNum((stats.value as any)?.calculators?.total)
+    get: () => toNum((stats.value as any)?.calculators?.total),
+    url: '/admin/calculators'
   },
   {
     key: 'drugs',
@@ -310,7 +324,8 @@ const dashboardCards = computed(() => [
     iconColor: 'text-red-600 dark:text-red-400',
     type: 'single',
     singleLabel: 'Всего',
-    get: () => toNum((stats.value as any)?.drugs?.total)
+    get: () => toNum((stats.value as any)?.drugs?.total),
+    url: '/admin/drugs'
   },
   {
     key: 'classroom',
@@ -321,7 +336,8 @@ const dashboardCards = computed(() => [
     iconColor: 'text-teal-600 dark:text-teal-400',
     type: 'single',
     singleLabel: 'Всего',
-    get: () => toNum((stats.value as any)?.classroom?.total)
+    get: () => toNum((stats.value as any)?.classroom?.total),
+    url: '/admin/classroom'
   }
 ])
 

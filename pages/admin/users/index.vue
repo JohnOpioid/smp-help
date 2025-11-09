@@ -4,25 +4,37 @@
       <!-- Графики статистики -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         <!-- График регистраций -->
-        <div class="bg-white dark:bg-slate-800 rounded-lg p-4">
-          <div class="mb-4">
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Новые пользователи</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Регистрации по дням</p>
+        <div class="bg-white dark:bg-slate-800 rounded-lg p-4 h-full flex flex-col">
+          <div class="mb-4 flex-shrink-0">
+            <div class="flex items-center justify-between mb-2">
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Новые пользователи</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Регистрации по дням</p>
+              </div>
+              <div v-if="!loadingRegistrations && registrationsData.length > 0" class="text-right">
+                <div class="text-sm text-slate-600 dark:text-slate-400">Всего сегодня</div>
+                <div class="text-2xl font-bold text-slate-900 dark:text-white">
+                  {{ todayRegistrations }}
+                </div>
+              </div>
+            </div>
           </div>
-          <div v-if="loadingRegistrations" class="flex items-center justify-center min-h-[300px]">
-            <USkeleton class="h-full w-full" />
+          <div class="flex-1 flex flex-col justify-end">
+            <div v-if="loadingRegistrations" class="flex items-center justify-center min-h-[300px]">
+              <USkeleton class="h-full w-full" />
+            </div>
+            <ClientOnly v-else>
+              <AdminChart :data="registrationsData" color="#3b82f6" height="auto" />
+              <template #fallback>
+                <USkeleton class="h-[300px] w-full" />
+              </template>
+            </ClientOnly>
           </div>
-          <ClientOnly v-else>
-            <AdminChart :data="registrationsData" color="#3b82f6" height="auto" />
-            <template #fallback>
-              <USkeleton class="h-[300px] w-full" />
-            </template>
-          </ClientOnly>
         </div>
         
         <!-- График посещений -->
-        <div class="bg-white dark:bg-slate-800 rounded-lg p-4">
-          <div class="mb-4">
+        <div class="bg-white dark:bg-slate-800 rounded-lg p-4 h-full flex flex-col">
+          <div class="mb-4 flex-shrink-0">
             <div class="flex items-center justify-between mb-2">
               <div>
                 <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Посещения сайта</h3>
@@ -40,21 +52,23 @@
               </div>
             </div>
           </div>
-          <div v-if="loadingVisits" class="flex items-center justify-center min-h-[300px]">
-            <USkeleton class="h-full w-full" />
+          <div class="flex-1 flex flex-col justify-end">
+            <div v-if="loadingVisits" class="flex items-center justify-center min-h-[300px]">
+              <USkeleton class="h-full w-full" />
+            </div>
+            <ClientOnly v-else>
+              <AdminChart 
+                :data="visitsData" 
+                height="auto" 
+                :multiple-series="true"
+                :series-colors="['#3b82f6', '#10b981', '#8b5cf6']"
+                :series-names="['Залогиненные', 'Гости', 'Всего']"
+              />
+              <template #fallback>
+                <USkeleton class="h-[300px] w-full" />
+              </template>
+            </ClientOnly>
           </div>
-          <ClientOnly v-else>
-            <AdminChart 
-              :data="visitsData" 
-              height="auto" 
-              :multiple-series="true"
-              :series-colors="['#3b82f6', '#10b981', '#8b5cf6']"
-              :series-names="['Залогиненные', 'Гости', 'Всего']"
-            />
-            <template #fallback>
-              <USkeleton class="h-[300px] w-full" />
-            </template>
-          </ClientOnly>
         </div>
       </div>
       
@@ -273,6 +287,13 @@ async function loadCharts() {
 }
 
 // Вычисляем статистику за сегодня
+const todayRegistrations = computed(() => {
+  if (!registrationsData.value || registrationsData.value.length === 0) return 0
+  const today = new Date().toISOString().split('T')[0]
+  const todayData = registrationsData.value.find(item => item.date === today)
+  return todayData?.count || 0
+})
+
 const todayTotalVisits = computed(() => {
   if (!visitsData.value || visitsData.value.length === 0) return 0
   const today = new Date().toISOString().split('T')[0]
