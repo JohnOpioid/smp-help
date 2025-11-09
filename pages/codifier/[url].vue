@@ -45,8 +45,8 @@
               </div>
             </li>
 
-            <!-- Триггер для ленивой загрузки -->
-            <div ref="loadMoreTrigger" class="h-1 col-span-1 md:col-span-2"></div>
+            <!-- Триггер для ленивой загрузки - показываем только если есть еще данные -->
+            <div v-if="hasMore && !isLoading" ref="loadMoreTrigger" class="h-1 col-span-1 md:col-span-2"></div>
 
             <li v-if="!isLoading && filteredItems.length === 0 && otherCategoryGroups.length === 0" class="col-span-1 md:col-span-2 p-6">
               <div class="flex flex-col items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
@@ -336,6 +336,11 @@ const category = ref<any>(null)
 async function loadItems(page: number = 1, append: boolean = false) {
   if (isLoading.value) return
   
+  // Проверяем, есть ли еще данные для загрузки
+  if (page > 1 && !hasMore.value) {
+    return
+  }
+  
   isLoading.value = true
   error.value = null
   
@@ -358,14 +363,27 @@ async function loadItems(page: number = 1, append: boolean = false) {
     
     if (response.success) {
       if (page === 1) {
+        // При первой загрузке очищаем список и устанавливаем категорию
         category.value = response.category
         allItems.value = response.items
+        currentPage.value = 1
       } else {
-        allItems.value.push(...response.items)
+        // При последующих загрузках проверяем на дубликаты
+        const existingIds = new Set(allItems.value.map((item: any) => String(item._id || item.id)))
+        const newItems = response.items.filter((item: any) => {
+          const id = String(item._id || item.id)
+          return !existingIds.has(id)
+        })
+        
+        if (newItems.length > 0) {
+          allItems.value.push(...newItems)
+          currentPage.value = page
+        } else {
+          console.warn('⚠️ Все полученные элементы уже есть в списке (дубликаты)')
+        }
       }
       
       hasMore.value = response.pagination.hasNextPage
-      currentPage.value = page
       
     } else {
       error.value = 'Ошибка загрузки данных'
@@ -430,14 +448,33 @@ onMounted(async () => {
       if (hasMore.value && !isLoading.value) {
         console.log('📥 Загружаем следующую страницу:', currentPage.value + 1)
         loadItems(currentPage.value + 1, true)
-      } else {
       }
     }
   })
-  if (loadMoreTrigger.value && io) {
-    io.observe(loadMoreTrigger.value)
-  } else {
+  
+  // Наблюдаем за loadMoreTrigger после его появления в DOM
+  const setupObserver = () => {
+    if (loadMoreTrigger.value && io) {
+      io.observe(loadMoreTrigger.value)
+    }
   }
+  
+  // Пытаемся установить observer сразу
+  setupObserver()
+  
+  // Также следим за изменениями loadMoreTrigger (когда элемент появляется/исчезает)
+  watch(loadMoreTrigger, (newVal, oldVal) => {
+    if (io) {
+      // Отключаем наблюдение за старым элементом
+      if (oldVal) {
+        io.unobserve(oldVal)
+      }
+      // Подключаем наблюдение за новым элементом
+      if (newVal) {
+        io.observe(newVal)
+      }
+    }
+  })
 
   // Авто-открытие по query параметрам
   const itemId = routeQuery.query.id as string | undefined

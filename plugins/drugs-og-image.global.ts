@@ -2,20 +2,14 @@ export default defineNuxtPlugin({
   name: 'drugs-og-image',
   enforce: 'post', // Выполняется после всех других плагинов
   setup() {
+    // Плагин работает только на клиенте для динамического обновления мета-тегов
+    // На сервере мета-теги устанавливаются в pages/drugs/index.vue
+    if (process.server) return
+    
     const route = useRoute()
     
     // Получаем абсолютный URL
-    let baseUrl: string
-    if (process.server) {
-      const headers = useRequestHeaders()
-      const host = headers.host || 'localhost:3000'
-      const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
-      baseUrl = `${protocol}://${host}`
-    } else if (process.client) {
-      baseUrl = `${window.location.protocol}//${window.location.host}`
-    } else {
-      baseUrl = process.env.NODE_ENV === 'production' ? 'https://helpsmp.ru' : 'http://localhost:3000'
-    }
+    const baseUrl = `${window.location.protocol}//${window.location.host}`
     
     // Функция для получения правильного URL изображения для препаратов
     const getOgImageUrl = () => {
