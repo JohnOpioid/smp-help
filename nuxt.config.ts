@@ -96,32 +96,18 @@ export default defineNuxtConfig({
   vite: {
     build: {
       // Увеличиваем таймаут сборки
-      chunkSizeWarningLimit: 1000,
-      rollupOptions: {
-        output: {
-          // Оптимизация чанков
-          manualChunks: (id) => {
-            // Выделяем большие библиотеки в отдельные чанки
-            if (id.includes('node_modules')) {
-              if (id.includes('vue') || id.includes('vue-router')) {
-                return 'vue-vendor'
-              }
-              if (id.includes('@xenova/transformers')) {
-                return 'transformers'
-              }
-              if (id.includes('react') || id.includes('react-dom')) {
-                return 'react-vendor'
-              }
-              return 'vendor'
-            }
-          }
-        }
-      }
+      chunkSizeWarningLimit: 1000
+      // Убираем manualChunks чтобы избежать проблем с порядком загрузки модулей
+      // Это может вызывать ошибки типа "Cannot access '$v' before initialization"
     },
     // Оптимизация для продакшена
     optimizeDeps: {
       exclude: ['@xenova/transformers'] // Исключаем тяжелые зависимости из оптимизации
     }
+  },
+  experimental: {
+    // Отключаем экспериментальные функции, которые могут вызывать проблемы
+    payloadExtraction: false
   },
   ssr: true, // Включаем SSR для всех режимов (необходимо для OG мета-тегов)
   app: {
